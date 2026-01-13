@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head><title>Portal GPP</title></head>
+  <body>
+    <h1>Portal GPP</h1>
+    <p>Usuário: {{ request.user.email }}</p>
+
+    <h2>Aplicações disponíveis</h2>
+    <ul>
+      {% for app in applications %}
+        <li>
+          {{ app.codigointerno }} - {{ app.nomeaplicacao }}
+          {% if app.codigointerno == 'CARGA_ORG_LOT' %}
+            <a href="{% url 'carga_org_lot:home' %}">Ir para Carga Org/Lot</a>
+          {% endif %}
+        </li>
+      {% empty %}
+        <li>Nenhuma aplicação disponível.</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
