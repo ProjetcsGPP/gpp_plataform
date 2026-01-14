@@ -7,26 +7,47 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
 
-        permitions = User.get_all_permissions(user.email)
+        permissions = User.get_all_permissions(user)
         
-        # claims básicos
+        # DEBUG: Print para verificar o conteúdo
+        #print("=" * 50)
+        #print(f"DEBUG - Usuário: {user.email}")
+        #print(f"DEBUG - Tipo de permissions: {type(permissions)}")
+        #print(f"DEBUG - Permissions: {permissions}")
+        #print("=" * 50)
+        
+        # Claims básicos
         token['useremail'] = user.email
-
-        # aqui você pode, por enquanto, travar em uma empresa única
+        token['username'] = user.name
+        token['permissions'] = list(permissions)
+        
+        # Roles RBAC por aplicação
         roles = list(
             UserRole.objects.filter(user=user).values(
-                'company__id', 'application__code', 'role__code'
+                'aplicacao__codigointerno', 
+                'role__codigoperfil',
+                'role__nomeperfil'
             )
         )
+        
+        #print(f"DEBUG - Roles: {roles}")
+        
         token['roles'] = roles
-
-        # atributos ABAC simplificados
+        
+        # Atributos ABAC simplificados
         attrs = list(
             Attribute.objects.filter(user=user).values(
-                'company__id', 'application__code', 'key', 'value'
+                'aplicacao__codigointerno', 
+                'key', 
+                'value'
             )
         )
+        
+        #print(f"DEBUG - Attrs: {attrs}")
+        #print("=" * 50)
+        
         token['attrs'] = attrs
+        
         return token
 
 class CustomTokenObtainPairView(TokenObtainPairView):
