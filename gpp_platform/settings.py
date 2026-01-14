@@ -179,3 +179,9 @@ AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+
+# Configurações de Login
+LOGIN_URL = '/portal/login/'
+LOGIN_REDIRECT_URL = '/portal/dashboard/'
+LOGOUT_REDIRECT_URL = '/portal/login/'
