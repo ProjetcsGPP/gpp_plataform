@@ -8,6 +8,7 @@ class Aplicacao(models.Model):
     codigointerno = models.CharField(max_length=50, unique=True)
     nomeaplicacao = models.CharField(max_length=200)
     base_url = models.URLField(blank=True, null=True)
+    isshowinportal = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'tblaplicacao'

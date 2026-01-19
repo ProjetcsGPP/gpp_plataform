@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Ações PNGI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-name {
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .welcome-section h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .welcome-section p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .role-info {
+            background: #e3eaf6;
+            color: #1e3c72;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .vigencia-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .vigencia-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .vigencia-info {
+            background: #e3f9e5;
+            border-left: 4px solid #4caf50;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .vigencia-info h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .vigencia-info p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .eixos-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .eixos-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .eixos-list {
+            list-style: none;
+        }
+
+        .eixo-item {
+            padding: 15px;
+            border-bottom: 1px solid #e1e1e1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .eixo-item:last-child {
+            border-bottom: none;
+        }
+
+        .eixo-alias {
+            background: #1e3c72;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 12px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .eixo-descricao {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background-color: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .alert-error {
+            background-color: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>Ações PNGI</h1>
+            <div class="user-info">
+                <span class="user-name">{{ user.name }}</span>
+                <a href="{% url 'acoes_pngi:logout' %}" class="btn-logout">Sair</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="welcome-section">
+            <h2>Bem-vindo(a) ao Sistema de Ações PNGI!</h2>
+            <p>{{ user.name }} ({{ user.email }})</p>
+            <span class="role-info">Perfil: {{ role.nomeperfil }}</span>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_eixos }}</div>
+                <div class="stat-label">Eixos Cadastrados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_situacoes }}</div>
+                <div class="stat-label">Situações de Ações</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_vigencias }}</div>
+                <div class="stat-label">Vigências PNGI</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.vigencias_ativas }}</div>
+                <div class="stat-label">Vigências Ativas</div>
+            </div>
+        </div>
+
+        {% if vigencia_atual %}
+        <div class="vigencia-section">
+            <h3>Vigência Atual</h3>
+            <div class="vigencia-info">
+                <h4>{{ vigencia_atual.strdescricaovigenciapngi }}</h4>
+                <p><strong>Período:</strong> {{ vigencia_atual.datiniciovigencia|date:"d/m/Y" }} até {{ vigencia_atual.datfinalvigencia|date:"d/m/Y" }}</p>
+                <p><strong>Duração:</strong> {{ vigencia_atual.duracao_dias }} dias</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="eixos-section">
+            <h3>Eixos Estratégicos</h3>
+            {% if ultimos_eixos %}
+                <ul class="eixos-list">
+                    {% for eixo in ultimos_eixos %}
+                        <li class="eixo-item">
+                            <span class="eixo-alias">{{ eixo.stralias }}</span>
+                            <span class="eixo-descricao">{{ eixo.strdescricaoeixo }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="no-data">Nenhum eixo cadastrado ainda.</div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

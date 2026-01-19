@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'auth_service',
     'portal',
     'carga_org_lot',
+    'acoes_pngi',  # ← ADICIONAR AQUI
     'db_service',
 ]
     

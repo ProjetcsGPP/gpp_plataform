@@ -73,6 +73,9 @@ def portal_dashboard(request):
     for ur in roles:
         app_code = ur.aplicacao.codigointerno
         if app_code not in apps_dict:
+            if not ur.aplicacao.isshowinportal:
+                continue
+            
             apps_dict[app_code] = {
                 'aplicacao': ur.aplicacao,
                 'roles': []

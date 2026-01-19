@@ -9,5 +9,6 @@ urlpatterns = [
     path('auth/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('portal/', include('portal.urls')),
-    path('carga_org_lot/', include('carga_org_lot.urls')),  # Removido namespace incorreto
+    path('carga_org_lot/', include('carga_org_lot.urls')),
+    path('acoes-pngi/', include('acoes_pngi.urls')), 
 ]
