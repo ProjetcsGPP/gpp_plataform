@@ -1,11 +1,17 @@
 """
 URLs consolidadas das APIs REST de autenticação
-Prefixo recomendado: /api/v1/auth/
+Prefixo aplicado em gpp_platform/urls.py: /api/v1/auth/
 """
 
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
-from ..views.api_views import CustomTokenObtainPairView, session_login, session_logout, session_me, get_csrf_token
+from ..views.api_views import (
+    CustomTokenObtainPairView,
+    session_login,
+    session_logout,
+    session_me,
+    get_csrf_token
+)
 
 urlpatterns = [
     # JWT Authentication (stateless - recomendado para Next.js)
