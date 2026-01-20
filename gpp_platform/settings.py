@@ -15,6 +15,32 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+import os
+
+# Hosts/IPs para desenvolvimento (Ubuntu/WSL + Windows)
+HOST_IP = os.getenv('DJANGO_HOST_IP', '172.22.176.1')  # Seu IP do Ubuntu
+FRONTEND_URLS = [
+    f"http://{HOST_IP}:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# Hosts Django
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    HOST_IP,
+    '*',  # Só dev
+]
+
+# CORS/CSRF para Next.js (Ubuntu)
+CORS_ALLOWED_ORIGINS = FRONTEND_URLS
+CSRF_TRUSTED_ORIGINS = FRONTEND_URLS
+
+
+
+
 # Configuração de sessão
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400  # 24 horas
@@ -46,7 +72,12 @@ SECRET_KEY = 'django-insecure-zi_0xgun9-=se!8anfq0cian(+e%*%-k(f-6xwxr8qe^85(10p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '172.22.176.1',      # ← SEU IP DO UBUNTU
+    '*',                  # ← TEMPORÁRIO para desenvolvimento
+]
 
 
 # Application definition
@@ -63,6 +94,7 @@ INSTALLED_APPS = [
     # Terceiros
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 
     # Apps do projeto
     'accounts',
@@ -77,6 +109,7 @@ INSTALLED_APPS = [
     
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -183,15 +216,11 @@ AUTHENTICATION_BACKENDS = [
 
 
 # Configurações de Login
-LOGIN_URL = '/portal/login/'
-LOGIN_REDIRECT_URL = '/portal/dashboard/'
-LOGOUT_REDIRECT_URL = '/portal/login/'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/login/'
 
-# CORS Configuration
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -200,12 +229,6 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = False  # True em produção com HTTPS
 SESSION_COOKIE_AGE = 86400  # 24 horas
-
-# CSRF Configuration
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
 
 CSRF_COOKIE_HTTPONLY = False  # Permitir JS ler o token
 CSRF_COOKIE_SAMESITE = 'Lax'
