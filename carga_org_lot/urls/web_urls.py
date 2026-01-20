@@ -1,6 +1,6 @@
 from django.urls import path
 from django.views.generic import RedirectView
-from . import views
+from ..views.web_views import views
 
 app_name = 'carga_org_lot'
 

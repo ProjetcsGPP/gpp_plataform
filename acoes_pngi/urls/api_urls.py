@@ -1,5 +1,5 @@
 from django.urls import path
-from . import api_views
+from ..views.api_views import api_views
 
 urlpatterns = [
     path('', api_views.api_acoes_pngi_dashboard, name='api_acoes_pngi_dashboard'),

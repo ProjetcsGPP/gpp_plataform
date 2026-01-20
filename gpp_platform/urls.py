@@ -1,28 +1,47 @@
+"""
+GPP Platform - URLs principais
+Organização:
+- /admin/ -> Django Admin
+- /api/v1/auth/ -> APIs de autenticação (JWT + Session)
+- /api/v1/<app>/ -> APIs REST para consumo do Next.js
+- /<app>/ -> Views tradicionais Django (templates HTML)
+"""
+
 from django.contrib import admin
 from django.urls import path, include
-from auth_service.views import CustomTokenObtainPairView
-from rest_framework_simplejwt.views import TokenRefreshView
-from auth_service import api_views as auth_api_views
 
 urlpatterns = [
+    # =========================================================================
+    # DJANGO ADMIN
+    # =========================================================================
     path('admin/', admin.site.urls),
     
-    # JWT Authentication (para APIs REST)
-    path('auth/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
-    # Session Authentication (para Next.js)
-    path('api/auth/login', auth_api_views.api_login, name='api_login'),
-    path('api/auth/logout', auth_api_views.api_logout, name='api_logout'),
-    path('api/auth/me', auth_api_views.api_me, name='api_me'),
-    
-    # Apps tradicionais (Django templates)
-    path('portal/', include('portal.urls')),  # rotas das views tradicionais
-    path('carga_org_lot/', include('carga_org_lot.urls')),  # rotas das views tradicionais
-    path('acoes-pngi/', include('acoes_pngi.urls')),  # rotas das views tradicionais
+    # =========================================================================
+    # APIs REST - Autenticação (para Next.js)
+    # Prefixo: /api/v1/auth/
+    # =========================================================================
+    path('api/v1/auth/', include('auth_service.api_urls')),
     
     
-    # APIs REST explícitas para o frontend Next.js
-    path('', include('auth_service.api_urls')), # /api/auth-rest/*
-    path('', include('portal.api_urls')),       # /api/portal-rest/*
+    # =========================================================================
+    # APIs REST - Aplicações (para Next.js)
+    # Prefixo: /api/v1/<app>/
+    # =========================================================================
+    path('api/v1/portal/', include('portal.api_urls')),
+    path('api/v1/acoes/', include('acoes_pngi.api_urls')),
+    path('api/v1/carga/', include('carga_org_lot.api_urls')),
+    # path('api/v1/accounts/', include('accounts.api_urls')),  # TODO: criar accounts/api_urls.py
+    # path('api/v1/db/', include('db_service.api_urls')),      # TODO: criar db_service/api_urls.py
+    
+    
+    # =========================================================================
+    # VIEWS TRADICIONAIS - Django Templates (páginas web internas)
+    # Prefixo: /<app>/
+    # =========================================================================
+    path('', include('portal.urls')),                    # Portal (index, etc)
+    path('acoes-pngi/', include('acoes_pngi.urls')),     # Ações PNGI
+    path('carga/', include('carga_org_lot.urls')),       # Carga de Organogramas
+    path('accounts/', include('accounts.urls')),         # Gestão de contas
+    # path('db/', include('db_service.urls')),           # TODO: criar db_service/urls.py
 ]

@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from accounts.models import UserRole, Aplicacao, User
-from .models import Eixo, SituacaoAcao, VigenciaPNGI
+from ..models import Eixo, SituacaoAcao, VigenciaPNGI
 
 
 def acoes_pngi_login(request):
