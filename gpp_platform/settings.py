@@ -186,3 +186,26 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_URL = '/portal/login/'
 LOGIN_REDIRECT_URL = '/portal/dashboard/'
 LOGOUT_REDIRECT_URL = '/portal/login/'
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# Session Configuration
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False  # True em produção com HTTPS
+SESSION_COOKIE_AGE = 86400  # 24 horas
+
+# CSRF Configuration
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+CSRF_COOKIE_HTTPONLY = False  # Permitir JS ler o token
+CSRF_COOKIE_SAMESITE = 'Lax'
