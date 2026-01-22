@@ -29,7 +29,7 @@ urlpatterns = [
     # Prefixo: /api/v1/<app>/
     # =========================================================================
     path('api/v1/portal/', include('portal.urls.api_urls')),
-    path('api/v1/acoes/', include('acoes_pngi.urls.api_urls')),
+    path('api/v1/acoes_pngi/', include('acoes_pngi.urls.api_urls')),
     path('api/v1/carga/', include('carga_org_lot.urls.api_urls')),
     # path('api/v1/accounts/', include('accounts.api_urls')),  # TODO: criar
     # path('api/v1/db/', include('db_service.api_urls')),      # TODO: criar
