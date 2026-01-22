@@ -18,7 +18,7 @@ def acoes_pngi_login(request):
         ).exists()
         
         if has_access:
-            return redirect('acoes_pngi:dashboard')
+            return redirect('acoes_pngi_web:dashboard')  # ← MUDOU
         else:
             messages.error(request, 'Você não tem permissão para acessar esta aplicação.')
             logout(request)
@@ -34,7 +34,7 @@ def acoes_pngi_login(request):
         
         # Verifica se usuário existe
         try:
-            user_exists = User.objects.get(email=email)
+            user_exists = User.objects.get(stremail=email)  # ← CORRIGIDO: use stremail
         except User.DoesNotExist:
             messages.error(request, 'Usuário não encontrado. Verifique o email informado.')
             return render(request, 'acoes_pngi/login.html')
@@ -62,8 +62,8 @@ def acoes_pngi_login(request):
                 
                 # Login bem-sucedido
                 login(request, user)
-                messages.success(request, f'Bem-vindo(a) ao Ações PNGI, {user.name}!')
-                return redirect('acoes_pngi:dashboard')
+                messages.success(request, f'Bem-vindo(a) ao Ações PNGI, {user.strnome}!')  # ← CORRIGIDO: use strnome
+                return redirect('acoes_pngi_web:dashboard')  # ← MUDOU
                 
             except Aplicacao.DoesNotExist:
                 messages.error(request, 'Aplicação não encontrada no sistema.')
@@ -92,7 +92,7 @@ def acoes_pngi_dashboard(request):
         
         if not user_role:
             messages.error(request, 'Você não tem permissão para acessar esta aplicação.')
-            return redirect('acoes_pngi:login')
+            return redirect('acoes_pngi_web:login')  # ← MUDOU
         
         # Busca estatísticas
         total_eixos = Eixo.objects.count()
@@ -120,7 +120,7 @@ def acoes_pngi_dashboard(request):
         
     except Aplicacao.DoesNotExist:
         messages.error(request, 'Aplicação não encontrada no sistema.')
-        return redirect('acoes_pngi:login')
+        return redirect('acoes_pngi_web:login')  # ← MUDOU
 
 
 def acoes_pngi_logout(request):
@@ -129,4 +129,4 @@ def acoes_pngi_logout(request):
     """
     logout(request)
     messages.success(request, 'Logout realizado com sucesso.')
-    return redirect('acoes_pngi:login')
+    return redirect('acoes_pngi_web:login')  # ← MUDOU

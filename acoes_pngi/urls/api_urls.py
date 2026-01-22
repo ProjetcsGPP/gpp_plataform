@@ -15,7 +15,7 @@ router.register(r'situacoes', SituacaoAcaoViewSet, basename='situacao')
 router.register(r'vigencias', VigenciaPNGIViewSet, basename='vigencia')
 router.register(r'users', UserManagementViewSet, basename='user')
 
-app_name = 'acoes_pngi'
+app_name = 'acoes_pngi_api'  # ← MUDOU: namespace específico para API
 
 urlpatterns = [
     # Autenticação via portal

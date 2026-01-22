@@ -16,7 +16,7 @@ def carga_login(request):
         ).exists()
         
         if has_access:
-            return redirect('carga_org_lot:dashboard')
+            return redirect('carga_org_lot_web:dashboard')  # ← MUDOU
         else:
             messages.error(request, 'Você não tem permissão para acessar esta aplicação.')
             logout(request)
@@ -32,7 +32,7 @@ def carga_login(request):
         
         # Verifica se usuário existe
         try:
-            user_exists = User.objects.get(email=email)
+            user_exists = User.objects.get(stremail=email)  # ← CORRIGIDO: use stremail
         except User.DoesNotExist:
             messages.error(request, 'Usuário não encontrado. Verifique o email informado.')
             return render(request, 'carga_org_lot/login.html')
@@ -60,8 +60,8 @@ def carga_login(request):
                 
                 # Login bem-sucedido
                 login(request, user)
-                messages.success(request, f'Bem-vindo(a) ao Carga Org Lot, {user.name}!')
-                return redirect('carga_org_lot:dashboard')
+                messages.success(request, f'Bem-vindo(a) ao Carga Org Lot, {user.strnome}!')  # ← CORRIGIDO: use strnome
+                return redirect('carga_org_lot_web:dashboard')  # ← MUDOU
                 
             except Aplicacao.DoesNotExist:
                 messages.error(request, 'Aplicação não encontrada no sistema.')
@@ -90,7 +90,7 @@ def carga_dashboard(request):
         
         if not user_role:
             messages.error(request, 'Você não tem permissão para acessar esta aplicação.')
-            return redirect('carga_org_lot:login')
+            return redirect('carga_org_lot_web:login')  # ← MUDOU
         
         return render(request, 'carga_org_lot/dashboard.html', {
             'user': user,
@@ -100,7 +100,7 @@ def carga_dashboard(request):
         
     except Aplicacao.DoesNotExist:
         messages.error(request, 'Aplicação não encontrada no sistema.')
-        return redirect('carga_org_lot:login')
+        return redirect('carga_org_lot_web:login')  # ← MUDOU
 
 
 def carga_logout(request):
@@ -109,4 +109,4 @@ def carga_logout(request):
     """
     logout(request)
     messages.success(request, 'Logout realizado com sucesso.')
-    return redirect('carga_org_lot:login')
+    return redirect('carga_org_lot_web:login')  # ← MUDOU
