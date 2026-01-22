@@ -99,14 +99,31 @@ class UserSerializer(BaseModelSerializer):
     
     def get_roles(self, obj):
         """Retorna roles do usuário para a aplicação do contexto"""
-        from common.services.portal_auth import get_portal_auth_service
+        request = self.context.get('request')
         
-        app_code = self._get_app_code_from_context()
+        # ✨ Novo: pega do middleware
+        if request and hasattr(request, 'app_context'):
+            app_code = request.app_context['code']
+        else:
+            # Fallback: pega do context manual
+            app_code = self.context.get('app_code')
+        
         if not app_code:
             return []
         
-        portal_service = get_portal_auth_service(app_code)
-        return portal_service.get_user_roles(obj.stremail)
+        user_roles = UserRole.objects.filter(
+            user=obj,
+            aplicacao__codigointerno=app_code
+        ).select_related('role')
+        
+        return [
+            {
+                'id': ur.role.id,
+                'code': ur.role.codigoperfil,
+                'name': ur.role.nomeperfil
+            }
+            for ur in user_roles
+        ]
     
     def get_attributes(self, obj):
         """Retorna atributos do usuário para a aplicação do contexto"""
