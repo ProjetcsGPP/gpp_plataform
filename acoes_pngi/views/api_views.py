@@ -1,253 +1,330 @@
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.contrib.auth import get_user_model
-from django.db import connection
-import json
-import requests
-from accounts.models import UserRole
+from rest_framework import viewsets, status
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.apps import apps
+import logging
+
 from ..models import Eixo, SituacaoAcao, VigenciaPNGI
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from accounts.models import User
+
+# Imports de serializers específicos desta app
+from ..serializers import (
+    EixoSerializer,
+    EixoListSerializer,
+    SituacaoAcaoSerializer,
+    VigenciaPNGISerializer,
+    VigenciaPNGIListSerializer,
+)
+
+# Imports de serializers genéricos do common
+from common.serializers import (
+    UserSerializer,
+    UserListSerializer,
+    UserCreateSerializer,
+    UserUpdateSerializer,
+    PortalAuthSerializer,
+)
+
+# Import do serviço genérico
+from common.services.portal_auth import get_portal_auth_service
+
+logger = logging.getLogger(__name__)
 
 
-User = get_user_model()
+def get_app_code(request):
+    """Helper para obter APP_CODE do request ou da config da app"""
+    # Tenta pegar do middleware
+    if hasattr(request, 'app_code') and request.app_code:
+        return request.app_code
+    
+    # Fallback: pega da configuração da app
+    app_config = apps.get_app_config('acoes_pngi')
+    return app_config.app_code
 
 
-def check_acoes_pngi_access(user):
-    """Verifica se usuário tem acesso ao Ações PNGI via UserRole"""
-    if not user.is_authenticated:
-        return False
-    return UserRole.objects.filter(
-        user=user,
-        aplicacao__codigointerno='ACOES_PNGI'
-    ).exists()
+# ============================================================================
+# VIEWSETS DE MODELOS ESPECÍFICOS
+# ============================================================================
 
-
-def criar_usuario_pngi(cpf, nome_completo):
+class EixoViewSet(viewsets.ModelViewSet):
     """
-    Cria usuário PNGI via API Portal (padrão existente)
-    Retorna token PNGI para uso local
+    ViewSet para gerenciar Eixos do PNGI.
     """
+    queryset = Eixo.objects.all()
+    serializer_class = EixoSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        """Retorna serializer otimizado para listagem"""
+        if self.action == 'list':
+            return EixoListSerializer
+        return EixoSerializer
+    
+    @action(detail=False, methods=['get'])
+    def list_light(self, request):
+        """Endpoint otimizado para listagem rápida"""
+        eixos = Eixo.objects.all().values('ideixo', 'strdescricaoeixo', 'stralias')
+        return Response({
+            'count': len(eixos),
+            'results': list(eixos)
+        })
+
+
+class SituacaoAcaoViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciar Situações de Ações do PNGI.
+    """
+    queryset = SituacaoAcao.objects.all()
+    serializer_class = SituacaoAcaoSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class VigenciaPNGIViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciar Vigências do PNGI.
+    """
+    queryset = VigenciaPNGI.objects.all()
+    serializer_class = VigenciaPNGISerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        """Retorna serializer otimizado para listagem"""
+        if self.action == 'list':
+            return VigenciaPNGIListSerializer
+        return VigenciaPNGISerializer
+    
+    @action(detail=False, methods=['get'])
+    def vigencia_ativa(self, request):
+        """Retorna a vigência atualmente ativa"""
+        try:
+            vigencia = VigenciaPNGI.objects.get(isvigenciaativa=True)
+            serializer = self.get_serializer(vigencia)
+            return Response(serializer.data)
+        except VigenciaPNGI.DoesNotExist:
+            return Response(
+                {'detail': 'Nenhuma vigência ativa encontrada.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=True, methods=['post'])
+    def ativar(self, request, pk=None):
+        """Ativa uma vigência específica"""
+        try:
+            from django.db import transaction
+            
+            with transaction.atomic():
+                VigenciaPNGI.objects.update(isvigenciaativa=False)
+                vigencia = self.get_object()
+                vigencia.isvigenciaativa = True
+                vigencia.save()
+                
+                serializer = self.get_serializer(vigencia)
+                return Response({
+                    'detail': 'Vigência ativada com sucesso.',
+                    'vigencia': serializer.data
+                })
+        except Exception as e:
+            return Response(
+                {'detail': f'Erro ao ativar vigência: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# ============================================================================
+# ENDPOINTS DE AUTENTICAÇÃO (USA SERIALIZERS DO COMMON)
+# ============================================================================
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def portal_auth(request):
+    """
+    Endpoint para autenticação via Portal.
+    Usa serializers genéricos do common.
+    """
+    # Valida input usando serializer genérico
+    input_serializer = PortalAuthSerializer(data=request.data)
+    input_serializer.is_valid(raise_exception=True)
+    
+    token = input_serializer.validated_data['token']
+    
     try:
-        # Chama API Portal para criar usuário + atribuir role PNGI
-        portal_url = "http://localhost:8000/accounts/api/gestao/usuarios/"  # Ajustar URL
-        admin_token = "SEU_TOKEN_ADMIN_PORTAL"  # Token admin portal
+        # Obtém APP_CODE dinamicamente
+        app_code = get_app_code(request)
         
-        response = requests.post(
-            portal_url,
-            json={
-                'cpf': cpf,
-                'nome': nome_completo,
-                'role_codigo_aplicacao': 'GESTORPNGI',  # Role PNGI
-                'aplicacao_destino': 'ACOES_PNGI'
-            },
-            headers={
-                'Authorization': f'Bearer {admin_token}',
-                'Content-Type': 'application/json'
-            },
-            timeout=10
+        # Cria instância do serviço genérico
+        portal_service = get_portal_auth_service(app_code)
+        
+        # Autentica via portal
+        user = portal_service.authenticate_user(token)
+        
+        if not user:
+            return Response(
+                {'detail': 'Token inválido ou expirado.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Serializa dados usando serializer genérico do common
+        user_serializer = UserSerializer(
+            user,
+            context={'app_code': app_code, 'request': request}
         )
         
-        if response.status_code == 201:
-            data = response.json()
-            return {
-                'success': True,
-                'user_id': data['userid'],
-                'access_token_pngi': data['access_token'],
-                'message': 'Usuário PNGI criado com sucesso'
-            }
-        else:
-            return {
-                'success': False,
-                'message': f'Erro portal: {response.status_code} - {response.text}'
-            }
+        # Gera token local
+        from rest_framework.authtoken.models import Token
+        local_token, _ = Token.objects.get_or_create(user=user)
+        
+        logger.info(f"[{app_code}] Usuário autenticado via portal: {user.stremail}")
+        
+        return Response(
+            {
+                'user': user_serializer.data,
+                'local_token': local_token.key,
+                'app_code': app_code
+            },
+            status=status.HTTP_200_OK
+        )
+        
+    except Exception as e:
+        logger.error(f"Erro na autenticação via portal: {str(e)}")
+        return Response(
+            {'detail': f'Erro na autenticação: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+# ============================================================================
+# VIEWSET DE GERENCIAMENTO DE USUÁRIOS (USA SERIALIZERS DO COMMON)
+# ============================================================================
+
+class UserManagementViewSet(viewsets.ViewSet):
+    """
+    ViewSet para gerenciar usuários.
+    Usa serializers genéricos do common.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['post'])
+    def sync_user_from_portal(self, request):
+        """Sincroniza um usuário do portal"""
+        # Obtém APP_CODE
+        app_code = get_app_code(request)
+        
+        # Usa serializer genérico do common
+        serializer = UserCreateSerializer(
+            data=request.data,
+            context={'app_code': app_code, 'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        
+        try:
+            user = serializer.save()
+            created = serializer.validated_data.get('_created', False)
             
-    except requests.RequestException as e:
-        return {
-            'success': False,
-            'message': f'Erro conexão portal: {str(e)}'
-        }
-    except Exception as e:
-        return {
-            'success': False,
-            'message': f'Erro inesperado: {str(e)}'
-        }
-
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def api_acoes_pngi_criar_usuario(request):
-    """
-    POST /api/acoes_pngi/usuario/
-    Cria usuário PNGI via API Portal (padrão)
-    """
-    try:
-        data = json.loads(request.body)
-        cpf = data.get('cpf', '').strip()
-        nome = data.get('nome', '').strip()
-        
-        if not cpf or not nome:
-            return JsonResponse({
-                'ok': False,
-                'message': 'CPF e nome são obrigatórios.'
-            }, status=400)
-        
-        # ✅ Chama função padrão
-        result = criar_usuario_pngi(cpf, nome)
-        
-        return JsonResponse(result, status=201 if result['success'] else 400)
-        
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'ok': False,
-            'message': 'JSON inválido.'
-        }, status=400)
-
-
-@require_http_methods(["GET"])
-def api_acoes_pngi_dashboard(request):
-    """
-    GET /api/acoes_pngi/
-    Dashboard (token acoespngiapp)
-    """
-    if not check_acoes_pngi_access(request.user):
-        return JsonResponse({
-            'ok': False,
-            'message': 'Você não tem permissão para Ações PNGI.'
-        }, status=403)
-    
-    user = request.user
-    user_role = UserRole.objects.filter(
-        user=user, aplicacao__codigointerno='ACOES_PNGI'
-    ).select_related('role', 'aplicacao').first()
-    
-    total_eixos = Eixo.objects.count()
-    total_situacoes = SituacaoAcao.objects.count()
-    total_vigencias = VigenciaPNGI.objects.count()
-    vigencias_ativas = VigenciaPNGI.objects.filter(isvigenciaativa=True).count()
-    
-    eixos = Eixo.objects.all()[:10]
-    eixos_list = [{
-        'id': e.ideixo,
-        'alias': e.stralias,
-        'descricao': e.strdescricaoeixo
-    } for e in eixos]
-    
-    vigencia_atual = VigenciaPNGI.objects.filter(isvigenciaativa=True).first()
-    vigencia_data = None
-    if vigencia_atual:
-        vigencia_data = {
-            'id': vigencia_atual.idvigenciapngi,
-            'descricao': vigencia_atual.strdescricaovigenciapngi,
-            'dataInicio': vigencia_atual.datiniciovigencia.isoformat(),
-            'dataFim': vigencia_atual.datfinalvigencia.isoformat(),
-            'duracaoDias': getattr(vigencia_atual, 'duracao_dias', 0)
-        }
-    
-    return JsonResponse({
-        'ok': True,
-        'user': {
-            'id': user.id,
-            'name': user.name or f"{user.first_name} {user.last_name}".strip(),
-            'email': user.email
-        },
-        'role': {
-            'codigo': getattr(user_role, 'role', {}).codigoperfil if user_role else None,
-            'nome': getattr(user_role, 'role', {}).nomeperfil if user_role else None
-        },
-        'aplicacao': {
-            'codigo': 'ACOES_PNGI',
-            'nome': getattr(user_role, 'aplicacao', {}).nomeaplicacao if user_role else 'Ações PNGI'
-        },
-        'stats': {
-            'totalEixos': total_eixos,
-            'totalSituacoes': total_situacoes,
-            'totalVigencias': total_vigencias,
-            'vigenciasAtivas': vigencias_ativas
-        },
-        'eixos': eixos_list,
-        'vigenciaAtual': vigencia_data
-    })
-
-
-@require_http_methods(["GET"])
-def api_acoes_pngi_eixos(request):
-    """GET /api/acoes_pngi/eixos"""
-    if not check_acoes_pngi_access(request.user):
-        return JsonResponse({'ok': False, 'message': 'Sem permissão.'}, status=403)
-    
-    eixos = Eixo.objects.all()
-    eixos_list = [{
-        'id': e.ideixo,
-        'alias': e.stralias,
-        'descricao': e.strdescricaoeixo,
-        'createdAt': getattr(e, 'created_at', None) and e.created_at.isoformat(),
-        'updatedAt': getattr(e, 'updated_at', None) and e.updated_at.isoformat()
-    } for e in eixos]
-    
-    return JsonResponse({'ok': True, 'eixos': eixos_list})
-
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def api_acoes_pngi_eixos_create(request):
-    """
-    POST /api/acoes_pngi/eixos
-    Cria eixo via PROCEDURE (acoespngiapp EXECUTE)
-    """
-    if not check_acoes_pngi_access(request.user):
-        return JsonResponse({'ok': False, 'message': 'Sem permissão.'}, status=403)
-    
-    try:
-        data = json.loads(request.body)
-        alias = data.get('alias', '').strip().upper()
-        descricao = data.get('descricao', '').strip()
-        
-        if not alias or not descricao:
-            return JsonResponse({'ok': False, 'message': 'Alias e descrição obrigatórios.'}, status=400)
-        
-        if Eixo.objects.filter(stralias=alias).exists():
-            return JsonResponse({'ok': False, 'message': f'Alias "{alias}" existe.'}, status=400)
-        
-        # ✅ Usa PROCEDURE (GRANT EXECUTE acoespngiapp)
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT acoes_pngi_create_eixo(%s, %s)",
-                [alias, descricao]
+            # Retorna dados usando serializer genérico
+            user_serializer = UserSerializer(
+                user,
+                context={'app_code': app_code, 'request': request}
             )
-            eixo_id = cursor.fetchone()[0]
-        
-        eixo = Eixo.objects.get(ideixo=eixo_id)
-        
-        return JsonResponse({
-            'ok': True,
-            'eixo': {
-                'id': eixo.ideixo,
-                'alias': eixo.stralias,
-                'descricao': eixo.strdescricaoeixo
-            }
-        }, status=201)
-        
-    except Exception as e:
-        return JsonResponse({'ok': False, 'message': f'Erro: {str(e)}'}, status=500)
-
-
-@require_http_methods(["GET"])
-def api_acoes_pngi_vigencias(request):
-    """GET /api/acoes_pngi/vigencias"""
-    if not check_acoes_pngi_access(request.user):
-        return JsonResponse({'ok': False, 'message': 'Sem permissão.'}, status=403)
+            
+            return Response(
+                {
+                    'detail': f'Usuário {"criado" if created else "atualizado"} com sucesso.',
+                    'user': user_serializer.data,
+                    'created': created,
+                    'app_code': app_code
+                },
+                status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+            )
+            
+        except Exception as e:
+            logger.error(f"Erro ao sincronizar usuário: {str(e)}")
+            return Response(
+                {'detail': f'Erro ao sincronizar usuário: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
-    vigencias = VigenciaPNGI.objects.all()
-    vigencias_list = [{
-        'id': v.idvigenciapngi,
-        'descricao': v.strdescricaovigenciapngi,
-        'dataInicio': v.datiniciovigencia.isoformat(),
-        'dataFim': v.datfinalvigencia.isoformat(),
-        'ativa': v.isvigenciaativa,
-        'vigente': getattr(v, 'esta_vigente', False),
-        'duracaoDias': getattr(v, 'duracao_dias', 0)
-    } for v in vigencias]
+    @action(detail=False, methods=['get'])
+    def list_users(self, request):
+        """Lista usuários usando serializer genérico"""
+        try:
+            queryset = User.objects.filter(is_active=True)
+            
+            # Filtros opcionais
+            if request.query_params.get('idtipousuario'):
+                queryset = queryset.filter(idtipousuario=request.query_params.get('idtipousuario'))
+            
+            # Usa serializer genérico do common
+            serializer = UserListSerializer(queryset, many=True)
+            
+            return Response(
+                {
+                    'count': queryset.count(),
+                    'users': serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        except Exception as e:
+            logger.error(f"Erro ao listar usuários: {str(e)}")
+            return Response(
+                {'detail': f'Erro ao listar usuários: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
-    return JsonResponse({'ok': True, 'vigencias': vigencias_list})
+    @action(detail=True, methods=['get'])
+    def get_user_by_email(self, request, pk=None):
+        """Busca usuário por email usando serializer genérico"""
+        try:
+            user = User.objects.get(stremail=pk)
+            app_code = get_app_code(request)
+            
+            # Usa serializer genérico do common
+            serializer = UserSerializer(
+                user,
+                context={'app_code': app_code, 'request': request}
+            )
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response(
+                {'detail': f'Usuário com email {pk} não encontrado.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=True, methods=['patch'])
+    def update_user_status(self, request, pk=None):
+        """Atualiza status de usuário usando serializer genérico"""
+        try:
+            user = User.objects.get(stremail=pk)
+            
+            # Usa serializer genérico do common
+            serializer = UserUpdateSerializer(
+                user,
+                data=request.data,
+                partial=True,
+                context={'request': request}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            
+            app_code = get_app_code(request)
+            user_serializer = UserSerializer(
+                user,
+                context={'app_code': app_code, 'request': request}
+            )
+            
+            return Response(
+                {
+                    'detail': 'Usuário atualizado com sucesso.',
+                    'user': user_serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        except User.DoesNotExist:
+            return Response(
+                {'detail': f'Usuário com email {pk} não encontrado.'},
+                status=status.HTTP_404_NOT_FOUND
+            )

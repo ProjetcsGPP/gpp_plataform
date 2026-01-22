@@ -1,20 +1,26 @@
-from django.urls import path
-from ..views.api_views import api_acoes_pngi_dashboard, api_acoes_pngi_eixos, api_acoes_pngi_eixos_create, api_acoes_pngi_vigencias, api_acoes_pngi_criar_usuario
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from ..views.api_views import (
+    EixoViewSet,
+    SituacaoAcaoViewSet,
+    VigenciaPNGIViewSet,
+    UserManagementViewSet,
+    portal_auth,
+)
 
-#urlpatterns = [
-#    path('', api_acoes_pngi_dashboard, name='api_acoes_pngi_dashboard'),
-#    path('eixos', api_acoes_pngi_eixos, name='api_acoes_pngi_eixos'),
-#    path('eixos/create', api_acoes_pngi_eixos_create, name='api_acoes_pngi_eixos_create'),
-#    path('vigencias', api_acoes_pngi_vigencias, name='api_acoes_pngi_vigencias'),
-#]
-
+# Configuração do router para ViewSets
+router = DefaultRouter()
+router.register(r'eixos', EixoViewSet, basename='eixo')
+router.register(r'situacoes', SituacaoAcaoViewSet, basename='situacao')
+router.register(r'vigencias', VigenciaPNGIViewSet, basename='vigencia')
+router.register(r'users', UserManagementViewSet, basename='user')
 
 app_name = 'acoes_pngi'
 
 urlpatterns = [
-    path('', api_acoes_pngi_dashboard, name='dashboard'),
-    path('usuario/', api_acoes_pngi_criar_usuario, name='criar_usuario'),
-    path('eixos/', api_acoes_pngi_eixos, name='eixos_list'),
-    path('eixos/', api_acoes_pngi_eixos_create, name='eixos_create'),
-    path('vigencias/', api_acoes_pngi_vigencias, name='vigencias'),
+    # Autenticação via portal
+    path('auth/portal/', portal_auth, name='portal-auth'),
+    
+    # Rotas do router (ViewSets)
+    path('', include(router.urls)),
 ]

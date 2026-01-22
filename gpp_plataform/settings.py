@@ -96,10 +96,10 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
 
-    # Apps do projeto
-    'accounts',
     
-    #'accounts.apps.AccountsConfig',  # ← com .apps.Config
+    # Apps do projeto
+    'common',
+    'accounts',
     'auth_service',
     'portal',
     'carga_org_lot',
@@ -232,3 +232,55 @@ SESSION_COOKIE_AGE = 86400  # 24 horas
 
 CSRF_COOKIE_HTTPONLY = False  # Permitir JS ler o token
 CSRF_COOKIE_SAMESITE = 'Lax'
+
+
+
+# =========================================================================
+# CONFIGURAÇÕES DE COMUNICAÇÃO ENTRE APLICAÇÕES
+# =========================================================================
+
+# Porta do portal (para apps filhas acessarem)
+PORTAL_PORT = os.getenv('PORTAL_PORT', '8000')
+
+# Credenciais do Service Account (para apps acessarem APIs do Portal)
+PORTAL_SERVICE_EMAIL = os.getenv('PORTAL_SERVICE_EMAIL', '')
+PORTAL_SERVICE_PASSWORD = os.getenv('PORTAL_SERVICE_PASSWORD', '')
+
+# Cache para tokens (já existe, mas certifique-se de ter configurado)
+if 'CACHES' not in locals():
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'gpp-plataform-cache',
+            'TIMEOUT': 3600,  # 1 hora
+        }
+    }
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'acoes_pngi.services.portal_auth': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
