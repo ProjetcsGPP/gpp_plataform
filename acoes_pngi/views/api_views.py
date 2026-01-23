@@ -317,7 +317,7 @@ class SituacaoAcaoViewSet(viewsets.ModelViewSet):
     """
     queryset = SituacaoAcao.objects.all()
     serializer_class = SituacaoAcaoSerializer
-  #  permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 class VigenciaPNGIViewSet(viewsets.ModelViewSet):
