@@ -24,25 +24,28 @@ class AppContextMiddlewareTest(TestCase):
     
     @classmethod
     def setUpTestData(cls):
+        
+        Aplicacao.objects.filter(codigointerno__in=['ACOES_PNGI', 'PORTAL', 'CARGA_ORG_LOT']).delete()
+        
         """Cria aplicações de teste"""
-        cls.app_portal = Aplicacao.objects.create(
+        cls.app_portal = Aplicacao.objects.get_or_create(
             codigointerno='PORTAL',
             nomeaplicacao='Portal GPP',
-            baseurl='http://localhost:8000/',
+            base_url ='http://localhost:8000/',
             isshowinportal=True
         )
         
-        cls.app_acoes_pngi = Aplicacao.objects.create(
+        cls.app_acoes_pngi = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
             nomeaplicacao='Gestão de Ações PNGI',
-            baseurl='http://localhost:8000/acoes-pngi/',
+            base_url ='http://localhost:8000/acoes-pngi/',
             isshowinportal=True
         )
         
-        cls.app_carga = Aplicacao.objects.create(
+        cls.app_carga = Aplicacao.objects.get_or_create(
             codigointerno='CARGA_ORG_LOT',
             nomeaplicacao='Carga Org/Lot',
-            baseurl='http://localhost:8000/carga_org_lot/',
+            base_url ='http://localhost:8000/carga_org_lot/',
             isshowinportal=True
         )
     
@@ -192,11 +195,14 @@ class AppContextIntegrationTest(TestCase):
     
     @classmethod
     def setUpTestData(cls):
+        
+        Aplicacao.objects.filter(codigointerno__in=['ACOES_PNGI', 'PORTAL', 'CARGA_ORG_LOT']).delete()
+        
         """Cria dados de teste"""
-        cls.app = Aplicacao.objects.create(
+        cls.app = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
             nomeaplicacao='Gestão de Ações PNGI',
-            baseurl='http://localhost:8000/acoes-pngi/',
+            base_url ='http://localhost:8000/acoes-pngi/',
             isshowinportal=True
         )
         

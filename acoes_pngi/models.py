@@ -14,8 +14,8 @@ class Eixo(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi"."tbleixos'
-        managed = True
+        db_table = 'acoes_pngi.tbleixos'
+        managed = False
         verbose_name = 'Eixo'
         verbose_name_plural = 'Eixos'
         ordering = ['stralias']
@@ -43,7 +43,7 @@ class SituacaoAcao(models.Model):
 
     class Meta:
         db_table = 'acoes_pngi"."tblsituacaoacao'
-        managed = True
+        managed = False
         verbose_name = 'Situação de Ação'
         verbose_name_plural = 'Situações de Ações'
         ordering = ['strdescricaosituacao']
@@ -69,7 +69,7 @@ class VigenciaPNGI(models.Model):
 
     class Meta:
         db_table = 'acoes_pngi"."tblvigenciapngi'
-        managed = True
+        managed = False
         verbose_name = 'Vigência PNGI'
         verbose_name_plural = 'Vigências PNGI'
         ordering = ['-datiniciovigencia']
@@ -108,3 +108,5 @@ class VigenciaPNGI(models.Model):
         Retorna a duração da vigência em dias
         """
         return (self.datfinalvigencia - self.datiniciovigencia).days
+    
+    

@@ -125,6 +125,9 @@ def portal_auth(request):
 # VIEWSET DE GERENCIAMENTO DE USUÁRIOS
 # ============================================================================
 
+
+
+
 class UserManagementViewSet(viewsets.ViewSet):
     """
     ViewSet para gerenciamento de usuários da aplicação.
@@ -132,6 +135,19 @@ class UserManagementViewSet(viewsets.ViewSet):
     ✨ Usa request.app_context automaticamente.
     """
     permission_classes = [IsAuthenticated]
+    
+    lookup_field = 'pk'  # ← ADICIONAR ESTA LINHA
+    lookup_value_regex = '.*'  # ← ADICIONAR ESTA LINHA
+    
+    def retrieve(self, request, pk=None):
+        """GET /api/v1/acoes_pngi/users/{email}/"""
+        return Response({
+            "email": pk,
+            "app_context": {
+                "code": getattr(request.app_context, 'code', None) if hasattr(request, 'app_context') else None,
+                "name": getattr(request.app_context, 'name', None) if hasattr(request, 'app_context') else None
+            } if hasattr(request, 'app_context') else None
+        })
     
     @action(detail=False, methods=['post'])
     def sync_user(self, request):

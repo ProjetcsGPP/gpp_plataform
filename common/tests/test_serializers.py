@@ -21,32 +21,39 @@ class UserSerializerWithAppContextTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         """Cria dados de teste"""
-        # Aplicações
-        cls.app_acoes = Aplicacao.objects.create(
+        
+        Aplicacao.objects.filter(codigointerno__in=['ACOES_PNGI', 'PORTAL', 'CARGA_ORG_LOT']).delete()
+        
+        
+        cls.app_acoes, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Gestão de Ações PNGI',
-            baseurl='http://localhost:8000/acoes-pngi/',
-            isshowinportal=True
+            defaults={
+                'nomeaplicacao': 'Gestão de Ações PNGI',
+                'base_url': 'http://localhost:8000/acoes-pngi/',
+                'isshowinportal': True
+            }
         )
         
-        cls.app_carga = Aplicacao.objects.create(
+        cls.app_carga, _ = Aplicacao.objects.get_or_create(
             codigointerno='CARGA_ORG_LOT',
-            nomeaplicacao='Carga Org/Lot',
-            baseurl='http://localhost:8000/carga_org_lot/',
-            isshowinportal=True
+            defaults={
+                'nomeaplicacao': 'Carga Organograma/Lotação',
+                'base_url': 'http://localhost:8000/carga_org_lot/',
+                'isshowinportal': True
+            }
         )
         
         # Roles
-        cls.role_gestor_acoes = Role.objects.create(
+        cls.role_gestor_acoes, _ = Role.objects.get_or_create(
             nomeperfil='Gestor PNGI',
             codigoperfil='GESTOR_PNGI',
-            aplicacao=cls.app_acoes
+            aplicacao_id=cls.app_carga.idaplicacao  
         )
-        
-        cls.role_gestor_carga = Role.objects.create(
+
+        cls.role_gestor_carga, _ = Role.objects.get_or_create(
             nomeperfil='Gestor Carga',
             codigoperfil='GESTOR_CARGA',
-            aplicacao=cls.app_carga
+            aplicacao_id=cls.app_carga.idaplicacao
         )
         
         # Usuário
@@ -60,26 +67,26 @@ class UserSerializerWithAppContextTest(TestCase):
         UserRole.objects.create(
             user=cls.user,
             role=cls.role_gestor_acoes,
-            aplicacao=cls.app_acoes
+            aplicacao_id=cls.app_carga.idaplicacao
         )
         
         UserRole.objects.create(
             user=cls.user,
             role=cls.role_gestor_carga,
-            aplicacao=cls.app_carga
+            aplicacao_id=cls.app_carga.idaplicacao
         )
         
         # Atributos
         Attribute.objects.create(
             user=cls.user,
-            aplicacao=cls.app_acoes,
+            aplicacao_id=cls.app_carga.idaplicacao,
             key='can_upload',
             value='true'
         )
         
         Attribute.objects.create(
             user=cls.user,
-            aplicacao=cls.app_carga,
+            aplicacao_id=cls.app_carga.idaplicacao,
             key='max_patriarcas',
             value='10'
         )

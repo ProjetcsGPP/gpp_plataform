@@ -12,7 +12,7 @@ class Aplicacao(models.Model):
 
     class Meta:
         db_table = 'tblaplicacao'
-        managed = False  # se já existe no banco
+        managed = True  # se já existe no banco
 
     def __str__(self):
         return f'{self.codigointerno} - {self.nomeaplicacao}'
@@ -68,8 +68,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
     class Meta:
-        managed = False  # se já existe no banco
         db_table = "tblusuario"
+        managed = True  # se já existe no banco
 
     def __str__(self):
         return self.email

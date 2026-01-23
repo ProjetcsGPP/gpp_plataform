@@ -33,21 +33,19 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = [
-            'idusuario',
-            'email',
-            'name',
-            'user_type',
-            'status',
-            'is_active',
-            'is_staff',
-            'is_superuser',
-            'last_login',
-            'datacriacao',
-            'roles',
-            'attributes',
-        ]
-        read_only_fields = fields
+        fields = ['id', 
+                    'name', 
+                    'email', 
+                    'is_active', 
+                    'is_staff', 
+                    'is_superuser', 
+                    'last_login', 
+                    'date_joined', 
+                    'idstatususuario', 
+                    'idtipousuario', 
+                    'idclassificacaousuario'
+                    ]
+        read_only_fields = ['id', 'last_login', 'date_joined']
     
     def get_roles(self, obj: User) -> list:
         """

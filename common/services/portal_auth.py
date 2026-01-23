@@ -61,7 +61,7 @@ class PortalAuthService:
                 return None
             
             try:
-                user = User.objects.get(stremail__iexact=email)
+                user = User.objects.get(email__iexact=email)
                 logger.info(f"[{self.app_code}] Usuário encontrado: {email}")
                 return user
             except User.DoesNotExist:
@@ -149,14 +149,14 @@ class PortalAuthService:
                 
                 # Cria ou atualiza usuário
                 user, created = User.objects.get_or_create(
-                    stremail__iexact=email,
+                    email__iexact=email,
                     defaults={
-                        'stremail': email.lower(),
-                        'strnome': name,
-                        'strsenha': make_password(None),  # Senha aleatória
-                        'idtipousuario': 1,  # Tipo padrão
-                        'idstatususuario': 1,  # Status padrão: ativo
-                        'idclassificacaousuario': 1,  # Classificação padrão
+                        'email': email,
+                        'name': name,
+                        'password': make_password(None),
+                        'idstatususuario': 1,
+                        'idtipousuario': 1,
+                        'idclassificacaousuario': 1,
                         'is_active': True,
                     }
                 )
@@ -271,7 +271,7 @@ class PortalAuthService:
         from accounts.models import User, UserRole
         
         try:
-            user = User.objects.get(stremail__iexact=email)
+            user = User.objects.get(email__iexact=email)
             app = self._get_application()
             
             user_roles = UserRole.objects.filter(
@@ -307,7 +307,7 @@ class PortalAuthService:
         from accounts.models import User, Attribute
         
         try:
-            user = User.objects.get(stremail__iexact=email)
+            user = User.objects.get(email__iexact=email)
             app = self._get_application()
             
             attributes = Attribute.objects.filter(
