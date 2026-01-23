@@ -7,14 +7,12 @@ from .user_serializers import (
     UserListSerializer,
     UserCreateSerializer,
     UserUpdateSerializer,
-    RoleSerializer,
-    AttributeSerializer,
-    UserRoleSerializer,
 )
 
 from .auth_serializers import (
     PortalAuthSerializer,
-    PortalAuthResponseSerializer,
+    LoginSerializer,
+    PasswordChangeSerializer,
 )
 
 from .base_serializers import (
@@ -28,13 +26,11 @@ __all__ = [
     'UserListSerializer',
     'UserCreateSerializer',
     'UserUpdateSerializer',
-    'RoleSerializer',
-    'AttributeSerializer',
-    'UserRoleSerializer',
     
     # Auth serializers
     'PortalAuthSerializer',
-    'PortalAuthResponseSerializer',
+    'LoginSerializer',
+    'PasswordChangeSerializer',
     
     # Base serializers
     'BaseModelSerializer',

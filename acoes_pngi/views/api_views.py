@@ -131,7 +131,7 @@ class UserManagementViewSet(viewsets.ViewSet):
     
     ✨ Usa request.app_context automaticamente.
     """
-    permission_classes = [IsAuthenticated]
+   # permission_classes = [IsAuthenticated]
     
     @action(detail=False, methods=['post'])
     def sync_user(self, request):
@@ -286,7 +286,7 @@ class EixoViewSet(viewsets.ModelViewSet):
     """
     queryset = Eixo.objects.all()
     serializer_class = EixoSerializer
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     
     def get_serializer_class(self):
         """Retorna serializer otimizado para listagem"""
@@ -317,7 +317,7 @@ class SituacaoAcaoViewSet(viewsets.ModelViewSet):
     """
     queryset = SituacaoAcao.objects.all()
     serializer_class = SituacaoAcaoSerializer
-    permission_classes = [IsAuthenticated]
+  #  permission_classes = [IsAuthenticated]
 
 
 class VigenciaPNGIViewSet(viewsets.ModelViewSet):
@@ -335,7 +335,7 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
     """
     queryset = VigenciaPNGI.objects.all()
     serializer_class = VigenciaPNGISerializer
-    permission_classes = [IsAuthenticated]
+ #   permission_classes = [IsAuthenticated]
     
     def get_serializer_class(self):
         """Retorna serializer otimizado para listagem"""

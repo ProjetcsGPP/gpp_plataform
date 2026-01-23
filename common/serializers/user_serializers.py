@@ -4,7 +4,7 @@ Usa request.app_context do middleware para detecção automática da aplicação
 """
 
 from rest_framework import serializers
-from accounts.models import User, UserRole, Attribute
+from accounts.models import User, UserRole, Attribute, Role, Aplicacao
 from typing import Optional
 
 
@@ -264,3 +264,60 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if value not in [1, 2, 3]:  # 1: ativo, 2: inativo, 3: bloqueado
             raise serializers.ValidationError("Status inválido")
         return value
+
+class RoleSerializer(serializers.ModelSerializer):
+    """
+    Serializer para Role (perfil de acesso).
+    """
+    from accounts.models import Role
+    
+    class Meta:
+        model = Role
+        fields = [
+            'id',
+            'nomeperfil',
+            'codigoperfil',
+            'aplicacao',
+        ]
+        read_only_fields = ['id']
+
+
+class AttributeSerializer(serializers.ModelSerializer):
+    """
+    Serializer para Attribute (atributos customizados).
+    """
+    from accounts.models import Attribute
+    
+    class Meta:
+        model = Attribute
+        fields = [
+            'id',
+            'user',
+            'aplicacao',
+            'key',
+            'value',
+        ]
+        read_only_fields = ['id']
+
+
+class UserRoleSerializer(serializers.ModelSerializer):
+    """
+    Serializer para UserRole (relação usuário-perfil-aplicação).
+    """
+    from accounts.models import UserRole
+    
+    role = RoleSerializer(read_only=True)
+    user_email = serializers.CharField(source='user.stremail', read_only=True)
+    app_code = serializers.CharField(source='aplicacao.codigointerno', read_only=True)
+    
+    class Meta:
+        model = UserRole
+        fields = [
+            'id',
+            'user',
+            'user_email',
+            'role',
+            'aplicacao',
+            'app_code',
+        ]
+        read_only_fields = ['id']
