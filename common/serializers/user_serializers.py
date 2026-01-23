@@ -26,8 +26,8 @@ class UserSerializer(serializers.ModelSerializer):
     
     roles = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
-    email = serializers.CharField(source='email', read_only=True)
-    name = serializers.CharField(source='nome', read_only=True)
+    #email = serializers.CharField(source='email', read_only=True)
+    #name = serializers.CharField(source='nome', read_only=True)
     user_type = serializers.IntegerField(source='idtipousuario', read_only=True)
     status = serializers.IntegerField(source='idstatususuario', read_only=True)
     
@@ -123,8 +123,8 @@ class UserListSerializer(serializers.ModelSerializer):
     melhor performance.
     """
     
-    email = serializers.CharField(source='email', read_only=True)
-    name = serializers.CharField(source='nome', read_only=True)
+    #email = serializers.CharField(source='email', read_only=True)
+    #name = serializers.CharField(source='nome', read_only=True)
     
     class Meta:
         model = User

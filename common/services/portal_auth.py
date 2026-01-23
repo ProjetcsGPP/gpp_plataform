@@ -202,6 +202,14 @@ class PortalAuthService:
         """
         from accounts.models import Role, UserRole
         
+        logger.debug(f"[{self.app_code}] Sincronizando roles para usuário {user.email}")
+        logger.debug(f"[{self.app_code}] Aplicação: {app.codigointerno} (ID: {app.idaplicacao})")
+        logger.debug(f"[{self.app_code}] Roles solicitadas: {role_codes}")
+        
+        # Verificar quais roles existem no banco para esta aplicação
+        existing_roles = Role.objects.filter(aplicacao=app).values_list('codigoperfil', flat=True)
+        logger.debug(f"[{self.app_code}] Roles disponíveis no banco: {list(existing_roles)}")
+        
         # Remove roles anteriores desta aplicação
         UserRole.objects.filter(user=user, aplicacao=app).delete()
         
@@ -226,8 +234,9 @@ class PortalAuthService:
             except Role.DoesNotExist:
                 logger.warning(
                     f"[{self.app_code}] Role '{role_code}' não encontrada "
-                    f"para aplicação '{app.codigointerno}'"
+                    f"para aplicação '{app.codigointerno}' (ID: {app.idaplicacao})"
                 )
+
     
     def _sync_user_attributes(
         self,
