@@ -163,9 +163,9 @@ class PortalAuthService:
                 
                 if not created:
                     # Atualiza nome se necessário
-                    if user.strnome != name:
-                        user.strnome = name
-                        user.save(update_fields=['strnome'])
+                    if user.name != name:
+                        user.name = name
+                        user.save(update_fields=['name'])
                 
                 # Sincroniza roles
                 if roles_data:

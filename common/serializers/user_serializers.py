@@ -36,6 +36,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 
                     'name', 
                     'email', 
+                    'user_type',      # já adicionado
+                    'status',         # ADICIONAR ESTE
                     'is_active', 
                     'is_staff', 
                     'is_superuser', 
