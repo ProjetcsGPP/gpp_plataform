@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -286,3 +287,24 @@ LOGGING = {
         },
     },
 }
+
+# =========================================================================
+# CONFIGURAÇÃO DE TESTES
+# =========================================================================
+
+# Test Runner customizado
+TEST_RUNNER = 'common.test_runner.GPPTestRunner'
+
+# Configuração específica para testes
+if 'test' in sys.argv:
+    # Usar mesmas credenciais do banco de desenvolvimento
+    # O Django criará automaticamente test_gpp_plataform
+    DATABASES['default']['TEST'] = {
+        'NAME': 'test_gpp_plataform',
+        'CHARSET': 'UTF8',
+    }
+    
+    # Acelerar testes
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    ]
