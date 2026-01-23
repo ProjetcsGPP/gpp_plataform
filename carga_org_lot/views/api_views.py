@@ -1,76 +1,94 @@
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
-from accounts.models import UserRole, Aplicacao
-import json
+"""
+API Views do Carga Org/Lot.
+Usa AppContextMiddleware para detecção automática da aplicação.
+"""
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 
-def check_carga_org_lot_access(user):
-    """Verifica se usuário tem acesso ao Carga Org Lot"""
-    if not user.is_authenticated:
-        return False
-    return UserRole.objects.filter(
-        user=user,
-        aplicacao__codigointerno='CARGA_ORG_LOT'
-    ).exists()
-
-
-@require_http_methods(["GET"])
+@api_view(['GET'])
 def api_carga_org_lot_dashboard(request):
     """
-    GET /api/carga_org_lot
-    Retorna dados do dashboard Carga Org Lot
+    Dashboard API com estatísticas.
+    
+    ✨ Usa request.app_context automaticamente.
+    
+    GET /api/v1/carga/
     """
-    if not check_carga_org_lot_access(request.user):
-        return JsonResponse({
-            'ok': False,
-            'message': 'Você não tem permissão para acessar esta aplicação.'
-        }, status=403)
+    from ..models import Patriarca
+    from accounts.models import UserRole
     
-    user = request.user
-    user_role = UserRole.objects.filter(
-        user=user,
-        aplicacao__codigointerno='CARGA_ORG_LOT'
-    ).select_related('role', 'aplicacao').first()
+    # ✨ Verifica acesso usando app_context
+    app_code = request.app_context.get('code')
     
-    return JsonResponse({
-        'ok': True,
-        'user': {
-            'id': user.id,
-            'name': user.name,
-            'email': user.email
-        },
-        'role': {
-            'codigo': user_role.role.codigoperfil,
-            'nome': user_role.role.nomeperfil
-        },
-        'aplicacao': {
-            'codigo': user_role.aplicacao.codigointerno,
-            'nome': user_role.aplicacao.nomeaplicacao
-        },
-        'stats': {
-            'organogramas_total': 0,  # Implementar quando tiver models
-            'lotacoes_total': 0,
-            'ultimo_upload': None
+    if not app_code:
+        return Response(
+            {'detail': 'Aplicação não identificada'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+    # Verifica se usuário tem acesso
+    has_access = UserRole.objects.filter(
+        user=request.user,
+        aplicacao__codigointerno=app_code
+    ).exists()
+    
+    if not has_access:
+        return Response(
+            {'detail': 'Acesso negado'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Estatísticas
+    stats = {
+        'total_patriarcas': Patriarca.objects.count(),
+        'patriarcas_ativos': Patriarca.objects.filter(
+            idstatusprogresso__in=[1, 2, 3, 4, 5]
+        ).count(),
+        'cargas_finalizadas': Patriarca.objects.filter(
+            idstatusprogresso=6
+        ).count(),
+        'app': {
+            'code': request.app_context['code'],
+            'name': request.app_context['name']
         }
-    })
+    }
+    
+    return Response(stats)
 
 
-@csrf_exempt
-@require_http_methods(["POST"])
+@api_view(['POST'])
 def api_carga_org_lot_upload(request):
     """
-    POST /api/carga_org_lot/upload
-    Upload de organograma
-    """
-    if not check_carga_org_lot_access(request.user):
-        return JsonResponse({
-            'ok': False,
-            'message': 'Você não tem permissão para acessar esta aplicação.'
-        }, status=403)
+    Upload de arquivo de organograma ou lotação.
     
+    POST /api/v1/carga/upload/
+    """
+    from accounts.models import Attribute
+    
+    # ✨ Verifica atributo usando app_context
+    app_code = request.app_context.get('code')
+    
+    # Verifica se pode fazer upload
+    can_upload = Attribute.objects.filter(
+        user=request.user,
+        aplicacao__codigointerno=app_code,
+        key='can_upload',
+        value='true'
+    ).exists()
+    
+    if not can_upload:
+        return Response(
+            {'detail': 'Você não tem permissão para fazer upload'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Processar upload...
     # TODO: Implementar lógica de upload
-    return JsonResponse({
-        'ok': True,
-        'message': 'Upload não implementado ainda.'
+    
+    return Response({
+        'message': 'Upload em desenvolvimento',
+        'app': request.app_context['code']
     })
