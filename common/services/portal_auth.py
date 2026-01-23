@@ -220,7 +220,7 @@ class PortalAuthService:
                 )
                 
                 logger.debug(
-                    f"[{self.app_code}] Role '{role_code}' atribuída a {user.stremail}"
+                    f"[{self.app_code}] Role '{role_code}' atribuída a {user.email}"
                 )
                 
             except Role.DoesNotExist:
@@ -255,7 +255,7 @@ class PortalAuthService:
             
             logger.debug(
                 f"[{self.app_code}] Atributo '{key}={value}' "
-                f"definido para {user.stremail}"
+                f"definido para {user.email}"
             )
     
     def get_user_roles(self, email: str) -> List[Dict[str, str]]:
