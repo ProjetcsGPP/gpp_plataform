@@ -44,3 +44,6 @@ LOGGING = {
         'level': 'WARNING',
     },
 }
+
+# Test Runner customizado
+TEST_RUNNER = 'common.test_runner.CustomTestRunner'
