@@ -26,8 +26,8 @@ class UserSerializer(serializers.ModelSerializer):
     
     roles = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
-    email = serializers.CharField(source='stremail', read_only=True)
-    name = serializers.CharField(source='strnome', read_only=True)
+    email = serializers.CharField(source='email', read_only=True)
+    name = serializers.CharField(source='nome', read_only=True)
     user_type = serializers.IntegerField(source='idtipousuario', read_only=True)
     status = serializers.IntegerField(source='idstatususuario', read_only=True)
     
@@ -123,8 +123,8 @@ class UserListSerializer(serializers.ModelSerializer):
     melhor performance.
     """
     
-    email = serializers.CharField(source='stremail', read_only=True)
-    name = serializers.CharField(source='strnome', read_only=True)
+    email = serializers.CharField(source='email', read_only=True)
+    name = serializers.CharField(source='nome', read_only=True)
     
     class Meta:
         model = User
@@ -247,7 +247,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     - status (idstatususuario)
     """
     
-    name = serializers.CharField(source='strnome', required=False)
+    name = serializers.CharField(source='nome', required=False)
     user_type = serializers.IntegerField(source='idtipousuario', required=False)
     status = serializers.IntegerField(source='idstatususuario', required=False)
     
@@ -309,7 +309,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
     from accounts.models import UserRole
     
     role = RoleSerializer(read_only=True)
-    user_email = serializers.CharField(source='user.stremail', read_only=True)
+    user_email = serializers.CharField(source='user.email', read_only=True)
     app_code = serializers.CharField(source='aplicacao.codigointerno', read_only=True)
     
     class Meta:
