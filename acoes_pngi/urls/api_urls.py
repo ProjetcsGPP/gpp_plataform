@@ -8,6 +8,7 @@ from ..views.api_views import (
     portal_auth,
 )
 
+
 # Configuração do router para ViewSets
 router = DefaultRouter()
 router.register(r'eixos', EixoViewSet, basename='eixo')
