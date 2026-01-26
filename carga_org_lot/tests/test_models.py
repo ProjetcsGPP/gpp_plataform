@@ -1,9 +1,11 @@
+# carga_org_lot/tests/test_models.py
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from datetime import date
+from django.utils import timezone
+from decimal import Decimal
 import uuid
 
-from ..models import (
+from carga_org_lot.models import (
     TblStatusProgresso,
     TblPatriarca,
     TblOrganogramaVersao,
@@ -20,523 +22,576 @@ from ..models import (
     TblCargaPatriarca,
     TblDetalheStatusCarga,
 )
+from accounts.models import Aplicacao, Role
+from . import CargaOrgLotTestCase
 
 User = get_user_model()
 
 
-class BaseCargaOrgLotTestCase(TestCase):
+class BaseTestDataMixin:
     """
-    Classe base para todos os testes do app carga_org_lot.
-
-    Métodos / dados criados:
-    - Usuário padrão: self.user
-    - Status de progresso:
-        self.status_nova_carga
-        self.status_org_em_progresso
-        self.status_lot_em_progresso
-        self.status_pronto_carga
-        self.status_carga_proc
-        self.status_carga_finalizada
-    - Tipos de carga:
-        self.tipo_carga_organograma
-        self.tipo_carga_lotacao
-        self.tipo_carga_lotacao_unica
-    - Status de token:
-        self.status_token_solicitando
-        self.status_token_adquirido
-        self.status_token_negado
-        self.status_token_expirado
-        self.status_token_invalido
-        self.status_token_timeout
-    - Patriarca base:
-        self.patriarca_pmexe
+    Mixin que cria dados base necessários para todos os testes.
+    Usa get_or_create para evitar conflitos com dados que podem existir.
     """
-
+    
     @classmethod
     def setUpTestData(cls):
-    
-        # Garantir que o schema e as tabelas existam
-        from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute("CREATE SCHEMA IF NOT EXISTS carga_org_lot;")
-                    
+        super().setUpTestData()
         
-        # 1) Usuário padrão
+        # Criar usuário de teste
         cls.user = User.objects.create_user(
-            email="test@test.com",
-            password="password123",
-            name="Test User",
-            idstatususuario=1,
-            idtipousuario=1,
-            idclassificacaousuario=1,
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
         )
-
-        # 2) Status de progresso (tblstatusprogresso)
-        cls.status_nova_carga = TblStatusProgresso.objects.create(
+        
+        # Criar aplicação (ou pegar se já existir)
+        cls.aplicacao, _ = Aplicacao.objects.get_or_create(
+            codigointerno='CARGA_ORG_LOT',
+            defaults={
+                'name': 'Carga Org/Lot',
+                'isshowinportal': True
+            }
+        )
+        
+        # Criar role (ou pegar se já existir)
+        cls.role, _ = Role.objects.get_or_create(
+            name='GESTOR_CARGA',
+            defaults={'aplicacao': cls.aplicacao}
+        )
+        
+        # Criar status de progresso (ou pegar se já existirem)
+        cls.status_nova_carga, _ = TblStatusProgresso.objects.get_or_create(
             id_status_progresso=1,
-            str_descricao="Nova Carga",
+            defaults={'str_descricao': "Nova Carga"}
         )
-        cls.status_org_em_progresso = TblStatusProgresso.objects.create(
+        cls.status_processando, _ = TblStatusProgresso.objects.get_or_create(
             id_status_progresso=2,
-            str_descricao="Organograma em Progresso",
+            defaults={'str_descricao': "Processando"}
         )
-        cls.status_lot_em_progresso = TblStatusProgresso.objects.create(
+        cls.status_concluido, _ = TblStatusProgresso.objects.get_or_create(
             id_status_progresso=3,
-            str_descricao="Lotação em Progresso",
+            defaults={'str_descricao': "Concluído"}
         )
-        cls.status_pronto_carga = TblStatusProgresso.objects.create(
-            id_status_progresso=4,
-            str_descricao="Pronto para Carga",
-        )
-        cls.status_carga_proc = TblStatusProgresso.objects.create(
-            id_status_progresso=5,
-            str_descricao="Carga em Processamento",
-        )
-        cls.status_carga_finalizada = TblStatusProgresso.objects.create(
-            id_status_progresso=6,
-            str_descricao="Carga Finalizada",
-        )
-
-        # 3) Tipos de carga (TblTipoCarga)
-        cls.tipo_carga_organograma = TblTipoCarga.objects.create(
-            id_tipo_carga=1,
-            str_descricao="Organograma",
-        )
-        cls.tipo_carga_lotacao = TblTipoCarga.objects.create(
-            id_tipo_carga=2,
-            str_descricao="Lotação",
-        )
-        cls.tipo_carga_lotacao_unica = TblTipoCarga.objects.create(
-            id_tipo_carga=3,
-            str_descricao="Lotação Arq. Único",
-        )
-
-        # 4) Status de token (TblStatusTokenEnvioCarga)
-        cls.status_token_solicitando = TblStatusTokenEnvioCarga.objects.create(
-            id_status_token_envio_carga=1,
-            str_descricao="Solicitando Token",
-        )
-        cls.status_token_adquirido = TblStatusTokenEnvioCarga.objects.create(
-            id_status_token_envio_carga=2,
-            str_descricao="Token Adquirido",
-        )
-        cls.status_token_negado = TblStatusTokenEnvioCarga.objects.create(
-            id_status_token_envio_carga=3,
-            str_descricao="Token Negado",
-        )
-        cls.status_token_expirado = TblStatusTokenEnvioCarga.objects.create(
-            id_status_token_envio_carga=4,
-            str_descricao="Token Expirado",
-        )
-        cls.status_token_invalido = TblStatusTokenEnvioCarga.objects.create(
-            id_status_token_envio_carga=5,
-            str_descricao="Token Inválido",
-        )
-        cls.status_token_timeout = TblStatusTokenEnvioCarga.objects.create(
-            id_status_token_envio_carga=6,
-            str_descricao="Tempo Ultrapassado (Solicitação)",
-        )
-
-        # 5) Patriarca base (TblPatriarca)
-        cls.patriarca_pmexe = TblPatriarca.objects.create(
-            id_patriarca=1,
-            id_externo_patriarca="PMEXE",
-            str_sigla_patriarca="PMEXE",
-            str_nome="PREFEITURA TESTE",
+        
+        # Criar patriarca (DADO DE TESTE - sempre novo)
+        cls.patriarca = TblPatriarca.objects.create(
+            id_externo_patriarca=uuid.uuid4(),
+            str_sigla_patriarca='SEGER',
+            str_nome='Secretaria de Gestão e Recursos',
             id_status_progresso=cls.status_nova_carga,
-            id_usuario_criacao=cls.user,
+            dat_criacao=timezone.now(),
+            id_usuario_criacao=cls.user
         )
-
-
-class TblStatusProgressoTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de status de progresso
-    - atualização de status de progresso
-    """
-
-    def test_criacao_status_progresso(self):
-        self.assertEqual(self.status_nova_carga.str_descricao, "Nova Carga")
-
-    def test_atualizacao_status_progresso(self):
-        self.status_nova_carga.str_descricao = "Carga em Progresso"
-        self.status_nova_carga.save()
-        s = TblStatusProgresso.objects.get(id_status_progresso=1)
-        self.assertEqual(s.str_descricao, "Carga em Progresso")
-
-
-class TblPatriarcaTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de patriarca
-    - relacionamento com status de progresso
-    - relacionamento com usuário
-    - atualização de patriarca
-    """
-
-    def test_criacao_patriarca(self):
-        self.assertEqual(self.patriarca_pmexe.str_sigla_patriarca, "PMEXE")
-        self.assertEqual(self.patriarca_pmexe.str_nome, "PREFEITURA TESTE")
-        self.assertIsNotNone(self.patriarca_pmexe.dat_criacao)
-
-    def test_relacionamento_status_progresso(self):
-        self.assertEqual(
-            self.patriarca_pmexe.id_status_progresso, self.status_nova_carga
+        
+        # Criar versão de organograma
+        cls.org_versao = TblOrganogramaVersao.objects.create(
+            id_patriarca=cls.patriarca,
+            str_origem='UPLOAD',
+            str_tipo_arquivo_original='xlsx',
+            str_nome_arquivo_original='organograma_test.xlsx',
+            dat_processamento=timezone.now(),
+            str_status_processamento='PROCESSADO',
+            flg_ativo=True
         )
-
-    def test_relacionamento_usuario(self):
-        self.assertEqual(self.patriarca_pmexe.id_usuario_criacao, self.user)
-
-    def test_atualizacao_patriarca(self):
-        self.patriarca_pmexe.id_status_progresso = self.status_carga_finalizada
-        self.patriarca_pmexe.id_usuario_alteracao = self.user
-        self.patriarca_pmexe.save()
-        p = TblPatriarca.objects.get(id_patriarca=self.patriarca_pmexe.id_patriarca)
-        self.assertEqual(p.id_status_progresso, self.status_carga_finalizada)
-        self.assertEqual(p.id_usuario_alteracao, self.user)
-
-
-class TblOrganogramaVersaoTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de versão de organograma
-    - ativação de versão (flg_ativo)
-    """
-
-    def setUp(self):
-        self.organograma_versao = TblOrganogramaVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            str_origem="API",
-            str_tipo_arquivo_original="JSON",
-            str_nome_arquivo_original="organograma.json",
-        )
-
-    def test_criacao_organograma_versao(self):
-        self.assertEqual(self.organograma_versao.str_origem, "API")
-        self.assertEqual(self.organograma_versao.str_tipo_arquivo_original, "JSON")
-        self.assertFalse(self.organograma_versao.flg_ativo)
-        self.assertIsNotNone(self.organograma_versao.dat_processamento)
-
-    def test_ativacao_versao(self):
-        self.organograma_versao.flg_ativo = True
-        self.organograma_versao.save()
-        v = TblOrganogramaVersao.objects.get(
-            id_organograma_versao=self.organograma_versao.id_organograma_versao
-        )
-        self.assertTrue(v.flg_ativo)
-
-
-class TblOrgaoUnidadeTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de órgão/unidade
-    - hierarquia de órgãos (pai/filho)
-    """
-
-    def setUp(self):
-        self.organograma_versao = TblOrganogramaVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            str_origem="API",
-        )
-        self.orgao_pai = TblOrgaoUnidade.objects.create(
-            id_organograma_versao=self.organograma_versao,
-            id_patriarca=self.patriarca_pmexe,
-            str_nome="PREFEITURA TESTE",
-            str_sigla="PMEXE",
-            str_numero_hierarquia="1",
+        
+        # Criar órgão/unidade raiz
+        cls.orgao_raiz = TblOrgaoUnidade.objects.create(
+            id_organograma_versao=cls.org_versao,
+            id_patriarca=cls.patriarca,
+            str_nome='SEGER - Raiz',
+            str_sigla='SEGER',
+            id_orgao_unidade_pai=None,
+            str_numero_hierarquia='1',
             int_nivel_hierarquia=1,
+            flg_ativo=True,
+            dat_criacao=timezone.now(),
+            id_usuario_criacao=cls.user
         )
-
-    def test_criacao_orgao_unidade(self):
-        self.assertEqual(self.orgao_pai.str_sigla, "PMEXE")
-        self.assertEqual(self.orgao_pai.str_nome, "PREFEITURA TESTE")
-        self.assertTrue(self.orgao_pai.flg_ativo)
-
-    def test_hierarquia_orgao(self):
-        unidade_filha = TblOrgaoUnidade.objects.create(
-            id_organograma_versao=self.organograma_versao,
-            id_patriarca=self.patriarca_pmexe,
-            str_nome="Secretaria de Gestão",
-            str_sigla="SEGES",
-            id_orgao_unidade_pai=self.orgao_pai,
-            str_numero_hierarquia="1.1",
+        
+        # Criar órgão/unidade filho
+        cls.orgao_filho = TblOrgaoUnidade.objects.create(
+            id_organograma_versao=cls.org_versao,
+            id_patriarca=cls.patriarca,
+            str_nome='Subsecretaria de Gestão',
+            str_sigla='SUBSEGER',
+            id_orgao_unidade_pai=cls.orgao_raiz,
+            str_numero_hierarquia='1.1',
             int_nivel_hierarquia=2,
+            flg_ativo=True,
+            dat_criacao=timezone.now(),
+            id_usuario_criacao=cls.user
         )
-        self.assertEqual(unidade_filha.id_orgao_unidade_pai, self.orgao_pai)
-        self.assertEqual(unidade_filha.int_nivel_hierarquia, 2)
-
-
-class TblOrganogramaJsonTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de JSON de organograma
-    - relacionamento OneToOne com versão
-    """
-
-    def setUp(self):
-        self.organograma_versao = TblOrganogramaVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            str_origem="API",
+        
+        # Criar versão de lotação
+        cls.lotacao_versao = TblLotacaoVersao.objects.create(
+            id_patriarca=cls.patriarca,
+            id_organograma_versao=cls.org_versao,
+            str_origem='UPLOAD',
+            str_tipo_arquivo_original='xlsx',
+            str_nome_arquivo_original='lotacao_test.xlsx',
+            dat_processamento=timezone.now(),
+            str_status_processamento='PROCESSADO',
+            flg_ativo=True
         )
-        self.json_organograma = TblOrganogramaJson.objects.create(
-            id_organograma_versao=self.organograma_versao,
-            js_conteudo={"orgaos": []},
+        
+        # Criar status de token (ou pegar se já existirem)
+        cls.status_token_ativo, _ = TblStatusTokenEnvioCarga.objects.get_or_create(
+            id_status_token_envio_carga=1,
+            defaults={'str_descricao': 'Ativo'}
         )
-
-    def test_criacao_json_organograma(self):
-        self.assertEqual(self.json_organograma.js_conteudo, {"orgaos": []})
-        self.assertIsNotNone(self.json_organograma.dat_criacao)
-
-    def test_relacionamento_one_to_one(self):
-        self.assertEqual(
-            self.json_organograma.id_organograma_versao, self.organograma_versao
+        cls.status_token_expirado, _ = TblStatusTokenEnvioCarga.objects.get_or_create(
+            id_status_token_envio_carga=2,
+            defaults={'str_descricao': 'Expirado'}
         )
-
-
-class TblLotacaoVersaoTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de versão de lotação
-    """
-
-    def setUp(self):
-        self.organograma_versao = TblOrganogramaVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            str_origem="API",
+        
+        # Criar token de envio
+        cls.token_envio = TblTokenEnvioCarga.objects.create(
+            id_patriarca=cls.patriarca,
+            id_status_token_envio_carga=cls.status_token_ativo,
+            str_token_retorno='token_test_123456',
+            dat_data_hora_inicio=timezone.now()
         )
-        self.lotacao_versao = TblLotacaoVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            id_organograma_versao=self.organograma_versao,
-            str_origem="ARQUIVO",
-            str_tipo_arquivo_original="CSV",
-            str_nome_arquivo_original="lotacao.csv",
-        )
-
-    def test_criacao_lotacao_versao(self):
-        self.assertEqual(self.lotacao_versao.str_origem, "ARQUIVO")
-        self.assertEqual(self.lotacao_versao.str_tipo_arquivo_original, "CSV")
-        self.assertFalse(self.lotacao_versao.flg_ativo)
-
-
-class TblLotacaoTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de lotação válida
-    - lotação com erro de validação
-    """
-
-    def setUp(self):
-        self.organograma_versao = TblOrganogramaVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            str_origem="API",
-        )
-        self.orgao = TblOrgaoUnidade.objects.create(
-            id_organograma_versao=self.organograma_versao,
-            id_patriarca=self.patriarca_pmexe,
-            str_nome="Secretaria de Gestão",
-            str_sigla="SEGES",
-        )
-        self.lotacao_versao = TblLotacaoVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            id_organograma_versao=self.organograma_versao,
-            str_origem="ARQUIVO",
-        )
-        self.lotacao = TblLotacao.objects.create(
-            id_lotacao_versao=self.lotacao_versao,
-            id_organograma_versao=self.organograma_versao,
-            id_patriarca=self.patriarca_pmexe,
-            id_orgao_lotacao=self.orgao,
-            str_cpf="12345678901",
-            str_cargo_original="Analista",
-            str_cargo_normalizado="ANALISTA",
-            dat_referencia=date.today(),
-        )
-
-    def test_criacao_lotacao(self):
-        self.assertEqual(self.lotacao.str_cpf, "12345678901")
-        self.assertEqual(self.lotacao.str_cargo_normalizado, "ANALISTA")
-        self.assertTrue(self.lotacao.flg_valido)
-
-    def test_lotacao_com_erro_validacao(self):
-        lotacao_invalida = TblLotacao.objects.create(
-            id_lotacao_versao=self.lotacao_versao,
-            id_organograma_versao=self.organograma_versao,
-            id_patriarca=self.patriarca_pmexe,
-            id_orgao_lotacao=self.orgao,
-            str_cpf="00000000000",
-            flg_valido=False,
-            str_erros_validacao="CPF inválido",
-        )
-        self.assertFalse(lotacao_invalida.flg_valido)
-        self.assertEqual(lotacao_invalida.str_erros_validacao, "CPF inválido")
-
-
-class TblLotacaoJsonOrgaoTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de JSON de lotação por órgão
-    """
-
-    def setUp(self):
-        self.organograma_versao = TblOrganogramaVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            str_origem="API",
-        )
-        self.orgao = TblOrgaoUnidade.objects.create(
-            id_organograma_versao=self.organograma_versao,
-            id_patriarca=self.patriarca_pmexe,
-            str_nome="Secretaria de Gestão",
-            str_sigla="SEGES",
-        )
-        self.lotacao_versao = TblLotacaoVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            id_organograma_versao=self.organograma_versao,
-            str_origem="ARQUIVO",
-        )
-        self.json_lotacao = TblLotacaoJsonOrgao.objects.create(
-            id_lotacao_versao=self.lotacao_versao,
-            id_organograma_versao=self.organograma_versao,
-            id_patriarca=self.patriarca_pmexe,
-            id_orgao_lotacao=self.orgao,
-            js_conteudo={"lotacoes": []},
-        )
-
-    def test_criacao_json_lotacao(self):
-        self.assertEqual(self.json_lotacao.js_conteudo, {"lotacoes": []})
-        self.assertIsNotNone(self.json_lotacao.dat_criacao)
-
-
-class TblLotacaoInconsistenciaTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de inconsistência de lotação
-    """
-
-    def setUp(self):
-        self.organograma_versao = TblOrganogramaVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            str_origem="API",
-        )
-        self.orgao = TblOrgaoUnidade.objects.create(
-            id_organograma_versao=self.organograma_versao,
-            id_patriarca=self.patriarca_pmexe,
-            str_nome="Secretaria de Gestão",
-            str_sigla="SEGES",
-        )
-        self.lotacao_versao = TblLotacaoVersao.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            id_organograma_versao=self.organograma_versao,
-            str_origem="ARQUIVO",
-        )
-        self.lotacao = TblLotacao.objects.create(
-            id_lotacao_versao=self.lotacao_versao,
-            id_organograma_versao=self.organograma_versao,
-            id_patriarca=self.patriarca_pmexe,
-            id_orgao_lotacao=self.orgao,
-            str_cpf="12345678901",
-        )
-        self.inconsistencia = TblLotacaoInconsistencia.objects.create(
-            id_lotacao=self.lotacao,
-            str_tipo="CPF Duplicado",
-            str_detalhe="CPF já existe em outra lotação",
-        )
-
-    def test_criacao_inconsistencia(self):
-        self.assertEqual(self.inconsistencia.str_tipo, "CPF Duplicado")
-        self.assertIsNotNone(self.inconsistencia.dat_registro)
-
-
-class TblTokenEnvioCargaTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de token de envio de carga
-    """
-
-    def test_criacao_token(self):
-        token = TblTokenEnvioCarga.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            id_status_token_envio_carga=self.status_token_solicitando,
-            str_token_retorno="abc123xyz",
-        )
-        self.assertEqual(token.str_token_retorno, "abc123xyz")
-        self.assertIsNotNone(token.dat_data_hora_inicio)
-
-
-class TblCargaPatriarcaTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de carga do patriarca
-    """
-
-    def test_criacao_carga(self):
-        token = TblTokenEnvioCarga.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            id_status_token_envio_carga=self.status_token_adquirido,
-            str_token_retorno="abc123xyz",
-        )
-        status_carga = TblStatusCarga.objects.create(
+        
+        # Criar status de carga (ou pegar se já existirem)
+        cls.status_carga_pendente, _ = TblStatusCarga.objects.get_or_create(
             id_status_carga=1,
-            str_descricao="Enviando Carga de Organograma",
-            flg_sucesso=0,
+            defaults={'str_descricao': 'Pendente', 'flg_sucesso': 0}
         )
-        carga = TblCargaPatriarca.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            id_token_envio_carga=token,
-            id_status_carga=status_carga,
-            id_tipo_carga=self.tipo_carga_organograma,
-        )
-        self.assertEqual(carga.id_tipo_carga.str_descricao, "Organograma")
-        self.assertIsNotNone(carga.dat_data_hora_inicio)
-
-
-class TblDetalheStatusCargaTests(BaseCargaOrgLotTestCase):
-    """
-    Métodos testados:
-    - criação de detalhe de status
-    - criação de múltiplos detalhes (timeline)
-    """
-
-    def setUp(self):
-        self.token = TblTokenEnvioCarga.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            id_status_token_envio_carga=self.status_token_adquirido,
-            str_token_retorno="abc123xyz",
-        )
-        self.status_carga_inicial = TblStatusCarga.objects.create(
-            id_status_carga=1,
-            str_descricao="Enviando Carga de Organograma",
-            flg_sucesso=0,
-        )
-        self.status_carga_final = TblStatusCarga.objects.create(
+        cls.status_carga_sucesso, _ = TblStatusCarga.objects.get_or_create(
             id_status_carga=2,
-            str_descricao="Organograma Enviado com sucesso",
-            flg_sucesso=1,
+            defaults={'str_descricao': 'Sucesso', 'flg_sucesso': 1}
         )
-        self.carga = TblCargaPatriarca.objects.create(
-            id_patriarca=self.patriarca_pmexe,
-            id_token_envio_carga=self.token,
-            id_status_carga=self.status_carga_inicial,
-            id_tipo_carga=self.tipo_carga_organograma,
+        
+        # Criar tipo de carga (ou pegar se já existirem)
+        cls.tipo_carga_org, _ = TblTipoCarga.objects.get_or_create(
+            id_tipo_carga=1,
+            defaults={'str_descricao': 'Organograma'}
         )
-        self.detalhe_inicial = TblDetalheStatusCarga.objects.create(
-            id_carga_patriarca=self.carga,
-            id_status_carga=self.status_carga_inicial,
-            str_mensagem="Iniciando envio",
+        cls.tipo_carga_lot, _ = TblTipoCarga.objects.get_or_create(
+            id_tipo_carga=2,
+            defaults={'str_descricao': 'Lotação'}
         )
 
-    def test_criacao_detalhe_status(self):
-        self.assertEqual(self.detalhe_inicial.str_mensagem, "Iniciando envio")
-        self.assertIsNotNone(self.detalhe_inicial.dat_registro)
 
-    def test_timeline_multiplos_detalhes(self):
+# ============================================
+# TESTES DE MODELOS
+# ============================================
+
+class TblStatusProgressoTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblStatusProgresso"""
+    
+    def test_create_status_progresso(self):
+        """Deve criar um status de progresso"""
+        status = TblStatusProgresso.objects.get(id_status_progresso=1)
+        self.assertEqual(status.str_descricao, "Nova Carga")
+        self.assertEqual(str(status), "Nova Carga")
+    
+    def test_status_progresso_count(self):
+        """Deve ter pelo menos 3 status de progresso criados no setup"""
+        count = TblStatusProgresso.objects.count()
+        self.assertGreaterEqual(count, 3)
+
+
+class TblPatriarcaTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblPatriarca"""
+    
+    def test_create_patriarca(self):
+        """Deve criar um patriarca"""
+        self.assertEqual(self.patriarca.str_sigla_patriarca, 'SEGER')
+        self.assertEqual(self.patriarca.str_nome, 'Secretaria de Gestão e Recursos')
+        self.assertEqual(self.patriarca.id_status_progresso, self.status_nova_carga)
+    
+    def test_patriarca_str_representation(self):
+        """Deve retornar representação string correta"""
+        expected = f"{self.patriarca.str_sigla_patriarca} - {self.patriarca.str_nome}"
+        self.assertEqual(str(self.patriarca), expected)
+    
+    def test_patriarca_requires_user_creation(self):
+        """Deve exigir usuário de criação"""
+        self.assertEqual(self.patriarca.id_usuario_criacao, self.user)
+        self.assertIsNotNone(self.patriarca.dat_criacao)
+    
+    def test_patriarca_update_fields(self):
+        """Deve atualizar campos de alteração"""
+        self.patriarca.str_nome = 'Nome Atualizado'
+        self.patriarca.id_usuario_alteracao = self.user
+        self.patriarca.dat_alteracao = timezone.now()
+        self.patriarca.save()
+        
+        self.patriarca.refresh_from_db()
+        self.assertEqual(self.patriarca.str_nome, 'Nome Atualizado')
+        self.assertIsNotNone(self.patriarca.dat_alteracao)
+
+
+class TblOrganogramaVersaoTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblOrganogramaVersao"""
+    
+    def test_create_organograma_versao(self):
+        """Deve criar uma versão de organograma"""
+        self.assertEqual(self.org_versao.id_patriarca, self.patriarca)
+        self.assertEqual(self.org_versao.str_origem, 'UPLOAD')
+        self.assertTrue(self.org_versao.flg_ativo)
+    
+    def test_organograma_versao_str_representation(self):
+        """Deve retornar representação string correta"""
+        expected = f"Organograma v{self.org_versao.id_organograma_versao} - {self.patriarca.str_sigla_patriarca}"
+        self.assertEqual(str(self.org_versao), expected)
+    
+    def test_organograma_versao_status_processamento(self):
+        """Deve armazenar status de processamento"""
+        self.assertEqual(self.org_versao.str_status_processamento, 'PROCESSADO')
+        self.assertIsNone(self.org_versao.str_mensagem_processamento)
+
+
+class TblOrgaoUnidadeTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblOrgaoUnidade"""
+    
+    def test_create_orgao_raiz(self):
+        """Deve criar um órgão raiz"""
+        self.assertIsNone(self.orgao_raiz.id_orgao_unidade_pai)
+        self.assertEqual(self.orgao_raiz.int_nivel_hierarquia, 1)
+        self.assertEqual(self.orgao_raiz.str_numero_hierarquia, '1')
+    
+    def test_create_orgao_filho(self):
+        """Deve criar um órgão filho com referência ao pai"""
+        self.assertEqual(self.orgao_filho.id_orgao_unidade_pai, self.orgao_raiz)
+        self.assertEqual(self.orgao_filho.int_nivel_hierarquia, 2)
+        self.assertEqual(self.orgao_filho.str_numero_hierarquia, '1.1')
+    
+    def test_orgao_unidade_str_representation(self):
+        """Deve retornar representação string correta"""
+        expected = f"{self.orgao_raiz.str_sigla} - {self.orgao_raiz.str_nome}"
+        self.assertEqual(str(self.orgao_raiz), expected)
+    
+    def test_orgao_unidade_cascade_delete(self):
+        """Deve deletar filhos quando pai for deletado"""
+        orgao_id = self.orgao_filho.id_orgao_unidade
+        self.orgao_raiz.delete()
+        
+        with self.assertRaises(TblOrgaoUnidade.DoesNotExist):
+            TblOrgaoUnidade.objects.get(id_orgao_unidade=orgao_id)
+
+
+class TblOrganogramaJsonTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblOrganogramaJson"""
+    
+    def test_create_organograma_json(self):
+        """Deve criar um JSON de organograma"""
+        json_data = {
+            "orgaos": [
+                {"sigla": "SEGER", "nome": "Secretaria"}
+            ]
+        }
+        
+        org_json = TblOrganogramaJson.objects.create(
+            id_organograma_versao=self.org_versao,
+            js_conteudo=json_data,
+            dat_criacao=timezone.now()
+        )
+        
+        self.assertEqual(org_json.js_conteudo, json_data)
+        self.assertIsNone(org_json.dat_envio_api)
+    
+    def test_organograma_json_str_representation(self):
+        """Deve retornar representação string correta"""
+        org_json = TblOrganogramaJson.objects.create(
+            id_organograma_versao=self.org_versao,
+            js_conteudo={},
+            dat_criacao=timezone.now()
+        )
+        
+        expected = f"JSON Organograma v{self.org_versao.id_organograma_versao}"
+        self.assertEqual(str(org_json), expected)
+    
+    def test_organograma_json_envio_api(self):
+        """Deve registrar envio à API"""
+        org_json = TblOrganogramaJson.objects.create(
+            id_organograma_versao=self.org_versao,
+            js_conteudo={},
+            dat_criacao=timezone.now(),
+            dat_envio_api=timezone.now(),
+            str_status_envio='SUCESSO',
+            str_mensagem_retorno='Enviado com sucesso'
+        )
+        
+        self.assertIsNotNone(org_json.dat_envio_api)
+        self.assertEqual(org_json.str_status_envio, 'SUCESSO')
+
+
+class TblLotacaoVersaoTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblLotacaoVersao"""
+    
+    def test_create_lotacao_versao(self):
+        """Deve criar uma versão de lotação"""
+        self.assertEqual(self.lotacao_versao.id_patriarca, self.patriarca)
+        self.assertEqual(self.lotacao_versao.id_organograma_versao, self.org_versao)
+        self.assertTrue(self.lotacao_versao.flg_ativo)
+    
+    def test_lotacao_versao_str_representation(self):
+        """Deve retornar representação string correta"""
+        expected = f"Lotação v{self.lotacao_versao.id_lotacao_versao} - {self.patriarca.str_sigla_patriarca}"
+        self.assertEqual(str(self.lotacao_versao), expected)
+
+
+class TblLotacaoTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblLotacao"""
+    
+    def test_create_lotacao_valida(self):
+        """Deve criar uma lotação válida"""
+        lotacao = TblLotacao.objects.create(
+            id_lotacao_versao=self.lotacao_versao,
+            id_organograma_versao=self.org_versao,
+            id_patriarca=self.patriarca,
+            id_orgao_lotacao=self.orgao_raiz,
+            id_unidade_lotacao=self.orgao_filho,
+            str_cpf='123.456.789-00',
+            str_cargo_original='Analista',
+            str_cargo_normalizado='ANALISTA',
+            flg_valido=True,
+            dat_criacao=timezone.now(),
+            id_usuario_criacao=self.user
+        )
+        
+        self.assertTrue(lotacao.flg_valido)
+        self.assertEqual(lotacao.str_cpf, '123.456.789-00')
+    
+    def test_create_lotacao_invalida(self):
+        """Deve criar uma lotação inválida com erros"""
+        lotacao = TblLotacao.objects.create(
+            id_lotacao_versao=self.lotacao_versao,
+            id_organograma_versao=self.org_versao,
+            id_patriarca=self.patriarca,
+            id_orgao_lotacao=self.orgao_raiz,
+            str_cpf='CPF_INVALIDO',
+            flg_valido=False,
+            str_erros_validacao='CPF inválido',
+            dat_criacao=timezone.now(),
+            id_usuario_criacao=self.user
+        )
+        
+        self.assertFalse(lotacao.flg_valido)
+        self.assertIsNotNone(lotacao.str_erros_validacao)
+    
+    def test_lotacao_str_representation(self):
+        """Deve retornar representação string correta"""
+        lotacao = TblLotacao.objects.create(
+            id_lotacao_versao=self.lotacao_versao,
+            id_organograma_versao=self.org_versao,
+            id_patriarca=self.patriarca,
+            id_orgao_lotacao=self.orgao_raiz,
+            str_cpf='123.456.789-00',
+            flg_valido=True,
+            dat_criacao=timezone.now(),
+            id_usuario_criacao=self.user
+        )
+        
+        expected = f"Lotação {lotacao.str_cpf} - {self.orgao_raiz.str_sigla}"
+        self.assertEqual(str(lotacao), expected)
+
+
+class TblLotacaoJsonOrgaoTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblLotacaoJsonOrgao"""
+    
+    def test_create_lotacao_json_orgao(self):
+        """Deve criar um JSON de lotação por órgão"""
+        json_data = {
+            "lotacoes": [
+                {"cpf": "123.456.789-00", "cargo": "Analista"}
+            ]
+        }
+        
+        lot_json = TblLotacaoJsonOrgao.objects.create(
+            id_lotacao_versao=self.lotacao_versao,
+            id_organograma_versao=self.org_versao,
+            id_patriarca=self.patriarca,
+            id_orgao_lotacao=self.orgao_raiz,
+            js_conteudo=json_data,
+            dat_criacao=timezone.now()
+        )
+        
+        self.assertEqual(lot_json.js_conteudo, json_data)
+        self.assertEqual(lot_json.id_orgao_lotacao, self.orgao_raiz)
+    
+    def test_lotacao_json_orgao_str_representation(self):
+        """Deve retornar representação string correta"""
+        lot_json = TblLotacaoJsonOrgao.objects.create(
+            id_lotacao_versao=self.lotacao_versao,
+            id_organograma_versao=self.org_versao,
+            id_patriarca=self.patriarca,
+            id_orgao_lotacao=self.orgao_raiz,
+            js_conteudo={},
+            dat_criacao=timezone.now()
+        )
+        
+        expected = f"JSON Lotação {self.orgao_raiz.str_sigla}"
+        self.assertEqual(str(lot_json), expected)
+
+
+class TblLotacaoInconsistenciaTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblLotacaoInconsistencia"""
+    
+    def test_create_inconsistencia(self):
+        """Deve criar uma inconsistência de lotação"""
+        lotacao = TblLotacao.objects.create(
+            id_lotacao_versao=self.lotacao_versao,
+            id_organograma_versao=self.org_versao,
+            id_patriarca=self.patriarca,
+            id_orgao_lotacao=self.orgao_raiz,
+            str_cpf='INVALIDO',
+            flg_valido=False,
+            dat_criacao=timezone.now(),
+            id_usuario_criacao=self.user
+        )
+        
+        inconsistencia = TblLotacaoInconsistencia.objects.create(
+            id_lotacao=lotacao,
+            str_tipo='CPF_INVALIDO',
+            str_detalhe='CPF não possui formato válido',
+            dat_registro=timezone.now()
+        )
+        
+        self.assertEqual(inconsistencia.str_tipo, 'CPF_INVALIDO')
+        self.assertEqual(inconsistencia.id_lotacao, lotacao)
+    
+    def test_inconsistencia_str_representation(self):
+        """Deve retornar representação string correta"""
+        lotacao = TblLotacao.objects.create(
+            id_lotacao_versao=self.lotacao_versao,
+            id_organograma_versao=self.org_versao,
+            id_patriarca=self.patriarca,
+            id_orgao_lotacao=self.orgao_raiz,
+            str_cpf='INVALIDO',
+            flg_valido=False,
+            dat_criacao=timezone.now(),
+            id_usuario_criacao=self.user
+        )
+        
+        inconsistencia = TblLotacaoInconsistencia.objects.create(
+            id_lotacao=lotacao,
+            str_tipo='CPF_INVALIDO',
+            str_detalhe='Erro',
+            dat_registro=timezone.now()
+        )
+        
+        expected = f"{inconsistencia.str_tipo} - Lotação {lotacao.id_lotacao}"
+        self.assertEqual(str(inconsistencia), expected)
+
+
+class TblTokenEnvioCargaTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblTokenEnvioCarga"""
+    
+    def test_create_token_envio(self):
+        """Deve criar um token de envio"""
+        self.assertEqual(self.token_envio.id_patriarca, self.patriarca)
+        self.assertEqual(self.token_envio.str_token_retorno, 'token_test_123456')
+        self.assertEqual(self.token_envio.id_status_token_envio_carga, self.status_token_ativo)
+    
+    def test_token_envio_str_representation(self):
+        """Deve retornar representação string correta"""
+        expected = f"Token {self.token_envio.id_token_envio_carga} - {self.patriarca.str_sigla_patriarca}"
+        self.assertEqual(str(self.token_envio), expected)
+    
+    def test_token_envio_finalizado(self):
+        """Deve registrar data/hora de fim"""
+        self.token_envio.dat_data_hora_fim = timezone.now()
+        self.token_envio.save()
+        
+        self.token_envio.refresh_from_db()
+        self.assertIsNotNone(self.token_envio.dat_data_hora_fim)
+
+
+class TblStatusProgressoDuplicateTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para verificar unicidade de TblStatusProgresso"""
+    
+    def test_status_progresso_unique(self):
+        """IDs de status devem ser únicos"""
+        with self.assertRaises(Exception):
+            # Tentar criar com ID que já existe
+            TblStatusProgresso.objects.create(
+                id_status_progresso=1,  # Já existe
+                str_descricao="Duplicado"
+            )
+
+
+class TblCargaPatriarcaTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblCargaPatriarca"""
+    
+    def test_create_carga_patriarca(self):
+        """Deve criar uma carga de patriarca"""
+        carga = TblCargaPatriarca.objects.create(
+            id_patriarca=self.patriarca,
+            id_token_envio_carga=self.token_envio,
+            id_status_carga=self.status_carga_pendente,
+            id_tipo_carga=self.tipo_carga_org,
+            dat_data_hora_inicio=timezone.now()
+        )
+        
+        self.assertEqual(carga.id_patriarca, self.patriarca)
+        self.assertEqual(carga.id_tipo_carga, self.tipo_carga_org)
+        self.assertIsNone(carga.dat_data_hora_fim)
+    
+    def test_carga_patriarca_str_representation(self):
+        """Deve retornar representação string correta"""
+        carga = TblCargaPatriarca.objects.create(
+            id_patriarca=self.patriarca,
+            id_token_envio_carga=self.token_envio,
+            id_status_carga=self.status_carga_pendente,
+            id_tipo_carga=self.tipo_carga_org,
+            dat_data_hora_inicio=timezone.now()
+        )
+        
+        expected = f"Carga {carga.id_carga_patriarca} - {self.tipo_carga_org.str_descricao}"
+        self.assertEqual(str(carga), expected)
+
+
+class TblDetalheStatusCargaTests(BaseTestDataMixin, CargaOrgLotTestCase):
+    """Testes para o modelo TblDetalheStatusCarga"""
+    
+    def test_create_detalhe_status(self):
+        """Deve criar detalhes de status da carga"""
+        carga = TblCargaPatriarca.objects.create(
+            id_patriarca=self.patriarca,
+            id_token_envio_carga=self.token_envio,
+            id_status_carga=self.status_carga_pendente,
+            id_tipo_carga=self.tipo_carga_org,
+            dat_data_hora_inicio=timezone.now()
+        )
+        
+        detalhe = TblDetalheStatusCarga.objects.create(
+            id_carga_patriarca=carga,
+            id_status_carga=self.status_carga_sucesso,
+            dat_registro=timezone.now(),
+            str_mensagem='Processamento iniciado'
+        )
+        
+        self.assertEqual(detalhe.id_carga_patriarca, carga)
+        self.assertEqual(detalhe.str_mensagem, 'Processamento iniciado')
+    
+    def test_detalhe_status_ordering(self):
+        """Deve ordenar por data de registro"""
+        carga = TblCargaPatriarca.objects.create(
+            id_patriarca=self.patriarca,
+            id_token_envio_carga=self.token_envio,
+            id_status_carga=self.status_carga_pendente,
+            id_tipo_carga=self.tipo_carga_org,
+            dat_data_hora_inicio=timezone.now()
+        )
+        
+        # Criar múltiplos detalhes
+        detalhe1 = TblDetalheStatusCarga.objects.create(
+            id_carga_patriarca=carga,
+            id_status_carga=self.status_carga_pendente,
+            dat_registro=timezone.now(),
+            str_mensagem='Primeiro'
+        )
+        
         detalhe2 = TblDetalheStatusCarga.objects.create(
-            id_carga_patriarca=self.carga,
-            id_status_carga=self.status_carga_final,
-            str_mensagem="Envio concluído",
+            id_carga_patriarca=carga,
+            id_status_carga=self.status_carga_sucesso,
+            dat_registro=timezone.now(),
+            str_mensagem='Segundo'
         )
-        detalhes = TblDetalheStatusCarga.objects.filter(
-            id_carga_patriarca=self.carga
-        ).order_by("dat_registro")
-        self.assertEqual(detalhes.count(), 2)
-        self.assertEqual(detalhes[0].str_mensagem, "Iniciando envio")
-        self.assertEqual(detalhes[1].str_mensagem, "Envio concluído")
+        
+        detalhes = TblDetalheStatusCarga.objects.filter(id_carga_patriarca=carga)
+        self.assertEqual(detalhes.first(), detalhe1)

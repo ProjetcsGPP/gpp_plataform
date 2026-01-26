@@ -148,6 +148,8 @@ DATABASES = {
     }
 }
 
+DATABASE_ROUTERS = ['carga_org_lot.db_router.CargaOrgLotRouter']
+
 AUTH_USER_MODEL = 'accounts.User'
 
 # Password validation

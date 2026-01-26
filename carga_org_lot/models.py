@@ -12,7 +12,7 @@ class TblStatusProgresso(models.Model):
     str_descricao = models.CharField(max_length=100, db_column='strdescricao')
 
     class Meta:
-        db_table = 'carga_org_lot.tblstatusprogresso'
+        db_table = '"carga_org_lot"."tblstatusprogresso"'
         managed = True
         verbose_name = 'Status Progresso'
         verbose_name_plural = 'Status Progresso'
@@ -50,7 +50,7 @@ class TblPatriarca(models.Model):
     )
 
     class Meta:
-        db_table = 'carga_org_lot.tblpatriarca'
+        db_table = '"carga_org_lot"."tblpatriarca"'
         managed = True
         verbose_name = 'Patriarca'
         verbose_name_plural = 'Patriarcas'
@@ -76,7 +76,7 @@ class TblOrganogramaVersao(models.Model):
     flg_ativo = models.BooleanField(db_column='flgativo')
 
     class Meta:
-        db_table = 'carga_org_lot.tblorganogramaversao'
+        db_table = '"carga_org_lot"."tblorganogramaversao"'
         managed = True
         verbose_name = 'Versão de Organograma'
         verbose_name_plural = 'Versões de Organograma'
@@ -130,7 +130,7 @@ class TblOrgaoUnidade(models.Model):
     )
 
     class Meta:
-        db_table = 'carga_org_lot.tblorgaounidade'
+        db_table = '"carga_org_lot"."tblorgaounidade"'
         managed = True
         verbose_name = 'Órgão/Unidade'
         verbose_name_plural = 'Órgãos/Unidades'
@@ -154,7 +154,7 @@ class TblOrganogramaJson(models.Model):
     str_mensagem_retorno = models.TextField(null=True, blank=True, db_column='strmensagemretorno')
 
     class Meta:
-        db_table = 'carga_org_lot.tblorganogramajson'
+        db_table = '"carga_org_lot"."tblorganogramajson"'
         managed = True
         verbose_name = 'JSON Organograma'
         verbose_name_plural = 'JSONs Organograma'
@@ -185,7 +185,7 @@ class TblLotacaoVersao(models.Model):
     flg_ativo = models.BooleanField(db_column='flgativo')
 
     class Meta:
-        db_table = 'carga_org_lot.tbllotacaoversao'
+        db_table = '"carga_org_lot"."tbllotacaoversao"'
         managed = True
         verbose_name = 'Versão de Lotação'
         verbose_name_plural = 'Versões de Lotação'
@@ -252,7 +252,7 @@ class TblLotacao(models.Model):
     )
 
     class Meta:
-        db_table = 'carga_org_lot.tbllotacao'
+        db_table = '"carga_org_lot"."tbllotacao"'
         managed = True
         verbose_name = 'Lotação'
         verbose_name_plural = 'Lotações'
@@ -291,7 +291,7 @@ class TblLotacaoJsonOrgao(models.Model):
     str_mensagem_retorno = models.TextField(null=True, blank=True, db_column='strmensagemretorno')
 
     class Meta:
-        db_table = 'carga_org_lot.tbllotacaojsonorgao'
+        db_table = '"carga_org_lot"."tbllotacaojsonorgao"'
         managed = True
         verbose_name = 'JSON Lotação por Órgão'
         verbose_name_plural = 'JSONs Lotação por Órgão'
@@ -313,7 +313,7 @@ class TblLotacaoInconsistencia(models.Model):
     dat_registro = models.DateTimeField(db_column='datregistro')
 
     class Meta:
-        db_table = 'carga_org_lot.tbllotacaoinconsistencia'
+        db_table = '"carga_org_lot"."tbllotacaoinconsistencia"'
         managed = True
         verbose_name = 'Inconsistência de Lotação'
         verbose_name_plural = 'Inconsistências de Lotação'
@@ -328,7 +328,7 @@ class TblStatusTokenEnvioCarga(models.Model):
     str_descricao = models.CharField(max_length=100, db_column='strdescricao')
 
     class Meta:
-        db_table = 'carga_org_lot.tblstatustokenenviocarga'
+        db_table = '"carga_org_lot"."tblstatustokenenviocarga"'
         managed = True
         verbose_name = 'Status Token Envio Carga'
         verbose_name_plural = 'Status Token Envio Carga'
@@ -355,7 +355,7 @@ class TblTokenEnvioCarga(models.Model):
     dat_data_hora_fim = models.DateTimeField(null=True, blank=True, db_column='datdatahorafim')
 
     class Meta:
-        db_table = 'carga_org_lot.tbltokenenviocarga'
+        db_table = '"carga_org_lot"."tbltokenenviocarga"'
         managed = True
         verbose_name = 'Token Envio Carga'
         verbose_name_plural = 'Tokens Envio Carga'
@@ -371,7 +371,7 @@ class TblStatusCarga(models.Model):
     flg_sucesso = models.IntegerField(db_column='flgsucesso')
 
     class Meta:
-        db_table = 'carga_org_lot.tblstatuscarga'
+        db_table = '"carga_org_lot"."tblstatuscarga"'
         managed = True
         verbose_name = 'Status Carga'
         verbose_name_plural = 'Status Carga'
@@ -386,7 +386,7 @@ class TblTipoCarga(models.Model):
     str_descricao = models.CharField(max_length=100, db_column='strdescricao')
 
     class Meta:
-        db_table = 'carga_org_lot.tbltipocarga'
+        db_table = '"carga_org_lot"."tbltipocarga"'
         managed = True
         verbose_name = 'Tipo Carga'
         verbose_name_plural = 'Tipos Carga'
@@ -423,7 +423,7 @@ class TblCargaPatriarca(models.Model):
     dat_data_hora_fim = models.DateTimeField(null=True, blank=True, db_column='datdatahorafim')
 
     class Meta:
-        db_table = 'carga_org_lot.tblcargapatriarca'
+        db_table = '"carga_org_lot"."tblcargapatriarca"'
         managed = True
         verbose_name = 'Carga Patriarca'
         verbose_name_plural = 'Cargas Patriarca'
@@ -449,7 +449,7 @@ class TblDetalheStatusCarga(models.Model):
     str_mensagem = models.TextField(null=True, blank=True, db_column='strmensagem')
 
     class Meta:
-        db_table = 'carga_org_lot.tbldetalhestatuscarga'
+        db_table = '"carga_org_lot"."tbldetalhestatuscarga"'
         managed = True
         verbose_name = 'Detalhe Status Carga'
         verbose_name_plural = 'Detalhes Status Carga'
