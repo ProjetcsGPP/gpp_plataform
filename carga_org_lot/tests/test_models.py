@@ -51,9 +51,9 @@ class TblPatriarcaTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -105,9 +105,9 @@ class TblOrganogramaVersaoTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -150,9 +150,9 @@ class TblOrgaoUnidadeTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            email='test@test.com',  # SEM str_
-            password='password123',  # SEM str_
-            nome='Test User',  # Depende do seu modelo
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -208,9 +208,9 @@ class TblOrganogramaJsonTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -250,9 +250,9 @@ class TblLotacaoVersaoTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -292,9 +292,9 @@ class TblLotacaoTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -362,9 +362,9 @@ class TblLotacaoJsonOrgaoTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -414,9 +414,9 @@ class TblLotacaoInconsistenciaTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -471,9 +471,9 @@ class TblTokenEnvioCargaTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -510,9 +510,9 @@ class TblCargaPatriarcaTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
@@ -564,9 +564,9 @@ class TblDetalheStatusCargaTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',
+            nome='Test User',
+            senha='password123',
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
