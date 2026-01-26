@@ -25,3 +25,25 @@ class CanManageCarga(BasePermission):
             ):
                 return True
         return False
+
+
+
+class IsAcoesPNGIUser(BasePermission):
+    """
+    Permissão para usuários do app Ações PNGI
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        # Verifica se o usuário tem role para a aplicação ACOESPNGI
+        from accounts.models import UserRole, Aplicacao
+        
+        try:
+            app = Aplicacao.objects.get(codigointerno='ACOESPNGI')
+            return UserRole.objects.filter(
+                user=request.user,
+                aplicacao=app
+            ).exists()
+        except Aplicacao.DoesNotExist:
+            return False

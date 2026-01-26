@@ -5,12 +5,71 @@ Testes dos modelos de Acoes PNGI.
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.db import connection
 from datetime import date, timedelta
 from acoes_pngi.models import Eixo, SituacaoAcao, VigenciaPNGI
 
 
+def create_acoes_pngi_tables_tbleixos():
+    """Cria as tabelas do schema acoes_pngi no banco de teste"""
+    with connection.cursor() as cursor:
+        # Criar schema se não existir
+        cursor.execute("CREATE SCHEMA IF NOT EXISTS acoes_pngi;")
+        
+        # Criar tabela tbleixos
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS acoes_pngi.tbleixos (
+                ideixo SERIAL PRIMARY KEY,
+                strdescricaoeixo VARCHAR(100) NOT NULL,
+                stralias VARCHAR(5) UNIQUE NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+        """)
+        
+
+def create_acoes_pngi_tables_tblsituacaoacao():
+    """Cria as tabelas do schema acoes_pngi no banco de teste"""
+    with connection.cursor() as cursor:
+        # Criar tabela tblsituacaoacao
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS acoes_pngi.tblsituacaoacao (
+                idsituacaoacao SERIAL PRIMARY KEY,
+                strdescricaosituacao VARCHAR(15) UNIQUE NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+        """)
+        
+
+def create_acoes_pngi_tables_tblvigenciapngi():
+    """Cria as tabelas do schema acoes_pngi no banco de teste"""
+    with connection.cursor() as cursor:   
+        # Criar tabela tblvigenciapngi
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS acoes_pngi.tblvigenciapngi (
+                idvigenciapngi SERIAL PRIMARY KEY,
+                strdescricaovigenciapngi VARCHAR(100) NOT NULL,
+                datiniciovigencia DATE NOT NULL,
+                datfinalvigencia DATE NOT NULL,
+                isvigenciaativa BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+        """)
+
+
+
+
+
 class EixoModelTest(TestCase):
     """Testes do modelo Eixo"""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Cria as tabelas antes de rodar os testes"""
+        super().setUpClass()
+        create_acoes_pngi_tables_tbleixos()
     
     def test_create_eixo(self):
         """Testa criação de eixo"""
@@ -58,6 +117,12 @@ class EixoModelTest(TestCase):
 class SituacaoAcaoModelTest(TestCase):
     """Testes do modelo SituacaoAcao"""
     
+    @classmethod
+    def setUpClass(cls):
+        """Cria as tabelas antes de rodar os testes"""
+        super().setUpClass()
+        create_acoes_pngi_tables_tblsituacaoacao()
+    
     def test_create_situacao(self):
         """Testa criação de situação"""
         situacao = SituacaoAcao.objects.create(
@@ -76,6 +141,12 @@ class SituacaoAcaoModelTest(TestCase):
 
 class VigenciaPNGIModelTest(TestCase):
     """Testes do modelo VigenciaPNGI"""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Cria as tabelas antes de rodar os testes"""
+        super().setUpClass()
+        create_acoes_pngi_tables_tblvigenciapngi()
     
     def test_create_vigencia(self):
         """Testa criação de vigência"""
