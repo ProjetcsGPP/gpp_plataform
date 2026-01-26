@@ -1,4 +1,6 @@
+# carga_org_lot/permissions.py
 from rest_framework.permissions import BasePermission
+
 
 class CanManageCarga(BasePermission):
     def has_permission(self, request, view):
@@ -6,7 +8,6 @@ class CanManageCarga(BasePermission):
         if not user or not user.is_authenticated:
             return False
 
-        # RBAC: checa se usuário tem role 'GESTOR_CARGA' para esta aplicação
         roles = request.auth.get('roles', []) if hasattr(request, 'auth') else []
         has_role = any(
             r['application__code'] == 'CARGA_ORG_LOT' and r['role__code'] == 'GESTOR_CARGA'
@@ -15,7 +16,6 @@ class CanManageCarga(BasePermission):
         if not has_role:
             return False
 
-        # ABAC simples: atributo 'can_upload' == 'true'
         attrs = request.auth.get('attrs', [])
         for a in attrs:
             if (
@@ -25,3 +25,11 @@ class CanManageCarga(BasePermission):
             ):
                 return True
         return False
+
+
+class IsCargaOrgLotUser(CanManageCarga):
+    """
+    Alias para manter compatibilidade com os testes antigos.
+    Herda exatamente a mesma lógica de CanManageCarga.
+    """
+    pass
