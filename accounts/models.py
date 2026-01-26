@@ -80,7 +80,10 @@ class Role(models.Model):
     RBAC por aplicação (sem empresa).
     Ex: 'Gestor Portal', 'Gestor Carga', etc.
     """
-    aplicacao = models.ForeignKey(Aplicacao, on_delete=models.CASCADE)
+    #aplicacao = models.ForeignKey(Aplicacao, on_delete=models.CASCADE)
+    aplicacao = models.ForeignKey(Aplicacao,  on_delete=models.CASCADE,
+        null=True,
+        db_column='aplicacao_id')
     nomeperfil = models.CharField(max_length=100)
     codigoperfil = models.CharField(max_length=100)
 
@@ -97,7 +100,10 @@ class UserRole(models.Model):
     Um usuário pode ter múltiplas aplicações.
     """
     user = models.ForeignKey('User', on_delete=models.CASCADE)
-    aplicacao = models.ForeignKey(Aplicacao, on_delete=models.CASCADE)
+    #aplicacao = models.ForeignKey(Aplicacao, on_delete=models.CASCADE)
+    aplicacao = models.ForeignKey(Aplicacao,  on_delete=models.CASCADE,
+        null=True,
+        db_column='aplicacao_id')
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
 
     class Meta:
@@ -112,7 +118,9 @@ class Attribute(models.Model):
     ABAC por usuário/aplicação (sem empresa).
     """
     user = models.ForeignKey('User', on_delete=models.CASCADE)
-    aplicacao = models.ForeignKey(Aplicacao, on_delete=models.CASCADE, null=True, blank=True)
+    aplicacao = models.ForeignKey(Aplicacao,  on_delete=models.SET_NULL,
+        null=True,
+        db_column='aplicacao_id')
     key = models.CharField(max_length=100)
     value = models.CharField(max_length=255)
 
