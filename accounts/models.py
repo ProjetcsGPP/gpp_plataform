@@ -88,6 +88,7 @@ class Role(models.Model):
     codigoperfil = models.CharField(max_length=100)
 
     class Meta:
+        db_table = 'accounts_role'
         unique_together = ('aplicacao', 'codigoperfil')
 
     def __str__(self):
@@ -107,6 +108,7 @@ class UserRole(models.Model):
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
 
     class Meta:
+        db_table = 'accounts_userrole'
         unique_together = ('user', 'aplicacao', 'role')
 
     def __str__(self):
@@ -125,6 +127,7 @@ class Attribute(models.Model):
     value = models.CharField(max_length=255)
 
     class Meta:
+        db_table = 'accounts_attribute'
         unique_together = ('user', 'aplicacao', 'key')
 
     def __str__(self):

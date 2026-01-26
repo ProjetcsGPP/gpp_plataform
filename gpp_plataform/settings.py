@@ -280,7 +280,7 @@ LOGGING = {
         'level': 'INFO',
     },
     'loggers': {
-        'acoes_pngi.services.portal_auth': {
+        'common.services.portal_auth': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
