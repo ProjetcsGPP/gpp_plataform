@@ -42,7 +42,7 @@ class SituacaoAcao(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi"."tblsituacaoacao'
+        db_table = 'acoes_pngi.tblsituacaoacao'
         managed = False
         verbose_name = 'Situação de Ação'
         verbose_name_plural = 'Situações de Ações'
@@ -68,7 +68,7 @@ class VigenciaPNGI(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi"."tblvigenciapngi'
+        db_table = 'acoes_pngi.tblvigenciapngi'
         managed = False
         verbose_name = 'Vigência PNGI'
         verbose_name_plural = 'Vigências PNGI'
