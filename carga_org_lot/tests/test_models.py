@@ -54,6 +54,13 @@ class BaseCargaOrgLotTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+    
+        # Garantir que o schema e as tabelas existam
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("CREATE SCHEMA IF NOT EXISTS carga_org_lot;")
+                    
+        
         # 1) Usuário padrão
         cls.user = User.objects.create_user(
             email="test@test.com",

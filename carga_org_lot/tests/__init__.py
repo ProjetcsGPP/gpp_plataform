@@ -1,7 +1,6 @@
-# Força os models a serem gerenciados durante os testes
 import sys
-if 'test' in sys.argv:
-    from django.apps import apps
-    app_config = apps.get_app_config('carga_org_lot')
-    for model in app_config.get_models():
-        model._meta.managed = True
+from django.core.management import call_command
+
+if "test" in sys.argv:
+    # Força migrations do app no banco de teste
+    call_command("migrate", "carga_org_lot", verbosity=0)
