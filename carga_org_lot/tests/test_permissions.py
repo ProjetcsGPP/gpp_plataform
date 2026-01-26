@@ -22,7 +22,7 @@ class IsCargaOrgLotUserPermissionTest(BaseDataTestCase):
         
         # Criar usuário com permissão
         cls.user_with_permission = User.objects.create_user(
-            username='user_carga',
+            name='user_carga',
             email='user@example.com',
             password='testpass123'
         )
@@ -36,7 +36,7 @@ class IsCargaOrgLotUserPermissionTest(BaseDataTestCase):
         
         # Criar usuário sem permissão
         cls.user_without_permission = User.objects.create_user(
-            username='user_no_perm',
+            name='user_no_perm',
             email='noperm@example.com',
             password='testpass123'
         )

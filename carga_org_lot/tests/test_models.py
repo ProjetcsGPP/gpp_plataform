@@ -40,7 +40,7 @@ class BaseTestDataMixin:
         
         # Criar usuário de teste
         cls.user = User.objects.create_user(
-            username='testuser',
+            name='testuser',
             email='test@example.com',
             password='testpass123'
         )
@@ -56,7 +56,7 @@ class BaseTestDataMixin:
         
         # Criar role (ou pegar se já existir)
         cls.role, _ = Role.objects.get_or_create(
-            name='GESTOR_CARGA',
+            codigoperfil='GESTOR_CARGA',
             defaults={'aplicacao': cls.aplicacao}
         )
         
