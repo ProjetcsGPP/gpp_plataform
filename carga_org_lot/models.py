@@ -13,7 +13,7 @@ class TblStatusProgresso(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tblstatusprogresso'
-        managed = False
+        managed = True
         verbose_name = 'Status Progresso'
         verbose_name_plural = 'Status Progresso'
 
@@ -51,7 +51,7 @@ class TblPatriarca(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tblpatriarca'
-        managed = False
+        managed = True
         verbose_name = 'Patriarca'
         verbose_name_plural = 'Patriarcas'
 
@@ -77,7 +77,7 @@ class TblOrganogramaVersao(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tblorganogramaversao'
-        managed = False
+        managed = True
         verbose_name = 'Versão de Organograma'
         verbose_name_plural = 'Versões de Organograma'
 
@@ -131,7 +131,7 @@ class TblOrgaoUnidade(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tblorgaounidade'
-        managed = False
+        managed = True
         verbose_name = 'Órgão/Unidade'
         verbose_name_plural = 'Órgãos/Unidades'
 
@@ -155,7 +155,7 @@ class TblOrganogramaJson(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tblorganogramajson'
-        managed = False
+        managed = True
         verbose_name = 'JSON Organograma'
         verbose_name_plural = 'JSONs Organograma'
 
@@ -186,7 +186,7 @@ class TblLotacaoVersao(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tbllotacaoversao'
-        managed = False
+        managed = True
         verbose_name = 'Versão de Lotação'
         verbose_name_plural = 'Versões de Lotação'
 
@@ -253,7 +253,7 @@ class TblLotacao(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tbllotacao'
-        managed = False
+        managed = True
         verbose_name = 'Lotação'
         verbose_name_plural = 'Lotações'
 
@@ -292,7 +292,7 @@ class TblLotacaoJsonOrgao(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tbllotacaojsonorgao'
-        managed = False
+        managed = True
         verbose_name = 'JSON Lotação por Órgão'
         verbose_name_plural = 'JSONs Lotação por Órgão'
 
@@ -314,7 +314,7 @@ class TblLotacaoInconsistencia(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tbllotacaoinconsistencia'
-        managed = False
+        managed = True
         verbose_name = 'Inconsistência de Lotação'
         verbose_name_plural = 'Inconsistências de Lotação'
 
@@ -329,7 +329,7 @@ class TblStatusTokenEnvioCarga(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tblstatustokenenviocarga'
-        managed = False
+        managed = True
         verbose_name = 'Status Token Envio Carga'
         verbose_name_plural = 'Status Token Envio Carga'
 
@@ -356,7 +356,7 @@ class TblTokenEnvioCarga(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tbltokenenviocarga'
-        managed = False
+        managed = True
         verbose_name = 'Token Envio Carga'
         verbose_name_plural = 'Tokens Envio Carga'
 
@@ -372,7 +372,7 @@ class TblStatusCarga(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tblstatuscarga'
-        managed = False
+        managed = True
         verbose_name = 'Status Carga'
         verbose_name_plural = 'Status Carga'
 
@@ -387,7 +387,7 @@ class TblTipoCarga(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tbltipocarga'
-        managed = False
+        managed = True
         verbose_name = 'Tipo Carga'
         verbose_name_plural = 'Tipos Carga'
 
@@ -424,7 +424,7 @@ class TblCargaPatriarca(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tblcargapatriarca'
-        managed = False
+        managed = True
         verbose_name = 'Carga Patriarca'
         verbose_name_plural = 'Cargas Patriarca'
 
@@ -450,7 +450,7 @@ class TblDetalheStatusCarga(models.Model):
 
     class Meta:
         db_table = 'carga_org_lot.tbldetalhestatuscarga'
-        managed = False
+        managed = True
         verbose_name = 'Detalhe Status Carga'
         verbose_name_plural = 'Detalhes Status Carga'
         ordering = ['dat_registro']

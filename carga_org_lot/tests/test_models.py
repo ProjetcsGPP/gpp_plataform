@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from datetime import date, datetime
 import uuid
-from .models import (
+from ..models import (
     TblStatusProgresso,
     TblPatriarca,
     TblOrganogramaVersao,
@@ -150,9 +150,9 @@ class TblOrgaoUnidadeTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            str_email='test@test.com',
-            str_nome='Test User',
-            str_senha='password123',
+            email='test@test.com',  # SEM str_
+            password='password123',  # SEM str_
+            nome='Test User',  # Depende do seu modelo
             id_status_usuario=1,
             id_tipo_usuario=1,
             id_classificacao_usuario=1
