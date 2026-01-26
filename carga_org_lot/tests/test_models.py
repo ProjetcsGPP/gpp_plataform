@@ -38,9 +38,9 @@ class BaseTestDataMixin:
     def setUpTestData(cls):
         super().setUpTestData()
         
-        # Criar usuário de teste
+        # Criar usuário de teste (User customizado usa 'name' e 'email')
         cls.user = User.objects.create_user(
-            name='testuser',
+            name='Test User',
             email='test@example.com',
             password='testpass123'
         )
@@ -49,15 +49,16 @@ class BaseTestDataMixin:
         cls.aplicacao, _ = Aplicacao.objects.get_or_create(
             codigointerno='CARGA_ORG_LOT',
             defaults={
-                'name': 'Carga Org/Lot',
+                'nomeaplicacao': 'Carga Org/Lot',  # Campo correto: nomeaplicacao
                 'isshowinportal': True
             }
         )
         
         # Criar role (ou pegar se já existir)
         cls.role, _ = Role.objects.get_or_create(
-            codigoperfil='GESTOR_CARGA',
-            defaults={'aplicacao': cls.aplicacao}
+            codigoperfil='GESTOR_CARGA',  # Campo correto: codigoperfil
+            aplicacao=cls.aplicacao,
+            defaults={'nomeperfil': 'Gestor de Carga'}
         )
         
         # Criar status de progresso (ou pegar se já existirem)
