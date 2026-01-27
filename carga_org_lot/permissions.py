@@ -31,14 +31,14 @@ class CanManageCarga(BasePermission):
         
         # Fallback: verifica diretamente no banco (para testes e sessões)
         try:
-            # Busca aplicação CARGA_ORG_LOT
-            app_carga = Aplicacao.objects.filter(code='CARGA_ORG_LOT').first()
+            # Busca aplicação CARGA_ORG_LOT (campo correto: codigointerno)
+            app_carga = Aplicacao.objects.filter(codigointerno='CARGA_ORG_LOT').first()
             if not app_carga:
                 return False
             
-            # Busca role GESTOR_CARGA
+            # Busca role GESTOR_CARGA (campo correto: codigoperfil)
             role_gestor = Role.objects.filter(
-                code='GESTOR_CARGA',
+                codigoperfil='GESTOR_CARGA',
                 aplicacao=app_carga
             ).first()
             if not role_gestor:
