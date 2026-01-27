@@ -1,5 +1,6 @@
 # carga_org_lot/permissions.py
 from rest_framework.permissions import BasePermission
+from accounts.models import UserRole, Role, Aplicacao
 
 
 class CanManageCarga(BasePermission):
@@ -8,23 +9,52 @@ class CanManageCarga(BasePermission):
         if not user or not user.is_authenticated:
             return False
 
-        roles = request.auth.get('roles', []) if hasattr(request, 'auth') else []
-        has_role = any(
-            r['application__code'] == 'CARGA_ORG_LOT' and r['role__code'] == 'GESTOR_CARGA'
-            for r in roles
-        )
-        if not has_role:
-            return False
+        # Tenta via JWT (request.auth)
+        if hasattr(request, 'auth') and request.auth:
+            roles = request.auth.get('roles', [])
+            has_role = any(
+                r['application__code'] == 'CARGA_ORG_LOT' and r['role__code'] == 'GESTOR_CARGA'
+                for r in roles
+            )
+            if not has_role:
+                return False
 
-        attrs = request.auth.get('attrs', [])
-        for a in attrs:
-            if (
-                a['application__code'] == 'CARGA_ORG_LOT'
-                and a['key'] == 'can_upload'
-                and a['value'].lower() == 'true'
-            ):
-                return True
-        return False
+            attrs = request.auth.get('attrs', [])
+            for a in attrs:
+                if (
+                    a['application__code'] == 'CARGA_ORG_LOT'
+                    and a['key'] == 'can_upload'
+                    and a['value'].lower() == 'true'
+                ):
+                    return True
+            return False
+        
+        # Fallback: verifica diretamente no banco (para testes e sessões)
+        try:
+            # Busca aplicação CARGA_ORG_LOT
+            app_carga = Aplicacao.objects.filter(code='CARGA_ORG_LOT').first()
+            if not app_carga:
+                return False
+            
+            # Busca role GESTOR_CARGA
+            role_gestor = Role.objects.filter(
+                code='GESTOR_CARGA',
+                aplicacao=app_carga
+            ).first()
+            if not role_gestor:
+                return False
+            
+            # Verifica se usuário tem essa role
+            has_role = UserRole.objects.filter(
+                user=user,
+                role=role_gestor,
+                aplicacao=app_carga
+            ).exists()
+            
+            return has_role
+            
+        except Exception:
+            return False
 
 
 class IsCargaOrgLotUser(CanManageCarga):
