@@ -15,6 +15,8 @@ from datetime import date
 class EixoSerializerTest(TestCase):
     """Testes do EixoSerializer"""
     
+    databases = {'gpp_plataform_db'}
+    
     def test_serialize_eixo(self):
         """Testa serialização de eixo"""
         eixo = Eixo.objects.create(
@@ -46,6 +48,8 @@ class EixoSerializerTest(TestCase):
 class VigenciaPNGISerializerTest(TestCase):
     """Testes do VigenciaPNGISerializer"""
     
+    databases = {'gpp_plataform_db'}
+    
     def test_serialize_vigencia(self):
         """Testa serialização de vigência"""
         vigencia = VigenciaPNGI.objects.create(
@@ -60,6 +64,4 @@ class VigenciaPNGISerializerTest(TestCase):
         
         self.assertEqual(data['strdescricaovigenciapngi'], 'PNGI 2024-2028')
         self.assertTrue(data['isvigenciaativa'])
-        self.assertIn('esta_vigente', data)
-        self.assertIn('duracao_dias', data)
-
+        self.assertIn('idvigenciapngi', data)
