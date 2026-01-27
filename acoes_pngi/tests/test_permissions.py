@@ -11,20 +11,24 @@ from acoes_pngi.permissions import IsAcoesPNGIUser
 class IsAcoesPNGIUserPermissionTest(TestCase):
     """Testes da permissão IsAcoesPNGIUser"""
     
+    databases = {'default'}
+    
     @classmethod
     def setUpTestData(cls):
         """Cria dados de teste"""
-        cls.app = Aplicacao.objects.create(
+        # Usar get_or_create para evitar conflito com setup
+        cls.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Gestão de Ações PNGI',
-            baseurl='http://localhost:8000/acoes-pngi/',
-            isshowinportal=True
+            defaults={
+                'nomeaplicacao': 'Gestão de Ações PNGI',
+                'isshowinportal': True
+            }
         )
         
-        cls.role = Role.objects.create(
-            nomeperfil='Gestor PNGI',
+        cls.role, _ = Role.objects.get_or_create(
             codigoperfil='GESTOR_PNGI',
-            aplicacao=cls.app
+            aplicacao=cls.app,
+            defaults={'nomeperfil': 'Gestor PNGI'}
         )
         
         cls.user_with_permission = User.objects.create_user(
