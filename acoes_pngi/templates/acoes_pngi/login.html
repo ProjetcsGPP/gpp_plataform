@@ -150,7 +150,7 @@
             {% endfor %}
         {% endif %}
 
-        <form method="POST" action="{% url 'acoes_pngi:login' %}">
+        <form method="POST" action="{% url 'acoes_pngi_web:login' %}">
             {% csrf_token %}
             
             <div class="form-group">
