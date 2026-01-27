@@ -24,9 +24,11 @@ class TokenEnvioCargaViewSetTest(TestCase):
     
     def setUp(self):
         self.client = APIClient()
+        # FIX: email é obrigatório, username é extra_field
         self.user = User.objects.create_user(
-            username='testuser_token',
-            password='testpass123'
+            email='testuser_token@example.com',
+            password='testpass123',
+            username='testuser_token'
         )
         self.client.force_authenticate(user=self.user)
         
@@ -95,9 +97,11 @@ class AuxiliaryViewSetsTest(TestCase):
     
     def setUp(self):
         self.client = APIClient()
+        # FIX: email é obrigatório, username é extra_field
         self.user = User.objects.create_user(
-            username='testuser_aux',
-            password='testpass123'
+            email='testuser_aux@example.com',
+            password='testpass123',
+            username='testuser_aux'
         )
         self.client.force_authenticate(user=self.user)
         
