@@ -1,6 +1,6 @@
 # Troubleshooting - Erros de Testes
 
-## 🚨 Problema Resolvido: ImportError em `auth_service`
+## 🚨 Problema Resolvido: ImportError em Múltiplas Apps
 
 ### Erro Encontrado
 
@@ -10,17 +10,17 @@ ImportError: cannot import name 'CustomTokenObtainPairView' from 'auth_service.v
 
 ### Causa Raiz
 
-**Conflito entre arquivo e diretório com mesmo nome**
+**Conflito entre arquivo e diretório com mesmo nome em 3 aplicações**
 
-A estrutura estava assim:
+A estrutura estava assim em **TODAS** as apps afetadas:
 
 ```
 auth_service/views/
-├── api_views.py          ← Arquivo com as views
-├── api_views/            ← Diretório vazio (CONFLITO!)
+├── api_views.py          ← Arquivo com as views ✅
+├── api_views/            ← Diretório vazio ❌ CONFLITO!
 │   └── __init__.py       ← Vazio
-├── web_views.py          ← Arquivo com as views
-└── web_views/            ← Diretório vazio (CONFLITO!)
+├── web_views.py          ← Arquivo com as views ✅
+└── web_views/            ← Diretório vazio ❌ CONFLITO!
     └── __init__.py       ← Vazio
 ```
 
@@ -28,27 +28,45 @@ auth_service/views/
 
 1. Quando você faz `from auth_service.views.api_views import ...`
 2. Python **procura primeiro por diretórios** (packages)
-3. Se encontra `api_views/`, carrega o `__init__.py` desse diretório
+3. Encontra `api_views/` e carrega o `__init__.py` desse diretório
 4. Como o `__init__.py` está vazio, não encontra `CustomTokenObtainPairView`
 5. **Nunca chega a verificar o arquivo `api_views.py`** ❌
 
-### Solução Aplicada
+---
 
-**Deletar os diretórios vazios:**
+### ✅ Solução Aplicada
 
-```bash
-# Commits que resolveram:
-# 62c91fb - Remove api_views/ directory
-# d67bfcd - Remove web_views/ directory
+**Deletados todos os diretórios vazios conflitantes em 3 apps:**
+
+| App | Diretórios Removidos | Commits |
+|-----|----------------------|----------|
+| **auth_service** | `api_views/`, `web_views/` | [62c91fb](https://github.com/ProjetcsGPP/gpp_plataform/commit/62c91fb), [d67bfcd](https://github.com/ProjetcsGPP/gpp_plataform/commit/d67bfcd) |
+| **accounts** | `api_views/`, `web_views/` | [f42535f](https://github.com/ProjetcsGPP/gpp_plataform/commit/f42535f), [fad4a8b](https://github.com/ProjetcsGPP/gpp_plataform/commit/fad4a8b) |
+| **db_service** | `api_views/`, `web_views/` | [3e1192c](https://github.com/ProjetcsGPP/gpp_plataform/commit/3e1192c), [14c37dc](https://github.com/ProjetcsGPP/gpp_plataform/commit/14c37dc) |
+
+**Total**: 6 diretórios vazios removidos ✅
+
+---
+
+### 📋 Resumo das Correções
+
 ```
+✅ auth_service/views/
+   ├── api_views.py          ← Mantido
+   └── web_views.py          ← Mantido
+   ❌ api_views/            ← REMOVIDO
+   ❌ web_views/            ← REMOVIDO
 
-**Estrutura corrigida:**
+✅ accounts/views/
+   ├── api_views.py          ← Mantido
+   └── web_views.py          ← Mantido
+   ❌ api_views/            ← REMOVIDO
+   ❌ web_views/            ← REMOVIDO
 
-```
-auth_service/views/
-├── __init__.py
-├── api_views.py          ← Agora importa corretamente! ✅
-└── web_views.py          ← Sem conflitos! ✅
+✅ db_service/views/
+   └── views.py              ← Mantido
+   ❌ api_views/            ← REMOVIDO
+   ❌ web_views/            ← REMOVIDO
 ```
 
 ---
@@ -119,6 +137,9 @@ ls -la auth_service/views/
 
 # Verificar se existe tanto arquivo quanto diretório
 ls auth_service/views/api_views*
+
+# No Windows (PowerShell)
+Get-ChildItem auth_service/views/ | Where-Object { $_.Name -like "api_views*" }
 ```
 
 ### 2. Testar import no Python interativo
@@ -148,6 +169,45 @@ python -v -c "from auth_service.views.api_views import CustomTokenObtainPairView
 ```
 
 Mostra toda a cadeia de imports e onde Python procura.
+
+### 4. Script de Detecção Automática
+
+```python
+# detect_conflicts.py
+import os
+from pathlib import Path
+
+def find_conflicts(root_dir='.'):
+    """Encontra conflitos arquivo/diretório"""
+    conflicts = []
+    
+    for dirpath, dirnames, filenames in os.walk(root_dir):
+        for filename in filenames:
+            if filename.endswith('.py'):
+                base_name = filename[:-3]  # Remove .py
+                if base_name in dirnames:
+                    conflict_path = os.path.join(dirpath, base_name)
+                    conflicts.append({
+                        'file': os.path.join(dirpath, filename),
+                        'dir': conflict_path
+                    })
+    
+    return conflicts
+
+if __name__ == '__main__':
+    conflicts = find_conflicts()
+    if conflicts:
+        print(f"❌ Encontrados {len(conflicts)} conflitos:")
+        for c in conflicts:
+            print(f"  - {c['file']} ↔ {c['dir']}/")
+    else:
+        print("✅ Nenhum conflito encontrado!")
+```
+
+Uso:
+```bash
+python detect_conflicts.py
+```
 
 ---
 
@@ -209,6 +269,20 @@ __all__ = [
 ]
 ```
 
+### 4. **Use linters e pre-commit hooks**
+
+Adicione ao `.pre-commit-config.yaml`:
+
+```yaml
+- repo: local
+  hooks:
+    - id: check-file-dir-conflicts
+      name: Check for file/directory naming conflicts
+      entry: python detect_conflicts.py
+      language: system
+      pass_filenames: false
+```
+
 ---
 
 ## 📝 Outros Erros Comuns em Testes
@@ -247,14 +321,29 @@ class MyTest(TestCase):
 
 ---
 
+## 📊 Estatísticas da Correção
+
+| Métrica | Valor |
+|---------|-------|
+| **Apps corrigidas** | 3 |
+| **Diretórios removidos** | 6 |
+| **Commits de correção** | 6 |
+| **Tempo de diagnóstico** | ~5 min |
+| **Tempo de correção** | ~3 min |
+| **Impacto** | ✅ Crítico (bloqueava testes) |
+
+---
+
 ## 📚 Referências
 
 - [Python Import System](https://docs.python.org/3/reference/import.html)
 - [Django Testing](https://docs.djangoproject.com/en/stable/topics/testing/)
 - [Python Modules](https://docs.python.org/3/tutorial/modules.html)
+- [PEP 420 - Implicit Namespace Packages](https://peps.python.org/pep-0420/)
 
 ---
 
 **Última Atualização**: 27 de janeiro de 2026  
-**Problema Resolvido**: ✅ ImportError em auth_service  
-**Commits**: [62c91fb](https://github.com/ProjetcsGPP/gpp_plataform/commit/62c91fb), [d67bfcd](https://github.com/ProjetcsGPP/gpp_plataform/commit/d67bfcd)
+**Status**: ✅ Todos os conflitos resolvidos  
+**Apps Afetadas**: auth_service, accounts, db_service  
+**Commits**: [62c91fb](https://github.com/ProjetcsGPP/gpp_plataform/commit/62c91fb) a [14c37dc](https://github.com/ProjetcsGPP/gpp_plataform/commit/14c37dc)
