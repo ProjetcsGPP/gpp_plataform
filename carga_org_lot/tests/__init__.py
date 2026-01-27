@@ -60,14 +60,14 @@ class BaseDataTestCase(CargaOrgLotTestCase):
         cls.aplicacao_carga, _ = Aplicacao.objects.get_or_create(
             codigointerno='CARGA_ORG_LOT',
             defaults={
-                'nomeaplicacao': 'Carga Org/Lot',  # Campo correto: nomeaplicacao (não 'name')
+                'nomeaplicacao': 'Carga Org/Lot',
                 'isshowinportal': True
             }
         )
         
         # Role GESTOR_CARGA
         cls.role_gestor, _ = Role.objects.get_or_create(
-            codigoperfil='GESTOR_CARGA',  # Campo correto: codigoperfil (não 'name')
+            codigoperfil='GESTOR_CARGA',
             aplicacao=cls.aplicacao_carga,
             defaults={'nomeperfil': 'Gestor de Carga'}
         )
@@ -132,9 +132,8 @@ class BaseDataTestCase(CargaOrgLotTestCase):
         # DADOS DE TESTE (específicos para testes)
         # ==========================================
         
-        # Usuário de teste
+        # Usuário de teste - User NÃO tem campo username!
         cls.user = User.objects.create_user(
             email='test@example.com',
-            password='testpass123',
-            username='testuser'  # username como extra_field
+            password='testpass123'
         )
