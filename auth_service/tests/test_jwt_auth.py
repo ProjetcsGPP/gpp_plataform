@@ -22,15 +22,15 @@ class JWTAuthenticationTest(TestCase):
             name='Test User'
         )
         
-        # Criar aplicação e role para testes
-        self.app = Aplicacao.objects.create(
+        # Usar get_or_create para evitar conflito com setup do carga_org_lot
+        self.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='PORTAL',
-            nomeaplicacao='Portal GPP'
+            defaults={'nomeaplicacao': 'Portal GPP'}
         )
-        self.role = Role.objects.create(
+        self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
-            nomeperfil='Usuário',
-            codigoperfil='USER_PORTAL'
+            codigoperfil='USER_PORTAL',
+            defaults={'nomeperfil': 'Usuário'}
         )
         UserRole.objects.create(
             user=self.user,
