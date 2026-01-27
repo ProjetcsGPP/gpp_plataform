@@ -60,15 +60,16 @@ class BaseDataTestCase(CargaOrgLotTestCase):
         cls.aplicacao_carga, _ = Aplicacao.objects.get_or_create(
             codigointerno='CARGA_ORG_LOT',
             defaults={
-                'name': 'Carga Org/Lot',
+                'nomeaplicacao': 'Carga Org/Lot',  # Campo correto: nomeaplicacao (não 'name')
                 'isshowinportal': True
             }
         )
         
         # Role GESTOR_CARGA
         cls.role_gestor, _ = Role.objects.get_or_create(
-            name='GESTOR_CARGA',
-            defaults={'aplicacao': cls.aplicacao_carga}
+            codigoperfil='GESTOR_CARGA',  # Campo correto: codigoperfil (não 'name')
+            aplicacao=cls.aplicacao_carga,
+            defaults={'nomeperfil': 'Gestor de Carga'}
         )
         
         # Status de Progresso
@@ -133,7 +134,7 @@ class BaseDataTestCase(CargaOrgLotTestCase):
         
         # Usuário de teste
         cls.user = User.objects.create_user(
-            username='testuser',
             email='test@example.com',
-            password='testpass123'
+            password='testpass123',
+            username='testuser'  # username como extra_field
         )
