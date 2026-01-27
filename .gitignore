@@ -1,6 +1,6 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 .Python
@@ -12,10 +12,23 @@ env/
 
 # Django
 db.sqlite3
+*.log
 media/
 staticfiles/
 
-# IDEs (opcional, mas recomendado)
+# Variáveis de ambiente
+.env
+.env.*
+
+# IDEs
 .vscode/
 .idea/
 *.sublime-workspace
+
+# Arquivos temporários
+*.tmp
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
