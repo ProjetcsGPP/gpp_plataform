@@ -58,32 +58,32 @@ class TokenEnvioCargaViewSetTest(TestCase):
     
     def test_list_tokens(self):
         """Testa listagem de tokens"""
-        response = self.client.get('/api/carga_org_lot/tokens/')
+        response = self.client.get('/api/carga_org_lot/token/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_retrieve_token(self):
         """Testa recuperação de token"""
-        response = self.client.get(f'/api/carga_org_lot/tokens/{self.token.pk}/')
+        response = self.client.get(f'/api/carga_org_lot/token/{self.token.pk}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['str_token_retorno'], 'TOKEN123')
     
     def test_validar_action(self):
         """Testa action validar"""
-        response = self.client.get(f'/api/carga_org_lot/tokens/{self.token.pk}/validar/')
+        response = self.client.get(f'/api/carga_org_lot/token/{self.token.pk}/validar/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('valido', response.data)
         self.assertTrue(response.data['valido'])
     
     def test_finalizar_action(self):
         """Testa action finalizar"""
-        response = self.client.post(f'/api/carga_org_lot/tokens/{self.token.pk}/finalizar/')
+        response = self.client.post(f'/api/carga_org_lot/token/{self.token.pk}/finalizar/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.token.refresh_from_db()
         self.assertIsNotNone(self.token.dat_data_hora_fim)
     
     def test_estatisticas_action(self):
         """Testa action estatisticas"""
-        response = self.client.get('/api/carga_org_lot/tokens/estatisticas/')
+        response = self.client.get('/api/carga_org_lot/token/estatisticas/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('total', response.data)
 

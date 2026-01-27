@@ -24,8 +24,8 @@ class WebViewsStructureTest(TestCase):
     
     def test_imports_from_web_views(self):
         """Testa imports de web_views"""
-        from ..views.web_views import dashboard_view
-        self.assertTrue(callable(dashboard_view))
+        from ..views.web_views import carga_dashboard
+        self.assertTrue(callable(carga_dashboard))
     
     def test_imports_from_api_views(self):
         """Testa imports de api_views"""
@@ -34,9 +34,9 @@ class WebViewsStructureTest(TestCase):
     
     def test_backward_compatibility_imports(self):
         """Testa compatibilidade retroativa de imports"""
-        from ..views import PatriarcaViewSet, dashboard_view
+        from ..views import PatriarcaViewSet, carga_dashboard
         self.assertIsNotNone(PatriarcaViewSet)
-        self.assertTrue(callable(dashboard_view))
+        self.assertTrue(callable(carga_dashboard))
     
     def test_login_redirect_unauthenticated(self):
         """Testa redirecionamento para login sem autenticação"""

@@ -96,30 +96,30 @@ class LotacaoJsonOrgaoViewSetTest(TestCase):
     
     def test_list(self):
         """Testa listagem"""
-        response = self.client.get('/api/carga_org_lot/lotacao-json-orgao/')
+        response = self.client.get('/api/carga_org_lot/lotacao-json/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_retrieve(self):
         """Testa recuperação"""
-        url = f'/api/carga_org_lot/lotacao-json-orgao/{self.lotacao_json.pk}/'
+        url = f'/api/carga_org_lot/lotacao-json/{self.lotacao_json.pk}/'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_conteudo_action(self):
         """Testa action conteudo"""
-        url = f'/api/carga_org_lot/lotacao-json-orgao/{self.lotacao_json.pk}/conteudo/'
+        url = f'/api/carga_org_lot/lotacao-json/{self.lotacao_json.pk}/conteudo/'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('conteudo', response.data)
     
     def test_regenerar_action(self):
         """Testa action regenerar"""
-        url = f'/api/carga_org_lot/lotacao-json-orgao/{self.lotacao_json.pk}/regenerar/'
+        url = f'/api/carga_org_lot/lotacao-json/{self.lotacao_json.pk}/regenerar/'
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_estatisticas_action(self):
         """Testa action estatisticas"""
-        response = self.client.get('/api/carga_org_lot/lotacao-json-orgao/estatisticas/')
+        response = self.client.get('/api/carga_org_lot/lotacao-json/estatisticas/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('total', response.data)
