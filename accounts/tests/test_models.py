@@ -87,10 +87,10 @@ class AplicacaoModelTest(TestCase):
     def test_aplicacao_str(self):
         """Testa representação string"""
         app = Aplicacao.objects.create(
-            codigointerno='PORTAL',
-            nomeaplicacao='Portal GPP'
+            codigointerno='MY_APP',
+            nomeaplicacao='Minha Aplicação'
         )
-        self.assertEqual(str(app), 'PORTAL - Portal GPP')
+        self.assertEqual(str(app), 'MY_APP - Minha Aplicação')
 
 
 class RoleModelTest(TestCase):
