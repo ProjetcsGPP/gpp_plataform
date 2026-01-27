@@ -21,15 +21,11 @@ from .carga_api import CargaPatriarcaViewSet
 from .lotacao_json_api import LotacaoJsonOrgaoViewSet
 from .token_api import TokenEnvioCargaViewSet
 
-# ViewSets auxiliares (read-only)
-from .patriarca_api import (
+# ViewSets auxiliares (read-only) - TODOS estão em token_api.py
+from .token_api import (
     StatusProgressoViewSet,
-)
-from .carga_api import (
     StatusCargaViewSet,
     TipoCargaViewSet,
-)
-from .token_api import (
     StatusTokenEnvioCargaViewSet,
 )
 
