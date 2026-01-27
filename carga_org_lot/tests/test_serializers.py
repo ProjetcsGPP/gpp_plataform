@@ -12,8 +12,8 @@ from ..models import (
     TblOrganogramaVersao, TblLotacaoVersao, TblOrgaoUnidade,
 )
 from ..serializers import (
-    PatriarcaSerializer, StatusProgressoSerializer,
-    LotacaoJsonOrgaoSerializer,
+    TblPatriarcaSerializer, TblStatusProgressoSerializer,
+    TblLotacaoJsonOrgaoSerializer,
 )
 
 User = get_user_model()
@@ -45,13 +45,13 @@ class SerializersTest(TestCase):
         )
     
     def test_status_progresso_serializer(self):
-        """Testa StatusProgressoSerializer"""
-        serializer = StatusProgressoSerializer(self.status)
+        """Testa TblStatusProgressoSerializer"""
+        serializer = TblStatusProgressoSerializer(self.status)
         self.assertEqual(serializer.data['str_descricao'], 'Teste')
     
     def test_patriarca_serializer(self):
-        """Testa PatriarcaSerializer"""
-        serializer = PatriarcaSerializer(self.patriarca)
+        """Testa TblPatriarcaSerializer"""
+        serializer = TblPatriarcaSerializer(self.patriarca)
         self.assertEqual(serializer.data['str_sigla_patriarca'], 'TST')
     
     def test_lotacao_json_serializer_total_servidores(self):
@@ -93,5 +93,5 @@ class SerializersTest(TestCase):
             dat_criacao=timezone.now()
         )
         
-        serializer = LotacaoJsonOrgaoSerializer(lotacao_json)
+        serializer = TblLotacaoJsonOrgaoSerializer(lotacao_json)
         self.assertEqual(serializer.data['total_servidores'], 2)
