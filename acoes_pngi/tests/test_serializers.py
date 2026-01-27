@@ -15,7 +15,8 @@ from datetime import date
 class EixoSerializerTest(TestCase):
     """Testes do EixoSerializer"""
     
-    databases = {'gpp_plataform_db'}
+    # Precisa de ambos databases: default para User e gpp_plataform_db para Eixo
+    databases = {'default', 'gpp_plataform_db'}
     
     def test_serialize_eixo(self):
         """Testa serialização de eixo"""
@@ -39,7 +40,7 @@ class EixoSerializerTest(TestCase):
         }
         
         serializer = EixoSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         
         eixo = serializer.save()
         self.assertEqual(eixo.strdescricaoeixo, 'Transformação Digital')
@@ -48,7 +49,8 @@ class EixoSerializerTest(TestCase):
 class VigenciaPNGISerializerTest(TestCase):
     """Testes do VigenciaPNGISerializer"""
     
-    databases = {'gpp_plataform_db'}
+    # Precisa de ambos databases
+    databases = {'default', 'gpp_plataform_db'}
     
     def test_serialize_vigencia(self):
         """Testa serialização de vigência"""
