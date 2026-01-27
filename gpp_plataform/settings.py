@@ -299,6 +299,15 @@ TEST_RUNNER = 'common.test_runner.GPPTestRunner'
 
 # Configuração específica para testes
 if 'test' in sys.argv:
+    # Adicionar conexão 'gpp_plataform_db' como alias para 'default'
+    # Isso resolve o erro: ConnectionDoesNotExist: The connection 'gpp_plataform_db' doesn't exist
+    DATABASES['gpp_plataform_db'] = DATABASES['default'].copy()
+    DATABASES['gpp_plataform_db']['TEST'] = {
+        'NAME': 'test_gpp_plataform',
+        'CHARSET': 'UTF8',
+        'MIRROR': 'default',  # Usar o mesmo banco de teste do 'default'
+    }
+    
     # Usar mesmas credenciais do banco de desenvolvimento
     # O Django criará automaticamente test_gpp_plataform
     DATABASES['default']['TEST'] = {
