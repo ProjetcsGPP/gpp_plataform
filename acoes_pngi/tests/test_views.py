@@ -23,15 +23,15 @@ class AcoesPNGIViewsTest(TestCase):
             name='PNGI User'
         )
         
-        # Criar aplicação PNGI
-        self.app = Aplicacao.objects.create(
+        # Usar get_or_create para evitar conflito
+        self.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Ações PNGI'
+            defaults={'nomeaplicacao': 'Ações PNGI'}
         )
-        self.role = Role.objects.create(
+        self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
-            nomeperfil='Gestor PNGI',
-            codigoperfil='GESTOR_PNGI'
+            codigoperfil='GESTOR_PNGI',
+            defaults={'nomeperfil': 'Gestor PNGI'}
         )
         UserRole.objects.create(
             user=self.user,

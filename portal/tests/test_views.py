@@ -21,16 +21,18 @@ class PortalViewsTest(TestCase):
             name='Portal User'
         )
         
-        # Criar aplicação Portal
-        self.app = Aplicacao.objects.create(
+        # Usar get_or_create para evitar conflito
+        self.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='PORTAL',
-            nomeaplicacao='Portal GPP',
-            isshowinportal=True
+            defaults={
+                'nomeaplicacao': 'Portal GPP',
+                'isshowinportal': True
+            }
         )
-        self.role = Role.objects.create(
+        self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
-            nomeperfil='Usuário Portal',
-            codigoperfil='USER_PORTAL'
+            codigoperfil='USER_PORTAL',
+            defaults={'nomeperfil': 'Usuário Portal'}
         )
         UserRole.objects.create(
             user=self.user,
