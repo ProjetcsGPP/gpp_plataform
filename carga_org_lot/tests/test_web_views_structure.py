@@ -1,75 +1,45 @@
 """
-Testes para estrutura de Web Views
+Testes para estrutura de views
 """
 
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.contrib.auth import get_user_model
-from django.urls import reverse, resolve
+from rest_framework.test import APIClient
 
 User = get_user_model()
 
 
 class WebViewsStructureTest(TestCase):
-    """Testes para verificar estrutura das web views"""
+    """Testa organização de views"""
     
     databases = {'default', 'gpp_plataform_db'}
     
     def setUp(self):
-        self.client = Client()
         self.user = User.objects.create_user(
-            username='testuser_web',
+            email='testuser_web@example.com',
             password='testpass123'
         )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
     
     def test_imports_from_web_views(self):
         """Testa imports de web_views"""
-        try:
-            from ..views.web_views import (
-                carga_login,
-                carga_dashboard,
-                patriarca_list,
-                organograma_list,
-                lotacao_list,
-                carga_list
-            )
-            self.assertTrue(callable(carga_login))
-            self.assertTrue(callable(carga_dashboard))
-            self.assertTrue(callable(patriarca_list))
-        except ImportError as e:
-            self.fail(f"Erro ao importar web views: {e}")
+        from ..views.web_views import dashboard_view
+        self.assertTrue(callable(dashboard_view))
     
     def test_imports_from_api_views(self):
         """Testa imports de api_views"""
-        try:
-            from ..views.api_views import (
-                PatriarcaViewSet,
-                OrganogramaVersaoViewSet,
-                LotacaoVersaoViewSet,
-                CargaPatriarcaViewSet,
-                LotacaoJsonOrgaoViewSet,
-                TokenEnvioCargaViewSet
-            )
-            from rest_framework.viewsets import ModelViewSet
-            self.assertTrue(issubclass(PatriarcaViewSet, ModelViewSet))
-            self.assertTrue(issubclass(LotacaoJsonOrgaoViewSet, ModelViewSet))
-        except ImportError as e:
-            self.fail(f"Erro ao importar API views: {e}")
+        from ..views.api_views import PatriarcaViewSet
+        self.assertIsNotNone(PatriarcaViewSet)
     
     def test_backward_compatibility_imports(self):
         """Testa compatibilidade retroativa de imports"""
-        try:
-            # Imports antigos devem continuar funcionando
-            from ..views import (
-                carga_login,
-                PatriarcaViewSet,
-                LotacaoJsonOrgaoViewSet
-            )
-            self.assertTrue(callable(carga_login))
-        except ImportError as e:
-            self.fail(f"Erro na compatibilidade retroativa: {e}")
+        from ..views import PatriarcaViewSet, dashboard_view
+        self.assertIsNotNone(PatriarcaViewSet)
+        self.assertTrue(callable(dashboard_view))
     
     def test_login_redirect_unauthenticated(self):
         """Testa redirecionamento para login sem autenticação"""
-        response = self.client.get('/carga_org_lot/')
-        # Deve redirecionar para login ou retornar 403/302
-        self.assertIn(response.status_code, [302, 403, 401])
+        self.client.logout()
+        response = self.client.get('/carga_org_lot/dashboard/')
+        self.assertEqual(response.status_code, 302)

@@ -25,11 +25,9 @@ class LotacaoJsonOrgaoViewSetTest(TestCase):
     def setUp(self):
         """Configuração inicial"""
         self.client = APIClient()
-        # FIX: email primeiro, username como keyword
         self.user = User.objects.create_user(
             email='test@example.com',
-            password='testpass123',
-            username='testuser_ljson'
+            password='testpass123'
         )
         self.client.force_authenticate(user=self.user)
         

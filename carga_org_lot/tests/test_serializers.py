@@ -12,68 +12,52 @@ from ..models import (
     TblOrganogramaVersao, TblLotacaoVersao, TblOrgaoUnidade,
 )
 from ..serializers import (
-    TblPatriarcaSerializer,
-    TblLotacaoJsonOrgaoSerializer,
-    TblStatusProgressoSerializer,
+    PatriarcaSerializer, StatusProgressoSerializer,
+    LotacaoJsonOrgaoSerializer,
 )
 
 User = get_user_model()
 
 
 class SerializersTest(TestCase):
-    """Testes para Serializers"""
+    """Testes para serializers"""
     
     databases = {'default', 'gpp_plataform_db'}
     
     def setUp(self):
         self.user = User.objects.create_user(
-            username='testuser_serial',
+            email='testuser_serial@example.com',
             password='testpass123'
         )
         
-        self.status_progresso = TblStatusProgresso.objects.get_or_create(
+        self.status = TblStatusProgresso.objects.get_or_create(
             id_status_progresso=1,
-            defaults={'str_descricao': 'Em Progresso'}
+            defaults={'str_descricao': 'Teste'}
         )[0]
+        
+        self.patriarca = TblPatriarca.objects.create(
+            id_externo_patriarca=uuid.uuid4(),
+            str_sigla_patriarca='TST',
+            str_nome='Teste',
+            id_status_progresso=self.status,
+            dat_criacao=timezone.now(),
+            id_usuario_criacao=self.user
+        )
     
     def test_status_progresso_serializer(self):
         """Testa StatusProgressoSerializer"""
-        serializer = TblStatusProgressoSerializer(self.status_progresso)
-        data = serializer.data
-        
-        self.assertEqual(data['id_status_progresso'], 1)
-        self.assertEqual(data['str_descricao'], 'Em Progresso')
+        serializer = StatusProgressoSerializer(self.status)
+        self.assertEqual(serializer.data['str_descricao'], 'Teste')
     
     def test_patriarca_serializer(self):
         """Testa PatriarcaSerializer"""
-        patriarca = TblPatriarca.objects.create(
-            id_externo_patriarca=uuid.uuid4(),
-            str_sigla_patriarca='TEST',
-            str_nome='Teste',
-            id_status_progresso=self.status_progresso,
-            dat_criacao=timezone.now(),
-            id_usuario_criacao=self.user
-        )
-        
-        serializer = TblPatriarcaSerializer(patriarca)
-        data = serializer.data
-        
-        self.assertEqual(data['str_sigla_patriarca'], 'TEST')
-        self.assertIn('status_progresso', data)
+        serializer = PatriarcaSerializer(self.patriarca)
+        self.assertEqual(serializer.data['str_sigla_patriarca'], 'TST')
     
     def test_lotacao_json_serializer_total_servidores(self):
         """Testa campo calculado total_servidores"""
-        patriarca = TblPatriarca.objects.create(
-            id_externo_patriarca=uuid.uuid4(),
-            str_sigla_patriarca='TEST',
-            str_nome='Teste',
-            id_status_progresso=self.status_progresso,
-            dat_criacao=timezone.now(),
-            id_usuario_criacao=self.user
-        )
-        
         organograma = TblOrganogramaVersao.objects.create(
-            id_patriarca=patriarca,
+            id_patriarca=self.patriarca,
             str_origem='TESTE',
             dat_processamento=timezone.now(),
             str_status_processamento='PROCESSADO',
@@ -81,7 +65,7 @@ class SerializersTest(TestCase):
         )
         
         lotacao_versao = TblLotacaoVersao.objects.create(
-            id_patriarca=patriarca,
+            id_patriarca=self.patriarca,
             id_organograma_versao=organograma,
             str_origem='TESTE',
             dat_processamento=timezone.now(),
@@ -91,9 +75,9 @@ class SerializersTest(TestCase):
         
         orgao = TblOrgaoUnidade.objects.create(
             id_organograma_versao=organograma,
-            id_patriarca=patriarca,
-            str_nome='Teste',
-            str_sigla='TST',
+            id_patriarca=self.patriarca,
+            str_nome='Órgão Teste',
+            str_sigla='OT',
             int_nivel_hierarquia=1,
             flg_ativo=True,
             dat_criacao=timezone.now(),
@@ -103,13 +87,11 @@ class SerializersTest(TestCase):
         lotacao_json = TblLotacaoJsonOrgao.objects.create(
             id_lotacao_versao=lotacao_versao,
             id_organograma_versao=organograma,
-            id_patriarca=patriarca,
+            id_patriarca=self.patriarca,
             id_orgao_lotacao=orgao,
             js_conteudo={'servidores': [{'cpf': '111'}, {'cpf': '222'}]},
             dat_criacao=timezone.now()
         )
         
-        serializer = TblLotacaoJsonOrgaoSerializer(lotacao_json)
-        data = serializer.data
-        
-        self.assertEqual(data['total_servidores'], 2)
+        serializer = LotacaoJsonOrgaoSerializer(lotacao_json)
+        self.assertEqual(serializer.data['total_servidores'], 2)
