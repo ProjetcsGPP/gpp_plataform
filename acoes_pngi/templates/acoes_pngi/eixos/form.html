@@ -1,0 +1,90 @@
+{% extends 'acoes_pngi/base.html' %}
+
+{% block title %}{% if eixo %}Editar{% else %}Novo{% endif %} Eixo - Ações PNGI{% endblock %}
+{% block page_title %}{% if eixo %}Editar{% else %}Novo{% endif %} Eixo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-{% if eixo %}pencil{% else %}plus-circle{% endif %} me-2"></i>
+                        {% if eixo %}Editar Eixo{% else %}Novo Eixo{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="strdescricaoeixo" class="form-label">
+                                Descrição do Eixo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="strdescricaoeixo" 
+                                   name="strdescricaoeixo" 
+                                   value="{% if eixo %}{{ eixo.strdescricaoeixo }}{% endif %}"
+                                   maxlength="100"
+                                   required
+                                   placeholder="Ex: Gestão de Processos"
+                                   autofocus>
+                            <div class="form-text">
+                                Máximo 100 caracteres.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="stralias" class="form-label">
+                                Alias (Sigla) <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control text-uppercase" 
+                                   id="stralias" 
+                                   name="stralias" 
+                                   value="{% if eixo %}{{ eixo.stralias }}{% endif %}"
+                                   maxlength="5"
+                                   required
+                                   placeholder="Ex: GP"
+                                   style="max-width: 150px;">
+                            <div class="form-text">
+                                Máximo 5 caracteres (letras maiúsculas).
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'acoes_pngi_web:eixos_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>
+                                {% if eixo %}Salvar Alterações{% else %}Criar Eixo{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if eixo %}
+            <div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>ID:</strong> {{ eixo.ideixo }} | 
+                <strong>Criado em:</strong> {{ eixo.created_at|date:"d/m/Y H:i" }} | 
+                <strong>Última atualização:</strong> {{ eixo.updated_at|date:"d/m/Y H:i" }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Converter alias para maiúsculas automaticamente
+document.getElementById('stralias').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+});
+</script>
+{% endblock %}
+    
