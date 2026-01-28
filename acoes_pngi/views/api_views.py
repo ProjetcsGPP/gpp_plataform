@@ -125,9 +125,6 @@ def portal_auth(request):
 # VIEWSET DE GERENCIAMENTO DE USUÁRIOS
 # ============================================================================
 
-
-
-
 class UserManagementViewSet(viewsets.ViewSet):
     """
     ViewSet para gerenciamento de usuários da aplicação.
@@ -400,3 +397,72 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
                 {'detail': f'Erro ao ativar vigência: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_permissions(request):
+    """
+    GET /api/acoes-pngi/permissions/
+    
+    Retorna permissões do usuário para consumo no Next.js
+    
+    Resposta:
+    {
+        "user_id": 1,
+        "role": "GESTOR_PNGI",
+        "permissions": ["add_eixo", "change_eixo", ...],
+        "groups": {
+            "can_manage_config": true,
+            "can_manage_acoes": true,
+            "can_delete": true
+        },
+        "specific": {
+            "eixo": {"add": true, "change": true, "delete": true, "view": true},
+            "situacaoacao": {...},
+            "vigenciapngi": {...}
+        }
+    }
+    """
+    from accounts.models import UserRole
+    
+    perms = list(request.user.get_app_permissions('ACOES_PNGI'))
+    
+    # Buscar role
+    user_role = UserRole.objects.filter(
+        user=request.user,
+        aplicacao__codigointerno='ACOES_PNGI'
+    ).select_related('role').first()
+    
+    role = user_role.role.codigoperfil if user_role else None
+    
+    # Agrupar permissões por model
+    models = ['eixo', 'situacaoacao', 'vigenciapngi']
+    specific = {}
+    
+    for model in models:
+        specific[model] = {
+            'add': f'add_{model}' in perms,
+            'change': f'change_{model}' in perms,
+            'delete': f'delete_{model}' in perms,
+            'view': f'view_{model}' in perms,
+        }
+    
+    return Response({
+        'user_id': request.user.id,
+        'email': request.user.email,
+        'name': request.user.name,
+        'role': role,
+        'permissions': perms,
+        'is_superuser': request.user.is_superuser,
+        'groups': {
+            'can_manage_config': any(p in perms for p in [
+                'add_eixo', 'change_eixo', 
+                'add_situacaoacao', 'change_situacaoacao',
+                'add_vigenciapngi', 'change_vigenciapngi'
+            ]),
+            'can_manage_acoes': False,  # Adicionar quando tiver model Acao
+            'can_delete': any(p.startswith('delete_') for p in perms),
+        },
+        'specific': specific,
+    })
