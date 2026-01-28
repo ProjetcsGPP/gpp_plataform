@@ -87,7 +87,7 @@ def acoes_pngi_login(request):
         
         # Verifica se usuário existe
         try:
-            user_exists = User.objects.get(stremail=email)
+            user_exists = User.objects.get(email=email)
         except User.DoesNotExist:
             messages.error(request, 'Usuário não encontrado. Verifique o email informado.')
             return render(request, 'acoes_pngi/login.html')
@@ -115,7 +115,7 @@ def acoes_pngi_login(request):
                 
                 # Login bem-sucedido
                 login(request, user)
-                messages.success(request, f'Bem-vindo(a) ao Ações PNGI, {user.strnome}!')
+                messages.success(request, f'Bem-vindo(a) ao Ações PNGI, {user.name}!')
                 return redirect('acoes_pngi_web:dashboard')
                 
             except Aplicacao.DoesNotExist:
@@ -180,7 +180,7 @@ def acoes_pngi_dashboard(request):
     return render(request, 'acoes_pngi/dashboard.html', {
         'user': user,
         'role': user_role.role if user_role else None,
-        'role_display': user_role.role.strnomerole if user_role else 'Sem Role',
+        'role_display': user_role.role.nomeperfil if user_role else 'Sem Role',  # ← CORRIGIDO
         'aplicacao': app_acoes,
         'stats': stats,
         'ultimos_eixos': ultimos_eixos,
