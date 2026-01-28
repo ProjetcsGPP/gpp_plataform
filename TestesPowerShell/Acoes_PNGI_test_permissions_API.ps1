@@ -298,7 +298,7 @@ function Test-EixoCRUD {
 }
 
 # ============================================================================
-# FUNÇÃO: Testar CRUD de Situações (CORRIGIDA)
+# FUNÇÃO: Testar CRUD de Situações (VERSÃO FINAL CORRIGIDA)
 # ============================================================================
 
 function Test-SituacaoCRUD {
@@ -327,10 +327,14 @@ function Test-SituacaoCRUD {
         -Description "Listar Situações (requer view_situacaoacao)" `
         -ExpectSuccess $canView | Out-Null
     
-    # CREATE - ← CAMPOS CORRIGIDOS
-    $timestamp = Get-Date -Format "yyyyMMddHHmmss"
+    # CREATE
+    # ⚠️ IMPORTANTE: 
+    # - Max 15 caracteres
+    # - Será convertido para UPPERCASE pelo serializer
+    # - Deve ser único
+    $timestamp = (Get-Date).ToString("HHmmss")  # Apenas hora para economizar caracteres
     $newSituacao = @{
-        strdescricaosituacao = "Sit_Test_$timestamp"  # ← max 15 chars, único
+        strdescricaosituacao = "TEST_$timestamp"  # Ex: "TEST_153045" (11 chars)
     }
     
     $createResult = Test-Endpoint -Method "POST" -Url $baseUrl -Token $Token `
@@ -340,11 +344,12 @@ function Test-SituacaoCRUD {
     
     if ($createResult.Success -and $createResult.Data.idsituacaoacao) {
         $sitId = $createResult.Data.idsituacaoacao
-        Write-Success "Situação criada com ID: $sitId"
+        Write-Success "Situação criada com ID: $sitId (valor: $($createResult.Data.strdescricaosituacao))"
         
         # UPDATE
+        $timestamp2 = (Get-Date).ToString("HHmmss")
         $updateData = @{
-            strdescricaosituacao = "Sit_Upd_$timestamp"  # ← max 15 chars
+            strdescricaosituacao = "UPD_$timestamp2"  # Novo valor único
         }
         
         Test-Endpoint -Method "PATCH" -Url "${baseUrl}${sitId}/" -Token $Token `
@@ -360,7 +365,7 @@ function Test-SituacaoCRUD {
 }
 
 # ============================================================================
-# FUNÇÃO: Testar CRUD de Vigências (CORRIGIDA)
+# FUNÇÃO: Testar CRUD de Vigências (VERSÃO FINAL CORRIGIDA)
 # ============================================================================
 
 function Test-VigenciaCRUD {
@@ -398,12 +403,14 @@ function Test-VigenciaCRUD {
         Write-Info "  ℹ Nenhuma vigência ativa cadastrada (esperado)"
     }
     
-    # CREATE - ← CAMPOS CORRIGIDOS
+    # CREATE
     $year = (Get-Date).Year
+    #$nextYear = $year + 1
+    
     $newVigencia = @{
-        strdescricaovigenciapngi = "Teste $year"          # ← Campo correto
-        datiniciovigencia = "$year-01-01"                 # ← Campo correto
-        datfinalvigencia = "$year-12-31"                  # ← Campo correto
+        strdescricaovigenciapngi = "Vigencia Teste PowerShell $year"
+        datiniciovigencia = "$year-01-01"
+        datfinalvigencia = "$year-12-31"
         isvigenciaativa = $false
     }
     
@@ -418,7 +425,7 @@ function Test-VigenciaCRUD {
         
         # UPDATE
         $updateData = @{
-            strdescricaovigenciapngi = "Teste $year ATUALIZADO"
+            strdescricaovigenciapngi = "Vigencia Teste ATUALIZADA $year"
         }
         
         Test-Endpoint -Method "PATCH" -Url "${baseUrl}${vigId}/" -Token $Token `
@@ -428,9 +435,13 @@ function Test-VigenciaCRUD {
         
         # ATIVAR (requer role Coordenador ou Gestor)
         $isCoordOrGestor = $Permissions.role -in @('GESTOR_PNGI', 'COORDENADOR_PNGI')
-        Test-Endpoint -Method "POST" -Url "${baseUrl}${vigId}/ativar/" -Token $Token `
+        $activateResult = Test-Endpoint -Method "POST" -Url "${baseUrl}${vigId}/ativar/" -Token $Token `
             -Description "Ativar Vigência (requer Coordenador+)" `
-            -ExpectSuccess $isCoordOrGestor | Out-Null
+            -ExpectSuccess $isCoordOrGestor
+        
+        if ($activateResult.Success) {
+            Write-Success "  Vigência ativada com sucesso!"
+        }
         
         # DELETE
         Test-Endpoint -Method "DELETE" -Url "${baseUrl}${vigId}/" -Token $Token `
