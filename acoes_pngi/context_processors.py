@@ -59,8 +59,8 @@ def acoes_permissions(request):
     
     # Usuário tem acesso
     context['has_acoes_access'] = True
-    context['acoes_role'] = user_role.role.strcodigorole
-    context['acoes_role_display'] = user_role.role.strnomerole
+    context['acoes_role'] = user_role.role.codigoperfil  # ← CORRIGIDO
+    context['acoes_role_display'] = user_role.role.nomeperfil  # ← CORRIGIDO
     
     # Permissões de Eixos
     context['can_add_eixo'] = request.user.has_app_perm('ACOES_PNGI', 'add_eixo')
