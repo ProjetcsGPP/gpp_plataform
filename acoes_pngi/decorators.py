@@ -1,29 +1,38 @@
+"""
+Decorators para views web do Ações PNGI
+Para uso nas views Django tradicionais (não API)
+"""
+
 from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 
+
 def require_acoes_permission(perm_codename):
     """
-    Decorator para views que requerem permissão específica
+    Decorator para views que requerem permissão específica.
     
     Uso:
-    @require_acoes_permission('add_eixo')
-    def criar_eixo(request):
-        ...
+        @require_acoes_permission('add_eixo')
+        def criar_eixo(request):
+            ...
+    
+    Args:
+        perm_codename: Código da permissão (ex: 'add_eixo', 'change_eixo')
     """
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
             if not request.user.is_authenticated:
-                return redirect('accounts:login')
+                return redirect('acoes_pngi_web:login')
             
             if not request.user.has_app_perm('ACOES_PNGI', perm_codename):
                 messages.error(
                     request,
-                    f'Você não tem permissão: {perm_codename}'
+                    f'Você não tem permissão para esta ação: {perm_codename}'
                 )
-                return redirect('acoes_pngi:dashboard')
+                return redirect('acoes_pngi_web:dashboard')
             
             return view_func(request, *args, **kwargs)
         return wrapper
@@ -32,18 +41,21 @@ def require_acoes_permission(perm_codename):
 
 def require_acoes_role(*allowed_roles):
     """
-    Decorator para verificar role específica
+    Decorator para verificar role específica.
     
     Uso:
-    @require_acoes_role('GESTOR_PNGI', 'COORDENADOR_PNGI')
-    def configuracoes(request):
-        ...
+        @require_acoes_role('GESTOR_PNGI', 'COORDENADOR_PNGI')
+        def configuracoes(request):
+            ...
+    
+    Args:
+        *allowed_roles: Códigos das roles permitidas
     """
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
             if not request.user.is_authenticated:
-                return redirect('accounts:login')
+                return redirect('acoes_pngi_web:login')
             
             if request.user.is_superuser:
                 return view_func(request, *args, **kwargs)
@@ -60,7 +72,7 @@ def require_acoes_role(*allowed_roles):
                     request,
                     f'Acesso negado. Role necessária: {", ".join(allowed_roles)}'
                 )
-                return redirect('acoes_pngi:dashboard')
+                return redirect('acoes_pngi_web:dashboard')
             
             return view_func(request, *args, **kwargs)
         return wrapper
@@ -69,12 +81,12 @@ def require_acoes_role(*allowed_roles):
 
 def ajax_require_permission(perm_codename):
     """
-    Decorator para views AJAX que retorna JSON
+    Decorator para views AJAX que retorna JSON.
     
     Uso:
-    @ajax_require_permission('delete_eixo')
-    def deletar_eixo_ajax(request, pk):
-        ...
+        @ajax_require_permission('delete_eixo')
+        def deletar_eixo_ajax(request, pk):
+            ...
     """
     def decorator(view_func):
         @wraps(view_func)
