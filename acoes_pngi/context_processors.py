@@ -1,24 +1,5 @@
 """
-Context Processor para disponibilizar permissões nos templates.
-Adicione em settings.py:
-
-TEMPLATES = [{
-    'OPTIONS': {
-        'context_processors': [
-            ...,
-            'acoes_pngi.context_processors.acoes_permissions',
-        ],
-    },
-}]
-
-Uso nos templates:
-    {% if can_add_eixo %}
-        <a href="...">Novo Eixo</a>
-    {% endif %}
-    
-    {% if is_gestor_pngi %}
-        <button>Ação Admin</button>
-    {% endif %}
+Context processors para disponibilizar dados em todos os templates do Ações PNGI.
 """
 
 from accounts.models import UserRole
@@ -26,99 +7,92 @@ from accounts.models import UserRole
 
 def acoes_permissions(request):
     """
-    Adiciona permissões do usuário ao contexto dos templates.
+    Disponibiliza permissões do Ações PNGI para todos os templates.
     
-    Variáveis disponíveis:
-        - acoes_role: Role do usuário (ex: 'GESTOR_PNGI')
-        - is_gestor_pngi: True se usuário é gestor
-        - is_coordenador_pngi: True se usuário é coordenador ou superior
-        - can_manage_config: True se pode gerenciar configurações
-        - can_manage_acoes: True se pode gerenciar ações
-        - can_delete: True se pode deletar registros
-        - can_add_eixo, can_change_eixo, can_delete_eixo, can_view_eixo
-        - can_add_situacaoacao, can_change_situacaoacao, etc.
+    Uso nos templates:
+        {% if can_add_eixo %}
+            <a href="{% url 'acoes_pngi_web:eixo_create' %}">Novo Eixo</a>
+        {% endif %}
     """
+    context = {
+        # Flags gerais de acesso
+        'has_acoes_access': False,
+        'acoes_role': None,
+        'acoes_role_display': None,
+        
+        # Permissões de Eixos
+        'can_add_eixo': False,
+        'can_change_eixo': False,
+        'can_delete_eixo': False,
+        'can_view_eixo': False,
+        
+        # Permissões de Situações
+        'can_add_situacao': False,
+        'can_change_situacao': False,
+        'can_delete_situacao': False,
+        'can_view_situacao': False,
+        
+        # Permissões de Vigências
+        'can_add_vigencia': False,
+        'can_change_vigencia': False,
+        'can_delete_vigencia': False,
+        'can_view_vigencia': False,
+        
+        # Grupos de permissões
+        'can_manage_config': False,
+        'can_manage_acoes': False,
+        'can_delete_any': False,
+    }
+    
+    # Se usuário não está autenticado, retorna permissões vazias
     if not request.user.is_authenticated:
-        return {
-            'acoes_role': None,
-            'is_gestor_pngi': False,
-            'is_coordenador_pngi': False,
-            'can_manage_config': False,
-            'can_manage_acoes': False,
-            'can_delete': False,
-        }
+        return context
     
-    user = request.user
-    
-    # Superusuário tem tudo
-    if user.is_superuser:
-        return {
-            'acoes_role': 'SUPERUSER',
-            'is_gestor_pngi': True,
-            'is_coordenador_pngi': True,
-            'can_manage_config': True,
-            'can_manage_acoes': True,
-            'can_delete': True,
-            'can_add_eixo': True,
-            'can_change_eixo': True,
-            'can_delete_eixo': True,
-            'can_view_eixo': True,
-            'can_add_situacaoacao': True,
-            'can_change_situacaoacao': True,
-            'can_delete_situacaoacao': True,
-            'can_view_situacaoacao': True,
-            'can_add_vigenciapngi': True,
-            'can_change_vigenciapngi': True,
-            'can_delete_vigenciapngi': True,
-            'can_view_vigenciapngi': True,
-        }
-    
-    # Buscar role do usuário
+    # Verifica se usuário tem acesso ao Ações PNGI
     user_role = UserRole.objects.filter(
-        user=user,
+        user=request.user,
         aplicacao__codigointerno='ACOES_PNGI'
     ).select_related('role').first()
     
     if not user_role:
-        return {
-            'acoes_role': None,
-            'is_gestor_pngi': False,
-            'is_coordenador_pngi': False,
-            'can_manage_config': False,
-            'can_manage_acoes': False,
-            'can_delete': False,
-        }
+        return context
     
-    role_code = user_role.role.codigoperfil
+    # Usuário tem acesso
+    context['has_acoes_access'] = True
+    context['acoes_role'] = user_role.role.strcodigorole
+    context['acoes_role_display'] = user_role.role.strnomerole
     
-    # Obter permissões específicas
-    perms = user.get_app_permissions('ACOES_PNGI')
+    # Permissões de Eixos
+    context['can_add_eixo'] = request.user.has_app_perm('ACOES_PNGI', 'add_eixo')
+    context['can_change_eixo'] = request.user.has_app_perm('ACOES_PNGI', 'change_eixo')
+    context['can_delete_eixo'] = request.user.has_app_perm('ACOES_PNGI', 'delete_eixo')
+    context['can_view_eixo'] = request.user.has_app_perm('ACOES_PNGI', 'view_eixo')
     
-    context = {
-        'acoes_role': role_code,
-        'is_gestor_pngi': role_code == 'GESTOR_PNGI',
-        'is_coordenador_pngi': role_code in ['GESTOR_PNGI', 'COORDENADOR_PNGI'],
-        'can_manage_config': role_code in ['GESTOR_PNGI', 'COORDENADOR_PNGI'],
-        'can_manage_acoes': role_code in ['GESTOR_PNGI', 'OPERADOR_ACAO'],
-        'can_delete': role_code == 'GESTOR_PNGI',
-        
-        # Eixos
-        'can_add_eixo': 'add_eixo' in perms,
-        'can_change_eixo': 'change_eixo' in perms,
-        'can_delete_eixo': 'delete_eixo' in perms,
-        'can_view_eixo': 'view_eixo' in perms,
-        
-        # Situações
-        'can_add_situacaoacao': 'add_situacaoacao' in perms,
-        'can_change_situacaoacao': 'change_situacaoacao' in perms,
-        'can_delete_situacaoacao': 'delete_situacaoacao' in perms,
-        'can_view_situacaoacao': 'view_situacaoacao' in perms,
-        
-        # Vigências
-        'can_add_vigenciapngi': 'add_vigenciapngi' in perms,
-        'can_change_vigenciapngi': 'change_vigenciapngi' in perms,
-        'can_delete_vigenciapngi': 'delete_vigenciapngi' in perms,
-        'can_view_vigenciapngi': 'view_vigenciapngi' in perms,
-    }
+    # Permissões de Situações
+    context['can_add_situacao'] = request.user.has_app_perm('ACOES_PNGI', 'add_situacaoacao')
+    context['can_change_situacao'] = request.user.has_app_perm('ACOES_PNGI', 'change_situacaoacao')
+    context['can_delete_situacao'] = request.user.has_app_perm('ACOES_PNGI', 'delete_situacaoacao')
+    context['can_view_situacao'] = request.user.has_app_perm('ACOES_PNGI', 'view_situacaoacao')
+    
+    # Permissões de Vigências
+    context['can_add_vigencia'] = request.user.has_app_perm('ACOES_PNGI', 'add_vigenciapngi')
+    context['can_change_vigencia'] = request.user.has_app_perm('ACOES_PNGI', 'change_vigenciapngi')
+    context['can_delete_vigencia'] = request.user.has_app_perm('ACOES_PNGI', 'delete_vigenciapngi')
+    context['can_view_vigencia'] = request.user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi')
+    
+    # Grupos de permissões (para simplificar uso nos templates)
+    context['can_manage_config'] = (
+        context['can_add_eixo'] or
+        context['can_add_situacao'] or
+        context['can_add_vigencia']
+    )
+    
+    context['can_manage_acoes'] = False  # TODO: quando implementar modelo de Ações
+    
+    context['can_delete_any'] = (
+        context['can_delete_eixo'] or
+        context['can_delete_situacao'] or
+        context['can_delete_vigencia']
+    )
     
     return context
