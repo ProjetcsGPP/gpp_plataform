@@ -6,6 +6,7 @@ from ..views.api_views import (
     VigenciaPNGIViewSet,
     UserManagementViewSet,
     portal_auth,
+    user_permissions,
 )
 
 
@@ -21,6 +22,9 @@ app_name = 'acoes_pngi_api'  # ← MUDOU: namespace específico para API
 urlpatterns = [
     # Autenticação via portal
     path('auth/portal/', portal_auth, name='portal-auth'),
+    
+    # Endpoint de permissões (para Next.js)
+    path('permissions/', user_permissions, name='user-permissions'),  # ← ADICIONAR
     
     # Rotas do router (ViewSets)
     path('', include(router.urls)),

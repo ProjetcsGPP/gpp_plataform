@@ -26,6 +26,8 @@ from ..serializers import (
     EixoListSerializer,
     VigenciaPNGIListSerializer
 )
+from ..permissions import HasAcoesPermission, IsCoordenadorOrAbove
+
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +103,7 @@ def portal_auth(request):
         from rest_framework.authtoken.models import Token
         local_token, _ = Token.objects.get_or_create(user=user)
         
-        logger.info(f"[{app_code}] Usuário autenticado via portal: {user.stremail}")
+        logger.info(f"[{app_code}] Usuário autenticado via portal: {user.email}")
         
         return Response({
             'user': user_serializer.data,
@@ -121,6 +123,84 @@ def portal_auth(request):
         )
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_permissions(request):
+    """
+    Retorna permissões do usuário logado para consumo no Next.js.
+    
+    GET /api/v1/acoes_pngi/permissions/
+    
+    Resposta:
+    {
+        "user_id": 1,
+        "email": "user@example.com",
+        "name": "Nome do Usuário",
+        "role": "GESTOR_PNGI",
+        "permissions": ["add_eixo", "change_eixo", "delete_eixo", "view_eixo", ...],
+        "is_superuser": false,
+        "groups": {
+            "can_manage_config": true,
+            "can_manage_acoes": false,
+            "can_delete": true
+        },
+        "specific": {
+            "eixo": {"add": true, "change": true, "delete": true, "view": true},
+            "situacaoacao": {"add": true, "change": true, "delete": true, "view": true},
+            "vigenciapngi": {"add": true, "change": true, "delete": true, "view": true}
+        }
+    }
+    """
+    try:
+        perms = list(request.user.get_app_permissions('ACOES_PNGI'))
+        
+        # Buscar role do usuário
+        user_role = UserRole.objects.filter(
+            user=request.user,
+            aplicacao__codigointerno='ACOES_PNGI'
+        ).select_related('role').first()
+        
+        role = user_role.role.codigoperfil if user_role else None
+        
+        # Agrupar permissões por model
+        models = ['eixo', 'situacaoacao', 'vigenciapngi']
+        specific = {}
+        
+        for model in models:
+            specific[model] = {
+                'add': f'add_{model}' in perms,
+                'change': f'change_{model}' in perms,
+                'delete': f'delete_{model}' in perms,
+                'view': f'view_{model}' in perms,
+            }
+        
+        return Response({
+            'user_id': request.user.id,
+            'email': request.user.email,
+            'name': request.user.name,
+            'role': role,
+            'permissions': perms,
+            'is_superuser': request.user.is_superuser,
+            'groups': {
+                'can_manage_config': any(p in perms for p in [
+                    'add_eixo', 'change_eixo', 
+                    'add_situacaoacao', 'change_situacaoacao',
+                    'add_vigenciapngi', 'change_vigenciapngi'
+                ]),
+                'can_manage_acoes': False,  # Futuramente com model Acao
+                'can_delete': any(p.startswith('delete_') for p in perms),
+            },
+            'specific': specific,
+        })
+    
+    except Exception as e:
+        logger.error(f"Erro ao buscar permissões do usuário: {str(e)}")
+        return Response(
+            {'detail': f'Erro ao buscar permissões: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
 # ============================================================================
 # VIEWSET DE GERENCIAMENTO DE USUÁRIOS
 # ============================================================================
@@ -133,25 +213,19 @@ class UserManagementViewSet(viewsets.ViewSet):
     """
     permission_classes = [IsAuthenticated]
     
-    lookup_field = 'pk'  # ← ADICIONAR ESTA LINHA
-    lookup_value_regex = '.*'  # ← ADICIONAR ESTA LINHA
+    lookup_field = 'pk'
+    lookup_value_regex = '.*'
     
     def retrieve(self, request, pk=None):
         """GET /api/v1/acoes_pngi/users/{email}/"""
-        return Response({
-            "email": pk,
-            "app_context": {
-                "code": getattr(request.app_context, 'code', None) if hasattr(request, 'app_context') else None,
-                "name": getattr(request.app_context, 'name', None) if hasattr(request, 'app_context') else None
-            } if hasattr(request, 'app_context') else None
-        })
+        return self.get_user_by_email(request, pk)
     
     @action(detail=False, methods=['post'])
     def sync_user(self, request):
         """
         Sincroniza usuário do portal com roles e atributos.
         
-        POST /api/v1/acoes_pngi/users/sync/
+        POST /api/v1/acoes_pngi/users/sync_user/
         Body: {
             "email": "user@example.com",
             "name": "Nome",
@@ -165,7 +239,7 @@ class UserManagementViewSet(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
             
             user = serializer.save()
-            created = serializer.validated_data['_created']
+            created = serializer.validated_data.get('_created', False)
             
             # Retorna usuário completo
             user_serializer = UserSerializer(user, context={'request': request})
@@ -188,11 +262,11 @@ class UserManagementViewSet(viewsets.ViewSet):
         """
         Lista usuários com acesso à aplicação atual.
         
-        GET /api/v1/acoes_pngi/users/list/
+        GET /api/v1/acoes_pngi/users/list_users/
         """
         try:
             # ✨ Filtra pela aplicação do contexto
-            app_code = request.app_context.get('code')
+            app_code = get_app_code(request)
             
             if not app_code:
                 return Response(
@@ -206,7 +280,7 @@ class UserManagementViewSet(viewsets.ViewSet):
             ).values_list('user_id', flat=True)
             
             users = User.objects.filter(
-                idusuario__in=user_ids,
+                id__in=user_ids,
                 is_active=True
             )
             
@@ -236,7 +310,7 @@ class UserManagementViewSet(viewsets.ViewSet):
         GET /api/v1/acoes_pngi/users/{email}/
         """
         try:
-            user = User.objects.get(stremail=pk)
+            user = User.objects.get(email=pk)
             serializer = UserSerializer(user, context={'request': request})
             return Response(serializer.data)
         
@@ -255,7 +329,7 @@ class UserManagementViewSet(viewsets.ViewSet):
         Body: {"is_active": false}
         """
         try:
-            user = User.objects.get(stremail=pk)
+            user = User.objects.get(email=pk)
             
             serializer = UserUpdateSerializer(
                 user,
@@ -282,24 +356,31 @@ class UserManagementViewSet(viewsets.ViewSet):
 
 
 # ============================================================================
-# VIEWSETS DE MODELOS ESPECÍFICOS
+# VIEWSETS DE MODELOS ESPECÍFICOS (COM PERMISSÕES)
 # ============================================================================
 
 class EixoViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gerenciar Eixos do PNGI.
     
+    🔒 Permissões verificadas automaticamente:
+    - GET (list/retrieve): requer view_eixo
+    - POST: requer add_eixo
+    - PUT/PATCH: requer change_eixo
+    - DELETE: requer delete_eixo
+    
     Endpoints:
     - GET    /api/v1/acoes_pngi/eixos/           - Lista eixos
     - POST   /api/v1/acoes_pngi/eixos/           - Cria eixo
     - GET    /api/v1/acoes_pngi/eixos/{id}/      - Detalhe
     - PUT    /api/v1/acoes_pngi/eixos/{id}/      - Atualiza
+    - PATCH  /api/v1/acoes_pngi/eixos/{id}/      - Atualiza parcial
     - DELETE /api/v1/acoes_pngi/eixos/{id}/      - Deleta
     - GET    /api/v1/acoes_pngi/eixos/list_light/ - Listagem otimizada
     """
     queryset = Eixo.objects.all()
     serializer_class = EixoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasAcoesPermission]  # ← PERMISSÕES AUTOMÁTICAS
     
     def get_serializer_class(self):
         """Retorna serializer otimizado para listagem"""
@@ -307,9 +388,20 @@ class EixoViewSet(viewsets.ModelViewSet):
             return EixoListSerializer
         return EixoSerializer
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def list_light(self, request):
-        """Endpoint otimizado para listagem rápida"""
+        """
+        Endpoint otimizado para listagem rápida (apenas visualização)
+        
+        GET /api/v1/acoes_pngi/eixos/list_light/
+        """
+        # Verifica permissão de view
+        if not request.user.has_app_perm('ACOES_PNGI', 'view_eixo'):
+            return Response(
+                {'detail': 'Você não tem permissão para visualizar eixos'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         eixos = Eixo.objects.all().values('ideixo', 'strdescricaoeixo', 'stralias')
         return Response({
             'count': len(eixos),
@@ -321,34 +413,48 @@ class SituacaoAcaoViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gerenciar Situações de Ações do PNGI.
     
+    🔒 Permissões verificadas automaticamente:
+    - GET: requer view_situacaoacao
+    - POST: requer add_situacaoacao
+    - PUT/PATCH: requer change_situacaoacao
+    - DELETE: requer delete_situacaoacao
+    
     Endpoints:
     - GET    /api/v1/acoes_pngi/situacoes/       - Lista situações
     - POST   /api/v1/acoes_pngi/situacoes/       - Cria situação
     - GET    /api/v1/acoes_pngi/situacoes/{id}/  - Detalhe
     - PUT    /api/v1/acoes_pngi/situacoes/{id}/  - Atualiza
+    - PATCH  /api/v1/acoes_pngi/situacoes/{id}/  - Atualiza parcial
     - DELETE /api/v1/acoes_pngi/situacoes/{id}/  - Deleta
     """
     queryset = SituacaoAcao.objects.all()
     serializer_class = SituacaoAcaoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasAcoesPermission]  # ← PERMISSÕES AUTOMÁTICAS
 
 
 class VigenciaPNGIViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gerenciar Vigências do PNGI.
     
+    🔒 Permissões verificadas automaticamente:
+    - GET: requer view_vigenciapngi
+    - POST: requer add_vigenciapngi
+    - PUT/PATCH: requer change_vigenciapngi
+    - DELETE: requer delete_vigenciapngi
+    
     Endpoints:
     - GET    /api/v1/acoes_pngi/vigencias/                - Lista vigências
     - POST   /api/v1/acoes_pngi/vigencias/                - Cria vigência
     - GET    /api/v1/acoes_pngi/vigencias/{id}/           - Detalhe
     - PUT    /api/v1/acoes_pngi/vigencias/{id}/           - Atualiza
+    - PATCH  /api/v1/acoes_pngi/vigencias/{id}/           - Atualiza parcial
     - DELETE /api/v1/acoes_pngi/vigencias/{id}/           - Deleta
     - GET    /api/v1/acoes_pngi/vigencias/vigencia_ativa/ - Vigência ativa
     - POST   /api/v1/acoes_pngi/vigencias/{id}/ativar/    - Ativa vigência
     """
     queryset = VigenciaPNGI.objects.all()
     serializer_class = VigenciaPNGISerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasAcoesPermission]  # ← PERMISSÕES AUTOMÁTICAS
     
     def get_serializer_class(self):
         """Retorna serializer otimizado para listagem"""
@@ -356,9 +462,20 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
             return VigenciaPNGIListSerializer
         return VigenciaPNGISerializer
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def vigencia_ativa(self, request):
-        """Retorna a vigência atualmente ativa"""
+        """
+        Retorna a vigência atualmente ativa (apenas visualização)
+        
+        GET /api/v1/acoes_pngi/vigencias/vigencia_ativa/
+        """
+        # Verifica permissão de view
+        if not request.user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'):
+            return Response(
+                {'detail': 'Você não tem permissão para visualizar vigências'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         try:
             vigencia = VigenciaPNGI.objects.get(isvigenciaativa=True)
             serializer = self.get_serializer(vigencia)
@@ -369,9 +486,15 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[IsCoordenadorOrAbove])
     def ativar(self, request, pk=None):
-        """Ativa uma vigência específica"""
+        """
+        Ativa uma vigência específica.
+        
+        🔒 Apenas Coordenadores e Gestores podem ativar vigências.
+        
+        POST /api/v1/acoes_pngi/vigencias/{id}/ativar/
+        """
         try:
             from django.db import transaction
             
@@ -386,6 +509,8 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
                 
                 serializer = self.get_serializer(vigencia)
                 
+                logger.info(f"Vigência {vigencia.idvigenciapngi} ativada por {request.user.email}")
+                
                 return Response({
                     'detail': 'Vigência ativada com sucesso',
                     'vigencia': serializer.data
@@ -397,72 +522,3 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
                 {'detail': f'Erro ao ativar vigência: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def user_permissions(request):
-    """
-    GET /api/acoes-pngi/permissions/
-    
-    Retorna permissões do usuário para consumo no Next.js
-    
-    Resposta:
-    {
-        "user_id": 1,
-        "role": "GESTOR_PNGI",
-        "permissions": ["add_eixo", "change_eixo", ...],
-        "groups": {
-            "can_manage_config": true,
-            "can_manage_acoes": true,
-            "can_delete": true
-        },
-        "specific": {
-            "eixo": {"add": true, "change": true, "delete": true, "view": true},
-            "situacaoacao": {...},
-            "vigenciapngi": {...}
-        }
-    }
-    """
-    from accounts.models import UserRole
-    
-    perms = list(request.user.get_app_permissions('ACOES_PNGI'))
-    
-    # Buscar role
-    user_role = UserRole.objects.filter(
-        user=request.user,
-        aplicacao__codigointerno='ACOES_PNGI'
-    ).select_related('role').first()
-    
-    role = user_role.role.codigoperfil if user_role else None
-    
-    # Agrupar permissões por model
-    models = ['eixo', 'situacaoacao', 'vigenciapngi']
-    specific = {}
-    
-    for model in models:
-        specific[model] = {
-            'add': f'add_{model}' in perms,
-            'change': f'change_{model}' in perms,
-            'delete': f'delete_{model}' in perms,
-            'view': f'view_{model}' in perms,
-        }
-    
-    return Response({
-        'user_id': request.user.id,
-        'email': request.user.email,
-        'name': request.user.name,
-        'role': role,
-        'permissions': perms,
-        'is_superuser': request.user.is_superuser,
-        'groups': {
-            'can_manage_config': any(p in perms for p in [
-                'add_eixo', 'change_eixo', 
-                'add_situacaoacao', 'change_situacaoacao',
-                'add_vigenciapngi', 'change_vigenciapngi'
-            ]),
-            'can_manage_acoes': False,  # Adicionar quando tiver model Acao
-            'can_delete': any(p.startswith('delete_') for p in perms),
-        },
-        'specific': specific,
-    })
