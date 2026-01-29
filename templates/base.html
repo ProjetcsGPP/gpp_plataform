@@ -260,6 +260,57 @@
             }
         }
         
+        /* Dropdown customizado */
+        .user-info {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .user-info:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .dropdown-menu {
+            border-radius: 12px;
+            border: none;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem !important;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--app-primary-light);
+            color: var(--app-primary);
+        }
+        
+        .dropdown-item.text-danger:hover {
+            background-color: #fee;
+            color: #dc3545;
+        }
+        
+        .dropdown-header {
+            padding: 1rem 1.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .dropdown-divider {
+            margin: 0.5rem 0;
+        }
+
         /* Extra Styles */
         {% block extra_css %}{% endblock %}
     </style>
@@ -281,26 +332,67 @@
             
             <div class="app-header-actions">
                 {% if user.is_authenticated %}
-                    <!-- User Info -->
-                    <div class="user-info">
-                        <div class="user-avatar">
-                            {{ user.name|slice:":1"|upper }}
-                        </div>
-                        <div class="user-details">
-                            <div class="user-name">{{ user.name }}</div>
-                            {% if active_role_name %}
-                            <div class="user-role">
-                                <i class="fas fa-user-tag"></i> {{ active_role_name }}
+                    <!-- User Info with Dropdown -->
+                    <div class="dropdown">
+                        <button class="user-info" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="user-avatar">
+                                {{ user.name|slice:":1"|upper }}
                             </div>
+                            <div class="user-details">
+                                <div class="user-name">{{ user.name }}</div>
+                                {% if active_role_name %}
+                                <div class="user-role">
+                                    <i class="fas fa-user-tag"></i> {{ active_role_name }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <i class="fas fa-chevron-down ms-2"></i>
+                        </button>
+                        
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="min-width: 280px;">
+                            <li class="dropdown-header">
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                        {{ user.name|slice:":1"|upper }}
+                                    </div>
+                                    <div class="ms-3">
+                                        <div style="font-weight: 600; color: #2c3e50;">{{ user.name }}</div>
+                                        <small style="color: #6c757d;">{{ user.email }}</small>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            {% if active_role_name %}
+                            <li class="dropdown-header" style="padding: 0.5rem 1rem;">
+                                <small class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Perfil Ativo</small>
+                                <div style="color: var(--app-primary); font-weight: 600; margin-top: 0.25rem;">
+                                    <i class="fas fa-user-tag me-1"></i> {{ active_role_name }}
+                                </div>
+                            </li>
+                            
+                            {% if user_roles_for_app.count > 1 %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:switch_role' app_code %}">
+                                        <i class="fas fa-exchange-alt me-2"></i> Trocar Perfil
+                                    </a>
+                                </li>
                             {% endif %}
-                        </div>
+                            <li><hr class="dropdown-divider"></li>
+                            {% endif %}
+                            
+                            <li>
+                                <a class="dropdown-item" href="{% url 'portal:dashboard' %}">
+                                    <i class="fas fa-home me-2"></i> Voltar ao Portal
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% block logout_url %}{% url 'portal:logout' %}{% endblock %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Sair
+                                </a>
+                            </li>
+                        </ul>
                     </div>
-                    
-                    <!-- Logout Button -->
-                    <a href="{% block logout_url %}{% url 'portal:logout' %}{% endblock %}" class="btn-logout">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Sair</span>
-                    </a>
                 {% endif %}
             </div>
         </div>

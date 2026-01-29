@@ -3,52 +3,210 @@
 
 {% block title %}Selecionar Perfil - {{ aplicacao.nomeaplicacao }}{% endblock %}
 
+{% block body_class %}
+    {% if aplicacao.codigointerno == 'CARGA_ORG_LOT' %}app-carga
+    {% elif aplicacao.codigointerno == 'ACOES_PNGI' %}app-acoes
+    {% else %}app-portal
+    {% endif %}
+{% endblock %}
+
+{% block app_icon %}
+    {% if aplicacao.codigointerno == 'CARGA_ORG_LOT' %}fas fa-sitemap
+    {% elif aplicacao.codigointerno == 'ACOES_PNGI' %}fas fa-tasks
+    {% else %}fas fa-home
+    {% endif %}
+{% endblock %}
+
+{% block app_name %}{{ aplicacao.nomeaplicacao }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .role-selection-container {
+        min-height: calc(100vh - 250px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    
+    .role-card-container {
+        max-width: 900px;
+        width: 100%;
+    }
+    
+    .selection-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .selection-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.75rem;
+    }
+    
+    .selection-header p {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+    
+    .roles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .role-card {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 2rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .role-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--app-primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .role-card:hover {
+        border-color: var(--app-primary);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+    
+    .role-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .role-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--app-primary), var(--app-primary-dark));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .role-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .role-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        min-height: 3rem;
+    }
+    
+    .btn-select-role {
+        width: 100%;
+        padding: 0.875rem;
+        background: linear-gradient(135deg, var(--app-primary), var(--app-primary-dark));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-select-role:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+        color: white;
+    }
+    
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6c757d;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-back:hover {
+        color: var(--app-primary);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-user-tag"></i> Selecionar Perfil de Acesso
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted mb-4">
-                        Você possui múltiplos perfis para a aplicação 
-                        <strong>{{ aplicacao.nomeaplicacao }}</strong>. 
-                        Selecione o perfil que deseja utilizar:
-                    </p>
-
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="list-group mb-4">
-                            {% for user_role in user_roles %}
-                            <label class="list-group-item list-group-item-action">
-                                <div class="d-flex align-items-center">
-                                    <input type="radio" name="role_id" value="{{ user_role.id }}" 
-                                           class="me-3" required>
-                                    <div>
-                                        <h6 class="mb-1">{{ user_role.role.nomeperfil }}</h6>
-                                        <small class="text-muted">{{ user_role.role.codigoperfil }}</small>
-                                    </div>
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-check"></i> Acessar com Perfil Selecionado
-                            </button>
-                            <a href="{% url 'portal:dashboard' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left"></i> Voltar ao Portal
-                            </a>
-                        </div>
-                    </form>
-                </div>
+<div class="role-selection-container">
+    <div class="container">
+        <div class="role-card-container mx-auto">
+            <a href="{% url 'portal:dashboard' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                Voltar ao Portal
+            </a>
+            
+            <div class="selection-header">
+                <h2><i class="fas fa-user-tag me-2" style="color: var(--app-primary);"></i> Selecione seu Perfil</h2>
+                <p>Escolha com qual perfil deseja acessar <strong>{{ aplicacao.nomeaplicacao }}</strong></p>
             </div>
+            
+            <form method="post" id="roleForm">
+                {% csrf_token %}
+                <div class="roles-grid">
+                    {% for user_role in user_roles %}
+                    <div class="role-card" onclick="selectRole({{ user_role.id }})">
+                        <div class="role-icon">
+                            <i class="fas fa-{% if 'admin' in user_role.role.nomeperfil|lower or 'gestor' in user_role.role.nomeperfil|lower %}user-shield{% elif 'editor' in user_role.role.nomeperfil|lower %}user-edit{% else %}user{% endif %}"></i>
+                        </div>
+                        <div class="role-name">{{ user_role.role.nomeperfil }}</div>
+                        <div class="role-description">
+                            {% if user_role.role.descricao %}
+                                {{ user_role.role.descricao }}
+                            {% else %}
+                                Acesse o sistema com as permissões de {{ user_role.role.nomeperfil }}.
+                            {% endif %}
+                        </div>
+                        <button type="submit" name="role_id" value="{{ user_role.id }}" class="btn-select-role">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Acessar como {{ user_role.role.nomeperfil }}
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function selectRole(roleId) {
+        // Animação de feedback
+        event.target.closest('.role-card').style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            event.target.closest('.role-card').style.transform = '';
+        }, 100);
+    }
+</script>
 {% endblock %}

@@ -11,126 +11,260 @@
 
 {% block logout_url %}{% url 'acoes_pngi_web:logout' %}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .sidebar {
+        min-height: calc(100vh - 140px);
+        background-color: #343a40;
+        color: white;
+    }
+    .sidebar .nav-link {
+        color: rgba(255,255,255,0.8);
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+    .sidebar .nav-link:hover {
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+    }
+    .sidebar .nav-link.active {
+        background-color: var(--app-primary);
+        color: white;
+    }
+    .user-info-sidebar {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        margin-bottom: 1rem;
+    }
+    .role-selector {
+        background-color: rgba(0,0,0,0.2);
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin-top: 0.5rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .stat-card .icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
 <div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="alert alert-primary border-0 shadow-sm">
-                <h5 class="alert-heading">
-                    <i class="bi bi-hand-wave me-2"></i>
-                    Bem-vindo, {{ user.name|truncatewords:2 }}!
-                </h5>
-                <p class="mb-0">
-                    Você está logado como <strong>{{ role_display }}</strong>.
-                </p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row g-3 mb-4">
-        {% if can_view_eixo %}
-        <div class="col-md-6 col-lg-3">
-            <div class="stat-card">
-                <div class="icon bg-primary bg-opacity-10 text-primary">
-                    <i class="bi bi-columns-gap"></i>
-                </div>
-                <h3 class="mb-1">{{ stats.total_eixos|default:0 }}</h3>
-                <p class="text-muted mb-0">Eixos Cadastrados</p>
-                {% if can_add_eixo %}
-                <a href="{% url 'acoes_pngi_web:eixos_list' %}" class="btn btn-sm btn-outline-primary mt-2">
-                    Ver todos <i class="bi bi-arrow-right"></i>
-                </a>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if can_view_situacao %}
-        <div class="col-md-6 col-lg-3">
-            <div class="stat-card">
-                <div class="icon bg-success bg-opacity-10 text-success">
-                    <i class="bi bi-flag"></i>
-                </div>
-                <h3 class="mb-1">{{ stats.total_situacoes|default:0 }}</h3>
-                <p class="text-muted mb-0">Situações</p>
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if can_view_vigencia %}
-        <div class="col-md-6 col-lg-3">
-            <div class="stat-card">
-                <div class="icon bg-warning bg-opacity-10 text-warning">
-                    <i class="bi bi-calendar-range"></i>
-                </div>
-                <h3 class="mb-1">{{ stats.total_vigencias|default:0 }}</h3>
-                <p class="text-muted mb-0">Vigências</p>
-            </div>
-        </div>
-        
-        <div class="col-md-6 col-lg-3">
-            <div class="stat-card">
-                <div class="icon bg-info bg-opacity-10 text-info">
-                    <i class="bi bi-check-circle"></i>
-                </div>
-                <h3 class="mb-1">{{ stats.vigencias_ativas|default:0 }}</h3>
-                <p class="text-muted mb-0">Vigência Ativa</p>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-    
-    {% if ultimos_eixos %}
     <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-clock-history me-2"></i>
-                        Últimos Eixos Cadastrados
-                    </h6>
+        <!-- Sidebar -->
+        <nav class="col-md-2 col-lg-2 d-md-block sidebar">
+            <div class="position-sticky pt-3">
+                <!-- Seletor de Papel -->
+                <div class="user-info-sidebar">
+                    <div class="role-selector">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">Perfil Ativo:</small>
+                                <strong>{{ active_role_name }}</strong>
+                            </div>
+                            {% if user_roles_for_app.count > 1 %}
+                            <a href="{% url 'accounts:switch_role' app_code %}" 
+                               class="btn btn-sm btn-outline-light" 
+                               title="Trocar perfil">
+                                <i class="fas fa-exchange-alt"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Alias</th>
-                                    <th>Descrição</th>
-                                    <th>Cadastrado em</th>
-                                    {% if can_change_eixo or can_delete_eixo %}
-                                    <th class="text-end">Ações</th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for eixo in ultimos_eixos %}
-                                <tr>
-                                    <td><span class="badge bg-primary">{{ eixo.stralias }}</span></td>
-                                    <td>{{ eixo.strdescricaoeixo }}</td>
-                                    <td><small class="text-muted">{{ eixo.created_at|date:"d/m/Y H:i" }}</small></td>
-                                    {% if can_change_eixo or can_delete_eixo %}
-                                    <td class="text-end">
-                                        {% if can_change_eixo %}
-                                        <a href="{% url 'acoes_pngi_web:eixo_update' eixo.pk %}" class="btn btn-sm btn-outline-warning">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        {% endif %}
-                                        {% if can_delete_eixo %}
-                                        <a href="{% url 'acoes_pngi_web:eixo_delete' eixo.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deletar?')">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                        {% endif %}
-                                    </td>
-                                    {% endif %}
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+
+                <!-- Menu -->
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'acoes_pngi_web:dashboard' %}">
+                            <i class="fas fa-home me-2"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    {% if can_view_eixo %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'acoes_pngi_web:eixos_list' %}">
+                            <i class="fas fa-columns-gap me-2"></i> Eixos
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% if can_view_situacao %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-flag me-2"></i> Situações
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% if can_view_vigencia %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-calendar-range me-2"></i> Vigências
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <hr class="text-white">
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'portal:dashboard' %}">
+                            <i class="fas fa-arrow-left me-2"></i> Voltar ao Portal
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Conteúdo Principal -->
+        <main class="col-md-10 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Dashboard - Ações PNGI</h1>
+            </div>
+
+            <!-- Bem-vindo -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-primary border-0 shadow-sm">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-hand-wave me-2"></i>
+                            Bem-vindo(a), {{ user.name }}!
+                        </h5>
+                        <p class="mb-0">
+                            Você está acessando como <strong>{{ active_role_name }}</strong>.
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
+            
+            <!-- Cards de Estatísticas -->
+            <div class="row g-3 mb-4">
+                {% if can_view_eixo %}
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card">
+                        <div class="icon bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-columns-gap"></i>
+                        </div>
+                        <h3 class="mb-1">{{ stats.total_eixos|default:0 }}</h3>
+                        <p class="text-muted mb-0">Eixos Cadastrados</p>
+                        {% if can_add_eixo %}
+                        <a href="{% url 'acoes_pngi_web:eixos_list' %}" class="btn btn-sm btn-outline-primary mt-2">
+                            Ver todos <i class="fas fa-arrow-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if can_view_situacao %}
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card">
+                        <div class="icon bg-success bg-opacity-10 text-success">
+                            <i class="fas fa-flag"></i>
+                        </div>
+                        <h3 class="mb-1">{{ stats.total_situacoes|default:0 }}</h3>
+                        <p class="text-muted mb-0">Situações</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if can_view_vigencia %}
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card">
+                        <div class="icon bg-warning bg-opacity-10 text-warning">
+                            <i class="fas fa-calendar-range"></i>
+                        </div>
+                        <h3 class="mb-1">{{ stats.total_vigencias|default:0 }}</h3>
+                        <p class="text-muted mb-0">Vigências</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card">
+                        <div class="icon bg-info bg-opacity-10 text-info">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3 class="mb-1">{{ stats.vigencias_ativas|default:0 }}</h3>
+                        <p class="text-muted mb-0">Vigência Ativa</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Tabela de Últimos Eixos -->
+            {% if ultimos_eixos %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-clock-history me-2"></i>
+                                Últimos Eixos Cadastrados
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Alias</th>
+                                            <th>Descrição</th>
+                                            <th>Cadastrado em</th>
+                                            {% if can_change_eixo or can_delete_eixo %}
+                                            <th class="text-end">Ações</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for eixo in ultimos_eixos %}
+                                        <tr>
+                                            <td><span class="badge bg-primary">{{ eixo.stralias }}</span></td>
+                                            <td>{{ eixo.strdescricaoeixo }}</td>
+                                            <td><small class="text-muted">{{ eixo.created_at|date:"d/m/Y H:i" }}</small></td>
+                                            {% if can_change_eixo or can_delete_eixo %}
+                                            <td class="text-end">
+                                                {% if can_change_eixo %}
+                                                <a href="{% url 'acoes_pngi_web:eixo_update' eixo.pk %}" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-pencil"></i>
+                                                </a>
+                                                {% endif %}
+                                                {% if can_delete_eixo %}
+                                                <a href="{% url 'acoes_pngi_web:eixo_delete' eixo.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deletar?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                                {% endif %}
+                                            </td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </main>
     </div>
-    {% endif %}
 </div>
 {% endblock %}
