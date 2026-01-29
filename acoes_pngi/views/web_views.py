@@ -204,6 +204,20 @@ def acoes_pngi_dashboard(request):
     })
 
 
+def acoes_pngi_logout(request):
+    """
+    Logout do Ações PNGI.
+    """
+    logout(request)
+    messages.success(request, 'Logout realizado com sucesso.')
+    return redirect('acoes_pngi_web:login')
+
+
+# ============================================
+# EIXOS
+# ============================================
+
+
 @login_required(login_url='/acoes-pngi/login/')
 @require_acoes_access
 @require_acoes_permission('view_eixo')
@@ -326,10 +340,163 @@ def eixo_delete(request, pk):
     return redirect('acoes_pngi_web:eixos_list')
 
 
-def acoes_pngi_logout(request):
+# ============================================
+# VIGÊNCIAS
+# ============================================
+
+@login_required(login_url='/acoes-pngi/login/')
+@require_acoes_access
+@require_acoes_permission('view_vigenciapngi')
+def vigencias_list(request):
     """
-    Logout do Ações PNGI.
+    Lista todas as vigências cadastradas.
+    Requer permissão: view_vigenciapngi
     """
-    logout(request)
-    messages.success(request, 'Logout realizado com sucesso.')
-    return redirect('acoes_pngi_web:login')
+    vigencias = VigenciaPNGI.objects.all().order_by('-anovigencia')
+    
+    return render(request, 'acoes_pngi/vigencias/list.html', {
+        'vigencias': vigencias,
+        'can_add': request.user.has_app_perm('ACOES_PNGI', 'add_vigenciapngi'),
+        'can_edit': request.user.has_app_perm('ACOES_PNGI', 'change_vigenciapngi'),
+        'can_delete': request.user.has_app_perm('ACOES_PNGI', 'delete_vigenciapngi'),
+    })
+
+
+@login_required(login_url='/acoes-pngi/login/')
+@require_acoes_access
+@require_acoes_permission('add_vigenciapngi')
+def vigencia_create(request):
+    """
+    Cria uma nova vigência.
+    Requer permissão: add_vigenciapngi
+    """
+    if request.method == 'POST':
+        anovigencia = request.POST.get('anovigencia')
+        descricaovigencia = request.POST.get('descricaovigencia')
+        datavigenciainicio = request.POST.get('datavigenciainicio')
+        datavigenciafim = request.POST.get('datavigenciafim')
+        isvigenciaativa = request.POST.get('isvigenciaativa') == 'true'
+        
+        # Validações
+        if not all([anovigencia, descricaovigencia, datavigenciainicio, datavigenciafim]):
+            messages.error(request, 'Todos os campos são obrigatórios.')
+            return render(request, 'acoes_pngi/vigencias/form.html')
+        
+        # Validar datas
+        from datetime import datetime
+        try:
+            inicio = datetime.strptime(datavigenciainicio, '%Y-%m-%d')
+            fim = datetime.strptime(datavigenciafim, '%Y-%m-%d')
+            
+            if fim <= inicio:
+                messages.error(request, 'A data de fim deve ser posterior à data de início.')
+                return render(request, 'acoes_pngi/vigencias/form.html', {
+                    'anovigencia': anovigencia,
+                    'descricaovigencia': descricaovigencia,
+                    'datavigenciainicio': datavigenciainicio,
+                    'datavigenciafim': datavigenciafim,
+                })
+        except ValueError:
+            messages.error(request, 'Formato de data inválido.')
+            return render(request, 'acoes_pngi/vigencias/form.html')
+        
+        # Se está ativando esta vigência, desativar as outras
+        if isvigenciaativa:
+            VigenciaPNGI.objects.filter(isvigenciaativa=True).update(isvigenciaativa=False)
+        
+        try:
+            vigencia = VigenciaPNGI.objects.create(
+                anovigencia=anovigencia,
+                descricaovigencia=descricaovigencia,
+                datavigenciainicio=datavigenciainicio,
+                datavigenciafim=datavigenciafim,
+                isvigenciaativa=isvigenciaativa
+            )
+            messages.success(request, f'Vigência {vigencia.anovigencia} criada com sucesso!')
+            return redirect('acoes_pngi_web:vigencias_list')
+        except Exception as e:
+            messages.error(request, f'Erro ao criar vigência: {str(e)}')
+            return render(request, 'acoes_pngi/vigencias/form.html')
+    
+    return render(request, 'acoes_pngi/vigencias/form.html')
+
+
+@login_required(login_url='/acoes-pngi/login/')
+@require_acoes_access
+@require_acoes_permission('change_vigenciapngi')
+def vigencia_update(request, pk):
+    """
+    Atualiza uma vigência existente.
+    Requer permissão: change_vigenciapngi
+    """
+    try:
+        vigencia = VigenciaPNGI.objects.get(pk=pk)
+    except VigenciaPNGI.DoesNotExist:
+        messages.error(request, 'Vigência não encontrada.')
+        return redirect('acoes_pngi_web:vigencias_list')
+    
+    if request.method == 'POST':
+        anovigencia = request.POST.get('anovigencia')
+        descricaovigencia = request.POST.get('descricaovigencia')
+        datavigenciainicio = request.POST.get('datavigenciainicio')
+        datavigenciafim = request.POST.get('datavigenciafim')
+        isvigenciaativa = request.POST.get('isvigenciaativa') == 'true'
+        
+        # Validações
+        if not all([anovigencia, descricaovigencia, datavigenciainicio, datavigenciafim]):
+            messages.error(request, 'Todos os campos são obrigatórios.')
+            return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
+        
+        # Validar datas
+        from datetime import datetime
+        try:
+            inicio = datetime.strptime(datavigenciainicio, '%Y-%m-%d')
+            fim = datetime.strptime(datavigenciafim, '%Y-%m-%d')
+            
+            if fim <= inicio:
+                messages.error(request, 'A data de fim deve ser posterior à data de início.')
+                return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
+        except ValueError:
+            messages.error(request, 'Formato de data inválido.')
+            return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
+        
+        # Se está ativando esta vigência, desativar as outras
+        if isvigenciaativa and not vigencia.isvigenciaativa:
+            VigenciaPNGI.objects.filter(isvigenciaativa=True).exclude(pk=pk).update(isvigenciaativa=False)
+        
+        try:
+            vigencia.anovigencia = anovigencia
+            vigencia.descricaovigencia = descricaovigencia
+            vigencia.datavigenciainicio = datavigenciainicio
+            vigencia.datavigenciafim = datavigenciafim
+            vigencia.isvigenciaativa = isvigenciaativa
+            vigencia.save()
+            
+            messages.success(request, f'Vigência {vigencia.anovigencia} atualizada com sucesso!')
+            return redirect('acoes_pngi_web:vigencias_list')
+        except Exception as e:
+            messages.error(request, f'Erro ao atualizar vigência: {str(e)}')
+            return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
+    
+    return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
+
+
+@login_required(login_url='/acoes-pngi/login/')
+@require_acoes_access
+@require_acoes_permission('delete_vigenciapngi')
+def vigencia_delete(request, pk):
+    """
+    Deleta uma vigência.
+    Requer permissão: delete_vigenciapngi
+    """
+    try:
+        vigencia = VigenciaPNGI.objects.get(pk=pk)
+        ano = vigencia.anovigencia
+        vigencia.delete()
+        messages.success(request, f'Vigência {ano} deletada com sucesso!')
+    except VigenciaPNGI.DoesNotExist:
+        messages.error(request, 'Vigência não encontrada.')
+    except Exception as e:
+        messages.error(request, f'Erro ao deletar vigência: {str(e)}')
+    
+    return redirect('acoes_pngi_web:vigencias_list')

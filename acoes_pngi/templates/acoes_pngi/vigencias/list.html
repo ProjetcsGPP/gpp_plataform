@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Eixos - Ações PNGI{% endblock %}
+{% block title %}Vigências - Ações PNGI{% endblock %}
 
 {% block body_class %}app-acoes{% endblock %}
 
@@ -49,6 +49,12 @@
         font-weight: 600;
         padding: 0.5rem 0.75rem;
     }
+    .badge-ativa {
+        background-color: #28a745;
+    }
+    .badge-inativa {
+        background-color: #6c757d;
+    }
 </style>
 {% endblock %}
 
@@ -63,61 +69,80 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <div>
                     <h1 class="h2">
-                        <i class="fas fa-columns-gap me-2" style="color: var(--app-primary);"></i>
-                        Eixos Estratégicos
+                        <i class="fas fa-calendar-range me-2" style="color: var(--app-primary);"></i>
+                        Vigências PNGI
                     </h1>
-                    <p class="text-muted mb-0">Gerencie os eixos do PNGI</p>
+                    <p class="text-muted mb-0">Gerencie os períodos de vigência do PNGI</p>
                 </div>
                 {% if can_add %}
-                <a href="{% url 'acoes_pngi_web:eixo_create' %}" class="btn btn-primary">
+                <a href="{% url 'acoes_pngi_web:vigencia_create' %}" class="btn btn-primary">
                     <i class="fas fa-plus-circle me-2"></i>
-                    Novo Eixo
+                    Nova Vigência
                 </a>
                 {% endif %}
             </div>
 
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    {% if eixos %}
+                    {% if vigencias %}
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th width="10%">Alias</th>
+                                    <th width="10%">Ano</th>
                                     <th>Descrição</th>
-                                    <th width="20%">Cadastrado em</th>
+                                    <th width="15%">Data Início</th>
+                                    <th width="15%">Data Fim</th>
+                                    <th width="10%">Status</th>
                                     {% if can_edit or can_delete %}
                                     <th width="15%" class="text-end">Ações</th>
                                     {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for eixo in eixos %}
+                                {% for vigencia in vigencias %}
                                 <tr>
                                     <td>
-                                        <span class="badge bg-primary fs-6">{{ eixo.stralias }}</span>
+                                        <span class="badge bg-primary fs-6">{{ vigencia.anovigencia }}</span>
                                     </td>
-                                    <td>{{ eixo.strdescricaoeixo }}</td>
+                                    <td>{{ vigencia.descricaovigencia }}</td>
                                     <td>
                                         <small class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>
-                                            {{ eixo.created_at|date:"d/m/Y H:i" }}
+                                            <i class="fas fa-calendar-check me-1"></i>
+                                            {{ vigencia.datavigenciainicio|date:"d/m/Y" }}
                                         </small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-times me-1"></i>
+                                            {{ vigencia.datavigenciafim|date:"d/m/Y" }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if vigencia.isvigenciaativa %}
+                                        <span class="badge badge-ativa">
+                                            <i class="fas fa-check-circle me-1"></i> Ativa
+                                        </span>
+                                        {% else %}
+                                        <span class="badge badge-inativa">
+                                            <i class="fas fa-circle me-1"></i> Inativa
+                                        </span>
+                                        {% endif %}
                                     </td>
                                     {% if can_edit or can_delete %}
                                     <td class="text-end">
                                         {% if can_edit %}
-                                        <a href="{% url 'acoes_pngi_web:eixo_update' eixo.pk %}" 
+                                        <a href="{% url 'acoes_pngi_web:vigencia_update' vigencia.pk %}" 
                                            class="btn btn-sm btn-outline-warning" 
                                            title="Editar">
                                             <i class="fas fa-pencil"></i> Editar
                                         </a>
                                         {% endif %}
                                         {% if can_delete %}
-                                        <a href="{% url 'acoes_pngi_web:eixo_delete' eixo.pk %}" 
+                                        <a href="{% url 'acoes_pngi_web:vigencia_delete' vigencia.pk %}" 
                                            class="btn btn-sm btn-outline-danger"
                                            title="Deletar"
-                                           onclick="return confirm('Tem certeza que deseja deletar o eixo {{ eixo.stralias }}?')">
+                                           onclick="return confirm('Tem certeza que deseja deletar a vigência {{ vigencia.anovigencia }}?')">
                                             <i class="fas fa-trash"></i> Deletar
                                         </a>
                                         {% endif %}
@@ -133,17 +158,17 @@
                     <div class="mt-3">
                         <small class="text-muted">
                             <i class="fas fa-info-circle me-1"></i>
-                            Total de {{ eixos|length }} eixo{{ eixos|length|pluralize }} cadastrado{{ eixos|length|pluralize }}
+                            Total de {{ vigencias|length }} vigência{{ vigencias|length|pluralize }} cadastrada{{ vigencias|length|pluralize }}
                         </small>
                     </div>
                     {% else %}
                     <div class="text-center py-5">
                         <i class="fas fa-inbox display-1 text-muted"></i>
-                        <p class="text-muted mt-3 mb-0">Nenhum eixo cadastrado ainda.</p>
+                        <p class="text-muted mt-3 mb-0">Nenhuma vigência cadastrada ainda.</p>
                         {% if can_add %}
-                        <a href="{% url 'acoes_pngi_web:eixo_create' %}" class="btn btn-primary mt-3">
+                        <a href="{% url 'acoes_pngi_web:vigencia_create' %}" class="btn btn-primary mt-3">
                             <i class="fas fa-plus-circle me-2"></i>
-                            Criar Primeiro Eixo
+                            Criar Primeira Vigência
                         </a>
                         {% endif %}
                     </div>

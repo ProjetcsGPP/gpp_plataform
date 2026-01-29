@@ -1,89 +1,158 @@
-{% extends 'acoes_pngi/base.html' %}
+{% extends "base.html" %}
+{% load static %}
 
 {% block title %}{% if eixo %}Editar{% else %}Novo{% endif %} Eixo - Ações PNGI{% endblock %}
-{% block page_title %}{% if eixo %}Editar{% else %}Novo{% endif %} Eixo{% endblock %}
+
+{% block body_class %}app-acoes{% endblock %}
+
+{% block app_icon %}fas fa-tasks{% endblock %}
+{% block app_name %}Ações PNGI{% endblock %}
+
+{% block logout_url %}{% url 'acoes_pngi_web:logout' %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sidebar {
+        min-height: calc(100vh - 140px);
+        background-color: #343a40;
+        color: white;
+    }
+    .sidebar .nav-link {
+        color: rgba(255,255,255,0.8);
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+    .sidebar .nav-link:hover {
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+    }
+    .sidebar .nav-link.active {
+        background-color: var(--app-primary);
+        color: white;
+    }
+    .user-info-sidebar {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        margin-bottom: 1rem;
+    }
+    .role-selector {
+        background-color: rgba(0,0,0,0.2);
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin-top: 0.5rem;
+    }
+    .form-card {
+        max-width: 800px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-{% if eixo %}pencil{% else %}plus-circle{% endif %} me-2"></i>
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'acoes_pngi/includes/sidebar.html' %}
+
+        <!-- Conteúdo Principal -->
+        <main class="col-md-10 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-columns-gap me-2" style="color: var(--app-primary);"></i>
                         {% if eixo %}Editar Eixo{% else %}Novo Eixo{% endif %}
-                    </h5>
+                    </h1>
+                    <p class="text-muted mb-0">Preencha os dados do eixo estratégico</p>
                 </div>
-                <div class="card-body">
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-                        
-                        <div class="mb-3">
-                            <label for="strdescricaoeixo" class="form-label">
-                                Descrição do Eixo <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="strdescricaoeixo" 
-                                   name="strdescricaoeixo" 
-                                   value="{% if eixo %}{{ eixo.strdescricaoeixo }}{% endif %}"
-                                   maxlength="100"
-                                   required
-                                   placeholder="Ex: Gestão de Processos"
-                                   autofocus>
-                            <div class="form-text">
-                                Máximo 100 caracteres.
-                            </div>
+                <a href="{% url 'acoes_pngi_web:eixos_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Voltar
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0 form-card">
+                        <div class="card-body p-4">
+                            <form method="post" novalidate>
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="stralias" class="form-label">
+                                        <i class="fas fa-tag me-1"></i> Alias *
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="stralias" 
+                                        name="stralias" 
+                                        value="{{ eixo.stralias|default:'' }}"
+                                        maxlength="5"
+                                        placeholder="Ex: E1, E2, E3..."
+                                        required
+                                        style="text-transform: uppercase;">
+                                    <small class="form-text text-muted">
+                                        Identificador curto (máximo 5 caracteres). Será convertido para maiúsculas.
+                                    </small>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="strdescricaoeixo" class="form-label">
+                                        <i class="fas fa-align-left me-1"></i> Descrição *
+                                    </label>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="strdescricaoeixo" 
+                                        name="strdescricaoeixo" 
+                                        rows="4"
+                                        placeholder="Digite a descrição completa do eixo estratégico..."
+                                        required>{{ eixo.strdescricaoeixo|default:'' }}</textarea>
+                                    <small class="form-text text-muted">
+                                        Descrição detalhada do eixo estratégico.
+                                    </small>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>
+                                        {% if eixo %}Atualizar{% else %}Criar{% endif %} Eixo
+                                    </button>
+                                    <a href="{% url 'acoes_pngi_web:eixos_list' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i> Cancelar
+                                    </a>
+                                </div>
+                            </form>
                         </div>
-                        
-                        <div class="mb-4">
-                            <label for="stralias" class="form-label">
-                                Alias (Sigla) <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" 
-                                   class="form-control text-uppercase" 
-                                   id="stralias" 
-                                   name="stralias" 
-                                   value="{% if eixo %}{{ eixo.stralias }}{% endif %}"
-                                   maxlength="5"
-                                   required
-                                   placeholder="Ex: GP"
-                                   style="max-width: 150px;">
-                            <div class="form-text">
-                                Máximo 5 caracteres (letras maiúsculas).
-                            </div>
+                    </div>
+                </div>
+
+                <!-- Card de ajuda -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>
+                                Informações
+                            </h6>
+                            <ul class="small mb-0">
+                                <li class="mb-2">O <strong>Alias</strong> é um identificador único e curto</li>
+                                <li class="mb-2">Use códigos simples como E1, E2, etc.</li>
+                                <li class="mb-2">A <strong>Descrição</strong> deve ser clara e objetiva</li>
+                                <li>Campos marcados com * são obrigatórios</li>
+                            </ul>
                         </div>
-                        
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{% url 'acoes_pngi_web:eixos_list' %}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-2"></i>
-                                Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle me-2"></i>
-                                {% if eixo %}Salvar Alterações{% else %}Criar Eixo{% endif %}
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
-            
-            {% if eixo %}
-            <div class="alert alert-info mt-3">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>ID:</strong> {{ eixo.ideixo }} | 
-                <strong>Criado em:</strong> {{ eixo.created_at|date:"d/m/Y H:i" }} | 
-                <strong>Última atualização:</strong> {{ eixo.updated_at|date:"d/m/Y H:i" }}
-            </div>
-            {% endif %}
-        </div>
+        </main>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-// Converter alias para maiúsculas automaticamente
-document.getElementById('stralias').addEventListener('input', function(e) {
-    e.target.value = e.target.value.toUpperCase();
-});
+    // Converter alias para maiúsculas automaticamente
+    document.getElementById('stralias').addEventListener('input', function(e) {
+        this.value = this.value.toUpperCase();
+    });
 </script>
 {% endblock %}

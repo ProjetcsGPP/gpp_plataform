@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if vigencia %}Editar{% else %}Nova{% endif %} Vigência - Ações PNGI{% endblock %}
+
+{% block body_class %}app-acoes{% endblock %}
+
+{% block app_icon %}fas fa-tasks{% endblock %}
+{% block app_name %}Ações PNGI{% endblock %}
+
+{% block logout_url %}{% url 'acoes_pngi_web:logout' %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sidebar {
+        min-height: calc(100vh - 140px);
+        background-color: #343a40;
+        color: white;
+    }
+    .sidebar .nav-link {
+        color: rgba(255,255,255,0.8);
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+    .sidebar .nav-link:hover {
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+    }
+    .sidebar .nav-link.active {
+        background-color: var(--app-primary);
+        color: white;
+    }
+    .user-info-sidebar {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        margin-bottom: 1rem;
+    }
+    .role-selector {
+        background-color: rgba(0,0,0,0.2);
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin-top: 0.5rem;
+    }
+    .form-card {
+        max-width: 800px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'acoes_pngi/includes/sidebar.html' %}
+
+        <!-- Conteúdo Principal -->
+        <main class="col-md-10 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-calendar-range me-2" style="color: var(--app-primary);"></i>
+                        {% if vigencia %}Editar Vigência{% else %}Nova Vigência{% endif %}
+                    </h1>
+                    <p class="text-muted mb-0">Preencha os dados do período de vigência</p>
+                </div>
+                <a href="{% url 'acoes_pngi_web:vigencias_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Voltar
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0 form-card">
+                        <div class="card-body p-4">
+                            <form method="post" novalidate>
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="anovigencia" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i> Ano *
+                                        </label>
+                                        <input 
+                                            type="number" 
+                                            class="form-control" 
+                                            id="anovigencia" 
+                                            name="anovigencia" 
+                                            value="{{ vigencia.anovigencia|default:'' }}"
+                                            min="2020"
+                                            max="2050"
+                                            placeholder="Ex: 2026"
+                                            required>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="isvigenciaativa" class="form-label">
+                                            <i class="fas fa-toggle-on me-1"></i> Status
+                                        </label>
+                                        <select class="form-select" id="isvigenciaativa" name="isvigenciaativa">
+                                            <option value="true" {% if vigencia.isvigenciaativa %}selected{% endif %}>Ativa</option>
+                                            <option value="false" {% if not vigencia.isvigenciaativa %}selected{% endif %}>Inativa</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="descricaovigencia" class="form-label">
+                                        <i class="fas fa-align-left me-1"></i> Descrição *
+                                    </label>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="descricaovigencia" 
+                                        name="descricaovigencia" 
+                                        rows="3"
+                                        placeholder="Digite a descrição da vigência..."
+                                        required>{{ vigencia.descricaovigencia|default:'' }}</textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="datavigenciainicio" class="form-label">
+                                            <i class="fas fa-calendar-check me-1"></i> Data Início *
+                                        </label>
+                                        <input 
+                                            type="date" 
+                                            class="form-control" 
+                                            id="datavigenciainicio" 
+                                            name="datavigenciainicio" 
+                                            value="{% if vigencia.datavigenciainicio %}{{ vigencia.datavigenciainicio|date:'Y-m-d' }}{% endif %}"
+                                            required>
+                                    </div>
+
+                                    <div class="col-md-6 mb-4">
+                                        <label for="datavigenciafim" class="form-label">
+                                            <i class="fas fa-calendar-times me-1"></i> Data Fim *
+                                        </label>
+                                        <input 
+                                            type="date" 
+                                            class="form-control" 
+                                            id="datavigenciafim" 
+                                            name="datavigenciafim" 
+                                            value="{% if vigencia.datavigenciafim %}{{ vigencia.datavigenciafim|date:'Y-m-d' }}{% endif %}"
+                                            required>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>
+                                        {% if vigencia %}Atualizar{% else %}Criar{% endif %} Vigência
+                                    </button>
+                                    <a href="{% url 'acoes_pngi_web:vigencias_list' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i> Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card de ajuda -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>
+                                Informações
+                            </h6>
+                            <ul class="small mb-0">
+                                <li class="mb-2">O <strong>Ano</strong> identifica o período</li>
+                                <li class="mb-2">Apenas uma vigência pode estar <strong>Ativa</strong> por vez</li>
+                                <li class="mb-2">A data de fim deve ser posterior à data de início</li>
+                                <li>Campos marcados com * são obrigatórios</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {% if vigencia.isvigenciaativa %}
+                    <div class="card shadow-sm border-0 border-start border-success border-3 mt-3">
+                        <div class="card-body">
+                            <h6 class="card-title text-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Vigência Ativa
+                            </h6>
+                            <p class="small mb-0 text-muted">
+                                Esta vigência está atualmente ativa no sistema.
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Validar datas
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const dataInicio = document.getElementById('datavigenciainicio').value;
+        const dataFim = document.getElementById('datavigenciafim').value;
+        
+        if (dataInicio && dataFim && dataInicio >= dataFim) {
+            e.preventDefault();
+            alert('A data de fim deve ser posterior à data de início!');
+        }
+    });
+</script>
+{% endblock %}

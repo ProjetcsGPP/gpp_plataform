@@ -12,6 +12,10 @@ from ..views.web_views import (
     eixo_create,
     eixo_update,
     eixo_delete,
+    vigencia_create,
+    vigencia_update,
+    vigencia_delete,
+    vigencias_list
 )
 
 app_name = 'acoes_pngi_web'
@@ -46,11 +50,10 @@ urlpatterns = [
     # path('situacoes/<int:pk>/deletar/', situacao_delete, name='situacao_delete'),
     
     # =========================================================================
-    # VIGÊNCIAS (TODO: implementar)
+    # VIGÊNCIAS 
     # =========================================================================
-    # path('vigencias/', vigencias_list, name='vigencias_list'),
-    # path('vigencias/criar/', vigencia_create, name='vigencia_create'),
-    # path('vigencias/<int:pk>/editar/', vigencia_update, name='vigencia_update'),
-    # path('vigencias/<int:pk>/deletar/', vigencia_delete, name='vigencia_delete'),
-    # path('vigencias/<int:pk>/ativar/', vigencia_ativar, name='vigencia_ativar'),
+    path('vigencias/', vigencias_list, name='vigencias_list'),
+    path('vigencias/criar/', vigencia_create, name='vigencia_create'),
+    path('vigencias/<int:pk>/editar/', vigencia_update, name='vigencia_update'),
+    path('vigencias/<int:pk>/deletar/', vigencia_delete, name='vigencia_delete'),
 ]

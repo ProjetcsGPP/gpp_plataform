@@ -1,0 +1,68 @@
+<!-- Sidebar Menu Ações PNGI -->
+<nav class="col-md-2 col-lg-2 d-md-block sidebar">
+    <div class="position-sticky pt-3">
+        <!-- Seletor de Papel -->
+        <div class="user-info-sidebar">
+            <div class="role-selector">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted d-block">Perfil Ativo:</small>
+                        <strong>{{ active_role_name|default:"Sem perfil" }}</strong>
+                    </div>
+                    {% if user_roles_for_app.count > 1 %}
+                    <a href="{% url 'accounts:switch_role' app_code %}" 
+                       class="btn btn-sm btn-outline-light" 
+                       title="Trocar perfil">
+                        <i class="fas fa-exchange-alt"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu -->
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                   href="{% url 'acoes_pngi_web:dashboard' %}">
+                    <i class="fas fa-home me-2"></i> Dashboard
+                </a>
+            </li>
+            
+            {% if can_view_eixo %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'eixo' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="{% url 'acoes_pngi_web:eixos_list' %}">
+                    <i class="fas fa-columns-gap me-2"></i> Eixos
+                </a>
+            </li>
+            {% endif %}
+            
+            {% if can_view_situacao %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'situacao' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="#">
+                    <i class="fas fa-flag me-2"></i> Situações
+                </a>
+            </li>
+            {% endif %}
+            
+            {% if can_view_vigencia %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'vigencia' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="{% url 'acoes_pngi_web:vigencias_list' %}">
+                    <i class="fas fa-calendar-range me-2"></i> Vigências
+                </a>
+            </li>
+            {% endif %}
+            
+            <hr class="text-white">
+            
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'portal:dashboard' %}">
+                    <i class="fas fa-arrow-left me-2"></i> Voltar ao Portal
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
