@@ -1,20 +1,10 @@
-'''
-from django.urls import path, include
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from django.urls import path
+from accounts import views
+
+app_name = 'accounts'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    # JWT Authentication
-    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    # Include app URLs
-    path('api/accounts/', include('accounts.urls')),
-    path('api/auth_service/', include('auth_service.urls')),
-    path('api/portal/', include('portal.urls')),
-    path('api/carga_org_lot/', include('carga_org_lot.urls')),
-    path('api/db_service/', include('db_service.urls')),
+    path('select-role/<str:app_code>/', views.select_role, name='select_role'),
+    path('set-role/<int:role_id>/', views.set_active_role, name='set_active_role'),
+    path('switch-role/<str:app_code>/', views.switch_role, name='switch_role'),
 ]
-'''

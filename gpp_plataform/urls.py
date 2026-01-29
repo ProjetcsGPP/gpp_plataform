@@ -39,9 +39,9 @@ urlpatterns = [
     # VIEWS TRADICIONAIS - Django Templates (páginas web internas)
     # Prefixo: /<app>/
     # =========================================================================
-    path('', include('portal.urls.web_urls')),           # Portal (index, etc)
-    path('acoes-pngi/', include('acoes_pngi.urls.web_urls')),     # Ações PNGI
-    path('carga_org_lot/', include('carga_org_lot.urls.web_urls')),       # Carga de Organogramas
-    #path('accounts/', include('accounts.urls.web_urls')),         # Gestão de contas
-    # path('db/', include('db_service.urls')),           # TODO: criar
+    path('', include('portal.urls.web_urls')),                      # Portal (index, etc)
+    path('accounts/', include('accounts.urls.web_urls')),           # Gestão de contas (ADICIONAR/DESCOMENTAR)
+    path('acoes-pngi/', include('acoes_pngi.urls.web_urls')),      # Ações PNGI
+    path('carga_org_lot/', include('carga_org_lot.urls.web_urls')), # Carga de Organogramas
+    # path('db/', include('db_service.urls')),                      # TODO: criar
 ]
