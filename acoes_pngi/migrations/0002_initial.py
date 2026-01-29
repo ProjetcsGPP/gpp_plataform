@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('acoes_pngi', '0001_create_schema'), 
     ]
 
     operations = [
