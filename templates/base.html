@@ -316,7 +316,7 @@
     </style>
 </head>
 <body class="{% block body_class %}app-portal{% endblock %}">
-    
+
     <!-- Header -->
     <header class="app-header">
         <div class="container-fluid px-4">
@@ -326,7 +326,7 @@
                 </div>
                 <div class="app-name">
                     <div class="app-name-main">{% block app_name %}Portal GPP{% endblock %}</div>
-                    <div class="app-name-sub">Governo - Plataforma de Aplicações da Gerência de Processos e Projetos</div>
+                    <div class="app-name-sub">Plataforma de Aplicações da Gerência de Processos e Projetos</div>
                 </div>
             </div>
             
@@ -372,20 +372,23 @@
                             </li>
                             
                             {% if user_roles_for_app.count > 1 %}
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'accounts:switch_role' app_code %}">
-                                        <i class="fas fa-exchange-alt me-2"></i> Trocar Perfil
-                                    </a>
-                                </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:switch_role' app_code %}">
+                                    <i class="fas fa-exchange-alt me-2"></i> Trocar Perfil
+                                </a>
+                            </li>
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             {% endif %}
                             
+                            {% if app_code != 'PORTAL' %}
                             <li>
                                 <a class="dropdown-item" href="{% url 'portal:dashboard' %}">
                                     <i class="fas fa-home me-2"></i> Voltar ao Portal
                                 </a>
                             </li>
+                            {% endif %}
+                            
                             <li>
                                 <a class="dropdown-item text-danger" href="{% block logout_url %}{% url 'portal:logout' %}{% endblock %}">
                                     <i class="fas fa-sign-out-alt me-2"></i> Sair
