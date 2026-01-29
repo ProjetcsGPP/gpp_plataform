@@ -12,10 +12,10 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.core.cache import cache
-from accounts.models import UserRole, RolePermission
+from accounts.models import Role, RolePermission
 
 
-def get_user_permissions_cached(user, app_code='ACOES_PNGI', cache_timeout=900):
+def get_user_app_permissions(user, app_code='ACOES_PNGI', cache_timeout=900):
     """
     Obtém permissões do usuário com cache.
     
@@ -27,27 +27,36 @@ def get_user_permissions_cached(user, app_code='ACOES_PNGI', cache_timeout=900):
     Returns:
         set: Conjunto de codenames de permissões
     """
-    cache_key = f'user_perms_{app_code}_{user.id}'
+    if not user or not user.is_authenticated:
+        return set()
+    
+    cache_key = f'user_permissions_{user.id}'
     cached = cache.get(cache_key)
     
     if cached is not None:
         return cached
     
-    user_role = UserRole.objects.filter(
-        user=user,
-        aplicacao__codigointerno=app_code
-    ).select_related('role').first()
-    
-    if not user_role:
+    # Obter role do usuário através de idperfil
+    if not hasattr(user, 'idperfil') or not user.idperfil:
         cache.set(cache_key, set(), cache_timeout)
         return set()
     
-    perms = set(RolePermission.objects.filter(
-        role=user_role.role
-    ).values_list('permission__codename', flat=True))
+    # Filtrar apenas permissões da aplicação específica
+    perms = set()
+    role = user.idperfil
+    
+    # Verificar se o role pertence à aplicação correta
+    if role.idaplicacao and role.idaplicacao.codigointerno == app_code:
+        perms = set(RolePermission.objects.filter(
+            idperfil=role
+        ).values_list('permission__codename', flat=True))
     
     cache.set(cache_key, perms, cache_timeout)
     return perms
+
+
+# Alias para compatibilidade
+get_user_permissions_cached = get_user_app_permissions
 
 
 def clear_user_permissions_cache(user, app_code='ACOES_PNGI'):
@@ -62,17 +71,12 @@ def clear_user_permissions_cache(user, app_code='ACOES_PNGI'):
         user: Instância do usuário
         app_code: Código da aplicação
     """
-    cache_key = f'user_perms_{app_code}_{user.id}'
+    cache_key = f'user_permissions_{user.id}'
     cache.delete(cache_key)
     
-    # Também limpar cache do context processor
-    user_role = UserRole.objects.filter(
-        user=user,
-        aplicacao__codigointerno=app_code
-    ).select_related('role').first()
-    
-    if user_role:
-        cache_key_cp = f'acoes_perms_{user.id}_{user_role.role.id}'
+    # Também limpar cache do context processor se existir
+    if hasattr(user, 'idperfil') and user.idperfil:
+        cache_key_cp = f'acoes_perms_{user.id}_{user.idperfil.id}'
         cache.delete(cache_key_cp)
 
 
@@ -107,7 +111,8 @@ def require_app_permission(permission_codename, app_code='ACOES_PNGI', raise_exc
                 messages.error(request, "Você precisa estar autenticado.")
                 return redirect('login')
             
-            if not request.user.has_app_perm(app_code, permission_codename):
+            perms = get_user_app_permissions(request.user, app_code)
+            if permission_codename not in perms:
                 if raise_exception:
                     raise PermissionDenied(
                         f"Você não tem permissão '{permission_codename}' no {app_code}."
@@ -149,10 +154,8 @@ def require_any_permission(*permission_codenames, app_code='ACOES_PNGI', raise_e
                 messages.error(request, "Você precisa estar autenticado.")
                 return redirect('login')
             
-            has_permission = any(
-                request.user.has_app_perm(app_code, perm)
-                for perm in permission_codenames
-            )
+            perms = get_user_app_permissions(request.user, app_code)
+            has_permission = any(perm in perms for perm in permission_codenames)
             
             if not has_permission:
                 if raise_exception:
@@ -196,9 +199,10 @@ def require_all_permissions(*permission_codenames, app_code='ACOES_PNGI', raise_
                 messages.error(request, "Você precisa estar autenticado.")
                 return redirect('login')
             
+            perms = get_user_app_permissions(request.user, app_code)
             missing_perms = [
                 perm for perm in permission_codenames
-                if not request.user.has_app_perm(app_code, perm)
+                if perm not in perms
             ]
             
             if missing_perms:
@@ -235,9 +239,10 @@ def user_can_manage_model(user, model_name, app_code='ACOES_PNGI'):
     Returns:
         bool: True se pode adicionar OU editar
     """
+    perms = get_user_app_permissions(user, app_code)
     return (
-        user.has_app_perm(app_code, f'add_{model_name}') or
-        user.has_app_perm(app_code, f'change_{model_name}')
+        f'add_{model_name}' in perms or
+        f'change_{model_name}' in perms
     )
 
 
@@ -258,10 +263,11 @@ def get_model_permissions(user, model_name, app_code='ACOES_PNGI'):
     Returns:
         dict: Dicionário com flags de permissão
     """
+    perms = get_user_app_permissions(user, app_code)
     return {
-        'can_add': user.has_app_perm(app_code, f'add_{model_name}'),
-        'can_change': user.has_app_perm(app_code, f'change_{model_name}'),
-        'can_delete': user.has_app_perm(app_code, f'delete_{model_name}'),
-        'can_view': user.has_app_perm(app_code, f'view_{model_name}'),
+        'can_add': f'add_{model_name}' in perms,
+        'can_change': f'change_{model_name}' in perms,
+        'can_delete': f'delete_{model_name}' in perms,
+        'can_view': f'view_{model_name}' in perms,
         'can_manage': user_can_manage_model(user, model_name, app_code),
     }
