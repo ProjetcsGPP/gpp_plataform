@@ -1,0 +1,14 @@
+{% comment %}
+Componente de badge de permissão.
+Uso: {% permission_badge 'add_eixo' 'Criar Eixo' %}
+{% endcomment %}
+
+{% if has_permission %}
+    <span class="badge bg-success" title="Você tem permissão: {{ permission_codename }}">
+        <i class="bi bi-check-circle"></i> {{ label }}
+    </span>
+{% else %}
+    <span class="badge bg-secondary" title="Sem permissão: {{ permission_codename }}">
+        <i class="bi bi-x-circle"></i> {{ label }}
+    </span>
+{% endif %}
