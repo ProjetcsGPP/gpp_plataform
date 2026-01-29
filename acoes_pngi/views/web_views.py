@@ -214,6 +214,10 @@ def eixos_list(request):
     """
     eixos = Eixo.objects.all().order_by('stralias')
     
+    # DEBUG: Imprimir no console
+    print(f"DEBUG: Total de eixos encontrados: {eixos.count()}")
+    print(f"DEBUG: Eixos: {list(eixos.values())}")
+    
     return render(request, 'acoes_pngi/eixos/list.html', {
         'eixos': eixos,
         'can_add': request.user.has_app_perm('ACOES_PNGI', 'add_eixo'),
