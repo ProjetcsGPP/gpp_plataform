@@ -1,9 +1,16 @@
-{% extends 'acoes_pngi/base.html' %}
+{% extends "base.html" %}
+{% load static %}
+{% load permission_tags %}
 
 {% block title %}Dashboard - Ações PNGI{% endblock %}
-{% block page_title %}Dashboard{% endblock %}
 
-{% block content %}
+{% block body_class %}app-acoes{% endblock %}
+
+{% block app_icon %}fas fa-tasks{% endblock %}
+{% block app_name %}Ações PNGI{% endblock %}
+
+{% block logout_url %}{% url 'acoes_pngi_web:logout' %}{% endblock %}
+
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12">

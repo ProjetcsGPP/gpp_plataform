@@ -4,10 +4,17 @@
 
 {% block title %}Dashboard - Carga Org/Lot{% endblock %}
 
+{% block body_class %}app-carga{% endblock %}
+
+{% block app_icon %}fas fa-sitemap{% endblock %}
+{% block app_name %}Carga Org/Lot{% endblock %}
+
+{% block logout_url %}{% url 'carga_org_lot_web:logout' %}{% endblock %}
+
 {% block extra_css %}
 <style>
     .sidebar {
-        min-height: calc(100vh - 56px);
+        min-height: calc(100vh - 140px);
         background-color: #343a40;
         color: white;
     }
@@ -22,10 +29,10 @@
         color: white;
     }
     .sidebar .nav-link.active {
-        background-color: #007bff;
+        background-color: var(--app-primary);
         color: white;
     }
-    .user-info {
+    .user-info-sidebar {
         padding: 1rem;
         border-bottom: 1px solid rgba(255,255,255,0.1);
         margin-bottom: 1rem;
@@ -45,17 +52,8 @@
         <!-- Sidebar -->
         <nav class="col-md-2 col-lg-2 d-md-block sidebar">
             <div class="position-sticky pt-3">
-                <!-- Informações do Usuário -->
-                <div class="user-info">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fas fa-user-circle fa-2x me-2"></i>
-                        <div>
-                            <div class="fw-bold">{{ user.name }}</div>
-                            <small class="text-muted">{{ user.email }}</small>
-                        </div>
-                    </div>
-                    
-                    <!-- Seletor de Papel -->
+                <!-- Seletor de Papel -->
+                <div class="user-info-sidebar">
                     <div class="role-selector">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
@@ -81,8 +79,6 @@
                         </a>
                     </li>
                     
-                    {% has_perm 'view_patriarca' as can_view_cadastro %}
-                    {% if can_view_cadastro or user.is_superuser %}
                     <li class="nav-item">
                         <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#cadastroSubmenu">
                             <i class="fas fa-database me-2"></i> Cadastro
@@ -104,17 +100,9 @@
                                     <i class="fas fa-users-cog me-2"></i> Usuários e Perfis
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-shield-alt me-2"></i> Alçadas/Autorizações
-                                </a>
-                            </li>
                         </ul>
                     </li>
-                    {% endif %}
                     
-                    {% has_perm 'change_patriarca' as can_organize %}
-                    {% if can_organize or user.is_superuser %}
                     <li class="nav-item">
                         <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#organizarSubmenu">
                             <i class="fas fa-project-diagram me-2"></i> Organizar Patriarca
@@ -126,17 +114,9 @@
                                     <i class="fas fa-edit me-2"></i> Criar/Editar Organograma
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-map-marked-alt me-2"></i> Lotação
-                                </a>
-                            </li>
                         </ul>
                     </li>
-                    {% endif %}
                     
-                    {% has_perm 'add_cargaexecucao' as can_execute %}
-                    {% if can_execute or user.is_superuser %}
                     <li class="nav-item">
                         <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#execucaoSubmenu">
                             <i class="fas fa-play-circle me-2"></i> Execução
@@ -145,17 +125,11 @@
                         <ul class="collapse nav flex-column ms-3" id="execucaoSubmenu">
                             <li class="nav-item">
                                 <a class="nav-link" href="#">
-                                    <i class="fas fa-upload me-2"></i> Enviar Carga Organograma
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-upload me-2"></i> Enviar Carga Lotação
+                                    <i class="fas fa-upload me-2"></i> Enviar Cargas
                                 </a>
                             </li>
                         </ul>
                     </li>
-                    {% endif %}
                     
                     <li class="nav-item">
                         <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#relatoriosSubmenu">
@@ -166,11 +140,6 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="#">
                                     <i class="fas fa-search me-2"></i> Consultar Patriarcas
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-history me-2"></i> Histórico de Cargas
                                 </a>
                             </li>
                         </ul>
@@ -196,7 +165,7 @@
             <!-- Cards de Resumo -->
             <div class="row">
                 <div class="col-md-3 mb-4">
-                    <div class="card bg-primary text-white">
+                    <div class="card bg-app-primary text-white">
                         <div class="card-body">
                             <h5 class="card-title">Patriarcas Ativos</h5>
                             <h2>12</h2>
@@ -233,8 +202,8 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header">
-                            <h5>Bem-vindo(a), {{ user.name }}!</h5>
+                        <div class="card-header bg-app-light">
+                            <h5 class="text-app-primary mb-0">Bem-vindo(a), {{ user.name }}!</h5>
                         </div>
                         <div class="card-body">
                             <p>Você está acessando como: <strong>{{ active_role_name }}</strong></p>
@@ -246,23 +215,4 @@
         </main>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Manter submenus abertos
-    document.querySelectorAll('.collapse').forEach(collapse => {
-        collapse.addEventListener('show.bs.collapse', function() {
-            localStorage.setItem(this.id, 'show');
-        });
-        collapse.addEventListener('hide.bs.collapse', function() {
-            localStorage.removeItem(this.id);
-        });
-        
-        // Restaurar estado
-        if (localStorage.getItem(this.id) === 'show') {
-            new bootstrap.Collapse(this, {toggle: false}).show();
-        }
-    });
-</script>
 {% endblock %}

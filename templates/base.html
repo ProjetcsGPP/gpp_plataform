@@ -1,0 +1,349 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <title>{% block title %}GPP Plataform{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Cores por aplicação - definidas via classe no body */
+            --app-primary: #007bff;
+            --app-primary-dark: #0056b3;
+            --app-primary-light: #e7f1ff;
+            --app-secondary: #6c757d;
+        }
+        
+        /* Portal - Azul */
+        body.app-portal {
+            --app-primary: #007bff;
+            --app-primary-dark: #0056b3;
+            --app-primary-light: #e7f1ff;
+            --app-accent: #17a2b8;
+        }
+        
+        /* Carga Org/Lot - Verde */
+        body.app-carga {
+            --app-primary: #28a745;
+            --app-primary-dark: #1e7e34;
+            --app-primary-light: #d4edda;
+            --app-accent: #20c997;
+        }
+        
+        /* Ações PNGI - Roxo/Lilás */
+        body.app-acoes {
+            --app-primary: #6f42c1;
+            --app-primary-dark: #5a32a3;
+            --app-primary-light: #e7d9f7;
+            --app-accent: #9b59b6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark) 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .app-header .container-fluid {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .app-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .app-logo {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .app-name {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .app-name-main {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+        
+        .app-name-sub {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .app-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-info:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            color: var(--app-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            line-height: 1.2;
+        }
+        
+        .user-role {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+        
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 0;
+            margin: 0;
+        }
+        
+        /* Footer */
+        .app-footer {
+            background-color: #343a40;
+            color: #ffffff;
+            padding: 1.5rem 0;
+            margin-top: auto;
+        }
+        
+        .app-footer p {
+            margin: 0;
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        /* Badges e elementos com cor da app */
+        .badge-app {
+            background-color: var(--app-primary);
+            color: white;
+        }
+        
+        .btn-app-primary {
+            background-color: var(--app-primary);
+            border-color: var(--app-primary);
+            color: white;
+        }
+        
+        .btn-app-primary:hover {
+            background-color: var(--app-primary-dark);
+            border-color: var(--app-primary-dark);
+            color: white;
+        }
+        
+        .text-app-primary {
+            color: var(--app-primary) !important;
+        }
+        
+        .bg-app-primary {
+            background-color: var(--app-primary) !important;
+        }
+        
+        .bg-app-light {
+            background-color: var(--app-primary-light) !important;
+        }
+        
+        /* Messages/Alerts */
+        .alert {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .app-name-main {
+                font-size: 1.1rem;
+            }
+            
+            .app-name-sub {
+                font-size: 0.65rem;
+            }
+            
+            .user-details {
+                display: none;
+            }
+            
+            .btn-logout span {
+                display: none;
+            }
+        }
+        
+        /* Extra Styles */
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body class="{% block body_class %}app-portal{% endblock %}">
+    
+    <!-- Header -->
+    <header class="app-header">
+        <div class="container-fluid px-4">
+            <div class="app-brand">
+                <div class="app-logo">
+                    <i class="{% block app_icon %}fas fa-building{% endblock %}"></i>
+                </div>
+                <div class="app-name">
+                    <div class="app-name-main">{% block app_name %}Portal GPP{% endblock %}</div>
+                    <div class="app-name-sub">Governo - Plataforma de Gestão de Pessoas</div>
+                </div>
+            </div>
+            
+            <div class="app-header-actions">
+                {% if user.is_authenticated %}
+                    <!-- User Info -->
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            {{ user.name|slice:":1"|upper }}
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name">{{ user.name }}</div>
+                            {% if active_role_name %}
+                            <div class="user-role">
+                                <i class="fas fa-user-tag"></i> {{ active_role_name }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Logout Button -->
+                    <a href="{% block logout_url %}{% url 'portal:logout' %}{% endblock %}" class="btn-logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sair</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container-fluid px-4 mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}
+        <!-- Conteúdo das páginas filhas -->
+        {% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="container-fluid px-4">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p>&copy; {% now "Y" %} GPP Plataform - Gestão de Pessoas do Governo. Todos os direitos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery (opcional, mas útil) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Extra Scripts -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
