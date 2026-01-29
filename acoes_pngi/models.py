@@ -14,7 +14,8 @@ class Eixo(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tbleixos'
+        db_table = 'tbleixos'
+        db_table_comment = 'Schema: acoes_pngi'
         managed = True
         verbose_name = 'Eixo'
         verbose_name_plural = 'Eixos'
@@ -41,8 +42,9 @@ class SituacaoAcao(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
-    class Meta:
-        db_table = 'acoes_pngi.tblsituacaoacao'
+    class Meta:        
+        db_table = 'tblsituacaoacao'
+        db_table_comment = 'Schema: acoes_pngi'
         managed = True
         verbose_name = 'Situação de Ação'
         verbose_name_plural = 'Situações de Ações'
@@ -68,7 +70,8 @@ class VigenciaPNGI(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tblvigenciapngi'
+        db_table = 'tblvigenciapngi'
+        db_table_comment = 'Schema: acoes_pngi'
         managed = True
         verbose_name = 'Vigência PNGI'
         verbose_name_plural = 'Vigências PNGI'
