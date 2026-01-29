@@ -1,0 +1,39 @@
+{
+"tblusuario": [
+	{
+		"idusuario" : 4,
+		"strnome" : "",
+		"stremail" : "acoesgpp@seger.es.gov.br",
+		"strsenha" : "pbkdf2_sha256$1200000$W2Y60oVRgqbaKbKAHgV9gy$UOa1xOHfLuLvpiAvIv8IWx\/zzKPWEzKBXd2wKuqObuY=",
+		"idstatususuario" : 1,
+		"idtipousuario" : 1,
+		"idclassificacaousuario" : 1,
+		"datacriacao" : "2026-01-13T14:21:35.417Z",
+		"idusuariocriacao" : null,
+		"data_alteracao" : null,
+		"idusuarioalteracao" : null,
+		"is_active" : true,
+		"is_staff" : true,
+		"is_superuser" : true,
+		"last_login" : "2026-01-13T14:22:15.922Z",
+		"date_joined" : null
+	},
+	{
+		"idusuario" : 5,
+		"strnome" : "Alexandre Wanick Mohamad",
+		"stremail" : "alexandre.mohamad@seger.es.gov.br",
+		"strsenha" : "pbkdf2_sha256$1200000$7T6S056t0uJiM4yA96hRV8$xvB2YWQMEMgGrkA\/C8Qe9FxyIvk5JadphpahMKmbjm8=",
+		"idstatususuario" : 1,
+		"idtipousuario" : 1,
+		"idclassificacaousuario" : 1,
+		"datacriacao" : "2026-01-13T14:45:41.338Z",
+		"idusuariocriacao" : null,
+		"data_alteracao" : null,
+		"idusuarioalteracao" : null,
+		"is_active" : true,
+		"is_staff" : false,
+		"is_superuser" : false,
+		"last_login" : "2026-01-28T19:45:29.185Z",
+		"date_joined" : null
+	}
+]}

@@ -1,0 +1,24 @@
+{
+"tblaplicacao": [
+	{
+		"idaplicacao" : 1,
+		"codigointerno" : "PORTAL",
+		"nomeaplicacao" : "Portal GPP",
+		"base_url" : "http:\/\/127.0.0.1:8000\/portal\/",
+		"isshowinportal" : false
+	},
+	{
+		"idaplicacao" : 2,
+		"codigointerno" : "CARGA_ORG_LOT",
+		"nomeaplicacao" : "Carga Única de Organograma e Lotação",
+		"base_url" : "http:\/\/127.0.0.1:8000\/carga_org_lot\/",
+		"isshowinportal" : true
+	},
+	{
+		"idaplicacao" : 3,
+		"codigointerno" : "ACOES_PNGI",
+		"nomeaplicacao" : "Ações PNGI",
+		"base_url" : "http:\/\/127.0.0.1:8000\/\/acoes-pngi\/",
+		"isshowinportal" : true
+	}
+]}

@@ -1,0 +1,11 @@
+{
+"tbltipousuario": [
+	{
+		"idtipousuario" : 1,
+		"strdescricao" : "Interno"
+	},
+	{
+		"idtipousuario" : 2,
+		"strdescricao" : "Externo"
+	}
+]}

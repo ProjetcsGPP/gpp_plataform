@@ -1,0 +1,45 @@
+{
+"accounts_role": [
+	{
+		"id" : 1,
+		"nomeperfil" : "Usuário do Portal",
+		"codigoperfil" : "USER_PORTAL",
+		"aplicacao_id" : 1
+	},
+	{
+		"id" : 2,
+		"nomeperfil" : "Gestor Carga Org\/Lot",
+		"codigoperfil" : "GESTOR_CARGA",
+		"aplicacao_id" : 2
+	},
+	{
+		"id" : 3,
+		"nomeperfil" : "Gestor Ações PNGI",
+		"codigoperfil" : "GESTOR_PNGI",
+		"aplicacao_id" : 3
+	},
+	{
+		"id" : 4,
+		"nomeperfil" : "Gestor do Portal",
+		"codigoperfil" : "GESTOR_PORTAL",
+		"aplicacao_id" : 1
+	},
+	{
+		"id" : 5,
+		"nomeperfil" : "Coordenador - Gerencia Configurações",
+		"codigoperfil" : "COORDENADOR_PNGI",
+		"aplicacao_id" : 3
+	},
+	{
+		"id" : 6,
+		"nomeperfil" : "Operador - Apenas Ações",
+		"codigoperfil" : "OPERADOR_ACAO",
+		"aplicacao_id" : 3
+	},
+	{
+		"id" : 7,
+		"nomeperfil" : "Consultor - Apenas Leitura",
+		"codigoperfil" : "CONSULTOR_PNGI",
+		"aplicacao_id" : 3
+	}
+]}

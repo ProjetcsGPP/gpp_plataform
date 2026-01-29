@@ -1,0 +1,10 @@
+{
+"accounts_attribute": [
+	{
+		"id" : 1,
+		"key" : "can_upload",
+		"value" : "true",
+		"aplicacao_id" : 2,
+		"user_id" : 5
+	}
+]}

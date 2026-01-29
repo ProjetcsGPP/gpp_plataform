@@ -1,0 +1,27 @@
+{
+"accounts_userrole": [
+	{
+		"id" : 1,
+		"aplicacao_id" : 1,
+		"role_id" : 1,
+		"user_id" : 5
+	},
+	{
+		"id" : 2,
+		"aplicacao_id" : 2,
+		"role_id" : 2,
+		"user_id" : 5
+	},
+	{
+		"id" : 3,
+		"aplicacao_id" : 3,
+		"role_id" : 3,
+		"user_id" : 5
+	},
+	{
+		"id" : 4,
+		"aplicacao_id" : 1,
+		"role_id" : 4,
+		"user_id" : 5
+	}
+]}
