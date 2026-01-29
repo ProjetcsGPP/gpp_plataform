@@ -34,6 +34,13 @@ def acoes_permissions(request):
     Returns:
         dict: Dicionário com flags de permissão e metadados do usuário
     """
+    # Modelos do acoes_pngi para garantir que as chaves sempre existam
+    ACOES_MODELS = [
+        'eixo', 'situacaoacao', 'vigenciapngi', 'acao', 'acaoxml',
+        'acaopngilog', 'eixoxml', 'situacaoacaoxml', 'vigenciapngixml'
+    ]
+    
+    # Inicializar contexto com todas as permissões = False
     context = {
         # Flags gerais de acesso
         'has_acoes_access': False,
@@ -41,6 +48,18 @@ def acoes_permissions(request):
         'acoes_role_display': None,
         'acoes_permissions_list': [],  # Lista de todas as permissões
     }
+    
+    # Inicializar todas as permissões como False
+    for model in ACOES_MODELS:
+        for action in ['add', 'change', 'delete', 'view']:
+            context[f'can_{action}_{model}'] = False
+        context[f'can_manage_{model}'] = False
+        context[f'can_full_{model}'] = False
+        context[f'can_edit_{model}'] = False
+    
+    # Grupos de permissões (compatibilidade com versão antiga)
+    context['can_manage_config'] = False
+    context['can_delete_any'] = False
     
     # Se usuário não está autenticado, retorna permissões vazias
     if not request.user.is_authenticated:
