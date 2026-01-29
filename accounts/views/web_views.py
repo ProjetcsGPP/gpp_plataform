@@ -1,3 +1,11 @@
-from django.shortcuts import render
+# accounts/urls/web_urls.py
+from django.urls import path
+from accounts.views import role_views  # MUDAR ESTA LINHA
 
-# Create your views here.
+app_name = 'accounts'
+
+urlpatterns = [
+    path('select-role/<str:app_code>/', role_views.select_role, name='select_role'),
+    path('set-role/<int:role_id>/', role_views.set_active_role, name='set_active_role'),
+    path('switch-role/<str:app_code>/', role_views.switch_role, name='switch_role'),
+]
