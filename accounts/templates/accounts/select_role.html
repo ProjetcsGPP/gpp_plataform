@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Selecionar Perfil - {{ aplicacao.nomeaplicacao }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-tag"></i> Selecionar Perfil de Acesso
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Você possui múltiplos perfis para a aplicação 
+                        <strong>{{ aplicacao.nomeaplicacao }}</strong>. 
+                        Selecione o perfil que deseja utilizar:
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="list-group mb-4">
+                            {% for user_role in user_roles %}
+                            <label class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <input type="radio" name="role_id" value="{{ user_role.id }}" 
+                                           class="me-3" required>
+                                    <div>
+                                        <h6 class="mb-1">{{ user_role.role.nomeperfil }}</h6>
+                                        <small class="text-muted">{{ user_role.role.codigoperfil }}</small>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check"></i> Acessar com Perfil Selecionado
+                            </button>
+                            <a href="{% url 'portal:dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar ao Portal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
