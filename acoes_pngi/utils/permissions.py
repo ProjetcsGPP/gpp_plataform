@@ -12,7 +12,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.core.cache import cache
-from accounts.models import Role, RolePermission
+from accounts.models import Role, RolePermission, UserRole
 
 
 def get_user_app_permissions(user, app_code='ACOES_PNGI', cache_timeout=900):
@@ -36,20 +36,20 @@ def get_user_app_permissions(user, app_code='ACOES_PNGI', cache_timeout=900):
     if cached is not None:
         return cached
     
-    # Obter role do usuário através de idperfil
-    if not hasattr(user, 'idperfil') or not user.idperfil:
+    # Obter role do usuário através de UserRole
+    user_role = UserRole.objects.filter(
+        user=user,
+        aplicacao__codigointerno=app_code
+    ).select_related('role').first()
+    
+    if not user_role:
         cache.set(cache_key, set(), cache_timeout)
         return set()
     
-    # Filtrar apenas permissões da aplicação específica
-    perms = set()
-    role = user.idperfil
-    
-    # Verificar se o role pertence à aplicação correta
-    if role.idaplicacao and role.idaplicacao.codigointerno == app_code:
-        perms = set(RolePermission.objects.filter(
-            idperfil=role
-        ).values_list('permission__codename', flat=True))
+    # Obter permissões do role
+    perms = set(RolePermission.objects.filter(
+        role=user_role.role
+    ).values_list('permission__codename', flat=True))
     
     cache.set(cache_key, perms, cache_timeout)
     return perms
@@ -75,8 +75,13 @@ def clear_user_permissions_cache(user, app_code='ACOES_PNGI'):
     cache.delete(cache_key)
     
     # Também limpar cache do context processor se existir
-    if hasattr(user, 'idperfil') and user.idperfil:
-        cache_key_cp = f'acoes_perms_{user.id}_{user.idperfil.id}'
+    user_role = UserRole.objects.filter(
+        user=user,
+        aplicacao__codigointerno=app_code
+    ).select_related('role').first()
+    
+    if user_role:
+        cache_key_cp = f'acoes_perms_{user.id}_{user_role.role.id}'
         cache.delete(cache_key_cp)
 
 
