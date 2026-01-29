@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission
 from django.core.cache import cache
 
-from accounts.models import Aplicacao, Role, RolePermission
+from accounts.models import Aplicacao, Role, RolePermission, UserRole
 from acoes_pngi.context_processors import acoes_permissions
 from acoes_pngi.utils.permissions import (
     get_user_app_permissions,
@@ -33,14 +33,16 @@ class AcoesPermissionsTestCase(TestCase):
             defaults={'nomeaplicacao': 'Ações PNGI'}
         )
         
-        # Criar roles
+        # Criar roles com o campo correto: aplicacao (não idaplicacao)
         self.admin_role, _ = Role.objects.get_or_create(
             nomeperfil='Admin PNGI',
-            defaults={'idaplicacao': self.app}
+            codigoperfil='ADMIN_PNGI',
+            defaults={'aplicacao': self.app}
         )
         self.viewer_role, _ = Role.objects.get_or_create(
             nomeperfil='Viewer PNGI',
-            defaults={'idaplicacao': self.app}
+            codigoperfil='VIEWER_PNGI',
+            defaults={'aplicacao': self.app}
         )
         
         # Criar usuários
@@ -49,16 +51,25 @@ class AcoesPermissionsTestCase(TestCase):
             email='admin@pngi.gov.br',
             password='admin123'
         )
-        self.admin_user.idperfil = self.admin_role
-        self.admin_user.save()
         
         self.viewer_user = User.objects.create_user(
             username='viewer_pngi',
             email='viewer@pngi.gov.br',
             password='viewer123'
         )
-        self.viewer_user.idperfil = self.viewer_role
-        self.viewer_user.save()
+        
+        # Criar UserRole para vincular usuários aos roles
+        UserRole.objects.create(
+            user=self.admin_user,
+            aplicacao=self.app,
+            role=self.admin_role
+        )
+        
+        UserRole.objects.create(
+            user=self.viewer_user,
+            aplicacao=self.app,
+            role=self.viewer_role
+        )
         
         # Criar permissões para o app acoes_pngi
         from acoes_pngi.models import Eixo, SituacaoAcao
@@ -92,30 +103,30 @@ class AcoesPermissionsTestCase(TestCase):
         )
         
         # Associar todas as permissões ao Admin
-        RolePermission.objects.create(
-            idperfil=self.admin_role,
+        RolePermission.objects.get_or_create(
+            role=self.admin_role,
             permission=self.perm_add_eixo
         )
-        RolePermission.objects.create(
-            idperfil=self.admin_role,
+        RolePermission.objects.get_or_create(
+            role=self.admin_role,
             permission=self.perm_change_eixo
         )
-        RolePermission.objects.create(
-            idperfil=self.admin_role,
+        RolePermission.objects.get_or_create(
+            role=self.admin_role,
             permission=self.perm_delete_eixo
         )
-        RolePermission.objects.create(
-            idperfil=self.admin_role,
+        RolePermission.objects.get_or_create(
+            role=self.admin_role,
             permission=self.perm_view_eixo
         )
         
         # Associar apenas view ao Viewer
-        RolePermission.objects.create(
-            idperfil=self.viewer_role,
+        RolePermission.objects.get_or_create(
+            role=self.viewer_role,
             permission=self.perm_view_eixo
         )
-        RolePermission.objects.create(
-            idperfil=self.viewer_role,
+        RolePermission.objects.get_or_create(
+            role=self.viewer_role,
             permission=self.perm_view_situacao
         )
         
