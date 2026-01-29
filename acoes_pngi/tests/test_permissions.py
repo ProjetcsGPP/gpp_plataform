@@ -45,17 +45,17 @@ class AcoesPermissionsTestCase(TestCase):
             defaults={'aplicacao': self.app}
         )
         
-        # Criar usuários
+        # Criar usuários (sem username, só email)
         self.admin_user = User.objects.create_user(
-            username='admin_pngi',
             email='admin@pngi.gov.br',
-            password='admin123'
+            password='admin123',
+            name='Admin PNGI Test'
         )
         
         self.viewer_user = User.objects.create_user(
-            username='viewer_pngi',
             email='viewer@pngi.gov.br',
-            password='viewer123'
+            password='viewer123',
+            name='Viewer PNGI Test'
         )
         
         # Criar UserRole para vincular usuários aos roles
