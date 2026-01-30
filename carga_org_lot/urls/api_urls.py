@@ -20,17 +20,22 @@ from ..views import (
     dashboard_stats,
     search_orgao,
     
-    # ViewSets
+    # ViewSets Principais
     UserManagementViewSet,
-    StatusProgressoViewSet,
-    StatusCargaViewSet,
-    TipoCargaViewSet,
-    StatusTokenEnvioCargaViewSet,
     PatriarcaViewSet,
     OrganogramaVersaoViewSet,
     LotacaoVersaoViewSet,
     CargaPatriarcaViewSet,
+    
+    # ViewSets Novos
+    LotacaoJsonOrgaoViewSet,
     TokenEnvioCargaViewSet,
+    
+    # ViewSets Auxiliares (Read-Only)
+    StatusProgressoViewSet,
+    StatusCargaViewSet,
+    TipoCargaViewSet,
+    StatusTokenEnvioCargaViewSet,
 )
 
 
@@ -75,6 +80,14 @@ router.register(
     basename='cargas'
 )
 
+# JSON de Lotação por Órgão (NOVO)
+router.register(
+    r'lotacao-json',
+    LotacaoJsonOrgaoViewSet,
+    basename='lotacao-json'
+)
+
+# Tokens de Envio
 router.register(
     r'tokens',
     TokenEnvioCargaViewSet,
@@ -208,7 +221,20 @@ Endpoints disponíveis após /api/v1/carga/:
    DELETE /cargas/{id}/
    (Actions customizadas via ViewSet existente)
 
-8. TOKENS
+8. JSON DE LOTAÇÃO POR ÓRGÃO (NOVO)
+   GET    /lotacao-json/
+   POST   /lotacao-json/
+   GET    /lotacao-json/{id}/
+   PUT    /lotacao-json/{id}/
+   PATCH  /lotacao-json/{id}/
+   DELETE /lotacao-json/{id}/
+   GET    /lotacao-json/{id}/conteudo/
+   POST   /lotacao-json/{id}/regenerar/
+   POST   /lotacao-json/{id}/enviar_api/
+   GET    /lotacao-json/estatisticas/
+   POST   /lotacao-json/gerar_em_lote/
+
+9. TOKENS
    GET    /tokens/
    POST   /tokens/
    GET    /tokens/{id}/
@@ -216,7 +242,7 @@ Endpoints disponíveis após /api/v1/carga/:
    PATCH  /tokens/{id}/
    DELETE /tokens/{id}/
 
-9. TABELAS AUXILIARES (read-only)
+10. TABELAS AUXILIARES (read-only)
    GET /status-progresso/
    GET /status-progresso/{id}/
    GET /status-carga/
