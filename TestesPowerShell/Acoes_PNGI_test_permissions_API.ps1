@@ -1,6 +1,6 @@
 # ============================================================================
 # Script de Testes de Permissões - Ações PNGI
-# Versão: 2.1 - Com rota de autenticação correta
+# Versão: 2.2 - Com validações corrigidas
 # ============================================================================
 
 [CmdletBinding()]
@@ -9,7 +9,7 @@ param()
 # Configurações
 $BASE_URL = "http://localhost:8000"
 $API_URL = "$BASE_URL/api/v1/acoes_pngi"
-$AUTH_URL = "$BASE_URL/api/v1/auth"  # ← CORRIGIDO
+$AUTH_URL = "$BASE_URL/api/v1/auth"
 
 # Cores para output
 function Write-Success { 
@@ -49,12 +49,10 @@ function Get-AuthToken {
     Write-Info "`n=== AUTENTICAÇÃO ==="
     Write-Info "Email: $Email"
     
-    # Converter SecureString para texto plano (apenas para envio HTTPS)
     $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
     try {
         $PlainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
         
-        # ← ROTA CORRIGIDA
         $loginUrl = "$AUTH_URL/token/"
         Write-Verbose "URL de login: $loginUrl"
         
@@ -71,14 +69,13 @@ function Get-AuthToken {
             Write-Verbose "Access Token: $($response.access)"
             Write-Verbose "Refresh Token: $($response.refresh)"
             
-            return $response.access  # Retorna access token
+            return $response.access
         }
         catch {
             Write-ErrorMessage "✗ Erro ao obter token:"
             Write-ErrorMessage "   Status: $($_.Exception.Response.StatusCode.value__)"
             Write-ErrorMessage "   Mensagem: $($_.Exception.Message)"
             
-            # Tentar ler corpo da resposta de erro
             try {
                 $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
                 $errorBody = $reader.ReadToEnd()
@@ -92,7 +89,6 @@ function Get-AuthToken {
         }
     }
     finally {
-        # Limpar senha da memória
         [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
         if ($PlainPassword) {
             Remove-Variable -Name PlainPassword -ErrorAction SilentlyContinue
@@ -170,6 +166,18 @@ function Test-Endpoint {
         }
         
         Write-ErrorMessage "✗ Erro: $statusCode - $($_.Exception.Message)"
+        
+        # Tentar ler detalhes do erro
+        try {
+            $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+            $errorBody = $reader.ReadToEnd()
+            $errorJson = $errorBody | ConvertFrom-Json
+            Write-ErrorMessage "   Detalhes: $errorBody"
+        }
+        catch {
+            # Ignorar erro ao ler corpo
+        }
+        
         return @{ Success = $false; StatusCode = $statusCode }
     }
 }
@@ -214,10 +222,10 @@ function Test-UserPermissions {
         
         Write-Info "`nPermissões Específicas:"
         Write-Host "  Eixo:" -ForegroundColor Yellow
-        Write-Host "    Add: $($perms.specific.eixo.add)" -ForegroundColor White
-        Write-Host "    Change: $($perms.specific.eixo.change)" -ForegroundColor White
-        Write-Host "    Delete: $($perms.specific.eixo.delete)" -ForegroundColor White
-        Write-Host "    View: $($perms.specific.eixo.view)" -ForegroundColor White
+        Write-Host "    Add: $($perms.specific.eixo.can_add)" -ForegroundColor White
+        Write-Host "    Change: $($perms.specific.eixo.can_change)" -ForegroundColor White
+        Write-Host "    Delete: $($perms.specific.eixo.can_delete)" -ForegroundColor White
+        Write-Host "    View: $($perms.specific.eixo.can_view)" -ForegroundColor White
         
         return $perms
     }
@@ -226,7 +234,7 @@ function Test-UserPermissions {
 }
 
 # ============================================================================
-# FUNÇÃO: Testar CRUD de Eixos
+# FUNÇÃO: Testar CRUD de Eixos (CORRIGIDO)
 # ============================================================================
 
 function Test-EixoCRUD {
@@ -246,7 +254,7 @@ function Test-EixoCRUD {
     $baseUrl = "$API_URL/eixos/"
     
     # 1. LIST (GET)
-    $canView = $Permissions.specific.eixo.view
+    $canView = $Permissions.specific.eixo.can_view
     Test-Endpoint -Method "GET" -Url $baseUrl -Token $Token `
         -Description "Listar Eixos (requer view_eixo)" `
         -ExpectSuccess $canView | Out-Null
@@ -257,12 +265,17 @@ function Test-EixoCRUD {
         -ExpectSuccess $canView | Out-Null
     
     # 3. CREATE (POST)
-    $canAdd = $Permissions.specific.eixo.add
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    # ⚠️ IMPORTANTE: stralias deve ser UPPERCASE e max 5 caracteres
+    $canAdd = $Permissions.specific.eixo.can_add
+    $timestamp = (Get-Date).ToString("HHmmss")  # 6 caracteres
+    $alias = "T" + $timestamp.Substring(0, 4)  # "T" + 4 dígitos = 5 chars
+    
     $newEixo = @{
-        strdescricaoeixo = "Eixo Teste PowerShell $timestamp"
-        stralias = "ETP"
+        strdescricaoeixo = "Eixo Teste PowerShell"
+        stralias = $alias  # Já em UPPERCASE e com 5 caracteres
     }
+    
+    Write-Verbose "Criando eixo com alias: $alias"
     
     $createResult = Test-Endpoint -Method "POST" -Url $baseUrl -Token $Token `
         -Body $newEixo `
@@ -271,7 +284,7 @@ function Test-EixoCRUD {
     
     if ($createResult.Success -and $createResult.Data.ideixo) {
         $eixoId = $createResult.Data.ideixo
-        Write-Success "Eixo criado com ID: $eixoId"
+        Write-Success "Eixo criado com ID: $eixoId (alias: $($createResult.Data.stralias))"
         
         # 4. RETRIEVE (GET by ID)
         Test-Endpoint -Method "GET" -Url "${baseUrl}${eixoId}/" -Token $Token `
@@ -279,7 +292,7 @@ function Test-EixoCRUD {
             -ExpectSuccess $canView | Out-Null
         
         # 5. UPDATE (PATCH)
-        $canChange = $Permissions.specific.eixo.change
+        $canChange = $Permissions.specific.eixo.can_change
         $updateData = @{
             strdescricaoeixo = "Eixo Teste ATUALIZADO"
         }
@@ -290,7 +303,7 @@ function Test-EixoCRUD {
             -ExpectSuccess $canChange | Out-Null
         
         # 6. DELETE
-        $canDelete = $Permissions.specific.eixo.delete
+        $canDelete = $Permissions.specific.eixo.can_delete
         Test-Endpoint -Method "DELETE" -Url "${baseUrl}${eixoId}/" -Token $Token `
             -Description "Deletar Eixo (requer delete_eixo)" `
             -ExpectSuccess $canDelete | Out-Null
@@ -298,7 +311,7 @@ function Test-EixoCRUD {
 }
 
 # ============================================================================
-# FUNÇÃO: Testar CRUD de Situações (VERSÃO FINAL CORRIGIDA)
+# FUNÇÃO: Testar CRUD de Situações (CORRIGIDO)
 # ============================================================================
 
 function Test-SituacaoCRUD {
@@ -317,10 +330,10 @@ function Test-SituacaoCRUD {
     
     $baseUrl = "$API_URL/situacoes/"
     
-    $canView = $Permissions.specific.situacaoacao.view
-    $canAdd = $Permissions.specific.situacaoacao.add
-    $canChange = $Permissions.specific.situacaoacao.change
-    $canDelete = $Permissions.specific.situacaoacao.delete
+    $canView = $Permissions.specific.situacaoacao.can_view
+    $canAdd = $Permissions.specific.situacaoacao.can_add
+    $canChange = $Permissions.specific.situacaoacao.can_change
+    $canDelete = $Permissions.specific.situacaoacao.can_delete
     
     # LIST
     Test-Endpoint -Method "GET" -Url $baseUrl -Token $Token `
@@ -332,10 +345,14 @@ function Test-SituacaoCRUD {
     # - Max 15 caracteres
     # - Será convertido para UPPERCASE pelo serializer
     # - Deve ser único
-    $timestamp = (Get-Date).ToString("HHmmss")  # Apenas hora para economizar caracteres
+    $timestamp = (Get-Date).ToString("HHmmss")  # 6 dígitos
+    $descricao = "TST_" + $timestamp  # "TST_" + 6 dígitos = 10 chars (dentro do limite)
+    
     $newSituacao = @{
-        strdescricaosituacao = "TEST_$timestamp"  # Ex: "TEST_153045" (11 chars)
+        strdescricaosituacao = $descricao
     }
+    
+    Write-Verbose "Criando situação: $descricao"
     
     $createResult = Test-Endpoint -Method "POST" -Url $baseUrl -Token $Token `
         -Body $newSituacao `
@@ -346,10 +363,15 @@ function Test-SituacaoCRUD {
         $sitId = $createResult.Data.idsituacaoacao
         Write-Success "Situação criada com ID: $sitId (valor: $($createResult.Data.strdescricaosituacao))"
         
+        # RETRIEVE
+        Test-Endpoint -Method "GET" -Url "${baseUrl}${sitId}/" -Token $Token `
+            -Description "Buscar Situação por ID (requer view_situacaoacao)" `
+            -ExpectSuccess $canView | Out-Null
+        
         # UPDATE
         $timestamp2 = (Get-Date).ToString("HHmmss")
         $updateData = @{
-            strdescricaosituacao = "UPD_$timestamp2"  # Novo valor único
+            strdescricaosituacao = "UPD_" + $timestamp2  # Novo valor único
         }
         
         Test-Endpoint -Method "PATCH" -Url "${baseUrl}${sitId}/" -Token $Token `
@@ -365,7 +387,7 @@ function Test-SituacaoCRUD {
 }
 
 # ============================================================================
-# FUNÇÃO: Testar CRUD de Vigências (VERSÃO FINAL CORRIGIDA)
+# FUNÇÃO: Testar CRUD de Vigências
 # ============================================================================
 
 function Test-VigenciaCRUD {
@@ -384,10 +406,10 @@ function Test-VigenciaCRUD {
     
     $baseUrl = "$API_URL/vigencias/"
     
-    $canView = $Permissions.specific.vigenciapngi.view
-    $canAdd = $Permissions.specific.vigenciapngi.add
-    $canChange = $Permissions.specific.vigenciapngi.change
-    $canDelete = $Permissions.specific.vigenciapngi.delete
+    $canView = $Permissions.specific.vigenciapngi.can_view
+    $canAdd = $Permissions.specific.vigenciapngi.can_add
+    $canChange = $Permissions.specific.vigenciapngi.can_change
+    $canDelete = $Permissions.specific.vigenciapngi.can_delete
     
     # LIST
     Test-Endpoint -Method "GET" -Url $baseUrl -Token $Token `
@@ -405,7 +427,6 @@ function Test-VigenciaCRUD {
     
     # CREATE
     $year = (Get-Date).Year
-    #$nextYear = $year + 1
     
     $newVigencia = @{
         strdescricaovigenciapngi = "Vigencia Teste PowerShell $year"
@@ -422,6 +443,11 @@ function Test-VigenciaCRUD {
     if ($createResult.Success -and $createResult.Data.idvigenciapngi) {
         $vigId = $createResult.Data.idvigenciapngi
         Write-Success "Vigência criada com ID: $vigId"
+        
+        # RETRIEVE
+        Test-Endpoint -Method "GET" -Url "${baseUrl}${vigId}/" -Token $Token `
+            -Description "Buscar Vigência por ID (requer view_vigenciapngi)" `
+            -ExpectSuccess $canView | Out-Null
         
         # UPDATE
         $updateData = @{
