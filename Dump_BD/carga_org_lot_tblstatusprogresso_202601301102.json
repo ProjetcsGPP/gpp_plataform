@@ -1,0 +1,27 @@
+{
+"tblstatusprogresso": [
+	{
+		"idstatusprogresso" : 1,
+		"strdescricao" : "Nova Carga"
+	},
+	{
+		"idstatusprogresso" : 2,
+		"strdescricao" : "Organograma em Progresso"
+	},
+	{
+		"idstatusprogresso" : 3,
+		"strdescricao" : "Lotação em Progresso"
+	},
+	{
+		"idstatusprogresso" : 4,
+		"strdescricao" : "Pronto para Carga"
+	},
+	{
+		"idstatusprogresso" : 5,
+		"strdescricao" : "Carga em Processamento"
+	},
+	{
+		"idstatusprogresso" : 6,
+		"strdescricao" : "Carga Finalizada"
+	}
+]}

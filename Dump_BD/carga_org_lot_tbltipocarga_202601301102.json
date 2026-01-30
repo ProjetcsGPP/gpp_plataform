@@ -1,0 +1,15 @@
+{
+"tbltipocarga": [
+	{
+		"idtipocarga" : 1,
+		"strdescricao" : "Organograma"
+	},
+	{
+		"idtipocarga" : 2,
+		"strdescricao" : "Lotação"
+	},
+	{
+		"idtipocarga" : 3,
+		"strdescricao" : "Lotação Arq. Único"
+	}
+]}

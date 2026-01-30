@@ -1,0 +1,63 @@
+{
+"tblstatuscarga": [
+	{
+		"idstatuscarga" : 1,
+		"strdescricao" : "Enviando Carga de Organograma",
+		"flgsucesso" : 0
+	},
+	{
+		"idstatuscarga" : 2,
+		"strdescricao" : "Organograma Enviado com sucesso",
+		"flgsucesso" : 1
+	},
+	{
+		"idstatuscarga" : 3,
+		"strdescricao" : "Organograma Enviado com Erro",
+		"flgsucesso" : 2
+	},
+	{
+		"idstatuscarga" : 4,
+		"strdescricao" : "Tempo Resposta Organograma Esgotado",
+		"flgsucesso" : 2
+	},
+	{
+		"idstatuscarga" : 5,
+		"strdescricao" : "Enviando Carga de Lotação",
+		"flgsucesso" : 0
+	},
+	{
+		"idstatuscarga" : 6,
+		"strdescricao" : "Lotação Enviada com sucesso",
+		"flgsucesso" : 1
+	},
+	{
+		"idstatuscarga" : 7,
+		"strdescricao" : "Lotação Enviada com Erro",
+		"flgsucesso" : 2
+	},
+	{
+		"idstatuscarga" : 8,
+		"strdescricao" : "Tempo Resposta Lotação Esgotado",
+		"flgsucesso" : 2
+	},
+	{
+		"idstatuscarga" : 9,
+		"strdescricao" : "Enviando Carga de Lotação (Arq. Único)",
+		"flgsucesso" : 0
+	},
+	{
+		"idstatuscarga" : 10,
+		"strdescricao" : "Lotação (Arq. Único) Enviada com sucesso",
+		"flgsucesso" : 1
+	},
+	{
+		"idstatuscarga" : 11,
+		"strdescricao" : "Lotação (Arq. Único) Enviada com Erro",
+		"flgsucesso" : 2
+	},
+	{
+		"idstatuscarga" : 12,
+		"strdescricao" : "Tempo Resposta Lotação (Arq. Único) Esgotado",
+		"flgsucesso" : 2
+	}
+]}

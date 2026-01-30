@@ -1,0 +1,27 @@
+{
+"tblstatustokenenviocarga": [
+	{
+		"idstatustokenenviocarga" : 1,
+		"strdescricao" : "Solicitando Token"
+	},
+	{
+		"idstatustokenenviocarga" : 2,
+		"strdescricao" : "Token Adquirido"
+	},
+	{
+		"idstatustokenenviocarga" : 3,
+		"strdescricao" : "Token Negado"
+	},
+	{
+		"idstatustokenenviocarga" : 4,
+		"strdescricao" : "Token Expirado"
+	},
+	{
+		"idstatustokenenviocarga" : 5,
+		"strdescricao" : "Token Inválido"
+	},
+	{
+		"idstatustokenenviocarga" : 6,
+		"strdescricao" : "Tempo Ultrapassado (Solicitação)"
+	}
+]}

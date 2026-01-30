@@ -18,7 +18,7 @@
 		"idaplicacao" : 3,
 		"codigointerno" : "ACOES_PNGI",
 		"nomeaplicacao" : "Ações PNGI",
-		"base_url" : "http:\/\/127.0.0.1:8000\/\/acoes-pngi\/",
+		"base_url" : "http:\/\/127.0.0.1:8000\/acoes-pngi\/",
 		"isshowinportal" : true
 	}
 ]}
