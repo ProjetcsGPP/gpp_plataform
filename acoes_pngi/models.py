@@ -31,7 +31,8 @@ class Eixo(models.Model):
 
 class SituacaoAcao(models.Model):
     """
-    Situações possíveis de uma ação PNGI
+    Situações possíveis de uma ação PNGI.
+    Tabela estática - raramente modificada.
     """
     idsituacaoacao = models.AutoField(primary_key=True, db_column='idsituacaoacao')
     strdescricaosituacao = models.CharField(
@@ -39,8 +40,7 @@ class SituacaoAcao(models.Model):
         unique=True, 
         db_column='strdescricaosituacao'
     )
-    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
-    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
+    # ⚠️ Tabela estática: SEM created_at/updated_at
 
     class Meta:        
         db_table = 'tblsituacaoacao'
@@ -111,5 +111,4 @@ class VigenciaPNGI(models.Model):
         Retorna a duração da vigência em dias
         """
         return (self.datfinalvigencia - self.datiniciovigencia).days
-    
     

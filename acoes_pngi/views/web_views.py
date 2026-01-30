@@ -1,16 +1,16 @@
 """
 Views web (Django templates) para a aplicação Ações PNGI.
-Usa autenticação por sessão e verifica permissões através do sistema RBAC.
+Usa autenticação por sessão e verifica permissões através do sistema RBAC automatizado.
 """
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import HttpResponseForbidden
 
 from accounts.models import UserRole, Aplicacao, User
 from ..models import Eixo, SituacaoAcao, VigenciaPNGI
+from ..utils.permissions import require_app_permission, get_user_app_permissions
 
 
 def require_acoes_access(view_func):
@@ -32,31 +32,6 @@ def require_acoes_access(view_func):
         return view_func(request, *args, **kwargs)
     
     return wrapper
-
-
-def require_acoes_permission(permission_codename):
-    """
-    Decorator que verifica se o usuário tem uma permissão específica do Ações PNGI.
-    
-    Uso:
-        @require_acoes_permission('add_eixo')
-        def criar_eixo_view(request):
-            ...
-    """
-    def decorator(view_func):
-        def wrapper(request, *args, **kwargs):
-            if not request.user.has_app_perm('ACOES_PNGI', permission_codename):
-                messages.error(
-                    request, 
-                    f'Você não tem permissão para realizar esta ação. '
-                    f'Permissão necessária: {permission_codename}'
-                )
-                return redirect('acoes_pngi_web:dashboard')
-            
-            return view_func(request, *args, **kwargs)
-        
-        return wrapper
-    return decorator
 
 
 def acoes_pngi_login(request):
@@ -133,7 +108,9 @@ def acoes_pngi_login(request):
 def acoes_pngi_dashboard(request):
     """
     Dashboard do Ações PNGI - exibe estatísticas e informações do sistema.
-    Usa o sistema de permissões para controlar o que o usuário pode ver e fazer.
+    
+    NOTA: Permissões são injetadas automaticamente via context_processor,
+    não precisam ser passadas manualmente no contexto.
     """
     user = request.user
     
@@ -144,38 +121,25 @@ def acoes_pngi_dashboard(request):
         aplicacao=app_acoes
     ).select_related('role').first()
     
-    # Busca permissões do usuário usando o sistema RBAC
-    permissions = user.get_app_permissions('ACOES_PNGI')
+    # Busca permissões do usuário de forma eficiente (uma única chamada)
+    permissions = get_user_app_permissions(user, 'ACOES_PNGI')
     
     # Busca estatísticas (apenas se tiver permissão de view)
     stats = {}
     ultimos_eixos = []
     vigencia_atual = None
     
-    if user.has_app_perm('ACOES_PNGI', 'view_eixo'):
+    if 'view_eixo' in permissions:
         stats['total_eixos'] = Eixo.objects.count()
         ultimos_eixos = Eixo.objects.order_by('-created_at')[:5]
     
-    if user.has_app_perm('ACOES_PNGI', 'view_situacaoacao'):
+    if 'view_situacaoacao' in permissions:
         stats['total_situacoes'] = SituacaoAcao.objects.count()
     
-    if user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'):
+    if 'view_vigenciapngi' in permissions:
         stats['total_vigencias'] = VigenciaPNGI.objects.count()
         stats['vigencias_ativas'] = VigenciaPNGI.objects.filter(isvigenciaativa=True).count()
         vigencia_atual = VigenciaPNGI.objects.filter(isvigenciaativa=True).first()
-    
-    # Determinar capacidades do usuário baseado nas permissões
-    can_manage_config = (
-        user.has_app_perm('ACOES_PNGI', 'add_eixo') or
-        user.has_app_perm('ACOES_PNGI', 'add_situacaoacao') or
-        user.has_app_perm('ACOES_PNGI', 'add_vigenciapngi')
-    )
-    
-    can_delete = (
-        user.has_app_perm('ACOES_PNGI', 'delete_eixo') or
-        user.has_app_perm('ACOES_PNGI', 'delete_situacaoacao') or
-        user.has_app_perm('ACOES_PNGI', 'delete_vigenciapngi')
-    )
     
     return render(request, 'acoes_pngi/dashboard.html', {
         'user': user,
@@ -185,22 +149,7 @@ def acoes_pngi_dashboard(request):
         'stats': stats,
         'ultimos_eixos': ultimos_eixos,
         'vigencia_atual': vigencia_atual,
-        'permissions': permissions,
-        'can_manage_config': can_manage_config,
-        'can_delete': can_delete,
-        # Permissões específicas para usar nos templates
-        'can_add_eixo': user.has_app_perm('ACOES_PNGI', 'add_eixo'),
-        'can_change_eixo': user.has_app_perm('ACOES_PNGI', 'change_eixo'),
-        'can_delete_eixo': user.has_app_perm('ACOES_PNGI', 'delete_eixo'),
-        'can_view_eixo': user.has_app_perm('ACOES_PNGI', 'view_eixo'),
-        'can_add_situacao': user.has_app_perm('ACOES_PNGI', 'add_situacaoacao'),
-        'can_change_situacao': user.has_app_perm('ACOES_PNGI', 'change_situacaoacao'),
-        'can_delete_situacao': user.has_app_perm('ACOES_PNGI', 'delete_situacaoacao'),
-        'can_view_situacao': user.has_app_perm('ACOES_PNGI', 'view_situacaoacao'),
-        'can_add_vigencia': user.has_app_perm('ACOES_PNGI', 'add_vigenciapngi'),
-        'can_change_vigencia': user.has_app_perm('ACOES_PNGI', 'change_vigenciapngi'),
-        'can_delete_vigencia': user.has_app_perm('ACOES_PNGI', 'delete_vigenciapngi'),
-        'can_view_vigencia': user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'),
+        'permissions': permissions,  # Lista opcional para debug
     })
 
 
@@ -220,57 +169,46 @@ def acoes_pngi_logout(request):
 
 @login_required(login_url='/acoes-pngi/login/')
 @require_acoes_access
-@require_acoes_permission('view_eixo')
+@require_app_permission('view_eixo')
 def eixos_list(request):
     """
     Lista todos os eixos cadastrados.
     Requer permissão: view_eixo
+    
+    NOTA: Permissões (can_add_eixo, can_change_eixo, can_delete_eixo, etc.)
+    já estão disponíveis nos templates via context_processor.
     """
     eixos = Eixo.objects.all().order_by('stralias')
     
     return render(request, 'acoes_pngi/eixos/list.html', {
         'eixos': eixos,
-        'can_add': request.user.has_app_perm('ACOES_PNGI', 'add_eixo'),
-        'can_edit': request.user.has_app_perm('ACOES_PNGI', 'change_eixo'),
-        'can_delete': request.user.has_app_perm('ACOES_PNGI', 'delete_eixo'),
-        # Permissões para o menu (sidebar)
-        'can_view_eixo': request.user.has_app_perm('ACOES_PNGI', 'view_eixo'),
-        'can_view_situacao': request.user.has_app_perm('ACOES_PNGI', 'view_situacaoacao'),
-        'can_view_vigencia': request.user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'),
     })
 
 
 @login_required(login_url='/acoes-pngi/login/')
 @require_acoes_access
-@require_acoes_permission('add_eixo')
+@require_app_permission('add_eixo')
 def eixo_create(request):
     """
     Cria um novo eixo.
-    Requer permissão: add_eixo
-    """
-    # Contexto base com permissões do menu
-    base_context = {
-        'can_view_eixo': request.user.has_app_perm('ACOES_PNGI', 'view_eixo'),
-        'can_view_situacao': request.user.has_app_perm('ACOES_PNGI', 'view_situacaoacao'),
-        'can_view_vigencia': request.user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'),
-    }
+    Requer permissão: add_eixo (verificado automaticamente pelo decorator)
     
+    NOTA: Permissões do menu já disponíveis via context_processor.
+    """
     if request.method == 'POST':
         strdescricaoeixo = request.POST.get('strdescricaoeixo')
         stralias = request.POST.get('stralias', '').upper()
         
         if not strdescricaoeixo or not stralias:
             messages.error(request, 'Todos os campos são obrigatórios.')
-            return render(request, 'acoes_pngi/eixos/form.html', base_context)
+            return render(request, 'acoes_pngi/eixos/form.html')
         
         if len(stralias) > 5:
             messages.error(request, 'O alias deve ter no máximo 5 caracteres.')
-            context = base_context.copy()
-            context.update({
+            return render(request, 'acoes_pngi/eixos/form.html', {
                 'strdescricaoeixo': strdescricaoeixo,
                 'stralias': stralias,
             })
-            return render(request, 'acoes_pngi/eixos/form.html', context)
         
         try:
             eixo = Eixo.objects.create(
@@ -281,23 +219,21 @@ def eixo_create(request):
             return redirect('acoes_pngi_web:eixos_list')
         except Exception as e:
             messages.error(request, f'Erro ao criar eixo: {str(e)}')
-            context = base_context.copy()
-            context.update({
+            return render(request, 'acoes_pngi/eixos/form.html', {
                 'strdescricaoeixo': strdescricaoeixo,
                 'stralias': stralias,
             })
-            return render(request, 'acoes_pngi/eixos/form.html', context)
     
-    return render(request, 'acoes_pngi/eixos/form.html', base_context)
+    return render(request, 'acoes_pngi/eixos/form.html')
 
 
 @login_required(login_url='/acoes-pngi/login/')
 @require_acoes_access
-@require_acoes_permission('change_eixo')
+@require_app_permission('change_eixo')
 def eixo_update(request, pk):
     """
     Atualiza um eixo existente.
-    Requer permissão: change_eixo
+    Requer permissão: change_eixo (verificado automaticamente pelo decorator)
     """
     try:
         eixo = Eixo.objects.get(pk=pk)
@@ -305,25 +241,17 @@ def eixo_update(request, pk):
         messages.error(request, 'Eixo não encontrado.')
         return redirect('acoes_pngi_web:eixos_list')
     
-    # Contexto base com permissões do menu
-    base_context = {
-        'eixo': eixo,
-        'can_view_eixo': request.user.has_app_perm('ACOES_PNGI', 'view_eixo'),
-        'can_view_situacao': request.user.has_app_perm('ACOES_PNGI', 'view_situacaoacao'),
-        'can_view_vigencia': request.user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'),
-    }
-    
     if request.method == 'POST':
         strdescricaoeixo = request.POST.get('strdescricaoeixo')
         stralias = request.POST.get('stralias', '').upper()
         
         if not strdescricaoeixo or not stralias:
             messages.error(request, 'Todos os campos são obrigatórios.')
-            return render(request, 'acoes_pngi/eixos/form.html', base_context)
+            return render(request, 'acoes_pngi/eixos/form.html', {'eixo': eixo})
         
         if len(stralias) > 5:
             messages.error(request, 'O alias deve ter no máximo 5 caracteres.')
-            return render(request, 'acoes_pngi/eixos/form.html', base_context)
+            return render(request, 'acoes_pngi/eixos/form.html', {'eixo': eixo})
         
         try:
             eixo.strdescricaoeixo = strdescricaoeixo
@@ -333,18 +261,18 @@ def eixo_update(request, pk):
             return redirect('acoes_pngi_web:eixos_list')
         except Exception as e:
             messages.error(request, f'Erro ao atualizar eixo: {str(e)}')
-            return render(request, 'acoes_pngi/eixos/form.html', base_context)
+            return render(request, 'acoes_pngi/eixos/form.html', {'eixo': eixo})
     
-    return render(request, 'acoes_pngi/eixos/form.html', base_context)
+    return render(request, 'acoes_pngi/eixos/form.html', {'eixo': eixo})
 
 
 @login_required(login_url='/acoes-pngi/login/')
 @require_acoes_access
-@require_acoes_permission('delete_eixo')
+@require_app_permission('delete_eixo')
 def eixo_delete(request, pk):
     """
     Deleta um eixo.
-    Requer permissão: delete_eixo
+    Requer permissão: delete_eixo (verificado automaticamente pelo decorator)
     """
     try:
         eixo = Eixo.objects.get(pk=pk)
@@ -365,41 +293,29 @@ def eixo_delete(request, pk):
 
 @login_required(login_url='/acoes-pngi/login/')
 @require_acoes_access
-@require_acoes_permission('view_vigenciapngi')
+@require_app_permission('view_vigenciapngi')
 def vigencias_list(request):
     """
     Lista todas as vigências cadastradas.
     Requer permissão: view_vigenciapngi
+    
+    NOTA: Permissões já disponíveis via context_processor.
     """
     vigencias = VigenciaPNGI.objects.all().order_by('-anovigencia')
     
     return render(request, 'acoes_pngi/vigencias/list.html', {
         'vigencias': vigencias,
-        'can_add': request.user.has_app_perm('ACOES_PNGI', 'add_vigenciapngi'),
-        'can_edit': request.user.has_app_perm('ACOES_PNGI', 'change_vigenciapngi'),
-        'can_delete': request.user.has_app_perm('ACOES_PNGI', 'delete_vigenciapngi'),
-        # Permissões para o menu (sidebar)
-        'can_view_eixo': request.user.has_app_perm('ACOES_PNGI', 'view_eixo'),
-        'can_view_situacao': request.user.has_app_perm('ACOES_PNGI', 'view_situacaoacao'),
-        'can_view_vigencia': request.user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'),
     })
 
 
 @login_required(login_url='/acoes-pngi/login/')
 @require_acoes_access
-@require_acoes_permission('add_vigenciapngi')
+@require_app_permission('add_vigenciapngi')
 def vigencia_create(request):
     """
     Cria uma nova vigência.
-    Requer permissão: add_vigenciapngi
+    Requer permissão: add_vigenciapngi (verificado automaticamente)
     """
-    # Contexto base com permissões do menu
-    base_context = {
-        'can_view_eixo': request.user.has_app_perm('ACOES_PNGI', 'view_eixo'),
-        'can_view_situacao': request.user.has_app_perm('ACOES_PNGI', 'view_situacaoacao'),
-        'can_view_vigencia': request.user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'),
-    }
-    
     if request.method == 'POST':
         anovigencia = request.POST.get('anovigencia')
         descricaovigencia = request.POST.get('descricaovigencia')
@@ -410,7 +326,7 @@ def vigencia_create(request):
         # Validações
         if not all([anovigencia, descricaovigencia, datavigenciainicio, datavigenciafim]):
             messages.error(request, 'Todos os campos são obrigatórios.')
-            return render(request, 'acoes_pngi/vigencias/form.html', base_context)
+            return render(request, 'acoes_pngi/vigencias/form.html')
         
         # Validar datas
         from datetime import datetime
@@ -420,17 +336,15 @@ def vigencia_create(request):
             
             if fim <= inicio:
                 messages.error(request, 'A data de fim deve ser posterior à data de início.')
-                context = base_context.copy()
-                context.update({
+                return render(request, 'acoes_pngi/vigencias/form.html', {
                     'anovigencia': anovigencia,
                     'descricaovigencia': descricaovigencia,
                     'datavigenciainicio': datavigenciainicio,
                     'datavigenciafim': datavigenciafim,
                 })
-                return render(request, 'acoes_pngi/vigencias/form.html', context)
         except ValueError:
             messages.error(request, 'Formato de data inválido.')
-            return render(request, 'acoes_pngi/vigencias/form.html', base_context)
+            return render(request, 'acoes_pngi/vigencias/form.html')
         
         # Se está ativando esta vigência, desativar as outras
         if isvigenciaativa:
@@ -448,32 +362,24 @@ def vigencia_create(request):
             return redirect('acoes_pngi_web:vigencias_list')
         except Exception as e:
             messages.error(request, f'Erro ao criar vigência: {str(e)}')
-            return render(request, 'acoes_pngi/vigencias/form.html', base_context)
+            return render(request, 'acoes_pngi/vigencias/form.html')
     
-    return render(request, 'acoes_pngi/vigencias/form.html', base_context)
+    return render(request, 'acoes_pngi/vigencias/form.html')
 
 
 @login_required(login_url='/acoes-pngi/login/')
 @require_acoes_access
-@require_acoes_permission('change_vigenciapngi')
+@require_app_permission('change_vigenciapngi')
 def vigencia_update(request, pk):
     """
     Atualiza uma vigência existente.
-    Requer permissão: change_vigenciapngi
+    Requer permissão: change_vigenciapngi (verificado automaticamente)
     """
     try:
         vigencia = VigenciaPNGI.objects.get(pk=pk)
     except VigenciaPNGI.DoesNotExist:
         messages.error(request, 'Vigência não encontrada.')
         return redirect('acoes_pngi_web:vigencias_list')
-    
-    # Contexto base com permissões do menu
-    base_context = {
-        'vigencia': vigencia,
-        'can_view_eixo': request.user.has_app_perm('ACOES_PNGI', 'view_eixo'),
-        'can_view_situacao': request.user.has_app_perm('ACOES_PNGI', 'view_situacaoacao'),
-        'can_view_vigencia': request.user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'),
-    }
     
     if request.method == 'POST':
         anovigencia = request.POST.get('anovigencia')
@@ -485,7 +391,7 @@ def vigencia_update(request, pk):
         # Validações
         if not all([anovigencia, descricaovigencia, datavigenciainicio, datavigenciafim]):
             messages.error(request, 'Todos os campos são obrigatórios.')
-            return render(request, 'acoes_pngi/vigencias/form.html', base_context)
+            return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
         
         # Validar datas
         from datetime import datetime
@@ -495,10 +401,10 @@ def vigencia_update(request, pk):
             
             if fim <= inicio:
                 messages.error(request, 'A data de fim deve ser posterior à data de início.')
-                return render(request, 'acoes_pngi/vigencias/form.html', base_context)
+                return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
         except ValueError:
             messages.error(request, 'Formato de data inválido.')
-            return render(request, 'acoes_pngi/vigencias/form.html', base_context)
+            return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
         
         # Se está ativando esta vigência, desativar as outras
         if isvigenciaativa and not vigencia.isvigenciaativa:
@@ -516,18 +422,18 @@ def vigencia_update(request, pk):
             return redirect('acoes_pngi_web:vigencias_list')
         except Exception as e:
             messages.error(request, f'Erro ao atualizar vigência: {str(e)}')
-            return render(request, 'acoes_pngi/vigencias/form.html', base_context)
+            return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
     
-    return render(request, 'acoes_pngi/vigencias/form.html', base_context)
+    return render(request, 'acoes_pngi/vigencias/form.html', {'vigencia': vigencia})
 
 
 @login_required(login_url='/acoes-pngi/login/')
 @require_acoes_access
-@require_acoes_permission('delete_vigenciapngi')
+@require_app_permission('delete_vigenciapngi')
 def vigencia_delete(request, pk):
     """
     Deleta uma vigência.
-    Requer permissão: delete_vigenciapngi
+    Requer permissão: delete_vigenciapngi (verificado automaticamente)
     """
     try:
         vigencia = VigenciaPNGI.objects.get(pk=pk)

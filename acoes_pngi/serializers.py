@@ -58,6 +58,8 @@ class SituacaoAcaoSerializer(BaseModelSerializer):
     """
     Serializer para o modelo SituacaoAcao.
     Gerencia as situações possíveis de uma ação PNGI.
+    
+    ⚠️ Tabela estática - raramente modificada, SEM timestamps.
     """
     
     class Meta:
@@ -65,6 +67,7 @@ class SituacaoAcaoSerializer(BaseModelSerializer):
         fields = [
             'idsituacaoacao',
             'strdescricaosituacao'
+            # ⚠️ SEM created_at/updated_at (tabela estática)
         ]
         read_only_fields = ['idsituacaoacao']
     

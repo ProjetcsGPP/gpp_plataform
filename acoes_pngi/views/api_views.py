@@ -27,6 +27,11 @@ from ..serializers import (
     VigenciaPNGIListSerializer
 )
 from ..permissions import HasAcoesPermission, IsCoordenadorOrAbove
+from ..utils.permissions import (
+    get_user_app_permissions,
+    get_model_permissions,
+    require_api_permission
+)
 
 
 logger = logging.getLogger(__name__)
@@ -128,6 +133,7 @@ def portal_auth(request):
 def user_permissions(request):
     """
     Retorna permissões do usuário logado para consumo no Next.js.
+    ✨ Usa helpers com cache para otimização de performance.
     
     GET /api/v1/acoes_pngi/permissions/
     
@@ -145,14 +151,15 @@ def user_permissions(request):
             "can_delete": true
         },
         "specific": {
-            "eixo": {"add": true, "change": true, "delete": true, "view": true},
-            "situacaoacao": {"add": true, "change": true, "delete": true, "view": true},
-            "vigenciapngi": {"add": true, "change": true, "delete": true, "view": true}
+            "eixo": {"can_add": true, "can_change": true, "can_delete": true, "can_view": true},
+            "situacaoacao": {"can_add": true, "can_change": true, "can_delete": true, "can_view": true},
+            "vigenciapngi": {"can_add": true, "can_change": true, "can_delete": true, "can_view": true}
         }
     }
     """
     try:
-        perms = list(request.user.get_app_permissions('ACOES_PNGI'))
+        # ✨ Usa helper com cache (15 minutos)
+        perms = get_user_app_permissions(request.user, 'ACOES_PNGI')
         
         # Buscar role do usuário
         user_role = UserRole.objects.filter(
@@ -162,24 +169,19 @@ def user_permissions(request):
         
         role = user_role.role.codigoperfil if user_role else None
         
-        # Agrupar permissões por model
-        models = ['eixo', 'situacaoacao', 'vigenciapngi']
-        specific = {}
-        
-        for model in models:
-            specific[model] = {
-                'add': f'add_{model}' in perms,
-                'change': f'change_{model}' in perms,
-                'delete': f'delete_{model}' in perms,
-                'view': f'view_{model}' in perms,
-            }
+        # ✨ Usa helper para permissões por modelo (também com cache)
+        specific = {
+            'eixo': get_model_permissions(request.user, 'eixo', 'ACOES_PNGI'),
+            'situacaoacao': get_model_permissions(request.user, 'situacaoacao', 'ACOES_PNGI'),
+            'vigenciapngi': get_model_permissions(request.user, 'vigenciapngi', 'ACOES_PNGI'),
+        }
         
         return Response({
             'user_id': request.user.id,
             'email': request.user.email,
             'name': request.user.name,
             'role': role,
-            'permissions': perms,
+            'permissions': list(perms),
             'is_superuser': request.user.is_superuser,
             'groups': {
                 'can_manage_config': any(p in perms for p in [
@@ -388,20 +390,15 @@ class EixoViewSet(viewsets.ModelViewSet):
             return EixoListSerializer
         return EixoSerializer
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'])
+    @require_api_permission('view_eixo')
     def list_light(self, request):
         """
-        Endpoint otimizado para listagem rápida (apenas visualização)
+        Endpoint otimizado para listagem rápida.
+        ✨ Requer permissão: view_eixo (verificado automaticamente pelo decorator)
         
         GET /api/v1/acoes_pngi/eixos/list_light/
         """
-        # Verifica permissão de view
-        if not request.user.has_app_perm('ACOES_PNGI', 'view_eixo'):
-            return Response(
-                {'detail': 'Você não tem permissão para visualizar eixos'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
         eixos = Eixo.objects.all().values('ideixo', 'strdescricaoeixo', 'stralias')
         return Response({
             'count': len(eixos),
@@ -462,20 +459,15 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
             return VigenciaPNGIListSerializer
         return VigenciaPNGISerializer
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'])
+    @require_api_permission('view_vigenciapngi')
     def vigencia_ativa(self, request):
         """
-        Retorna a vigência atualmente ativa (apenas visualização)
+        Retorna a vigência atualmente ativa.
+        ✨ Requer permissão: view_vigenciapngi (verificado automaticamente)
         
         GET /api/v1/acoes_pngi/vigencias/vigencia_ativa/
         """
-        # Verifica permissão de view
-        if not request.user.has_app_perm('ACOES_PNGI', 'view_vigenciapngi'):
-            return Response(
-                {'detail': 'Você não tem permissão para visualizar vigências'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
         try:
             vigencia = VigenciaPNGI.objects.get(isvigenciaativa=True)
             serializer = self.get_serializer(vigencia)
