@@ -133,6 +133,72 @@ def require_app_permission(permission_codename, app_code='ACOES_PNGI', raise_exc
     return decorator
 
 
+def require_api_permission(permission_codename, app_code='ACOES_PNGI'):
+    """
+    Decorator para verificar permissões em actions de ViewSets DRF.
+    Similar ao require_app_permission mas adaptado para REST Framework.
+    
+    Uso:
+        @action(detail=False, methods=['get'])
+        @require_api_permission('view_eixo')
+        def list_light(self, request):
+            eixos = Eixo.objects.all().values(...)
+            return Response({...})
+        
+        @action(detail=True, methods=['post'])
+        @require_api_permission('change_vigenciapngi')
+        def ativar(self, request, pk=None):
+            # ...
+    
+    Args:
+        permission_codename: Codename da permissão requerida (ex: 'view_eixo')
+        app_code: Código da aplicação (padrão: 'ACOES_PNGI')
+    
+    Returns:
+        function: Decorator que retorna Response com 401/403 se sem permissão
+    
+    Notas:
+        - Retorna 401 UNAUTHORIZED se não autenticado
+        - Retorna 403 FORBIDDEN se autenticado mas sem permissão
+        - Superusers sempre têm acesso
+        - Usa cache de permissões (15 minutos)
+    """
+    from rest_framework.response import Response
+    from rest_framework import status
+    
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(self, request, *args, **kwargs):
+            # Verifica autenticação
+            if not request.user or not request.user.is_authenticated:
+                return Response(
+                    {'detail': 'Autenticação necessária para acessar este recurso.'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            
+            # Superuser sempre tem acesso
+            if request.user.is_superuser:
+                return view_func(self, request, *args, **kwargs)
+            
+            # Verifica permissão usando helper com cache
+            perms = get_user_app_permissions(request.user, app_code)
+            
+            if permission_codename not in perms:
+                return Response(
+                    {
+                        'detail': 'Você não tem permissão para realizar esta ação.',
+                        'required_permission': permission_codename,
+                        'app': app_code
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            return view_func(self, request, *args, **kwargs)
+        
+        return wrapper
+    return decorator
+
+
 def require_any_permission(*permission_codenames, app_code='ACOES_PNGI', raise_exception=True):
     """
     Decorator que requer QUALQUER uma das permissões listadas.
