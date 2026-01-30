@@ -58,32 +58,32 @@ class TokenEnvioCargaViewSetTest(TestCase):
     
     def test_list_tokens(self):
         """Testa listagem de tokens"""
-        response = self.client.get('/api/v1/carga/token/')
+        response = self.client.get('/api/v1/carga/tokens/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_retrieve_token(self):
         """Testa recuperação de token"""
-        response = self.client.get(f'/api/v1/carga/token/{self.token.pk}/')
+        response = self.client.get(f'/api/v1/carga/tokens/{self.token.pk}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['str_token_retorno'], 'TOKEN123')
     
     def test_validar_action(self):
         """Testa action validar"""
-        response = self.client.get(f'/api/v1/carga/token/{self.token.pk}/validar/')
+        response = self.client.get(f'/api/v1/carga/tokens/{self.token.pk}/validar/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('valido', response.data)
         self.assertTrue(response.data['valido'])
     
     def test_finalizar_action(self):
         """Testa action finalizar"""
-        response = self.client.post(f'/api/v1/carga/token/{self.token.pk}/finalizar/')
+        response = self.client.post(f'/api/v1/carga/tokens/{self.token.pk}/finalizar/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.token.refresh_from_db()
         self.assertIsNotNone(self.token.dat_data_hora_fim)
     
     def test_estatisticas_action(self):
         """Testa action estatisticas"""
-        response = self.client.get('/api/v1/carga/token/estatisticas/')
+        response = self.client.get('/api/v1/carga/tokens/estatisticas/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('total', response.data)
 
@@ -130,7 +130,7 @@ class AuxiliaryViewSetsTest(TestCase):
     
     def test_list_tipo_carga(self):
         """Testa listagem Tipo Carga"""
-        response = self.client.get('/api/v1/carga/tipo-carga/')
+        response = self.client.get('/api/v1/carga/tipos-carga/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_list_status_token(self):
