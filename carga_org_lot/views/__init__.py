@@ -52,17 +52,22 @@ from .api_views import (
     dashboard_stats,
     search_orgao,
     
-    # ViewSets
+    # ViewSets Principais
     UserManagementViewSet,
-    StatusProgressoViewSet,
-    StatusCargaViewSet,
-    TipoCargaViewSet,
-    StatusTokenEnvioCargaViewSet,
     PatriarcaViewSet,
     OrganogramaVersaoViewSet,
     LotacaoVersaoViewSet,
     CargaPatriarcaViewSet,
+    
+    # ViewSets Novos
+    LotacaoJsonOrgaoViewSet,
     TokenEnvioCargaViewSet,
+    
+    # ViewSets Auxiliares (Read-Only)
+    StatusProgressoViewSet,
+    StatusCargaViewSet,
+    TipoCargaViewSet,
+    StatusTokenEnvioCargaViewSet,
 )
 
 
@@ -109,15 +114,20 @@ __all__ = [
     'dashboard_stats',
     'search_orgao',
     
-    # API ViewSets
+    # API ViewSets Principais
     'UserManagementViewSet',
-    'StatusProgressoViewSet',
-    'StatusCargaViewSet',
-    'TipoCargaViewSet',
-    'StatusTokenEnvioCargaViewSet',
     'PatriarcaViewSet',
     'OrganogramaVersaoViewSet',
     'LotacaoVersaoViewSet',
     'CargaPatriarcaViewSet',
+    
+    # API ViewSets Novos
+    'LotacaoJsonOrgaoViewSet',
     'TokenEnvioCargaViewSet',
+    
+    # API ViewSets Auxiliares (Read-Only)
+    'StatusProgressoViewSet',
+    'StatusCargaViewSet',
+    'TipoCargaViewSet',
+    'StatusTokenEnvioCargaViewSet',
 ]
