@@ -46,16 +46,26 @@ from .web_views.ajax_views import search_orgao_ajax
 # ============================================
 # API VIEWS (REST Framework ViewSets)
 # ============================================
-from .api_views.dashboard_api import (
+# ✨ Importa do novo arquivo unificado api_views.py
+from .api_views import (
+    # Funções de view
+    user_permissions,
     dashboard_stats,
     search_orgao,
-    upload_organograma,
-    upload_lotacao,
+    
+    # ViewSets
+    UserManagementViewSet,
+    StatusProgressoViewSet,
+    StatusCargaViewSet,
+    TipoCargaViewSet,
+    StatusTokenEnvioCargaViewSet,
+    PatriarcaViewSet,
+    OrganogramaVersaoViewSet,
+    OrgaoUnidadeViewSet,
+    LotacaoVersaoViewSet,
+    CargaPatriarcaViewSet,
+    TokenEnvioCargaViewSet,
 )
-from .api_views.patriarca_api import PatriarcaViewSet
-from .api_views.organograma_api import OrganogramaVersaoViewSet
-from .api_views.lotacao_api import LotacaoVersaoViewSet
-from .api_views.carga_api import CargaPatriarcaViewSet
 
 
 # ============================================
@@ -67,28 +77,28 @@ __all__ = [
     'carga_logout',
     'carga_org_lot_required',
     
-    # Dashboard
+    # Dashboard Web
     'carga_dashboard',
     
-    # Patriarca
+    # Patriarca Web
     'patriarca_list',
     'patriarca_detail',
     
-    # Organograma
+    # Organograma Web
     'organograma_list',
     'organograma_detail',
     'organograma_hierarquia_json',
     
-    # Lotação
+    # Lotação Web
     'lotacao_list',
     'lotacao_detail',
     'lotacao_inconsistencias',
     
-    # Carga
+    # Carga Web
     'carga_list',
     'carga_detail',
     
-    # Upload
+    # Upload Web
     'upload_page',
     'upload_organograma_handler',
     'upload_lotacao_handler',
@@ -96,15 +106,21 @@ __all__ = [
     # AJAX
     'search_orgao_ajax',
     
-    # API Dashboard
+    # API Functions
+    'user_permissions',
     'dashboard_stats',
     'search_orgao',
-    'upload_organograma',
-    'upload_lotacao',
     
     # API ViewSets
+    'UserManagementViewSet',
+    'StatusProgressoViewSet',
+    'StatusCargaViewSet',
+    'TipoCargaViewSet',
+    'StatusTokenEnvioCargaViewSet',
     'PatriarcaViewSet',
     'OrganogramaVersaoViewSet',
+    'OrgaoUnidadeViewSet',
     'LotacaoVersaoViewSet',
     'CargaPatriarcaViewSet',
+    'TokenEnvioCargaViewSet',
 ]
