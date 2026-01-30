@@ -95,10 +95,10 @@ def user_permissions(request):
         has_any_delete = any(p.startswith('delete_') for p in permissions)
         
         response_data = {
-            'user_id': user.id_user,
-            'email': user.str_email,
+            'user_id': user.id,
+            'email': user.email,
             'role': role,
-            'permissions': permissions,
+            'permissions': list(permissions),
             'groups': {
                 'can_view': has_any_view,
                 'can_add': has_any_add,
@@ -113,7 +113,7 @@ def user_permissions(request):
         }
         
         logger.info(
-            f"Permissões retornadas para {user.str_email} - "
+            f"Permissões retornadas para {user.email} - "
             f"Role: {role}, Perms: {len(permissions)}"
         )
         
