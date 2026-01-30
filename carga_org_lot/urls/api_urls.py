@@ -28,7 +28,6 @@ from ..views import (
     StatusTokenEnvioCargaViewSet,
     PatriarcaViewSet,
     OrganogramaVersaoViewSet,
-    OrgaoUnidadeViewSet,
     LotacaoVersaoViewSet,
     CargaPatriarcaViewSet,
     TokenEnvioCargaViewSet,
@@ -62,12 +61,6 @@ router.register(
     r'organogramas',
     OrganogramaVersaoViewSet,
     basename='organogramas'
-)
-
-router.register(
-    r'orgaos',
-    OrgaoUnidadeViewSet,
-    basename='orgaos'
 )
 
 router.register(
@@ -186,10 +179,7 @@ Endpoints disponíveis após /api/v1/carga/:
    PUT    /patriarcas/{id}/
    PATCH  /patriarcas/{id}/
    DELETE /patriarcas/{id}/
-   GET    /patriarcas/list_light/
-   GET    /patriarcas/{id}/organogramas/
-   GET    /patriarcas/{id}/lotacoes/
-   GET    /patriarcas/{id}/estatisticas/
+   (Actions customizadas via ViewSet existente)
 
 5. ORGANOGRAMAS
    GET    /organogramas/
@@ -198,41 +188,27 @@ Endpoints disponíveis após /api/v1/carga/:
    PUT    /organogramas/{id}/
    PATCH  /organogramas/{id}/
    DELETE /organogramas/{id}/
-   POST   /organogramas/{id}/ativar/
-   GET    /organogramas/{id}/orgaos/
-   GET    /organogramas/{id}/hierarquia/
-   GET    /organogramas/{id}/json_envio/
+   (Actions customizadas via ViewSet existente)
 
-6. ÓRGÃOS/UNIDADES
-   GET    /orgaos/
-   POST   /orgaos/
-   GET    /orgaos/{id}/
-   PUT    /orgaos/{id}/
-   PATCH  /orgaos/{id}/
-   DELETE /orgaos/{id}/
-
-7. LOTAÇÕES
+6. LOTAÇÕES
    GET    /lotacoes/
    POST   /lotacoes/
    GET    /lotacoes/{id}/
    PUT    /lotacoes/{id}/
    PATCH  /lotacoes/{id}/
    DELETE /lotacoes/{id}/
-   POST   /lotacoes/{id}/ativar/
-   GET    /lotacoes/{id}/registros/
-   GET    /lotacoes/{id}/inconsistencias/
-   GET    /lotacoes/{id}/estatisticas/
+   (Actions customizadas via ViewSet existente)
 
-8. CARGAS
+7. CARGAS
    GET    /cargas/
    POST   /cargas/
    GET    /cargas/{id}/
    PUT    /cargas/{id}/
    PATCH  /cargas/{id}/
    DELETE /cargas/{id}/
-   GET    /cargas/{id}/timeline/
+   (Actions customizadas via ViewSet existente)
 
-9. TOKENS
+8. TOKENS
    GET    /tokens/
    POST   /tokens/
    GET    /tokens/{id}/
@@ -240,15 +216,15 @@ Endpoints disponíveis após /api/v1/carga/:
    PATCH  /tokens/{id}/
    DELETE /tokens/{id}/
 
-10. TABELAS AUXILIARES (read-only)
-    GET /status-progresso/
-    GET /status-progresso/{id}/
-    GET /status-carga/
-    GET /status-carga/{id}/
-    GET /tipos-carga/
-    GET /tipos-carga/{id}/
-    GET /status-token/
-    GET /status-token/{id}/
+9. TABELAS AUXILIARES (read-only)
+   GET /status-progresso/
+   GET /status-progresso/{id}/
+   GET /status-carga/
+   GET /status-carga/{id}/
+   GET /tipos-carga/
+   GET /tipos-carga/{id}/
+   GET /status-token/
+   GET /status-token/{id}/
 
 
 Query Params Comuns:
