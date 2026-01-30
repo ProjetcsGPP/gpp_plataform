@@ -197,6 +197,7 @@ class Migration(migrations.Migration):
                 ('id_orgao_unidade_pai', models.ForeignKey(blank=True, db_column='idorgaounidadepai', null=True, on_delete=django.db.models.deletion.CASCADE, to='carga_org_lot.tblorgaounidade')),
                 ('id_usuario_alteracao', models.ForeignKey(blank=True, db_column='idusuarioalteracao', null=True, on_delete=django.db.models.deletion.PROTECT, related_name='orgaos_alterados', to=settings.AUTH_USER_MODEL)),
                 ('id_usuario_criacao', models.ForeignKey(blank=True, db_column='idusuariocriacao', null=True, on_delete=django.db.models.deletion.PROTECT, related_name='orgaos_criados', to=settings.AUTH_USER_MODEL)),
+                ('id_patriarca', models.ForeignKey(db_column='idpatriarca', on_delete=django.db.models.deletion.RESTRICT, to='carga_org_lot.tblpatriarca')),
             ],
             options={
                 'verbose_name': 'Órgão/Unidade',

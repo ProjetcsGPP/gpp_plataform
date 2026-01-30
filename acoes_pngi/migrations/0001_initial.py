@@ -36,8 +36,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('idsituacaoacao', models.AutoField(db_column='idsituacaoacao', primary_key=True, serialize=False)),
                 ('strdescricaosituacao', models.CharField(db_column='strdescricaosituacao', max_length=15, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
             ],
             options={
                 'verbose_name': 'Situação de Ação',
