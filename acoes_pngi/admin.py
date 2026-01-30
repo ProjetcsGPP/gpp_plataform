@@ -12,10 +12,11 @@ class EixoAdmin(admin.ModelAdmin):
 
 @admin.register(SituacaoAcao)
 class SituacaoAcaoAdmin(admin.ModelAdmin):
-    list_display = ('strdescricaosituacao', 'created_at', 'updated_at')
+    """Admin para SituacaoAcao - tabela estática sem timestamps"""
+    list_display = ('idsituacaoacao', 'strdescricaosituacao')
     search_fields = ('strdescricaosituacao',)
-    list_filter = ('created_at',)
     ordering = ('strdescricaosituacao',)
+    # ⚠️ Tabela estática: sem created_at/updated_at
 
 
 @admin.register(VigenciaPNGI)
