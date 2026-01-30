@@ -7,9 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from accounts.models import User, AppRoleAssignment
+from accounts.models import User, UserRole, Aplicacao
 from ...permissions import IsGestor
-from common.models import TblAplicacao
 
 import logging
 
@@ -27,7 +26,7 @@ class UserManagementViewSet(viewsets.ViewSet):
     
     def get_app(self):
         """Retorna a aplicação CARGA_ORG_LOT."""
-        return TblAplicacao.objects.get(str_sigla_aplicacao='CARGA_ORG_LOT')
+        return Aplicacao.objects.get(codigointerno='CARGA_ORG_LOT')
     
     @action(detail=False, methods=['get'], url_path='list_users')
     def list_users(self, request):
@@ -39,21 +38,20 @@ class UserManagementViewSet(viewsets.ViewSet):
         try:
             app = self.get_app()
             
-            # Busca todos os assignments do app
-            assignments = AppRoleAssignment.objects.filter(
-                fk_aplicacao=app
-            ).select_related('fk_user', 'fk_role')
+            # Busca todos os UserRole do app
+            user_roles = UserRole.objects.filter(
+                aplicacao=app
+            ).select_related('user', 'role')
             
             users_data = []
-            for assignment in assignments:
+            for ur in user_roles:
                 users_data.append({
-                    'id': assignment.fk_user.id_user,
-                    'email': assignment.fk_user.str_email,
-                    'name': assignment.fk_user.str_nome,
-                    'role': assignment.fk_role.str_nome_role,
-                    'role_code': assignment.fk_role.str_sigla_role,
-                    'is_active': assignment.fk_user.is_active,
-                    'assigned_at': assignment.dat_criacao,
+                    'id': ur.user.id,
+                    'email': ur.user.email,
+                    'name': ur.user.name,
+                    'role': ur.role.nomeperfil,
+                    'role_code': ur.role.codigoperfil,
+                    'is_active': ur.user.is_active,
                 })
             
             logger.info(f"Lista de {len(users_data)} usuários retornada")
@@ -73,31 +71,28 @@ class UserManagementViewSet(viewsets.ViewSet):
         **URL:** `GET /api/v1/carga/users/{email}/`
         """
         try:
-            user = User.objects.get(str_email=email)
+            user = User.objects.get(email=email)
             app = self.get_app()
             
-            # Busca assignment
+            # Busca UserRole
             try:
-                assignment = AppRoleAssignment.objects.get(
-                    fk_user=user,
-                    fk_aplicacao=app
+                user_role = UserRole.objects.get(
+                    user=user,
+                    aplicacao=app
                 )
-                role = assignment.fk_role.str_sigla_role
-                role_name = assignment.fk_role.str_nome_role
-                assigned_at = assignment.dat_criacao
-            except AppRoleAssignment.DoesNotExist:
+                role = user_role.role.codigoperfil
+                role_name = user_role.role.nomeperfil
+            except UserRole.DoesNotExist:
                 role = None
                 role_name = None
-                assigned_at = None
             
             user_data = {
-                'id': user.id_user,
-                'email': user.str_email,
-                'name': user.str_nome,
+                'id': user.id,
+                'email': user.email,
+                'name': user.name,
                 'role': role_name,
                 'role_code': role,
                 'is_active': user.is_active,
-                'assigned_at': assigned_at,
             }
             
             return Response(user_data, status=status.HTTP_200_OK)
@@ -143,14 +138,14 @@ class UserManagementViewSet(viewsets.ViewSet):
             
             # Busca ou cria usuário
             user, created = User.objects.get_or_create(
-                str_email=email,
+                email=email,
                 defaults={
-                    'str_nome': request.data.get('name', email),
+                    'name': request.data.get('name', email),
                 }
             )
             
             if not created and request.data.get('name'):
-                user.str_nome = request.data.get('name')
+                user.name = request.data.get('name')
                 user.save()
             
             logger.info(
@@ -160,8 +155,8 @@ class UserManagementViewSet(viewsets.ViewSet):
             return Response(
                 {
                     'message': f"Usuário {'criado' if created else 'atualizado'} com sucesso",
-                    'user_id': user.id_user,
-                    'email': user.str_email,
+                    'user_id': user.id,
+                    'email': user.email,
                 },
                 status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
             )
