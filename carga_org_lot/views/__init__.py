@@ -46,7 +46,6 @@ from .web_views.ajax_views import search_orgao_ajax
 # ============================================
 # API VIEWS (REST Framework ViewSets)
 # ============================================
-# ✨ Importa do novo arquivo unificado api_views.py
 from .api_views import (
     # Funções de view
     user_permissions,
@@ -61,7 +60,6 @@ from .api_views import (
     StatusTokenEnvioCargaViewSet,
     PatriarcaViewSet,
     OrganogramaVersaoViewSet,
-    OrgaoUnidadeViewSet,
     LotacaoVersaoViewSet,
     CargaPatriarcaViewSet,
     TokenEnvioCargaViewSet,
@@ -119,7 +117,6 @@ __all__ = [
     'StatusTokenEnvioCargaViewSet',
     'PatriarcaViewSet',
     'OrganogramaVersaoViewSet',
-    'OrgaoUnidadeViewSet',
     'LotacaoVersaoViewSet',
     'CargaPatriarcaViewSet',
     'TokenEnvioCargaViewSet',
