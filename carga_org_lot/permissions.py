@@ -47,7 +47,7 @@ class HasCargaOrgLotPermission(BasePermission):
             from accounts.models import UserRole
             return UserRole.objects.filter(
                 user=request.user,
-                aplicacao__str_codigo='CARGA_ORG_LOT'
+                aplicacao__codigointerno='CARGA_ORG_LOT'
             ).exists()
         
         # Determina permissão requerida baseada na action
