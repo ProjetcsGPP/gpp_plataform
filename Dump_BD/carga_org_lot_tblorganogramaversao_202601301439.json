@@ -1,0 +1,14 @@
+{
+"tblorganogramaversao": [
+	{
+		"idorganogramaversao" : 2,
+		"idpatriarca" : 4,
+		"strorigem" : "Carga Manual",
+		"strtipoarquivooriginal" : "JSON",
+		"strnomearquivooriginal" : "organograma_seger_v1.json",
+		"datprocessamento" : "2026-01-30T16:37:52.859Z",
+		"strstatusprocessamento" : "Sucesso",
+		"strmensagemprocessamento" : null,
+		"flgativo" : true
+	}
+]}

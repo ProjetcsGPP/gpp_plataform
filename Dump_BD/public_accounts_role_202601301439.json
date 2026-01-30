@@ -41,5 +41,23 @@
 		"nomeperfil" : "Gestor Ações PNGI",
 		"codigoperfil" : "GESTOR_PNGI",
 		"aplicacao_id" : 3
+	},
+	{
+		"id" : 20,
+		"nomeperfil" : "Coordenador - Gerencia Configurações",
+		"codigoperfil" : "COORDENADOR_CARGA",
+		"aplicacao_id" : 2
+	},
+	{
+		"id" : 21,
+		"nomeperfil" : "Analista - Upload e Validação",
+		"codigoperfil" : "ANALISTA_CARGA",
+		"aplicacao_id" : 2
+	},
+	{
+		"id" : 22,
+		"nomeperfil" : "Consultor - Apenas Leitura",
+		"codigoperfil" : "VISUALIZADOR_CARGA",
+		"aplicacao_id" : 2
 	}
 ]}

@@ -1,0 +1,36 @@
+{
+"tblpatriarca": [
+	{
+		"idpatriarca" : 4,
+		"idexternopatriarca" : "5f83a400-67c1-4254-b267-88864248f88a",
+		"strsiglapatriarca" : "SEGER",
+		"strnome" : "Secretaria de Estado de Gestão e Recursos Humanos",
+		"idstatusprogresso" : 1,
+		"datcriacao" : "2026-01-30T16:37:52.859Z",
+		"idusuariocriacao" : 5,
+		"datalteracao" : null,
+		"idusuarioalteracao" : null
+	},
+	{
+		"idpatriarca" : 5,
+		"idexternopatriarca" : "fc411a4d-15ac-43c8-9906-9a08776ee4e6",
+		"strsiglapatriarca" : "SEDU",
+		"strnome" : "Secretaria de Estado da Educação",
+		"idstatusprogresso" : 1,
+		"datcriacao" : "2026-01-30T16:37:52.859Z",
+		"idusuariocriacao" : 5,
+		"datalteracao" : null,
+		"idusuarioalteracao" : null
+	},
+	{
+		"idpatriarca" : 6,
+		"idexternopatriarca" : "165c926c-0399-4cad-a895-81b511144db2",
+		"strsiglapatriarca" : "SESA",
+		"strnome" : "Secretaria de Estado da Saúde",
+		"idstatusprogresso" : 1,
+		"datcriacao" : "2026-01-30T16:37:52.859Z",
+		"idusuariocriacao" : 5,
+		"datalteracao" : null,
+		"idusuarioalteracao" : null
+	}
+]}

@@ -1,0 +1,15 @@
+{
+"tbllotacaoversao": [
+	{
+		"idlotacaoversao" : 2,
+		"idpatriarca" : 4,
+		"idorganogramaversao" : 2,
+		"strorigem" : "Carga Manual",
+		"strtipoarquivooriginal" : "XLSX",
+		"strnomearquivooriginal" : "lotacao_seger_jan2026.xlsx",
+		"datprocessamento" : "2026-01-30T16:37:52.859Z",
+		"strstatusprocessamento" : "Sucesso",
+		"strmensagemprocessamento" : null,
+		"flgativo" : false
+	}
+]}

@@ -1,0 +1,48 @@
+{
+"tblorgaounidade": [
+	{
+		"idorgaounidade" : 1,
+		"idorganogramaversao" : 2,
+		"idpatriarca" : 4,
+		"strnome" : "Secretaria de Estado de Gestão e Recursos Humanos",
+		"strsigla" : "SEGER",
+		"idorgaounidadepai" : null,
+		"strnumerohierarquia" : "1",
+		"intnivelhierarquia" : 1,
+		"flgativo" : true,
+		"datcriacao" : "2026-01-30T16:37:52.859Z",
+		"idusuariocriacao" : 5,
+		"datalteracao" : null,
+		"idusuarioalteracao" : null
+	},
+	{
+		"idorgaounidade" : 2,
+		"idorganogramaversao" : 2,
+		"idpatriarca" : 4,
+		"strnome" : "Subsecretaria de Gestão de Pessoas",
+		"strsigla" : "SUBGEP",
+		"idorgaounidadepai" : 1,
+		"strnumerohierarquia" : "1.1",
+		"intnivelhierarquia" : 2,
+		"flgativo" : true,
+		"datcriacao" : "2026-01-30T16:37:52.859Z",
+		"idusuariocriacao" : 5,
+		"datalteracao" : null,
+		"idusuarioalteracao" : null
+	},
+	{
+		"idorgaounidade" : 3,
+		"idorganogramaversao" : 2,
+		"idpatriarca" : 4,
+		"strnome" : "Coordenação de Cargos e Remuneração",
+		"strsigla" : "COCRE",
+		"idorgaounidadepai" : 2,
+		"strnumerohierarquia" : "1.1.1",
+		"intnivelhierarquia" : 3,
+		"flgativo" : true,
+		"datcriacao" : "2026-01-30T16:37:52.859Z",
+		"idusuariocriacao" : 5,
+		"datalteracao" : null,
+		"idusuarioalteracao" : null
+	}
+]}
