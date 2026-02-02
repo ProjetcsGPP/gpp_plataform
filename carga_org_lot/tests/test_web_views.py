@@ -9,6 +9,7 @@ from carga_org_lot.models import (
     TblOrganogramaVersao,
     TblLotacaoVersao,
     TblOrgaoUnidade,
+    TblStatusProgresso,
 )
 
 User = get_user_model()
@@ -58,11 +59,19 @@ class BaseWebViewTestCase(TestCase):
             )
             logger.info(f"UserRole criado para {cls.user.email}")
             
-            # Patriarca de teste
+            # Status de progresso necessário
+            cls.status_progresso, created = TblStatusProgresso.objects.get_or_create(
+                id_status_progresso=1,
+                defaults={'str_descricao': 'Em andamento'}
+            )
+            logger.info(f"Status Progresso {'criado' if created else 'recuperado'}: {cls.status_progresso.str_descricao}")
+            
+            # Patriarca de teste - CORREÇÃO: str_nome_patriarca -> str_nome, user_criacao -> id_usuario_criacao
             cls.patriarca = TblPatriarca.objects.create(
                 str_sigla_patriarca='SEGER',
-                str_nome_patriarca='Secretaria de Estado de Gestão e Recursos Humanos',
-                user_criacao=cls.user
+                str_nome='Secretaria de Estado de Gestão e Recursos Humanos',
+                id_status_progresso=cls.status_progresso,
+                id_usuario_criacao=cls.user
             )
             logger.info(f"Patriarca criado: {cls.patriarca.str_sigla_patriarca}")
             
@@ -190,22 +199,32 @@ class AjaxViewsTest(BaseWebViewTestCase):
         super().setUpTestData()
         
         try:
-            # Cria órgãos para testes de busca
-            cls.orgao_raiz = TblOrgaoUnidade.objects.create(
+            # Cria organograma versão necessário
+            cls.organograma_versao = TblOrganogramaVersao.objects.create(
                 id_patriarca=cls.patriarca,
-                str_sigla_orgao_unidade='SEGER',
-                str_nome_orgao_unidade='Secretaria de Estado de Gestão',
-                user_criacao=cls.user
+                str_origem='TESTE',
+                str_status_processamento='SUCESSO'
+            )
+            logger.info(f"Organograma versão criado: {cls.organograma_versao.id_organograma_versao}")
+            
+            # Cria órgãos para testes de busca - CORREÇÃO: nomes de campos
+            cls.orgao_raiz = TblOrgaoUnidade.objects.create(
+                id_organograma_versao=cls.organograma_versao,
+                id_patriarca=cls.patriarca,
+                str_sigla='SEGER',
+                str_nome='Secretaria de Estado de Gestão',
+                id_usuario_criacao=cls.user
             )
             
             cls.orgao_filho = TblOrgaoUnidade.objects.create(
+                id_organograma_versao=cls.organograma_versao,
                 id_patriarca=cls.patriarca,
                 id_orgao_unidade_pai=cls.orgao_raiz,
-                str_sigla_orgao_unidade='SUBSEGES',
-                str_nome_orgao_unidade='Subsecretaria de Gestão',
-                user_criacao=cls.user
+                str_sigla='SUBSEGES',
+                str_nome='Subsecretaria de Gestão',
+                id_usuario_criacao=cls.user
             )
-            logger.info(f"Órgãos criados para testes AJAX: {cls.orgao_raiz.str_sigla_orgao_unidade}, {cls.orgao_filho.str_sigla_orgao_unidade}")
+            logger.info(f"Órgãos criados para testes AJAX: {cls.orgao_raiz.str_sigla}, {cls.orgao_filho.str_sigla}")
             
         except Exception as e:
             logger.error(f"❌ ERRO no setUpTestData de AjaxViewsTest: {type(e).__name__}: {str(e)}")
@@ -263,12 +282,13 @@ class PaginationTest(BaseWebViewTestCase):
         super().setUpTestData()
         
         try:
-            # Cria múltiplos patriarcas para testar paginação
+            # Cria múltiplos patriarcas para testar paginação - CORREÇÃO: nomes de campos
             for i in range(25):
                 TblPatriarca.objects.create(
                     str_sigla_patriarca=f'ORG{i:02d}',
-                    str_nome_patriarca=f'Organização {i:02d}',
-                    user_criacao=cls.user
+                    str_nome=f'Organização {i:02d}',
+                    id_status_progresso=cls.status_progresso,
+                    id_usuario_criacao=cls.user
                 )
             logger.info("25 patriarcas criados para testes de paginação")
             
