@@ -4,6 +4,7 @@ Web Views para Carga Org/Lot.
 Views tradicionais Django para renderizar páginas HTML.
 """
 
+from functools import wraps
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -130,11 +131,13 @@ def carga_org_lot_required(view_func):
     """
     Decorador que verifica se usuário tem acesso ao Carga Org/Lot.
     Combina @login_required + verificação de role.
+    
+    CORREÇÃO: Usa @wraps para preservar metadados da view original.
+    Usa @login_required nativo do Django para garantir compatibilidade.
     """
+    @wraps(view_func)
+    @login_required(login_url='/carga_org_lot/login/')
     def wrapper(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect('carga_org_lot_web:login')
-        
         # Verifica se usuário tem acesso à aplicação
         has_access = UserRole.objects.filter(
             user=request.user,
@@ -143,6 +146,7 @@ def carga_org_lot_required(view_func):
         
         if not has_access:
             messages.error(request, 'Você não tem permissão para acessar esta aplicação.')
+            logout(request)
             return redirect('carga_org_lot_web:login')
         
         return view_func(request, *args, **kwargs)
@@ -683,7 +687,7 @@ def upload_lotacao_handler(request):
 @carga_org_lot_required
 def search_orgao_ajax(request):
     """
-    GET /carga_org_lot/ajax/search/orgao/?q=termo&patriarca_id=1
+    GET /carga_org_lot/ajax/search-orgao/?q=termo&patriarca_id=1
     
     Busca órgãos por sigla ou nome (para autocomplete).
     """
