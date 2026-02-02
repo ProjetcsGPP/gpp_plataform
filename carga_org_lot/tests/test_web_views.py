@@ -37,17 +37,17 @@ class WebViewsBaseTest(TestCase):
     
     @classmethod
     def setUpTestData(cls):
-        # Criar aplicação
-        cls.aplicacao = Aplicacao.objects.create(
+        # Criar ou obter aplicação (evita IntegrityError)
+        cls.aplicacao, _ = Aplicacao.objects.get_or_create(
             codigointerno='CARGA_ORG_LOT',
-            nomeaplicacao='Carga Org/Lot'
+            defaults={'nomeaplicacao': 'Carga Org/Lot'}
         )
         
-        # Criar role
-        cls.role_gestor = Role.objects.create(
+        # Criar ou obter role (evita IntegrityError)
+        cls.role_gestor, _ = Role.objects.get_or_create(
             aplicacao=cls.aplicacao,
-            nomeperfil='Gestor Carga',
-            codigoperfil='GESTOR_CARGA'
+            codigoperfil='GESTOR_CARGA',
+            defaults={'nomeperfil': 'Gestor Carga'}
         )
         
         # Criar usuário com permissão
