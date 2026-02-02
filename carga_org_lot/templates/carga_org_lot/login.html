@@ -135,7 +135,7 @@
             {% endfor %}
         {% endif %}
 
-        <form method="POST" action="{% url 'carga_org_lot:login' %}">
+        <form method="POST" action="{% url 'carga_org_lot_web:login' %}">
             {% csrf_token %}
             
             <div class="form-group">
