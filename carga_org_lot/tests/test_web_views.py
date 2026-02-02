@@ -86,36 +86,35 @@ class BaseWebViewTestCase(TestCase):
         
         CORREÇÃO: 
         1. Usa force_login() ao invés de login()
-        2. Configura active_role na sessão (exigido pelo ActiveRoleMiddleware)
+        2. Configura active_role_CARGA_ORG_LOT na sessão (exigido pelo ActiveRoleMiddleware)
+        3. Armazena ID do UserRole, não um dicionário
         
-        force_login() bypassa todo processo de autenticação e sempre funciona,
-        mesmo com decoradores customizados.
+        O middleware ActiveRoleMiddleware procura por:
+        - Chave: 'active_role_{app_code}' -> 'active_role_CARGA_ORG_LOT'
+        - Valor: ID do UserRole (int)
         """
         self.client = Client()
         try:
             # Força login direto (método recomendado para testes)
             self.client.force_login(self.user)
             
-            # CORREÇÃO CRITICA: Configura active_role na sessão
-            # O middleware ActiveRoleMiddleware verifica se há active_role
-            # Sem isso, as views redirecionam para login mesmo com usuário autenticado
+            # CORREÇÃO CRITICA: Configura active_role_CARGA_ORG_LOT na sessão
+            # O middleware procura pela chave 'active_role_{app_code}'
+            # e espera o ID do UserRole, não um dicionário
             session = self.client.session
-            session['active_role'] = {
-                'role_id': self.role.id,
-                'role_code': self.role.codigoperfil,
-                'role_name': self.role.nomeperfil,
-                'app_code': self.aplicacao.codigointerno,
-                'app_name': self.aplicacao.nomeaplicacao,
-            }
+            session['active_role_CARGA_ORG_LOT'] = self.user_role.id
             session.save()
             
             # Valida que a sessão foi criada corretamente
             if not self.client.session.get('_auth_user_id'):
                 logger.error("❌ Falha ao forçar login do usuário de teste")
-            elif not self.client.session.get('active_role'):
-                logger.error("❌ Falha ao configurar active_role na sessão")
+            elif not self.client.session.get('active_role_CARGA_ORG_LOT'):
+                logger.error("❌ Falha ao configurar active_role_CARGA_ORG_LOT na sessão")
             else:
-                logger.info(f"✅ Usuário {self.user.email} logado com force_login() e active_role configurado")
+                logger.info(
+                    f"✅ Usuário {self.user.email} logado com force_login() e "
+                    f"active_role_CARGA_ORG_LOT={self.user_role.id} configurado"
+                )
                 
         except Exception as e:
             logger.error(f"❌ ERRO NO setUp (force_login): {type(e).__name__}: {str(e)}")
