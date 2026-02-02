@@ -81,14 +81,26 @@ class BaseWebViewTestCase(TestCase):
             raise
     
     def setUp(self):
-        """Setup executado antes de cada teste."""
+        """
+        Setup executado antes de cada teste.
+        
+        CORREÇÃO: Usa force_login() ao invés de login().
+        force_login() bypassa todo processo de autenticação e sempre funciona,
+        mesmo com decoradores customizados.
+        """
         self.client = Client()
         try:
-            logged_in = self.client.login(email='test@example.com', password='testpass123')
-            if not logged_in:
-                logger.error("❌ Falha no login do usuário de teste")
+            # Força login direto (método recomendado para testes)
+            self.client.force_login(self.user)
+            
+            # Valida que a sessão foi criada
+            if not self.client.session.get('_auth_user_id'):
+                logger.error("❌ Falha ao forçar login do usuário de teste")
+            else:
+                logger.info(f"✅ Usuário {self.user.email} logado com force_login()")
+                
         except Exception as e:
-            logger.error(f"❌ ERRO NO setUp (login): {type(e).__name__}: {str(e)}")
+            logger.error(f"❌ ERRO NO setUp (force_login): {type(e).__name__}: {str(e)}")
             logger.exception("Traceback completo:")
 
 
@@ -234,21 +246,22 @@ class AjaxViewsTest(BaseWebViewTestCase):
     def test_search_orgao_ajax_returns_json(self):
         """Busca de órgãos deve retornar JSON."""
         try:
-            # Esta URL precisa existir nas web_urls.py
-            # Se não existir, o teste vai falhar explicitamente
-            url = '/carga_org_lot/ajax/search-orgao/'  # URL direta para teste
+            # Usa reverse() para obter URL correta
+            url = reverse('carga_org_lot_web:search_orgao_ajax')
             response = self.client.get(url, {'q': 'SEGER'})
             
             logger.info(f"Response status: {response.status_code}")
             logger.info(f"Response content-type: {response.get('Content-Type', 'N/A')}")
             
-            if response.status_code == 404:
-                logger.warning("⚠️ Endpoint de busca AJAX ainda não implementado")
-                self.skipTest("Endpoint de busca AJAX não implementado")
-            else:
-                self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.get('Content-Type'), 'application/json')
-                logger.info("✅ test_search_orgao_ajax_returns_json passou")
+            self.assertEqual(
+                response.status_code, 200,
+                f"❌ Status code esperado: 200, recebido: {response.status_code}"
+            )
+            self.assertEqual(
+                response.get('Content-Type'), 'application/json',
+                f"❌ Content-Type esperado: application/json, recebido: {response.get('Content-Type')}"
+            )
+            logger.info("✅ test_search_orgao_ajax_returns_json passou")
                 
         except Exception as e:
             logger.error(f"❌ ERRO em test_search_orgao_ajax_returns_json: {type(e).__name__}: {str(e)}")
@@ -258,15 +271,14 @@ class AjaxViewsTest(BaseWebViewTestCase):
     def test_search_orgao_ajax_short_query(self):
         """Busca com query muito curta deve retornar vazio."""
         try:
-            url = '/carga_org_lot/ajax/search-orgao/'
+            url = reverse('carga_org_lot_web:search_orgao_ajax')
             response = self.client.get(url, {'q': 'S'})
             
-            if response.status_code == 404:
-                logger.warning("⚠️ Endpoint de busca AJAX ainda não implementado")
-                self.skipTest("Endpoint de busca AJAX não implementado")
-            else:
-                self.assertEqual(response.status_code, 200)
-                logger.info("✅ test_search_orgao_ajax_short_query passou")
+            self.assertEqual(
+                response.status_code, 200,
+                f"❌ Status code esperado: 200, recebido: {response.status_code}"
+            )
+            logger.info("✅ test_search_orgao_ajax_short_query passou")
                 
         except Exception as e:
             logger.error(f"❌ ERRO em test_search_orgao_ajax_short_query: {type(e).__name__}: {str(e)}")
@@ -300,16 +312,15 @@ class PaginationTest(BaseWebViewTestCase):
     def test_pagination_exists_with_many_records(self):
         """Paginação deve existir quando há muitos registros."""
         try:
-            # Esta URL precisa ser implementada
-            url = '/carga_org_lot/patriarcas/'  # URL direta para teste
+            # Usa reverse() para obter URL correta
+            url = reverse('carga_org_lot_web:patriarca_list')
             response = self.client.get(url)
             
-            if response.status_code == 404:
-                logger.warning("⚠️ Endpoint de listagem de patriarcas ainda não implementado")
-                self.skipTest("Endpoint de listagem não implementado")
-            else:
-                self.assertEqual(response.status_code, 200)
-                logger.info("✅ test_pagination_exists_with_many_records passou")
+            self.assertEqual(
+                response.status_code, 200,
+                f"❌ Status code esperado: 200, recebido: {response.status_code}"
+            )
+            logger.info("✅ test_pagination_exists_with_many_records passou")
                 
         except Exception as e:
             logger.error(f"❌ ERRO em test_pagination_exists_with_many_records: {type(e).__name__}: {str(e)}")
