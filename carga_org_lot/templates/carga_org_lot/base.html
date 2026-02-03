@@ -4,8 +4,6 @@
 {# ========== CONFIGURAÇÕES DO HEADER ========== #}
 {% block body_class %}app-carga{% endblock %}
 
-{# Não precisa mais sobrescrever - app_context já injeta tudo #}
-
 {# ========== LABEL DO CONTEXTO (Altera de "Aplicação Ativa" para "Perfis Disponíveis") ========== #}
 {% block app_context_label %}Perfis Disponíveis{% endblock %}
 
@@ -62,54 +60,53 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'carga_org_lot/css/menu.css' %}">
 <style>
-    /* Sidebar específico do Carga Org/Lot */
-    :root {
-        --sidebar-width: 260px;
-        --sidebar-bg: #1a1a1a;
-        --sidebar-text: #e0e0e0;
-        --sidebar-hover: #2d5016;
-        --sidebar-active: #28a745;
-        --sidebar-border-active: #4caf50;
+    /* Reset do padding do main-content para layout customizado */
+    .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
     }
     
+    /* Container principal com sidebar */
+    .carga-layout {
+        display: flex;
+        min-height: calc(100vh - 200px); /* Altura total menos header e footer */
+        position: relative;
+    }
+    
+    /* Sidebar específico do Carga Org/Lot */
     .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: var(--sidebar-width);
-        height: 100vh;
-        background-color: var(--sidebar-bg);
-        padding-top: 20px;
+        width: 260px;
+        background-color: #1a1a1a;
+        color: #e0e0e0;
         overflow-y: auto;
-        z-index: 999;
-        transition: transform 0.3s ease;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        height: calc(100vh - 120px);
+        flex-shrink: 0;
     }
     
     .sidebar-header {
-        padding: 15px 20px;
+        padding: 20px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        margin-bottom: 10px;
-        color: white;
     }
     
     .sidebar-header h4 {
         margin: 0;
         font-size: 1.1rem;
         font-weight: 600;
-        color: var(--sidebar-active);
+        color: #28a745;
     }
     
     .sidebar-header small {
-        color: var(--sidebar-text);
         font-size: 0.75rem;
         display: block;
         margin-top: 5px;
+        opacity: 0.8;
     }
     
     .sidebar .nav-link {
         padding: 12px 20px;
-        color: var(--sidebar-text);
+        color: #e0e0e0;
         text-decoration: none;
         transition: all 0.2s;
         border-left: 3px solid transparent;
@@ -119,21 +116,22 @@
     }
     
     .sidebar .nav-link:hover {
-        background-color: var(--sidebar-hover);
+        background-color: #2d5016;
         color: white;
-        border-left-color: var(--sidebar-active);
+        border-left-color: #28a745;
     }
     
     .sidebar .nav-link.active {
         background-color: rgba(40, 167, 69, 0.15);
         color: white;
-        border-left-color: var(--sidebar-border-active);
+        border-left-color: #4caf50;
         font-weight: 500;
     }
     
     .sidebar .nav-link i {
         width: 20px;
         text-align: center;
+        margin-right: 10px;
     }
     
     .sidebar .nav-link.submenu {
@@ -144,20 +142,22 @@
     .sidebar .nav-link .fa-chevron-down {
         transition: transform 0.3s;
         font-size: 0.7rem;
+        margin-left: auto;
     }
     
     .sidebar .nav-link[aria-expanded="true"] .fa-chevron-down {
         transform: rotate(180deg);
     }
     
-    /* Main content com sidebar */
-    .main-content {
-        margin-left: var(--sidebar-width);
-        min-height: calc(100vh - 120px);
+    /* Área de conteúdo principal */
+    .content-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
     
     /* Banner superior */
-    #banner {
+    .banner {
         background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
         color: white;
         padding: 15px 25px;
@@ -167,12 +167,12 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    #banner span:first-child {
+    .banner-title {
         font-size: 1.2rem;
         font-weight: 600;
     }
     
-    #patriarca-info {
+    .patriarca-info {
         font-size: 0.9rem;
         padding: 5px 15px;
         background: rgba(255, 255, 255, 0.2);
@@ -181,8 +181,9 @@
     }
     
     /* Conteúdo */
-    #content {
+    .page-content {
         padding: 25px;
+        flex: 1;
     }
     
     /* Botão menu mobile */
@@ -194,7 +195,7 @@
         width: 60px;
         height: 60px;
         border-radius: 50%;
-        background: var(--sidebar-active);
+        background: #28a745;
         color: white;
         border: none;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -211,35 +212,39 @@
     
     /* Estilo para perfil ativo no dropdown */
     .dropdown-item.active {
-        background-color: var(--app-primary-light);
-        color: var(--app-primary);
+        background-color: #d4edda;
+        color: #28a745;
         font-weight: 600;
-    }
-    
-    .dropdown-item.disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
     }
     
     /* Responsividade */
     @media (max-width: 768px) {
+        .carga-layout {
+            flex-direction: column;
+        }
+        
         .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            z-index: 1050;
             transform: translateX(-100%);
+            transition: transform 0.3s ease;
         }
         
         .sidebar.show {
             transform: translateX(0);
         }
         
-        .main-content {
-            margin-left: 0;
-        }
-        
         .menu-toggle {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        #banner {
+        .banner {
             flex-direction: column;
             gap: 10px;
             text-align: center;
@@ -255,122 +260,122 @@
     <i class="fas fa-bars"></i>
 </button>
 
-<!-- SIDEBAR (MENU LATERAL) -->
-<nav id="sidebar" class="sidebar">
-    <div class="sidebar-header">
-        <h4><i class="fas fa-sitemap"></i> Carga Org/Lot</h4>
-        <small>Sistema de Carga de Organograma e Lotação</small>
-    </div>
-    
-    <ul class="nav flex-column">
-        <!-- Dashboard -->
-        <li class="nav-item">
-            <a href="/carga_org_lot/" 
-               class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
-            </a>
-        </li>
+<div class="carga-layout">
+    <!-- SIDEBAR (MENU LATERAL) -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-sitemap"></i> Carga Org/Lot</h4>
+            <small>Sistema de Carga de Organograma e Lotação</small>
+        </div>
         
-        <!-- Cadastro de Patriarca -->
-        <li class="nav-item">
-            <a href="/carga_org_lot/patriarcas/" 
-               class="nav-link {% if 'patriarca' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="fas fa-landmark me-2"></i> Cadastro de Patriarca
-            </a>
-        </li>
-        
-        <!-- Organograma (Menu Expansível) -->
-        <li class="nav-item">
-            <a class="nav-link" 
-               data-bs-toggle="collapse" 
-               href="#menuOrganograma" 
-               role="button"
-               aria-expanded="{% if 'organograma' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
-               aria-controls="menuOrganograma">
-                <i class="fas fa-sitemap me-2"></i> Organograma
-                <i class="fas fa-chevron-down float-end"></i>
-            </a>
-            <div class="collapse {% if 'organograma' in request.resolver_match.url_name %}show{% endif %}" 
-                 id="menuOrganograma">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a href="/carga_org_lot/organograma/upload/" 
-                           class="nav-link submenu {% if request.resolver_match.url_name == 'organograma_upload' %}active{% endif %}">
-                            <i class="fas fa-file-upload me-2"></i> Ler Arquivo
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/carga_org_lot/organograma/editar/" 
-                           class="nav-link submenu {% if request.resolver_match.url_name == 'organograma_edit' %}active{% endif %}">
-                            <i class="fas fa-edit me-2"></i> Editar Organograma
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </li>
-        
-        <!-- Ler Arquivo Lotação -->
-        <li class="nav-item">
-            <a href="/carga_org_lot/lotacao/upload/" 
-               class="nav-link {% if 'lotacao' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="fas fa-users-cog me-2"></i> Ler Arquivo Lotação
-            </a>
-        </li>
-        
-        <!-- Enviar Carga -->
-        <li class="nav-item">
-            <a href="/carga_org_lot/carga/enviar/" 
-               class="nav-link {% if request.resolver_match.url_name == 'carga_enviar' %}active{% endif %}">
-                <i class="fas fa-paper-plane me-2"></i> Enviar Carga
-            </a>
-        </li>
-        
-        <!-- Validar Estado Carga -->
-        <li class="nav-item">
-            <a href="/carga_org_lot/carga/status/" 
-               class="nav-link {% if request.resolver_match.url_name == 'carga_status' %}active{% endif %}">
-                <i class="fas fa-clipboard-check me-2"></i> Validar Estado Carga
-            </a>
-        </li>
-        
-        <!-- Separador -->
-        <li class="nav-item mt-4">
-            <hr style="border-color: rgba(255, 255, 255, 0.1); margin: 15px 20px;">
-        </li>
-        
-        <!-- Sair -->
-        <li class="nav-item">
-            <a href="/logout/" class="nav-link">
-                <i class="fas fa-sign-out-alt me-2"></i> Sair
-            </a>
-        </li>
-    </ul>
-</nav>
+        <ul class="nav flex-column">
+            <!-- Dashboard -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/" 
+                   class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            
+            <!-- Cadastro de Patriarca -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/patriarcas/" 
+                   class="nav-link {% if 'patriarca' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-landmark"></i> Cadastro de Patriarca
+                </a>
+            </li>
+            
+            <!-- Organograma (Menu Expansível) -->
+            <li class="nav-item">
+                <a class="nav-link" 
+                   data-bs-toggle="collapse" 
+                   href="#menuOrganograma" 
+                   role="button"
+                   aria-expanded="{% if 'organograma' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
+                   aria-controls="menuOrganograma">
+                    <i class="fas fa-sitemap"></i> Organograma
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="collapse {% if 'organograma' in request.resolver_match.url_name %}show{% endif %}" 
+                     id="menuOrganograma">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a href="/carga_org_lot/organograma/upload/" 
+                               class="nav-link submenu {% if request.resolver_match.url_name == 'organograma_upload' %}active{% endif %}">
+                                <i class="fas fa-file-upload"></i> Ler Arquivo
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/carga_org_lot/organograma/editar/" 
+                               class="nav-link submenu {% if request.resolver_match.url_name == 'organograma_edit' %}active{% endif %}">
+                                <i class="fas fa-edit"></i> Editar Organograma
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <!-- Ler Arquivo Lotação -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/lotacao/upload/" 
+                   class="nav-link {% if 'lotacao' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-users-cog"></i> Ler Arquivo Lotação
+                </a>
+            </li>
+            
+            <!-- Enviar Carga -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/carga/enviar/" 
+                   class="nav-link {% if request.resolver_match.url_name == 'carga_enviar' %}active{% endif %}">
+                    <i class="fas fa-paper-plane"></i> Enviar Carga
+                </a>
+            </li>
+            
+            <!-- Validar Estado Carga -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/carga/status/" 
+                   class="nav-link {% if request.resolver_match.url_name == 'carga_status' %}active{% endif %}">
+                    <i class="fas fa-clipboard-check"></i> Validar Estado Carga
+                </a>
+            </li>
+            
+            <!-- Separador -->
+            <li class="nav-item mt-4">
+                <hr style="border-color: rgba(255, 255, 255, 0.1); margin: 15px 20px;">
+            </li>
+            
+            <!-- Sair -->
+            <li class="nav-item">
+                <a href="/logout/" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+            </li>
+        </ul>
+    </nav>
 
-<!-- CONTEÚDO PRINCIPAL -->
-<div class="main-content">
-    <!-- Banner Superior -->
-    <div id="banner">
-        <span>{% block page_title %}Carga Única de Organograma e Lotação{% endblock %}</span>
-        <span id="patriarca-info">
-            {% if request.session.patriarca_selecionado %}
-                <i class="fas fa-landmark me-2"></i>
-                Patriarca: {{ request.session.patriarca_selecionado.nome }} ({{ request.session.patriarca_selecionado.sigla }})
-            {% else %}
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Nenhum Patriarca selecionado
-            {% endif %}
-        </span>
-    </div>
+    <!-- ÁREA DE CONTEÚDO -->
+    <div class="content-area">
+        <!-- Banner Superior -->
+        <div class="banner">
+            <span class="banner-title">{% block page_title %}Carga Única de Organograma e Lotação{% endblock %}</span>
+            <span class="patriarca-info">
+                {% if request.session.patriarca_selecionado %}
+                    <i class="fas fa-landmark me-2"></i>
+                    Patriarca: {{ request.session.patriarca_selecionado.nome }} ({{ request.session.patriarca_selecionado.sigla }})
+                {% else %}
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Nenhum Patriarca selecionado
+                {% endif %}
+            </span>
+        </div>
 
-    <!-- Container de Conteúdo -->
-    <div id="content" class="container-fluid">
-        <!-- Mensagens do Sistema (já renderizadas pela base global) -->
-        
-        <!-- Conteúdo da Página -->
-        {% block page_content %}
-        <!-- Conteúdo específico de cada página -->
-        {% endblock %}
+        <!-- Container de Conteúdo -->
+        <div class="page-content container-fluid">
+            <!-- Conteúdo da Página -->
+            {% block page_content %}
+            <!-- Conteúdo específico de cada página -->
+            {% endblock %}
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -383,7 +388,7 @@
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
         
-        if (menuToggle) {
+        if (menuToggle && sidebar) {
             menuToggle.addEventListener('click', function() {
                 sidebar.classList.toggle('show');
             });
