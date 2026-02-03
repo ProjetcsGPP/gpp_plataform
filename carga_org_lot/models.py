@@ -99,12 +99,12 @@ class TblPatriarca(models.Model):
     @property
     def tem_organograma_ativo(self):
         """Verifica se possui organograma ativo"""
-        return self.tblorganogramaversao_set.filter(flg_ativo=True).exists()
+        return self.versoes_organograma.filter(flg_ativo=True).exists()
     
     @property
     def tem_lotacao_ativa(self):
         """Verifica se possui lotação ativa"""
-        return self.tbllotacaoversao_set.filter(flg_ativo=True).exists()
+        return self.versoes_lotacao.filter(flg_ativo=True).exists()
 
 
 class TblOrganogramaVersao(models.Model):
