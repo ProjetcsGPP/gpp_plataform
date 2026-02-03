@@ -1,75 +1,44 @@
 {% extends "base.html" %}
 {% load static %}
 
+{# ========== CONFIGURAÇÕES DO HEADER ========== #}
 {% block body_class %}app-carga{% endblock %}
 
 {% block app_icon %}fas fa-sitemap{% endblock %}
 
 {% block app_name %}Carga Org/Lot{% endblock %}
 
-{% block header_actions %}
-{% if user.is_authenticated %}
-    <!-- User Info with Dropdown -->
-    <div class="dropdown">
-        <button class="user-info" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <div class="user-avatar">
-                {{ user.name|slice:":1"|upper }}
-            </div>
-            <div class="user-details">
-                <div class="user-name">{{ user.name }}</div>
-                <div class="user-role">
-                    <i class="fas fa-user-tag"></i> Carga Org/Lot
-                </div>
-            </div>
-            <i class="fas fa-chevron-down ms-2"></i>
-        </button>
-        
-        <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="min-width: 280px;">
-            <li class="dropdown-header">
-                <div class="d-flex align-items-center">
-                    <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1.1rem;">
-                        {{ user.name|slice:":1"|upper }}
-                    </div>
-                    <div class="ms-3">
-                        <div style="font-weight: 600; color: #2c3e50;">{{ user.name }}</div>
-                        <small style="color: #6c757d;">{{ user.email }}</small>
-                    </div>
-                </div>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            
-            <li class="dropdown-header" style="padding: 0.5rem 1rem;">
-                <small class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Aplicação Ativa</small>
-                <div style="color: var(--app-primary); font-weight: 600; margin-top: 0.25rem;">
-                    <i class="fas fa-sitemap me-1"></i> Carga Org/Lot
-                </div>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            
-            <li>
-                <a class="dropdown-item" href="/dashboard/">
-                    <i class="fas fa-home me-2"></i> Voltar ao Portal
-                </a>
-            </li>
-            
-            <li>
-                <a class="dropdown-item" href="{% url 'carga_org_lot:dashboard' %}">
-                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard Carga
-                </a>
-            </li>
-            
-            <li><hr class="dropdown-divider"></li>
-            
-            <li>
-                <a class="dropdown-item text-danger" href="{% url 'carga_org_lot:logout' %}">
-                    <i class="fas fa-sign-out-alt me-2"></i> Sair
-                </a>
-            </li>
-        </ul>
-    </div>
-{% endif %}
+{% block user_role_label %}Carga Org/Lot{% endblock %}
+
+{% block app_context_label %}Aplicação Ativa{% endblock %}
+
+{% block app_icon_dropdown %}fas fa-sitemap{% endblock %}
+
+{% block app_name_dropdown %}Carga Org/Lot{% endblock %}
+
+{# ========== MENU DROPDOWN DO USUÁRIO ========== #}
+{% block dropdown_menu_items %}
+<li>
+    <a class="dropdown-item" href="/dashboard/">
+        <i class="fas fa-home me-2"></i> Voltar ao Portal
+    </a>
+</li>
+<li>
+    <a class="dropdown-item" href="{% url 'carga_org_lot:dashboard' %}">
+        <i class="fas fa-tachometer-alt me-2"></i> Dashboard Carga
+    </a>
+</li>
+<li>
+    <a class="dropdown-item" href="{% url 'carga_org_lot:patriarca_list' %}">
+        <i class="fas fa-landmark me-2"></i> Patriarcas
+    </a>
+</li>
 {% endblock %}
 
+{# ========== URL DE LOGOUT ESPECÍFICA ========== #}
+{% block logout_url %}{% url 'carga_org_lot:logout' %}{% endblock %}
+
+{# ========== CSS CUSTOMIZADO ========== #}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'carga_org_lot/css/menu.css' %}">
 <style>
@@ -247,6 +216,7 @@
 </style>
 {% endblock %}
 
+{# ========== CONTEÚDO PRINCIPAL ========== #}
 {% block content %}
 <!-- Botão Menu Mobile -->
 <button class="menu-toggle" id="menuToggle">
@@ -373,6 +343,7 @@
 </div>
 {% endblock %}
 
+{# ========== JAVASCRIPT ========== #}
 {% block extra_js %}
 <script>
     // Menu Mobile Toggle
