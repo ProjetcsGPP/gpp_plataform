@@ -44,19 +44,19 @@
     </a>
 </li>
 <li>
-    <a class="dropdown-item" href="{% url 'carga_org_lot:dashboard' %}">
+    <a class="dropdown-item" href="/carga_org_lot/">
         <i class="fas fa-tachometer-alt me-2"></i> Dashboard Carga
     </a>
 </li>
 <li>
-    <a class="dropdown-item" href="{% url 'carga_org_lot:patriarca_list' %}">
+    <a class="dropdown-item" href="/carga_org_lot/patriarcas/">
         <i class="fas fa-landmark me-2"></i> Patriarcas
     </a>
 </li>
 {% endblock %}
 
 {# ========== URL DE LOGOUT ESPECÍFICA ========== #}
-{% block logout_url %}{% url 'carga_org_lot:logout' %}{% endblock %}
+{% block logout_url %}/logout/{% endblock %}
 
 {# ========== CSS CUSTOMIZADO ========== #}
 {% block extra_css %}
@@ -265,7 +265,7 @@
     <ul class="nav flex-column">
         <!-- Dashboard -->
         <li class="nav-item">
-            <a href="{% url 'carga_org_lot:dashboard' %}" 
+            <a href="/carga_org_lot/" 
                class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="fas fa-tachometer-alt me-2"></i> Dashboard
             </a>
@@ -273,7 +273,7 @@
         
         <!-- Cadastro de Patriarca -->
         <li class="nav-item">
-            <a href="{% url 'carga_org_lot:patriarca_list' %}" 
+            <a href="/carga_org_lot/patriarcas/" 
                class="nav-link {% if 'patriarca' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="fas fa-landmark me-2"></i> Cadastro de Patriarca
             </a>
@@ -294,13 +294,13 @@
                  id="menuOrganograma">
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a href="{% url 'carga_org_lot:organograma_upload' %}" 
+                        <a href="/carga_org_lot/organograma/upload/" 
                            class="nav-link submenu {% if request.resolver_match.url_name == 'organograma_upload' %}active{% endif %}">
                             <i class="fas fa-file-upload me-2"></i> Ler Arquivo
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'carga_org_lot:organograma_edit' %}" 
+                        <a href="/carga_org_lot/organograma/editar/" 
                            class="nav-link submenu {% if request.resolver_match.url_name == 'organograma_edit' %}active{% endif %}">
                             <i class="fas fa-edit me-2"></i> Editar Organograma
                         </a>
@@ -311,7 +311,7 @@
         
         <!-- Ler Arquivo Lotação -->
         <li class="nav-item">
-            <a href="{% url 'carga_org_lot:lotacao_upload' %}" 
+            <a href="/carga_org_lot/lotacao/upload/" 
                class="nav-link {% if 'lotacao' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="fas fa-users-cog me-2"></i> Ler Arquivo Lotação
             </a>
@@ -319,7 +319,7 @@
         
         <!-- Enviar Carga -->
         <li class="nav-item">
-            <a href="{% url 'carga_org_lot:carga_enviar' %}" 
+            <a href="/carga_org_lot/carga/enviar/" 
                class="nav-link {% if request.resolver_match.url_name == 'carga_enviar' %}active{% endif %}">
                 <i class="fas fa-paper-plane me-2"></i> Enviar Carga
             </a>
@@ -327,7 +327,7 @@
         
         <!-- Validar Estado Carga -->
         <li class="nav-item">
-            <a href="{% url 'carga_org_lot:carga_status' %}" 
+            <a href="/carga_org_lot/carga/status/" 
                class="nav-link {% if request.resolver_match.url_name == 'carga_status' %}active{% endif %}">
                 <i class="fas fa-clipboard-check me-2"></i> Validar Estado Carga
             </a>
@@ -340,7 +340,7 @@
         
         <!-- Sair -->
         <li class="nav-item">
-            <a href="{% url 'carga_org_lot:logout' %}" class="nav-link">
+            <a href="/logout/" class="nav-link">
                 <i class="fas fa-sign-out-alt me-2"></i> Sair
             </a>
         </li>
