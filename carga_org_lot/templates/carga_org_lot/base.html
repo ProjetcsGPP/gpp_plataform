@@ -4,17 +4,10 @@
 {# ========== CONFIGURAÇÕES DO HEADER ========== #}
 {% block body_class %}app-carga{% endblock %}
 
-{% block app_icon %}{{ app_context.icon|default:"fas fa-sitemap" }}{% endblock %}
+{# Não precisa mais sobrescrever - app_context já injeta tudo #}
 
-{% block app_name %}{{ app_context.name|default:"Carga Org/Lot" }}{% endblock %}
-
-{% block user_role_label %}{{ app_context.name|default:"Carga Org/Lot" }}{% endblock %}
-
+{# ========== LABEL DO CONTEXTO (Altera de "Aplicação Ativa" para "Perfis Disponíveis") ========== #}
 {% block app_context_label %}Perfis Disponíveis{% endblock %}
-
-{% block app_icon_dropdown %}{{ app_context.icon|default:"fas fa-sitemap" }}{% endblock %}
-
-{% block app_name_dropdown %}{{ app_context.name|default:"Carga Org/Lot" }}{% endblock %}
 
 {# ========== MENU DROPDOWN DO USUÁRIO ========== #}
 {% block dropdown_menu_items %}
@@ -28,14 +21,23 @@
             <i class="fas fa-user-tag me-2"></i> 
             {{ role.name }}
             {% if role.is_active %}
-                <i class="fas fa-check-circle text-success ms-2"></i>
+                <i class="fas fa-check-circle text-success ms-2" style="font-size: 0.9rem;"></i>
             {% endif %}
         </a>
     </li>
     {% endfor %}
     <li><hr class="dropdown-divider"></li>
+{% else %}
+    <li>
+        <a class="dropdown-item disabled" href="#">
+            <i class="fas fa-info-circle me-2"></i> 
+            Nenhum perfil configurado
+        </a>
+    </li>
+    <li><hr class="dropdown-divider"></li>
 {% endif %}
 
+{# Links de navegação #}
 <li>
     <a class="dropdown-item" href="/dashboard/">
         <i class="fas fa-home me-2"></i> Voltar ao Portal
@@ -212,6 +214,11 @@
         background-color: var(--app-primary-light);
         color: var(--app-primary);
         font-weight: 600;
+    }
+    
+    .dropdown-item.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
     
     /* Responsividade */
