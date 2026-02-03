@@ -1,0 +1,104 @@
+{% extends "carga_org_lot/base.html" %}
+
+{% block page_title %}Enviar Carga{% endblock %}
+
+{% block page_content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-carga-primary">
+            <i class="fas fa-paper-plane me-2"></i>
+            Enviar Carga para API
+        </h2>
+        <p class="text-muted">Selecione os patriarcas para enviar organograma e/ou lotação</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-carga-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Patriarcas Disponíveis para Envio
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sigla</th>
+                                <th>Nome</th>
+                                <th>Status</th>
+                                <th>Organograma</th>
+                                <th>Lotação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for patriarca in patriarcas %}
+                            <tr>
+                                <td><strong>{{ patriarca.str_sigla_patriarca }}</strong></td>
+                                <td>{{ patriarca.str_nome }}</td>
+                                <td>
+                                    <span class="badge badge-status-{{ patriarca.id_status_progresso.id_status_progresso }}">
+                                        {{ patriarca.id_status_progresso.str_descricao }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if patriarca.tem_organograma_ativo %}
+                                        <i class="fas fa-check-circle text-success"></i> Pronto
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i> Pendente
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if patriarca.tem_lotacao_ativa %}
+                                        <i class="fas fa-check-circle text-success"></i> Pronto
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i> Pendente
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if patriarca.pode_enviar %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-carga-primary"
+                                            onclick="enviarCarga({{ patriarca.id_patriarca }}, '{{ patriarca.str_sigla_patriarca }}')">
+                                        <i class="fas fa-rocket me-1"></i>
+                                        Enviar
+                                    </button>
+                                    {% else %}
+                                    <button type="button" class="btn btn-sm btn-secondary" disabled>
+                                        <i class="fas fa-ban me-1"></i>
+                                        Não disponível
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>Nenhum patriarca cadastrado</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function enviarCarga(patriarcaId, patriarcaSigla) {
+    if (confirm(`Confirma o envio da carga do patriarca ${patriarcaSigla}?`)) {
+        // Redirecionar para a URL de envio
+        window.location.href = `{% url 'carga_org_lot:carga_iniciar' 0 %}`.replace('0', patriarcaId);
+    }
+}
+</script>
+{% endblock %}

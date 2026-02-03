@@ -1,0 +1,135 @@
+{% extends "carga_org_lot/base.html" %}
+
+{% block page_title %}Validar Estado da Carga{% endblock %}
+
+{% block page_content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-carga-primary">
+            <i class="fas fa-clipboard-check me-2"></i>
+            Validar Estado da Carga
+        </h2>
+        <p class="text-muted">Acompanhe o status das cargas enviadas</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="icon bg-info">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3>{{ stats.pendentes|default:0 }}</h3>
+            <p>Pendentes</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="icon bg-warning">
+                <i class="fas fa-sync-alt"></i>
+            </div>
+            <h3>{{ stats.processando|default:0 }}</h3>
+            <p>Processando</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="icon bg-success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>{{ stats.concluidas|default:0 }}</h3>
+            <p>Concluídas</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="icon bg-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>{{ stats.erros|default:0 }}</h3>
+            <p>Com Erros</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-carga-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Histórico de Cargas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Patriarca</th>
+                                <th>Tipo</th>
+                                <th>Status</th>
+                                <th>Mensagem</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for carga in cargas %}
+                            <tr>
+                                <td>{{ carga.dat_data_hora_inicio|date:"d/m/Y H:i" }}</td>
+                                <td><strong>{{ carga.id_patriarca.str_sigla_patriarca }}</strong></td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{ carga.id_tipo_carga.str_descricao }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-status-{{ carga.id_status_carga.id_status_carga }}">
+                                        {{ carga.id_status_carga.str_descricao }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if carga.str_mensagem_retorno %}
+                                        {{ carga.str_mensagem_retorno|truncatewords:10 }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if carga.guid_token %}
+                                    <a href="{% url 'carga_org_lot:carga_verificar' carga.guid_token %}" 
+                                       class="btn btn-sm btn-carga-outline">
+                                        <i class="fas fa-search me-1"></i>
+                                        Detalhes
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>Nenhuma carga registrada</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh a cada 30 segundos se houver cargas em processamento
+{% if has_processing %}
+setTimeout(function() {
+    location.reload();
+}, 30000);
+{% endif %}
+</script>
+{% endblock %}

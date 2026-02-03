@@ -1,0 +1,104 @@
+{% extends "carga_org_lot/base.html" %}
+
+{% block page_title %}Upload de Lotação{% endblock %}
+
+{% block page_content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-carga-primary">
+            <i class="fas fa-users-cog me-2"></i>
+            Upload de Lotação
+        </h2>
+        <p class="text-muted">Faça o upload do arquivo de lotação de servidores</p>
+    </div>
+</div>
+
+{% if not request.session.patriarca_selecionado %}
+<div class="alert alert-warning">
+    <h5 class="alert-heading">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Atenção!
+    </h5>
+    <p>Você precisa selecionar um Patriarca antes de fazer o upload da lotação.</p>
+    <a href="{% url 'carga_org_lot:patriarca_list' %}" class="btn btn-warning">
+        <i class="fas fa-landmark me-2"></i>
+        Ir para Seleção de Patriarca
+    </a>
+</div>
+{% else %}
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-carga-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-laptop me-2"></i>
+                    Upload do Computador
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" action="{% url 'carga_org_lot:lotacao_processar' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="arquivo" class="form-label">Selecione o arquivo:</label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="arquivo" 
+                               name="arquivo" 
+                               accept=".xlsx,.xls"
+                               required>
+                        <small class="form-text text-muted">
+                            Formatos aceitos: Excel (.xlsx, .xls) com múltiplas abas
+                        </small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-carga-primary w-100">
+                        <i class="fas fa-upload me-2"></i>
+                        Fazer Upload e Processar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fab fa-google-drive me-2"></i>
+                    Upload do Google Drive
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Selecione um arquivo do seu Google Drive:</p>
+                
+                <button type="button" class="btn btn-info w-100" id="btnGoogleDrive">
+                    <i class="fab fa-google-drive me-2"></i>
+                    Abrir Seletor do Google Drive
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-carga">
+            <h5 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>
+                Requisitos do Arquivo de Lotação
+            </h5>
+            <ul class="mb-0">
+                <li>O arquivo deve estar no formato Excel (.xlsx ou .xls)</li>
+                <li>Deve conter abas separadas por órgão/unidade</li>
+                <li>Cada aba deve ter as colunas: CPF, Nome, Cargo, Órgão, Unidade</li>
+                <li>Os órgãos/unidades devem existir no organograma já carregado</li>
+                <li>CPFs devem estar no formato correto (apenas números ou com pontuação)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
