@@ -1,5 +1,5 @@
 from django.urls import resolve
-from accounts.models import Aplicacao, UsuarioAplicacaoPerfil
+from accounts.models import Aplicacao, UserRole
 
 def acoes_pngi_context(request):
     """
@@ -34,24 +34,24 @@ def acoes_pngi_context(request):
         # Se o usuário estiver autenticado, busca seus perfis
         if request.user.is_authenticated:
             # Busca todos os perfis do usuário nesta aplicação
-            perfis_usuario = UsuarioAplicacaoPerfil.objects.filter(
-                usuario=request.user,
+            user_roles = UserRole.objects.filter(
+                user=request.user,
                 aplicacao=aplicacao
-            ).select_related('perfil')
+            ).select_related('role')
             
             # Monta lista de perfis com indicação de qual está ativo
-            user_roles = []
-            active_role = request.session.get('active_role_acoes_pngi')  # Perfil ativo na sessão
+            roles_list = []
+            active_role_id = request.session.get('active_role_acoes_pngi')  # Perfil ativo na sessão
             
-            for up in perfis_usuario:
-                user_roles.append({
-                    'id': up.perfil.id,
-                    'name': up.perfil.nomeperfil,
-                    'code': up.perfil.codigoperfil,
-                    'is_active': (active_role == up.perfil.id) if active_role else (up == perfis_usuario.first())
+            for ur in user_roles:
+                roles_list.append({
+                    'id': ur.role.id,
+                    'name': ur.role.nomeperfil,
+                    'code': ur.role.codigoperfil,
+                    'is_active': (active_role_id == ur.role.id) if active_role_id else (ur == user_roles.first())
                 })
             
-            context['user_roles_in_app'] = user_roles
+            context['user_roles_in_app'] = roles_list
             
     except Aplicacao.DoesNotExist:
         pass
