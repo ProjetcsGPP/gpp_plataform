@@ -283,10 +283,12 @@
         <div class="container-fluid px-4">
             <div class="app-brand">
                 <div class="app-logo">
-                    <i class="{% block app_icon %}fas fa-building{% endblock %}"></i>
+                    <i class="{% if app_context %}{{ app_context.icon }}{% else %}{% block app_icon %}fas fa-building{% endblock %}{% endif %}"></i>
                 </div>
                 <div class="app-name">
-                    <div class="app-name-main">{% block app_name %}GPP Plataform{% endblock %}</div>
+                    <div class="app-name-main">
+                        {% if app_context %}{{ app_context.name }}{% else %}{% block app_name %}GPP Plataform{% endblock %}{% endif %}
+                    </div>
                     <div class="app-name-sub">Plataforma de Aplicações da Gerência de Processos e Projetos</div>
                 </div>
             </div>
@@ -303,7 +305,7 @@
                                 <div class="user-name">{{ user.name }}</div>
                                 <div class="user-role">
                                     <i class="fas fa-user-tag"></i> 
-                                    {% block user_role_label %}Usuário{% endblock %}
+                                    {% if app_context %}{{ app_context.name }}{% else %}{% block user_role_label %}Usuário{% endblock %}{% endif %}
                                 </div>
                             </div>
                             <i class="fas fa-chevron-down ms-2"></i>
@@ -324,17 +326,19 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             
-                            <!-- Aplicação Ativa -->
-                            <li class="dropdown-header" style="padding: 0.5rem 1rem;">
-                                <small class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                                    {% block app_context_label %}Aplicação Ativa{% endblock %}
-                                </small>
-                                <div style="color: var(--app-primary); font-weight: 600; margin-top: 0.25rem;">
-                                    <i class="{% block app_icon_dropdown %}fas fa-building{% endblock %} me-1"></i> 
-                                    {% block app_name_dropdown %}Portal GPP{% endblock %}
-                                </div>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
+                            <!-- Aplicação Ativa / Perfis -->
+                            {% if app_context %}
+                                <li class="dropdown-header" style="padding: 0.5rem 1rem;">
+                                    <small class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                                        {% block app_context_label %}Aplicação Ativa{% endblock %}
+                                    </small>
+                                    <div style="color: var(--app-primary); font-weight: 600; margin-top: 0.25rem;">
+                                        <i class="{{ app_context.icon }} me-1"></i> 
+                                        {{ app_context.name }}
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                            {% endif %}
                             
                             <!-- Menu Items Dinâmicos -->
                             {% block dropdown_menu_items %}
