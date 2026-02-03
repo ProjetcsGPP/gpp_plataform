@@ -1,6 +1,23 @@
 from django.urls import resolve
 from accounts.models import Aplicacao, UserRole
 
+def acoes_permissions(request):
+    """
+    Context processor de permissões para Ações PNGI.
+    Injeta permissões do usuário na aplicação.
+    """
+    context = {}
+    
+    if request.user.is_authenticated:
+        # Busca permissões do usuário para esta app
+        permissions = request.user.get_app_permissions('ACOES_PNGI')
+        context['acoes_permissions'] = list(permissions)
+    else:
+        context['acoes_permissions'] = []
+    
+    return context
+
+
 def acoes_pngi_context(request):
     """
     Context processor para a aplicação Ações PNGI.
