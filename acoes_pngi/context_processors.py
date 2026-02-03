@@ -1,5 +1,5 @@
 from django.urls import resolve
-from core.models import Aplicacao, UsuarioAplicacaoPerfil
+from accounts.models import Aplicacao, UsuarioAplicacaoPerfil
 
 def acoes_pngi_context(request):
     """
