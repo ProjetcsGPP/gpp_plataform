@@ -1,0 +1,375 @@
+/* =================================================================
+   SISTEMA DE CARGA ORG/LOT - MENU LATERAL E LAYOUT
+   ================================================================= */
+
+:root {
+    --sidebar-width: 260px;
+    --sidebar-bg: #111;
+    --sidebar-text: #ccc;
+    --sidebar-hover: #575757;
+    --sidebar-active: #2b2b2b;
+    --sidebar-border-active: #56AAF0;
+    --banner-bg: #2b2b2b;
+    --banner-border: #56AAF0;
+    --main-gradient-start: #468BC4;
+    --main-gradient-end: #3F93B8;
+}
+
+/* Reset básico */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* =================================================================
+   SIDEBAR (MENU LATERAL)
+   ================================================================= */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--sidebar-bg);
+    padding-top: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header {
+    padding: 15px 20px;
+    color: white;
+    border-bottom: 1px solid #333;
+    margin-bottom: 15px;
+}
+
+.sidebar-header h4 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.sidebar-header small {
+    color: var(--sidebar-border-active);
+    font-size: 0.85rem;
+}
+
+/* Links do menu */
+.sidebar .nav-link {
+    padding: 12px 20px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar .nav-link:hover {
+    background-color: var(--sidebar-hover);
+    color: white;
+}
+
+.sidebar .nav-link.active {
+    background-color: var(--sidebar-active);
+    color: white;
+    border-left-color: var(--sidebar-border-active);
+    font-weight: 500;
+}
+
+/* Submenu */
+.sidebar .nav-link.submenu {
+    padding-left: 45px;
+    font-size: 0.88rem;
+}
+
+.sidebar .collapse {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Ícone de expansão do menu */
+.sidebar .nav-link .fa-chevron-down {
+    transition: transform 0.3s ease;
+    font-size: 0.75rem;
+}
+
+.sidebar .nav-link[aria-expanded="true"] .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+/* Scrollbar customizada */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* =================================================================
+   CONTEÚDO PRINCIPAL
+   ================================================================= */
+
+#main-content {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--main-gradient-start) 0%, var(--main-gradient-end) 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Banner superior */
+#banner {
+    background: var(--banner-bg);
+    color: white;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid var(--banner-border);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+#banner span:first-child {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+#patriarca-info {
+    font-size: 0.9rem;
+    color: var(--banner-border);
+    font-weight: bold;
+    padding: 6px 12px;
+    background-color: rgba(86, 170, 240, 0.1);
+    border-radius: 4px;
+    border: 1px solid var(--banner-border);
+}
+
+/* Container de conteúdo */
+#content {
+    flex: 1;
+    padding: 25px;
+}
+
+/* =================================================================
+   MENSAGENS E ALERTAS
+   ================================================================= */
+
+#messageContainer {
+    position: sticky;
+    top: 70px;
+    z-index: 998;
+    margin-bottom: 20px;
+}
+
+.alert {
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* =================================================================
+   CARDS E CONTAINERS
+   ================================================================= */
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+}
+
+/* =================================================================
+   TABELAS
+   ================================================================= */
+
+.table-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table thead th {
+    background-color: var(--banner-bg);
+    color: white;
+    border: none;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(86, 170, 240, 0.05);
+}
+
+/* =================================================================
+   BOTÕES
+   ================================================================= */
+
+.btn {
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn i {
+    margin-right: 6px;
+}
+
+.btn-primary {
+    background-color: var(--banner-border);
+    border-color: var(--banner-border);
+}
+
+.btn-primary:hover {
+    background-color: #4595d6;
+    border-color: #4595d6;
+}
+
+/* =================================================================
+   BADGES E LABELS
+   ================================================================= */
+
+.badge {
+    padding: 6px 10px;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+/* Status badges específicos */
+.badge-status-novo {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-status-progresso {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-status-enviando {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.badge-status-processado {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* =================================================================
+   SPINNERS E LOADING
+   ================================================================= */
+
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner-overlay .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* =================================================================
+   RESPONSIVIDADE
+   ================================================================= */
+
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 0;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    #main-content {
+        margin-left: 0;
+    }
+    
+    #banner {
+        padding-left: 60px;
+    }
+    
+    /* Botão hamburger */
+    .menu-toggle {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1001;
+        background: var(--sidebar-bg);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+}
+
+/* =================================================================
+   UTILITÁRIOS
+   ================================================================= */
+
+.text-muted-light {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.transition-all {
+    transition: all 0.2s ease;
+}
