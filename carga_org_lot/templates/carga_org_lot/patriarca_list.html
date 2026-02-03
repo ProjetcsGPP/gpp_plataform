@@ -1,324 +1,199 @@
-{% extends "base.html" %}
+{% extends "carga_org_lot/base.html" %}
 {% load static %}
-{% load permission_tags %}
 
-{% block title %}Patriarcas - Carga Org/Lot{% endblock %}
+{% block title %}Patriarcas - GPP Carga Org/Lot{% endblock %}
 
-{% block body_class %}app-carga{% endblock %}
-
-{% block app_icon %}fas fa-sitemap{% endblock %}
-{% block app_name %}Carga Org/Lot{% endblock %}
-
-{% block logout_url %}{% url 'carga_org_lot_web:logout' %}{% endblock %}
-
-{% block extra_css %}
-<style>
-    .sidebar {
-        min-height: calc(100vh - 140px);
-        background-color: #343a40;
-        color: white;
-    }
-    .sidebar .nav-link {
-        color: rgba(255,255,255,0.8);
-        padding: 0.75rem 1rem;
-        border-radius: 0.25rem;
-        margin-bottom: 0.25rem;
-    }
-    .sidebar .nav-link:hover {
-        background-color: rgba(255,255,255,0.1);
-        color: white;
-    }
-    .sidebar .nav-link.active {
-        background-color: var(--app-primary);
-        color: white;
-    }
-    .user-info-sidebar {
-        padding: 1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        margin-bottom: 1rem;
-    }
-    .role-selector {
-        background-color: rgba(0,0,0,0.2);
-        padding: 0.5rem;
-        border-radius: 0.25rem;
-        margin-top: 0.5rem;
-    }
-    .patriarca-card {
-        transition: transform 0.2s;
-    }
-    .patriarca-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .badge-status {
-        font-size: 0.85rem;
-        padding: 0.4rem 0.8rem;
-    }
-</style>
-{% endblock %}
+{% block page_title %}Cadastro de Patriarcas{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <nav class="col-md-2 col-lg-2 d-md-block sidebar">
-            <div class="position-sticky pt-3">
-                <!-- Seletor de Papel -->
-                <div class="user-info-sidebar">
-                    <div class="role-selector">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted d-block">Perfil Ativo:</small>
-                                <strong>{{ active_role_name }}</strong>
-                            </div>
-                            {% if user_roles_for_app.count > 1 %}
-                            <a href="{% url 'accounts:switch_role' 'CARGA_ORG_LOT' %}" 
-                               class="btn btn-sm btn-outline-light" 
-                               title="Trocar perfil">
-                                <i class="fas fa-exchange-alt"></i>
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Menu -->
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'carga_org_lot_web:dashboard' %}">
-                            <i class="fas fa-home me-2"></i> Dashboard
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#cadastroSubmenu">
-                            <i class="fas fa-database me-2"></i> Cadastro
-                            <i class="fas fa-chevron-down float-end mt-1"></i>
-                        </a>
-                        <ul class="collapse show nav flex-column ms-3" id="cadastroSubmenu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-list me-2"></i> Tipos e Classificações
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" href="{% url 'carga_org_lot_web:patriarca_list' %}">
-                                    <i class="fas fa-sitemap me-2"></i> Patriarca
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-users-cog me-2"></i> Usuários e Perfis
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#organizarSubmenu">
-                            <i class="fas fa-project-diagram me-2"></i> Organizar Patriarca
-                            <i class="fas fa-chevron-down float-end mt-1"></i>
-                        </a>
-                        <ul class="collapse nav flex-column ms-3" id="organizarSubmenu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-edit me-2"></i> Criar/Editar Organograma
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#execucaoSubmenu">
-                            <i class="fas fa-play-circle me-2"></i> Execução
-                            <i class="fas fa-chevron-down float-end mt-1"></i>
-                        </a>
-                        <ul class="collapse nav flex-column ms-3" id="execucaoSubmenu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-upload me-2"></i> Enviar Cargas
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#relatoriosSubmenu">
-                            <i class="fas fa-chart-bar me-2"></i> Relatórios
-                            <i class="fas fa-chevron-down float-end mt-1"></i>
-                        </a>
-                        <ul class="collapse nav flex-column ms-3" id="relatoriosSubmenu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-search me-2"></i> Consultar Patriarcas
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <hr class="text-white">
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'portal:dashboard' %}">
-                            <i class="fas fa-arrow-left me-2"></i> Voltar ao Portal
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-
-        <!-- Conteúdo Principal -->
-        <main class="col-md-10 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2"><i class="fas fa-sitemap me-2"></i>Lista de Patriarcas</h1>
-                <div>
-                    <a href="#" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Novo Patriarca
-                    </a>
-                </div>
-            </div>
-
-            <!-- Filtros -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-6">
-                            <label for="search" class="form-label">Buscar</label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="search" 
-                                   name="search" 
-                                   value="{{ search }}"
-                                   placeholder="Buscar por sigla ou nome...">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="">Todos</option>
-                                {% for status in status_list %}
-                                <option value="{{ status.id_status_progresso }}" 
-                                        {% if status.id_status_progresso|stringformat:"s" == status_id %}selected{% endif %}>
-                                    {{ status.str_descricao }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-search me-2"></i>Filtrar
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Resultados -->
-            {% if page_obj %}
-            <div class="card">
-                <div class="card-header bg-app-light">
-                    <h5 class="text-app-primary mb-0">
-                        Patriarcas Encontrados ({{ page_obj.paginator.count }})
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Sigla</th>
-                                    <th>Nome</th>
-                                    <th>Status</th>
-                                    <th>Criado em</th>
-                                    <th>Criado por</th>
-                                    <th class="text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for patriarca in page_obj %}
-                                <tr class="patriarca-card">
-                                    <td><strong>{{ patriarca.str_sigla_patriarca }}</strong></td>
-                                    <td>{{ patriarca.str_nome }}</td>
-                                    <td>
-                                        <span class="badge badge-status bg-info">
-                                            {{ patriarca.id_status_progresso.str_descricao }}
-                                        </span>
-                                    </td>
-                                    <td>{{ patriarca.dat_criacao|date:"d/m/Y H:i" }}</td>
-                                    <td>{{ patriarca.id_usuario_criacao.name|default:"N/A" }}</td>
-                                    <td class="text-center">
-                                        <a href="#" class="btn btn-sm btn-outline-primary" title="Ver detalhes">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-warning" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Paginação -->
-                    {% if page_obj.has_other_pages %}
-                    <nav aria-label="Navegação de páginas">
-                        <ul class="pagination justify-content-center mt-4">
-                            {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">
-                                    <i class="fas fa-angle-left"></i>
-                                </a>
-                            </li>
-                            {% endif %}
-
-                            {% for num in page_obj.paginator.page_range %}
-                                {% if page_obj.number == num %}
-                                <li class="page-item active">
-                                    <span class="page-link">{{ num }}</span>
-                                </li>
-                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">
-                                        {{ num }}
-                                    </a>
-                                </li>
-                                {% endif %}
-                            {% endfor %}
-
-                            {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">
-                                    <i class="fas fa-angle-right"></i>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </a>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-
-                    <div class="text-center text-muted">
-                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} 
-                        ({{ page_obj.paginator.count }} registro{{ page_obj.paginator.count|pluralize }})
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% else %}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                Nenhum patriarca encontrado.
-            </div>
-            {% endif %}
-        </main>
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">
+                <i class="fas fa-landmark me-2 text-primary"></i>
+                Cadastro de Patriarcas
+            </h2>
+            <a href="{% url 'carga_org_lot:patriarca_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Novo Patriarca
+            </a>
+        </div>
     </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-5">
+                <label for="search" class="form-label">Buscar</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="search" 
+                       name="search" 
+                       value="{{ search }}"
+                       placeholder="Buscar por sigla ou nome...">
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    {% for status in status_list %}
+                        <option value="{{ status.id_status_progresso }}" 
+                                {% if status_id == status.id_status_progresso|stringformat:"s" %}selected{% endif %}>
+                            {{ status.str_descricao }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+                <a href="{% url 'carga_org_lot:patriarca_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela de Patriarcas -->
+<div class="table-container">
+    {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Sigla</th>
+                        <th>Nome</th>
+                        <th>Status</th>
+                        <th class="text-center">Organograma</th>
+                        <th class="text-center">Lotação</th>
+                        <th>Criado em</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patriarca in page_obj %}
+                        <tr {% if patriarca_selecionado and patriarca.id_patriarca == patriarca_selecionado.id %}class="table-active"{% endif %}>
+                            <td>
+                                <strong>{{ patriarca.str_sigla_patriarca }}</strong>
+                                {% if patriarca_selecionado and patriarca.id_patriarca == patriarca_selecionado.id %}
+                                    <span class="badge bg-success ms-2">Selecionado</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ patriarca.str_nome }}</td>
+                            <td>
+                                {% if patriarca.id_status_progresso.id_status_progresso == 1 %}
+                                    <span class="badge badge-status-novo">{{ patriarca.id_status_progresso.str_descricao }}</span>
+                                {% elif patriarca.id_status_progresso.id_status_progresso == 2 %}
+                                    <span class="badge badge-status-progresso">{{ patriarca.id_status_progresso.str_descricao }}</span>
+                                {% elif patriarca.id_status_progresso.id_status_progresso == 3 %}
+                                    <span class="badge badge-status-enviando">{{ patriarca.id_status_progresso.str_descricao }}</span>
+                                {% else %}
+                                    <span class="badge badge-status-processado">{{ patriarca.id_status_progresso.str_descricao }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if patriarca.tem_organograma %}
+                                    <i class="fas fa-check-circle text-success" title="Organograma ativo"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle text-muted" title="Sem organograma"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if patriarca.tem_lotacao %}
+                                    <i class="fas fa-check-circle text-success" title="Lotação ativa"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle text-muted" title="Sem lotação"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>{{ patriarca.dat_criacao|date:"d/m/Y H:i" }}</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'carga_org_lot:patriarca_detail' patriarca.id_patriarca %}" 
+                                       class="btn btn-outline-info"
+                                       title="Detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'carga_org_lot:patriarca_update' patriarca.id_patriarca %}" 
+                                       class="btn btn-outline-warning"
+                                       title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    
+                                    {% if patriarca.acao == 'selecionar' %}
+                                        <a href="{% url 'carga_org_lot:patriarca_select' patriarca.id_patriarca %}" 
+                                           class="btn btn-outline-success"
+                                           title="Selecionar para trabalhar"
+                                           onclick="return confirm('Deseja selecionar o patriarca {{ patriarca.str_sigla_patriarca }}?')">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    {% elif patriarca.acao == 'reset' %}
+                                        <a href="{% url 'carga_org_lot:patriarca_reset' patriarca.id_patriarca %}" 
+                                           class="btn btn-outline-danger"
+                                           title="Resetar status"
+                                           onclick="return confirm('Deseja resetar o patriarca {{ patriarca.str_sigla_patriarca }}? Isso alterará o status para Em Progresso.')">
+                                            <i class="fas fa-redo"></i>
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary" 
+                                                disabled
+                                                title="Patriarca bloqueado no status atual">
+                                            <i class="fas fa-lock"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Paginação">
+                <ul class="pagination justify-content-center mt-3">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">
+                                Primeira
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">
+                                Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">
+                                Próxima
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">
+                                Última
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>
+            Nenhum patriarca encontrado. <a href="{% url 'carga_org_lot:patriarca_create' %}">Criar primeiro patriarca</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
