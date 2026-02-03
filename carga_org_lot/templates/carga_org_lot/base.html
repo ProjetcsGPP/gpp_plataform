@@ -4,20 +4,38 @@
 {# ========== CONFIGURAÇÕES DO HEADER ========== #}
 {% block body_class %}app-carga{% endblock %}
 
-{% block app_icon %}fas fa-sitemap{% endblock %}
+{% block app_icon %}{{ app_context.icon|default:"fas fa-sitemap" }}{% endblock %}
 
-{% block app_name %}Carga Org/Lot{% endblock %}
+{% block app_name %}{{ app_context.name|default:"Carga Org/Lot" }}{% endblock %}
 
-{% block user_role_label %}Carga Org/Lot{% endblock %}
+{% block user_role_label %}{{ app_context.name|default:"Carga Org/Lot" }}{% endblock %}
 
-{% block app_context_label %}Aplicação Ativa{% endblock %}
+{% block app_context_label %}Perfis Disponíveis{% endblock %}
 
-{% block app_icon_dropdown %}fas fa-sitemap{% endblock %}
+{% block app_icon_dropdown %}{{ app_context.icon|default:"fas fa-sitemap" }}{% endblock %}
 
-{% block app_name_dropdown %}Carga Org/Lot{% endblock %}
+{% block app_name_dropdown %}{{ app_context.name|default:"Carga Org/Lot" }}{% endblock %}
 
 {# ========== MENU DROPDOWN DO USUÁRIO ========== #}
 {% block dropdown_menu_items %}
+{# Listar perfis do usuário nesta aplicação #}
+{% if user_roles_in_app %}
+    {% for role in user_roles_in_app %}
+    <li>
+        <a class="dropdown-item {% if role.is_active %}active{% endif %}" 
+           href="#" 
+           onclick="alert('Funcionalidade de troca de perfil em desenvolvimento'); return false;">
+            <i class="fas fa-user-tag me-2"></i> 
+            {{ role.name }}
+            {% if role.is_active %}
+                <i class="fas fa-check-circle text-success ms-2"></i>
+            {% endif %}
+        </a>
+    </li>
+    {% endfor %}
+    <li><hr class="dropdown-divider"></li>
+{% endif %}
+
 <li>
     <a class="dropdown-item" href="/dashboard/">
         <i class="fas fa-home me-2"></i> Voltar ao Portal
@@ -187,6 +205,13 @@
     .menu-toggle:hover {
         transform: scale(1.1);
         box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+    
+    /* Estilo para perfil ativo no dropdown */
+    .dropdown-item.active {
+        background-color: var(--app-primary-light);
+        color: var(--app-primary);
+        font-weight: 600;
     }
     
     /* Responsividade */
