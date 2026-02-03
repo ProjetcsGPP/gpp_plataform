@@ -1,0 +1,41 @@
+<!-- FRAGMENTO de conteúdo dinâmico -->
+
+<!-- ALTERAÇÃO 1: Trocado 'container' por 'container-fluid' para usar a largura total da tela -->
+<div class="container-fluid mt-3">
+  <div id="messageContainer"></div>
+
+  <div>
+    <h2 class="mb-2 d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-users me-2"></i> Patriarcas</span>
+      <button class="btn btn-success btn-sm" onclick="abrirModalNovoPatriarca()">
+        <i class="fas fa-plus"></i> Novo Patriarca
+      </button>
+    </h2>
+    <p class="text-light-50">Lista e informações sobre os patriarcas cadastrados.</p>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-striped table-hover">
+      <thead>
+        <tr>
+          <!-- ALTERAÇÃO 2: Larguras das colunas fixadas com base na análise dos dados -->
+          <th style="display: none;">Id</th>
+          <th style="width: 5%;">Sigla</th>
+          <th style="width: 20%;">Patriarca</th>
+          <th style="width: 10%;">Estado atual</th>
+          <th style="width: 9%;">Carga Organograma</th>
+          <th style="width: 8%;">Carga Lotações</th>
+          <th style="width: 8%;">Token</th>
+          <th style="width: 14%;">Data Envio</th>
+          <!-- Coluna de Ações com espaço suficiente para os botões -->
+          <th style="width: 12%; text-align: center;">Ações</th>
+          <th class="text-center" style="width: 9%;">Detalhes de Cargas</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-patriarcas">
+        <!-- Linhas são preenchidas dinamicamente aqui -->
+      </tbody>
+    </table>
+  </div>
+</div>
+

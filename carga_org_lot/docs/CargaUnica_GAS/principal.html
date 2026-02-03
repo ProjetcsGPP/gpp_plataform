@@ -1,0 +1,3799 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_self">
+  <meta charset="UTF-8" />
+  <title>Sistema</title>
+  <!-- Bootstrap e Ícones -->
+  <script src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap JS Bundle (inclui Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+
+  <!-- React e React DOM (versões fixas de um CDN confiável) -->
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+
+  <!-- ReactFlow (versão fixa com a URL UMD correta) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reactflow@11.10.1/dist/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/reactflow@11.10.1/dist/umd/index.min.js"></script>
+
+  <style>
+
+    :root {
+      --xy-minimap-background-color-default: transparent !important;
+      --xy-minimap-node-fill-default: #0077ff !important;
+      --xy-minimap-node-stroke-default: #0047b3 !important;
+      --xy-minimap-node-stroke-width-default: 2px !important;
+      --xy-minimap-edge-stroke-default: #555 !important;
+      --xy-minimap-edge-stroke-width-default: 1.5px !important;
+    }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: linear-gradient(135deg, #468BC4 0%, #3F93B8 100%);
+      min-height: 100vh;
+    }
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: 250px; height: 100%;
+      background-color: #111; padding-top: 60px;
+      overflow-x: hidden;
+    }
+    .sidebar a {
+      padding: 10px 15px;
+      text-decoration: none;
+      font-size: 16px;
+      color: #ccc;
+      display: block;
+      transition: 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar a:hover 
+    { 
+      background-color: #575757;
+      color: #fff;
+    }
+    .sidebar a.active 
+    {
+      color: #fff;
+      background-color: #2b2b2b;
+      border-left-color: #56AAF0;
+    }
+    #main { 
+      margin-left: 250px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    #banner {
+      background: #2b2b2b;
+      color: white;
+      padding: 15px 20px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-bottom: 3px solid #56AAF0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #banner .patriarca-info {
+      font-size: 0.9rem;
+      color: #56AAF0;
+      font-weight: bolder;
+    }
+    #content { padding: 20px; color: #fff; }
+    
+    /* Estilos para lista hierárquica */
+    .lista-hierarquica {
+        list-style-type: none;
+        padding-left: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    .lista-hierarquica ul {
+        list-style-type: none;
+        padding-left: 25px;
+        margin-top: 5px;
+        border-left: 1px solid #e0e0e0;
+    }
+
+    .lista-hierarquica li {
+        margin-bottom: 8px;
+    }
+
+    .lista-item-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .lista-item-index {
+        font-weight: bold;
+        color: #FFFFFF;
+        background-color: #000000;
+        padding: 2px 6px;
+        border-radius: 4px;
+        min-width: 20px;
+        text-align: right;
+    }
+
+    .lista-item-text-container {
+        padding-top: 2px;
+    }
+
+    .lista-item-acronym {
+        font-weight: bold;
+        color: #FFFFFF;
+    }
+
+    .lista-item-text {
+        color: #FFFFFF;
+    }
+    .list-group-item {
+      transition: background-color 0.2s;
+    }
+
+    .list-group-item:hover {
+      color: rgb(252 253 255) !important;
+      background-color: #2c2f33 !important;
+    }
+
+    .form-check-input:checked {
+      background-color: #28a745;
+      border-color: #28a745;
+    }
+    #tabela-patriarcas td:last-child {
+      white-space: nowrap; 
+      text-align: center;
+    }
+
+    #node-search-panel {
+      position: relative;
+    }
+
+    #nodeSearchResults {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 108%;
+      max-height: 450px;
+      overflow-y: auto;
+      background-color: #fff;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      z-index: 1050;
+    }
+
+
+    /* Estilos exclusivos para editModal */
+    #editModal .modal-body .edit-item {
+      margin-bottom: 0.8rem;
+    }
+    #editModal .modal-body .edit-label {
+      font-size: smaller;
+      font-weight: bold;
+      color: #667eea;
+    }
+    #editModal .modal-body .edit-value {
+      font-size: smaller;
+      padding-left: 10px;
+      font-weight: bold;
+      color: #000000;
+    }
+    #editModal select.form-select.edit-value {
+      max-width: 300px;
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #f8f9fa;
+    }
+    #editModal .edit-item.inline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #editModal .edit-item.inline .edit-label {
+      min-width: 100px;
+      margin-bottom: 0;
+    }
+    #editModal .edit-item.inline select.form-select.edit-value {
+      max-width: 300px;
+      flex: 1;
+    }
+    /* Estilos exclusivos para detailsModal */
+    #detailsModal .modal-body .detail-item {
+      margin-bottom: 0.8rem;
+    }
+    #detailsModal .modal-body .detail-label {
+      font-size: smaller;
+      font-weight: bold;
+      color: #667eea;
+    }
+    #detailsModal .modal-body .detail-value {
+      font-size: smaller;
+      padding-left: 10px;
+    }
+
+
+    /* ReactFlow Container */
+    #reactflow-root {
+      height: 700px;
+      background: #fff;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    /* Estilos específicos para ReactFlow */
+    .react-flow {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      z-index: 0;
+    }
+
+    /* ReactFlow Nodes */
+    .react-flownode {
+      box-shadow: 0px 3.54px 4.55px rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      background-color: var(--xy-node-background-color-default, #ffffff);
+      border: 2px solid #adb5bd !important;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--xy-node-color-default, #000);
+      flex-direction: column;
+      transition: all 0.2s ease-in-out;
+    }
+    .react-flownode:hover {
+      border-color: #0dcaf0 !important;
+      box-shadow: 0 0 8px rgba(13, 202, 240, 0.5) !important;
+    }
+    .react-flownode.selected {
+      border: 3px solid #0d6efd !important;
+      box-shadow: 0 0 12px rgba(13, 110, 253, 0.7) !important;
+    }
+
+    /* ReactFlow Edges */
+    .react-flowedge {
+      stroke: var(--xy-theme-edge-default, black);
+    }
+    .react-flowedge:hover .react-flowedge-path,
+    .react-flowedge.selected .react-flowedge-path {
+      stroke: var(--xy-theme-edge-hover, black);
+    }
+    .react-flow__minimap {
+      background-color: var(--xy-minimap-background-color-default, transparent) !important;
+      border-radius: 6px !important;
+      border: 1px solid #ccc !important;
+    }
+
+    .react-flow__minimap-node {
+      fill: var(--xy-minimap-node-fill-default, #0077ff) !important;
+      stroke: var(--xy-minimap-node-stroke-default, #0047b3) !important;
+      stroke-width: var(--xy-minimap-node-stroke-width-default, 2px) !important;
+      shape-rendering: crispEdges !important;
+      fill-opacity: 1 !important;
+      stroke-opacity: 1 !important;
+    }
+
+    .react-flow__minimap-node.react-flow__minimap-node-selected {
+      stroke: #ff4500 !important;
+      stroke-width: 3px !important;
+      filter: drop-shadow(0 0 2px rgba(255, 69, 0, 0.7)) !important;
+    }
+
+    .react-flow__minimap-edge {
+      stroke: var(--xy-minimap-edge-stroke-default, #555) !important;
+      stroke-width: var(--xy-minimap-edge-stroke-width-default, 1.5px) !important;
+      stroke-opacity: 1 !important;
+    }
+    .react-flow__minimap svg {
+      overflow: visible !important;
+    }
+
+    .react-flow__minimap *,
+    .react-flow__minimap svg * {
+      opacity: 1 !important;
+      filter: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- MENU LATERAL -->
+  <nav id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" onclick="carregarPagina('patriarcas')" class="active">
+      <i class="fas fa-users me-2"></i> Patriarcas
+    </a>
+    <a href="javascript:void(0)" onclick="carregarPagina('organogramaEdicao')">
+      <i class="fas fa-pencil-alt me-2"></i> Editar Organograma
+    </a>
+    <a href="javascript:void(0)" onclick="carregarPagina('organograma')">
+      <i class="fas fa-sitemap me-2"></i> Leitura de Organograma
+    </a>
+    <a href="javascript:void(0)" onclick="carregarPagina('lotacao')">
+      <i class="fas fa-building me-2"></i> Leitura de Lotação
+    </a>
+    <a href="javascript:void(0)" onclick="carregarPagina('enviarParaAPI')">
+      <i class="fas fa-share me-2"></i> Envio de Carga
+    </a>
+    <a href="javascript:void(0)" onclick="carregarPagina('validarEnvioParaAPI')">
+      <i class="fas fa-clipboard-check me-2"></i> Validar Envio de Carga
+    </a>
+    <hr class="text-secondary">
+    <a href="javascript:void(0)" onclick="sair()">
+      <i class="fas fa-sign-out-alt me-2"></i> Sair
+    </a>
+  </nav>
+
+  <!-- ÁREA PRINCIPAL -->
+  <div id="main">
+    <div id="banner">
+      <span>Carga Única de Organograma e Lotação</span>
+      <span class="patriarca-info" id="patriarca-info">Nenhum Patriarca selecionado</span>
+    </div>
+
+    <div id="content"><!-- conteúdo dinâmico entra aqui --></div>
+  </div>
+
+  <!-- Modal de Edição -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalTitle">Editar</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="editModalBody">
+          <!-- Conteúdo dinâmico -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelarEditModal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnSalvarModal">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Edição de Órgão (global) -->
+  <div class="modal fade" id="modalOrgao" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="formOrgao">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalOrgaoTitle"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="orgaoNome" class="form-label">Nome do Órgão/Setor/Unidade</label>
+              <input type="text" class="form-control" id="orgaoNome" required>
+            </div>
+            <div class="mb-3">
+              <label for="orgaoSigla" class="form-label">Sigla</label>
+              <input type="text" class="form-control" id="orgaoSigla" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+              <!-- Adicione este botão -->
+              <button type="button" class="btn btn-danger" id="btnExcluirOrgao" onclick="excluirOrgao()">Excluir</button>
+              
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Salvar</button>
+          </div>          
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Detalhes de Envio -->
+  <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title" id="detailsModalLabel"><i class="fas fa-history me-2"></i>Histórico do Último Envio</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="detailsModalBody" style="min-height: 200px;">
+          <!-- Conteúdo dinâmico -->
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // VARIÁVEIS GLOBAIS
+    // ============================================
+    var initialPage = '<?= initialPage ?>';
+    var webAppUrl   = '<?= webAppUrl ?>';
+    var editModal;
+    let parametroParaPagina = null;
+
+    // ============================================
+    // FUNÇÕES DO SISTEMA PRINCIPAL
+    // ============================================
+
+    function marcarMenuAtivo(nome) {
+      // Remove a classe 'active' de todos os links do menu
+      document.querySelectorAll('.sidebar a').forEach(a => {
+        a.classList.remove('active');
+      });
+
+      // --- INÍCIO DA CORREÇÃO ---
+      // O seletor agora procura pelo atributo onclick que contenha a string exata,
+      // incluindo as aspas, garantindo que 'organograma' não corresponda a 'organogramaEdicao'.
+      var linkAtivo = document.querySelector(`.sidebar a[onclick="carregarPagina('${nome}')"]`);
+      // --- FIM DA CORREÇÃO ---
+
+      if (linkAtivo) {
+        linkAtivo.classList.add('active');
+      }
+    }
+
+    function sair() {
+      google.script.run.withSuccessHandler(function(html) {
+        // substitui todo o documento pelo login.html completo
+        document.open();
+        document.write(html);
+        document.close();
+      }).logout();
+    }
+
+    window.addEventListener('load', function() {
+      carregarPagina('patriarcas');
+      atualizarBannerPatriarca(); // Carregar patriarca selecionado no banner
+    });
+
+    function atualizarBannerPatriarca() {
+      google.script.run
+        .withSuccessHandler(function(patriarca) {
+          const patriarcaInfo = document.getElementById('patriarca-info');
+          if (patriarca) {
+            patriarcaInfo.textContent = `Patriarca: ${patriarca.nome} (${patriarca.sigla})`;
+          } else {
+            patriarcaInfo.textContent = 'Nenhum Patriarca selecionado';
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('Erro ao obter patriarca selecionado:', error);
+          const patriarcaInfo = document.getElementById('patriarca-info');
+          patriarcaInfo.textContent = 'Erro ao carregar Patriarca';
+        })
+        .getSelectedPatriarca();
+    }
+
+
+    function carregarPagina(nome) {
+      document.getElementById('content').innerHTML =
+        '<div class="text-light">Carregando <span class="spinner-border spinner-border-sm"></span></div>';
+
+      google.script.run
+        .withSuccessHandler(function(html) {
+
+            //console.log('withSuccessHandler foi executado.');
+            //console.log('O valor recebido na variável "nome" é:', nome);
+            //console.log('Tipo da variável "nome":', typeof nome);
+            //console.log('A comparação "nome === \'patriarcas\'" resulta em:', nome === 'patriarcas');
+            // --- FIM DA DEPURAÇÃO ---
+
+          document.getElementById('content').innerHTML = html;
+          marcarMenuAtivo(nome);
+
+          // Inicializar funcionalidades específicas da página
+
+          if (nome === 'patriarcas') {
+            console.log('getHtmlPage chamando carregarPatriarcas');
+            carregarPatriarcas();
+          } else if (nome === 'organograma') {
+            inicializarOrganograma();
+          } else if (nome === 'organogramaEdicao') {
+            inicializarOrganogramaEdicao();
+          } else if (nome === 'lotacao') {
+            inicializarLotacao();
+          } else if (nome === 'enviarParaAPI') {
+            console.log('Chamando carregarPatriarcasParaEnvio em Pelo Menu');
+            carregarPatriarcasParaEnvio();
+          } else if (nome === 'validarEnvioParaAPI') {
+            carregarStatusCargas();  // ← ADICIONAR ESTA LINHA
+          }
+
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('content').innerHTML =
+            '<div class="alert alert-danger">Erro ao carregar a página: ' + (err && err.message ? err.message : err) + '</div>';
+        })
+        .getHtmlPage(nome);
+        console.log('getHtmlPage final');
+    }
+
+    // ============================================
+    // FUNÇÕES DOS PATRIARCAS
+    // ============================================
+    function formatarDataBrasileira(isoString) {
+      // Se a string de data for nula, vazia ou inválida, retorna um traço para a UI.
+      if (!isoString) {
+        return '---';
+      }
+
+      const data = new Date(isoString);
+
+      // Verifica se a data criada é válida
+      if (isNaN(data.getTime())) {
+        return 'Data inválida';
+      }
+
+      // Função auxiliar para adicionar um zero à esquerda se o número for menor que 10
+      const pad = (num) => num.toString().padStart(2, '0');
+
+      const dia = pad(data.getDate());
+      const mes = pad(data.getMonth() + 1); // getMonth() é base 0, então somamos 1
+      const ano = data.getFullYear();
+      const horas = pad(data.getHours());
+      const minutos = pad(data.getMinutes());
+      const segundos = pad(data.getSeconds());
+
+      return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+    }
+
+    /**
+     * [VERSÃO FINAL E CORRIGIDA] Carrega e renderiza a tabela de patriarcas,
+     * com lógica robusta para exibir o botão de ação correto em cada situação.
+     *
+    */
+    function carregarPatriarcas() {
+      const tbody = document.getElementById('tabela-patriarcas');
+      if (!tbody) {
+          console.error("Elemento #tabela-patriarcas não encontrado.");
+          return;
+      }
+      
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center p-4"><div class="spinner-border text-info" role="status"></div><p class="mt-2 text-muted">Carregando patriarcas...</p></td></tr>`;
+
+      google.script.run
+          .withSuccessHandler(function(result) {
+              if (!result || !result.success || !Array.isArray(result.dados)) {
+                  tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger"><p>Erro ao carregar patriarcas: resposta inválida do servidor.</p></td></tr>`;
+                  return;
+              }
+
+              if (result.dados.length === 0) {
+                  tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted"><i class="fas fa-inbox fa-2x mb-2"></i><p>Nenhum patriarca cadastrado.</p></td></tr>`;
+                  return;
+              }
+
+              tbody.innerHTML = '';
+
+              result.dados.forEach(function(p, i) {
+                  var tr = document.createElement('tr');
+                  var selectButton = '';
+                  const statusLower = p.status ? p.status.toLowerCase() : '';
+
+                  // Cenário 1: Status permite seleção direta
+                  if (statusLower === 'novo' || statusLower === 'em progresso') {
+                      selectButton = `<button class="btn btn-success btn-sm me-2" onclick="selecionarPatriarca('${p.idPatriarca}')">Selecionar</button>`;
+
+                  // --- LÓGICA CORRIGIDA E ROBUSTA ---
+                  // Cenário 2: Status 'enviando carga' requer verificação de tempo
+                  } else if ((statusLower === 'enviando carga') || (statusLower === 'carga processada')) {
+                      let expirado = true; // Começa assumindo que expirou (o caso mais seguro)
+
+                      if (p.dataSolicitacao) {
+                          const dataOriginal = new Date(p.dataSolicitacao);
+                          // Se a data for válida, fazemos o cálculo
+                          if (!isNaN(dataOriginal.getTime())) {
+                              const dataAtual = new Date();
+                              const diferencaHoras = (dataAtual.getTime() - dataOriginal.getTime()) / 3600000; // Diferença em horas
+
+                              // Se o processo tem menos de 1 hora, NÃO expirou
+                              if (diferencaHoras <= 1) {
+                                  expirado = false;
+                              }
+                          }
+                      }
+                      // Se dataSolicitacao for nula/inválida, 'expirado' permanece true, forçando a atualização.
+
+                      if (expirado) {
+                          // Se expirou (ou se a data era inválida), mostra o botão de correção
+                          selectButton = `<button class="btn btn-info btn-sm me-2" data-bs-toggle="tooltip" title="Reiniciar o Patriarca para novo envio de cargas e Selecionar" onclick="handleResetAndSelect('${p.idPatriarca}', this)">Atualizar e Selecionar</button>`;
+                      } else {
+                          // Se ainda está no prazo, permite selecionar normalmente
+                          selectButton = `<button class="btn btn-success btn-sm me-2" onclick="selecionarPatriarca('${p.idPatriarca}')">Selecionar</button>`;
+                      }
+                  }
+                  
+                  const orgGerado = p.organogramaGerado === 'X' ? 'Sim' : 'Não';
+                  let lotGerado = 'Não';
+                  if (p.lotacaoGerado === 'X') { lotGerado = 'Sim'; }
+                  if (p.lotacaoGerado === 'A') { lotGerado = 'Necessário atualizar'; }
+                  const tokenRecebido = p.token ? 'Token recebido' : '';
+
+                  // não pode editar o ID do Patriarca PMEXE
+                  
+                  var btnEditar = `
+                  <button class="btn btn-light btn-sm" onclick="editarPatriarca('${p.idPatriarca}')">Editar</button>`;
+                  if (p.sigla === 'PMEXE'){
+                    btnEditar = '';
+                  }
+                  selectButton = selectButton + btnEditar;
+
+                  const detailsButton = `
+                      <button 
+                          class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" 
+                          onclick="mostrarDetalhesEnvio('${p.idPatriarca}')" 
+                          ${!p.temHistoricoDeEnvio ? 'disabled' : ''}
+                          title="Ver detalhes do último envio">
+                          <i class="fas fa-list-alt"></i>
+                      </button>
+                  `;
+
+                  tr.innerHTML =
+                      '<td style="display: none;">' + p.idPatriarca + '</td>' +
+                      '<td>' + p.sigla + '</td>' +
+                      '<td>' + p.nome + '</td>' +
+                      '<td>' + p.status + '</td>' +
+                      '<td>' + orgGerado + '</td>' +
+                      '<td>' + lotGerado + '</td>' +
+                      '<td>' + tokenRecebido + '</td>' +
+                      '<td>' + (formatarDataBrasileira(p.dataSolicitacao) || '---') + '</td>' +
+                      `<td>
+                          ${selectButton}
+                      </td>
+                      <td class="text-center">
+                          ${detailsButton}
+                      </td>`;
+                  tbody.appendChild(tr);
+              });
+          })
+          .withFailureHandler(function(err) {
+              console.error("Erro ao chamar listarPatriarcas():", err);
+              tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger"><p>Erro ao carregar patriarcas: ${err.message || err}</p></td></tr>`;
+          })
+          .listarPatriarcas();
+  }
+
+
+
+    function selecionarPatriarca(idPatriarca) {
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.success) {
+            showMessage(`${response.message}`, "success");
+            atualizarBannerPatriarca(); // Atualizar o banner
+          } else {
+            showMessage(`Erro ao selecionar patriarca: ${response.message}`, "danger");
+          }
+        })
+        .withFailureHandler(function(error) {
+          showMessage(`Erro de comunicação com o servidor: ${error.message}`, "danger");
+        })
+        .setSelectedPatriarca(idPatriarca);
+    }
+    
+    function atualizarStatusPatriarca(idPatriarca) {
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.success) {
+            showMessage(`${response.message}`, "success");
+            atualizarBannerPatriarca(); // Atualizar o banner
+            
+          } else {
+            showMessage(`Erro ao selecionar patriarca: ${response.message}`, "danger");
+          }
+        })
+        .withFailureHandler(function(error) {
+          showMessage(`Erro de comunicação com o servidor: ${error.message}`, "danger");
+        })
+        .resetPatriarca(idPatriarca);
+    }
+
+
+    function editarPatriarca(id){
+      google.script.run
+        .withSuccessHandler(function(retId) {
+          if(retId.success){
+            const modalTitle = document.getElementById("editModalTitle");
+            const modalBody = document.getElementById("editModalBody");
+            modalTitle.textContent = `Editar Patriarca: ${retId.dados.nome}`;
+            modalBody.innerHTML = `
+              <div class="d-flex justify-content-center align-items-center" style="min-height:100px;">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Carregando detalhes...</span>
+                </div>
+              </div>
+            `;
+            if (!editModal) {
+              editModal = new bootstrap.Modal(document.getElementById("editModal"), { backdrop: "static", keyboard: false });
+            }
+            editModal.show();
+            
+            var innerHTML = `
+              <div class="edit-item"><span class="edit-label">Sigla:</span><span id="editSigla" class="edit-value"> ${retId.dados.sigla || "N/A"}</span></div>
+              <div class="edit-item"><span class="edit-label">Patriarca:</span><span id="editNome" class="edit-value"> ${retId.dados.nome || "N/A"}</span></div>
+              <div class="edit-item inline">
+                <label for="editIdPatriarca" class="edit-label">Id do Patriarca - PRODEST:</label>
+                <input type="text" class="form-control edit-value" id="editIdPatriarca" value=${retId.dados.idpatriarca || "N/A"}></input> 
+              <div class="edit-item"><span class="edit-label" style="display: none">Linha:</span><span style="display: none" id="editIdPatriarca" class="edit-value"> ${retId.dados.numLinha || "N/A"}</span></div>`;
+              
+            modalBody.innerHTML = innerHTML;
+            
+            document.getElementById("btnCancelarEditModal").addEventListener("click", function (e) {
+              e.preventDefault();
+              if (editModal) {
+                editModal.hide();
+                editModal = null;
+              }
+            });
+
+            document.getElementById("btnSalvarModal").addEventListener("click", function (e) {
+              e.preventDefault();
+            });
+
+          }else{
+            document.getElementById("content").innerHTML =
+              `<div class="alert alert-danger">O não encontrou o Id para editar! Erro: ${retId.message}</div>`;
+          }
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById("content").innerHTML =
+            `<div class="alert alert-danger">Erro ao executar a pesquisa para edição pelo Id: ${err && err.message ? err.message : err}</div>`;
+        })
+        .getPatriarca(id);
+    }
+
+/**
+ * Lida com o clique no botão "Atualizar e Selecionar".
+ * Chama a função de backend 'resetPatriarca' para reiniciar o status
+ * e, em caso de sucesso, navega para a próxima tela.
+ *
+ * @param {string} patriarcaId O ID do patriarca a ser resetado e selecionado.
+ * @param {HTMLButtonElement} button O elemento do botão que foi clicado.
+ */
+function handleResetAndSelect(patriarcaId, button) {
+    // Desabilita o botão para evitar cliques múltiplos e mostra feedback
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Atualizando...';
+    }
+
+    google.script.run
+        .withSuccessHandler(function(result) {
+            if (result.success) {
+                showMessage(result.message, 'success');
+                // Após resetar com sucesso, o patriarca já está selecionado.
+                // Navega para a tela de organograma para continuar o fluxo.
+                carregarPagina('patriarcas');
+            } else {
+                showMessage(result.message, 'danger');
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = 'Atualizar e Selecionar';
+                }
+            }
+        })
+        .withFailureHandler(function(error) {
+            showMessage(`Erro ao resetar patriarca: ${error.message}`, 'danger');
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = 'Atualizar e Selecionar';
+            }
+        })
+        .resetPatriarca(patriarcaId); // Chama a função correta no backend
+}
+
+
+
+    // ============================================
+    // FUNÇÕES DE INCLUSÃO DE PATRIARCA
+    // ============================================
+
+    // Função chamada ao clicar no botão "Novo Patriarca"
+    function abrirModalNovoPatriarca() {
+      // Altera o título do modal
+      
+      const modalTitle = document.getElementById("editModalTitle");
+      const modalBody = document.getElementById("editModalBody");
+      
+      modalTitle.textContent = "Novo Patriarca";
+      modalBody.innerHTML = `
+        <form id="editForm">
+          <!-- código será adicionado dinamicamente. -->
+        </form>
+      `;
+
+      if (!editModal) {
+        editModal = new bootstrap.Modal(document.getElementById("editModal"), { backdrop: "static", keyboard: false });
+      }
+
+      const editForm = document.getElementById("editForm");
+
+      // Limpa e prepara o formulário do modal
+      editForm.innerHTML = `
+        <div class="mb-3">
+          <label for="sigla" class="form-label" style="font-size: medium; color: black; font-weight: bold;">Sigla</label>
+          <input type="text" class="form-control" id="sigla" required>
+        </div>
+        <div class="mb-3">
+          <label for="nomePatriarca" class="form-label" style="font-size: medium; color: black; font-weight: bold;">Patriarca</label>
+          <input type="text" class="form-control" id="nomePatriarca" required>
+        </div>
+        <div class="mb-3">
+          <label for="idPatriarca" class="form-label" style="font-size: medium; color: black; font-weight: bold;">Id Patriarca PRODEST</label>
+          <input type="text" class="form-control" id="idPatriarca" required>
+        </div>
+        `;
+        
+      // Adiciona evento de cancelar apenas uma vez
+      document.getElementById("btnCancelarEditModal").addEventListener("click", function (e) {
+        e.preventDefault();
+        if (editModal) {
+          editModal.hide();
+        }
+      });
+
+      document.getElementById("btnSalvarModal").addEventListener("click", function (e) {
+        e.preventDefault();
+        if (editModal) {
+          salvarNovoPatriarca();
+        }
+      });
+
+      // Exibe modal
+      editModal.show();
+    }
+
+
+    // Exemplo de função para salvar novo patriarca
+    function salvarNovoPatriarca() {
+
+      const sigla = document.getElementById("sigla")?.value || "";
+      const nome = document.getElementById("nomePatriarca")?.value || "";
+      const id = document.getElementById("idPatriarca")?.value || "";
+      const estado = 'Novo'; //document.getElementById("estado")?.value || "";
+
+      if (!sigla || !nome || !estado || !id) {
+        showAddModalMessage("Preencha todos os campos!", 'warning');
+        return;
+      }
+
+      // Monta objeto esperado pela função incluirNovoPatriarca
+      const patriarcaData = {
+        sigla: sigla,
+        nome: nome,
+        idPatriarca: id,
+        status: estado
+      };
+
+      // Chama função Apps Script para salvar na planilha de carga
+      google.script.run
+        .withSuccessHandler(function(result) {
+          console.log("salvarNovoPatriarca - retorno com sucesso!");
+          showAddModalMessage("Patriarca incluído com sucesso!", 'success');
+          carregarPatriarcas();        
+          editModal.hide();
+          editModal = null;
+        })
+        .withFailureHandler(function(err) {
+          console.log("salvarNovoPatriarca - retorno com erro! - "  + err.message);
+          showAddModalMessage("Erro ao salvar: " + err.message, 'danger ');
+        })
+        .incluirNovoPatriarca(patriarcaData); // Função precisa estar no código.gs
+    }
+
+
+/**
+ * Carrega os dados da planilha Status_Envio e os exibe em uma tabela na página 'validarEnvioParaAPI'.
+ * É chamada automaticamente pela função 'carregarPagina' quando a tela é acessada.
+ */
+function carregarStatusCargas() {
+  const statusContainer = document.getElementById('status-container');
+  const tableContainer = document.getElementById('status-table-container');
+
+  // Garante que os containers existam antes de prosseguir
+  if (!statusContainer || !tableContainer) {
+    // Se a página ainda não carregou completamente, tenta novamente em um instante.
+    setTimeout(carregarStatusCargas, 100);
+    return;
+  }
+  
+  statusContainer.innerHTML = `<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div><p>Carregando dados das cargas...</p></div>`;
+  tableContainer.innerHTML = '';
+
+  google.script.run
+    .withSuccessHandler(function(response) {
+      statusContainer.innerHTML = ''; // Limpa o container de loading/erro
+
+      if (response.success && response.dados.length > 0) {
+        let tableHtml = '<table class="table table-striped table-hover"><thead><tr>' +
+          '<th>Patriarca</th><th>Data de Envio</th><th>Tipo de Carga</th><th>GUID da Carga</th><th>Status</th><th>Finalizado</th><th>Última Verificação</th><th>Ações</th>' +
+          '</tr></thead><tbody>';
+        
+        response.dados.forEach(carga => {
+          const status = carga.status || '';
+          const finalizado = carga.finalizado ? 'Sim' : 'Não';
+          const dataUltimaVerificacao = carga.dataUltimaVerificacao || 'N/A';
+          const guidCarga = carga.guidCarga || '';
+
+          tableHtml += `<tr id="row-${guidCarga}">
+            <td>${carga.nomePatriarca}</td>
+            <td>${carga.dataHoraEnvio}</td>
+            <td>${carga.tipoCarga}</td>
+            <td><small>${guidCarga}</small></td>
+            <td class="status-cell">${status}</td>
+            <td class="finalizado-cell">${finalizado}</td>
+            <td class="verificacao-cell">${dataUltimaVerificacao}</td>
+            <td>
+              <button class="btn btn-sm btn-primary" 
+                      onclick="verificarStatusCargaDetalhado('${guidCarga}', '${carga.idPatriarca}', this)"
+                      ${!guidCarga ? 'disabled' : ''}>
+                <span class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
+                Verificar Status
+              </button>
+            </td>
+          </tr>`;
+        });
+
+        tableHtml += '</tbody></table>';
+        tableContainer.innerHTML = tableHtml;
+      } else {
+        statusContainer.innerHTML = `<div class="alert alert-info">Nenhuma carga encontrada na planilha 'Status_Envio'.</div>`;
+        if (!response.success) {
+            showToast('Erro', response.message || 'Falha ao carregar dados das cargas.', 'error');
+        }
+      }
+    })
+    .withFailureHandler(function(error) {
+      statusContainer.innerHTML = `<div class="alert alert-danger">Erro crítico ao carregar dados: ${error.message}</div>`;
+      showToast('Erro Crítico', 'Não foi possível comunicar com o servidor: ' + error.message, 'error');
+    })
+    .obterStatusCargas();
+}
+
+/**
+ * Chama o backend para verificar o status de uma carga específica e atualiza a UI.
+ * @param {string} guidCarga - O GUID da carga a ser verificada.
+ * @param {string} idPatriarca - O ID do patriarca associado.
+ * @param {HTMLElement} button - O elemento do botão que foi clicado.
+ */
+function verificarStatusCargaDetalhado(guidCarga, idPatriarca, button) {
+  const spinner = button.querySelector('.spinner-border');
+  spinner.style.display = 'inline-block';
+  button.disabled = true;
+
+  // Assume ambiente 'HML' como padrão para verificação manual. Altere para 'PRD' se necessário.
+  const ambiente = 'HML'; 
+
+  google.script.run
+    .withSuccessHandler(function(response) {
+      spinner.style.display = 'none';
+      button.disabled = false;
+
+      if (response.success) {
+        showToast('Sucesso', 'Status da carga verificado e planilha atualizada.', 'success');
+        // Atualiza a linha específica da tabela com os novos dados
+        const row = document.getElementById(`row-${guidCarga}`);
+        if (row) {
+          row.querySelector('.status-cell').textContent = response.data.status;
+          row.querySelector('.finalizado-cell').textContent = response.data.finalizada ? 'Sim' : 'Não';
+          row.querySelector('.verificacao-cell').textContent = new Date().toLocaleString('pt-BR');
+        }
+      } else {
+        showToast('Falha na Verificação', response.message, 'error');
+      }
+    })
+    .withFailureHandler(function(error) {
+      spinner.style.display = 'none';
+      button.disabled = false;
+      showToast('Erro de Comunicação', 'Falha ao chamar o backend: ' + error.message, 'error');
+    })
+    .verificarStatusCarga(guidCarga, idPatriarca, ambiente);
+}
+
+/**
+ * Inicia o fluxo de envio e desabilita o botão para
+ * prevenir cliques duplos.
+ *
+ * @param {HTMLButtonElement} button O elemento do botão que foi clicado.
+ * @param {string} idPatriarca O ID do patriarca a ser enviado.
+ */
+function enviarCargaParaAPI(button, idPatriarca) {
+    // --- CORREÇÃO CRÍTICA: Desabilita o botão e mostra feedback visual ---
+    button.disabled = true;
+    button.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Iniciando...
+    `;
+
+    const cardResponse = document.getElementById('card_response');
+    const cardBody = cardResponse.querySelector('.card-body');
+    cardResponse.style.display = 'none'; // Esconde o card de resposta antigo
+
+    google.script.run
+        .withSuccessHandler(patriarcaResult => {
+            if (!patriarcaResult.success || !patriarcaResult.dados || !patriarcaResult.dados.idpatriarca) {
+                const errorMsg = patriarcaResult.message || "Não foi possível carregar os dados completos do patriarca.";
+                // Reabilita o botão em caso de erro
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-upload me-1"></i> Iniciar Envio';
+                showMessage(`Falha ao obter dados: ${errorMsg}`, 'danger');
+                return;
+            }
+            
+            const patriarca = patriarcaResult.dados;
+
+            google.script.run
+                .withSuccessHandler(fluxoResult => {
+                    if (fluxoResult.success) {
+                        showMessage('Carga iniciada. Monitorando o status...', 'info');
+                        // Substitui o botão por um indicador de processamento
+                        button.outerHTML = `
+                          <button class="btn btn-sm btn-outline-info" disabled>
+                            <span class="spinner-grow spinner-grow-sm me-1" role="status" aria-hidden="true"></span>
+                            Em Processamento...
+                          </button>`;
+                        monitorarCarga(fluxoResult.data.guid, patriarca.idpatriarca);
+                    } else {
+                        // Reabilita o botão se o fluxo falhar
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-upload me-1"></i> Iniciar Envio';
+                        showMessage(`Falha ao Iniciar: ${fluxoResult.message}`, 'danger');
+                    }
+                })
+                .withFailureHandler(err => {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-upload me-1"></i> Iniciar Envio';
+                    showMessage(`Erro Crítico: ${err.message}`, 'danger');
+                })
+                .iniciarFluxoEnvioOrganograma(patriarca, 'PRD');
+        })
+        .withFailureHandler(err => {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-upload me-1"></i> Iniciar Envio';
+            showMessage(`Erro ao obter dados do patriarca: ${err.message}`, 'danger');
+        })
+        .getPatriarca(idPatriarca);
+}
+
+/**
+ * Monitora o status de uma carga de forma contínua.
+ * @param {string} guid O GUID da carga a ser monitorada.
+ * @param {string} idPatriarca O ID do Patriarca para autenticação nas chamadas.
+ */
+function monitorarCarga(guid, idPatriarca) {
+    const cardResponse = document.getElementById('card_response');
+    const cardBody = cardResponse.querySelector('.card-body');
+
+    const intervalId = setInterval(() => {
+        // CORREÇÃO: Chamada com a ordem correta de parâmetros
+        google.script.run
+            .withSuccessHandler(statusResult => {
+                if (!statusResult.success) {
+                    cardBody.innerHTML = `<div class="alert alert-danger mb-0"><strong>Erro no Monitoramento:</strong> ${statusResult.message}</div>`;
+                    clearInterval(intervalId);
+                    return;
+                }
+
+                // O frontend recebe e usa os dados preparados pelo backend
+                const data = statusResult.data;
+                cardBody.innerHTML = `
+                    <h5 class="card-title">Monitorando Carga</h5>
+                    <p><strong>GUID:</strong> <small>${guid}</small></p>
+                    <p><strong>Status:</strong> <span class="badge bg-${data.badgeClass}">${data.status}</span></p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped ${data.finalizado ? '' : 'progress-bar-animated'} bg-${data.badgeClass}" role="progressbar" style="width: ${data.progress}%" aria-valuenow="${data.progress}">
+                            ${data.progress}%
+                        </div>
+                    </div>
+                    <p class="mt-2 text-muted"><small>${data.mensagemErro || 'Aguardando processamento...'}</small></p>`;
+
+                if (data.finalizado) {
+                    clearInterval(intervalId);
+                    showMessage('Monitoramento finalizado.', data.badgeClass === 'success' ? 'success' : 'danger');
+          console.log('Chamando carregarPatriarcasParaEnvio em monitorarCarga');
+                    carregarPatriarcasParaEnvio();
+                }
+            })
+            .withFailureHandler(err => {
+                cardBody.innerHTML = `<div class="alert alert-danger mb-0"><strong>Erro de Comunicação:</strong> ${err.message}</div>`;
+                clearInterval(intervalId);
+            })
+            .verificarStatusCarga(guid, idPatriarca, 'PRD');
+    }, 60000); // Verifica a cada 60 segundos para uma resposta mais rápida na UI
+}
+
+    // ============================================
+    // FUNÇÕES DE MENSAGEM
+    // ============================================
+
+    function showMessage(message, type = 'info') {
+      const messageContainer = document.getElementById("messageContainer");
+      if (messageContainer) {
+        messageContainer.innerHTML = `
+          <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        `;
+        setTimeout(() => { messageContainer.innerHTML = ""; }, 5000);
+      }
+    }
+
+    function showAddModalMessage(message, type) {
+      const messageContainer = document.getElementById("addMessageContainer");
+      if (messageContainer) {
+        messageContainer.innerHTML = `
+          <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        `;
+        setTimeout(() => { messageContainer.innerHTML = ""; }, 5000);
+      }
+    }
+
+    // ============================================
+    // FUNÇÕES DO ORGANOGRAMA
+    // ============================================
+
+  function inicializarOrganograma() {
+    console.log("Inicializando página de organograma com chamada única e retorno de objeto direto...");
+    
+    //google.script.run
+    //    .withSuccessHandler(function(response) {
+    //        // Verificação de segurança
+    //        if (!response) {
+    //            showMessage("Falha de comunicação. O backend retornou uma resposta nula.", "danger");
+    //            return;
+    //        }
+//
+    //        if (!response.success) {
+    //            showMessage(response.message || "Ocorreu um erro desconhecido no backend.", "danger");
+    //            return;
+    //        }
+//
+    //        // --- INÍCIO DA CORREÇÃO ---
+    //        // Os dados agora estão aninhados dentro da propriedade 'data'
+    //        const data = response.data;
+    //        if (!data) {
+    //            showMessage("A resposta do backend foi bem-sucedida, mas o objeto de dados está ausente.", "warning");
+    //            return;
+    //        }
+//
+    //        // --- Processar dados para o gráfico ---
+    //        if (data.chartRows && data.chartRows.length > 0) {
+    //            const rowsJsonString = JSON.stringify(data.chartRows); 
+    //            const btn = document.getElementById('btnAbrirOrganograma');
+    //            if (btn) {
+    //                btn.disabled = false;
+    //                btn.onclick = function() {
+    //                    gerarResultadoParaNovaAbaHorizontal(rowsJsonString);
+    //                };
+    //            }
+    //        }
+//
+    //        // --- Processar dados para a lista hierárquica ---
+    //        if (data.listaHierarquica && data.listaHierarquica.length > 0) {
+    //            showMessage("Organograma salvo encontrado. Exibindo estrutura...", "info");
+    //            updateFileListOrganograma('Organograma salvo', data.listaHierarquica);
+    //        } else {
+    //            const fileListContainer = document.getElementById('fileList');
+    //            if(fileListContainer) fileListContainer.innerHTML = `
+    //            <div class="text-center p-4 text-muted">
+    //              <i class="fas fa-file-upload fa-3x mb-3"></i>
+    //                <p>Nenhum arquivo carregado ainda.</p>
+    //            </div>
+    //      `;
+    //        }
+    //        // --- FIM DA CORREÇÃO ---
+    //    })
+    //    .withFailureHandler(function(err) {
+    //        showMessage("Erro crítico na comunicação com o servidor: " + err.message, "danger");
+    //    })
+    //    .getOrganogramaCompleto();
+
+      google.script.run
+        .withSuccessHandler(dados => {
+          if (dados.success) {
+            
+            const btn = document.getElementById("btnAbrirOrganograma");
+            btn.disabled = false;
+            btn.onclick = function() {
+              alert(dados.message + "\n\n⚠️ Diagrama ReactFlow deve estar SALVO na planilha para versão atualizada!");
+              gerarResultadoParaNovaAbaHorizontalGoogleCharts(daods.dataString);
+            }
+          }
+          else {
+            showMessage(`Erro ao obter dados do organograma: ${response?.message || "desconhecido"}`, "danger");
+            return;
+          }
+        })
+        .withFailureHandler(err => showMessage(`Erro de comunicação: ${err.message}`, "danger"))
+        .getChartDataTable(); //.getOrganogramaGoogleCharts();
+
+
+
+    // Lógica do botão de upload permanece a mesma
+    const fileInput = document.getElementById('fileInputOrganograma');
+    const uploadButton = document.getElementById('btnFazerUploadOrganograma');
+    if (fileInput && uploadButton) {
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                uploadButton.disabled = false;
+            }
+        });
+    }
+  }
+
+    function uploadFileOrganograma() {
+
+      const btn = document.getElementById("btnFazerUploadOrganograma");
+      btn.disabled = true;
+      
+      google.script.run.withSuccessHandler(patriarca => {
+        if (!patriarca) {
+          showMessage("Nenhum Patriarca selecionado. Por favor, selecione um Patriarca antes de fazer upload do arquivo.", "warning");
+          return;
+        }
+        processarUploadOrganograma(patriarca);
+      }).getSelectedPatriarca();
+
+      btn.disabled = false;
+    }
+
+
+    function getFileType(file) {
+      if (file.type) {
+        return file.type;
+      }
+      const ext = file.name.split(".").pop().toLowerCase();
+      switch (ext) {
+        case "odt": return "application/vnd.oasis.opendocument.text";
+        case "ods": return "application/vnd.oasis.opendocument.spreadsheet";
+        case "odp": return "application/vnd.oasis.opendocument.presentation";
+        case "doc": return "application/msword";
+        case "docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        case "xls": return "application/vnd.ms-excel";
+        case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        case "pdf": return "application/pdf";
+        default: return "application/octet-stream"; // genérico
+      }
+    }
+
+  // VERSÃO CORRIGIDA
+  function processarUploadOrganograma(patriarca) {
+
+    console.log('processarUploadOrganograma - patriarca:' + JSON.stringify(patriarca));
+
+    if(patriarca.lotacaogerado == "X"){
+      const confirmCancel = confirm('Já existem registros de lotação que foram importados anteriormente.\nDeseja realmente importar novamente o organograma?');
+      if (!confirmCancel) return; // se cancelar, não fecha
+    }
+
+    const fileInputOrganograma = document.getElementById('fileInputOrganograma');
+    if (!fileInputOrganograma || !fileInputOrganograma.files[0]) {
+      showMessage('Por favor, selecione um arquivo primeiro.', 'warning');
+      return;
+    }
+    const file = fileInputOrganograma.files[0];
+    const mimeType = getFileType(file);
+
+    // Mensagem inicial de processamento
+    showMessage('Fazendo upload e processando o arquivo...', 'info');
+
+    let fileContentDiv = document.getElementById('fileList');
+    // Exibe o spinner de "Carregando" em vez de um alerta de texto
+    fileContentDiv.innerHTML = `
+      <div class="text-center p-4">
+        <div class="spinner-border text-light" role="status"></div>
+        <p class="mt-2 text-light">Processando o arquivo, por favor aguarde...</p>
+      </div>
+    `;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const base64Content = e.target.result.split(',')[1];
+      google.script.run
+        .withSuccessHandler(function(response) {
+          // Limpa a área de resultados ANTES de exibir o novo conteúdo
+          fileContentDiv.innerHTML = '';
+
+          if (response.success) {
+            if(response.atualizarLotacao){
+              showMessage('Arquivo processado com sucesso!', 'success');
+            }
+            else{
+              showMessage('Arquivo processado com sucesso!\n Foi identificado que já houve importação de lotação!\n Será necessário importar a lotação novamente para manter a compatibilidade entre o organograma importado agora e os registros de lotação!', 'success');
+            }
+            // Exibe a lista hierárquica dos itens processados
+            updateFileListOrganograma(file.name, response.data);
+          } else {
+            // Se houve erro de validação (código 120), exibe o card de inconsistências
+            if ((response.errorCode === 120) || (response.errorCode === 150)) {
+              //updateListOrganogramaDuplicado(response.data); 
+              updateListOrganograma(response.errors); 
+            } else {
+              // Para qualquer outro erro, exibe uma mensagem genérica de falha
+              showMessage(response.message, 'danger');
+            }
+          }
+        })
+        .withFailureHandler(function(error) {
+          // Limpa a área e mostra a mensagem de erro de comunicação
+          fileContentDiv.innerHTML = '';
+          showMessage('Erro de comunicação com o servidor: ' + error.message, 'danger');
+        })
+        .processUploadedFileOrganograma(base64Content, file.name, mimeType);
+    };
+    reader.readAsDataURL(file);
+  }
+
+
+
+    // VERSÃO CORRIGIDA - SEM BOTÃO E TÍTULO GENÉRICO
+    function updateListOrganograma(data) {
+      let fileContentDiv = document.getElementById('fileList');
+      if (!fileContentDiv) return;
+
+      if (!data || data.length === 0) {
+        fileContentDiv.innerHTML = `<div class="alert alert-info">Nenhuma inconsistência encontrada.</div>`;
+        return;
+      }
+
+      const fileCard = document.createElement('div');
+      fileCard.className = 'card bg-danger text-white mb-3'; // Cor alterada para 'danger' para mais ênfase
+      fileCard.innerHTML = `
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Inconsistências Encontradas</h6>
+          <span class="badge bg-light text-dark">${data.length} erro(s)</span>
+        </div>
+        <div class="card-body">
+          <p class="small mb-3"><strong>Ação necessária:</strong> Corrija os seguintes problemas no arquivo de origem e faça o upload novamente.</p>
+          <div id="duplicatesContent"></div>
+        </div>
+      `;
+      fileContentDiv.appendChild(fileCard);
+
+      // A função que constrói a lista de erros também será corrigida abaixo.
+      const duplicatesContent = document.getElementById('duplicatesContent');
+      duplicatesContent.innerHTML = construirListaDeErros(data);
+    }
+
+    /**
+     * Constrói uma lista HTML a partir de um array de objetos de erro.
+     * Cada objeto deve ter uma propriedade 'message'.
+     * @param {Array<Object>} erros - O array de erros vindo do backend.
+     * @returns {string} O HTML da lista de erros.
+     */
+    function construirListaDeErros(erros) {
+      if (!erros || erros.length === 0) {
+        return '<p>Nenhum detalhe de erro foi retornado.</p>';
+      }
+
+      let html = '<ul class="list-group">';
+      erros.forEach(item => {
+        // Verifica se o item é um objeto com 'message' ou apenas uma string
+        const mensagem = typeof item === 'object' && item !== null
+          ? (item.erro || JSON.stringify(item))
+          : String(item);
+
+        html += `<li class="list-group-item list-group-item-light text-dark">${mensagem}</li>`;
+      });
+      html += '</ul>';
+
+      return html;
+    }
+
+
+    function updateListOrganogramaInvalido(data) {
+        let fileContentDiv = document.getElementById("fileList");
+        if (!fileContentDiv) return;
+        
+        fileContentDiv.innerHTML = "";
+        if (!data || data.length === 0) {
+            fileContentDiv.innerHTML = `<div class="alert alert-info">Nenhum item inválido encontrado.</div>`;
+            return;
+        }
+        
+        const fileCard = document.createElement("div");
+        fileCard.className = "card bg-warning text-dark mb-3";
+        fileCard.innerHTML = `
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-circle-stop me-2"></i>Itens Inválidos Encontrados</h6>
+                <span class="badge bg-danger">${data.length} itens inválidos</span>
+            </div>
+            <div class="card-body">
+                <p class="small mb-3"><strong>Atenção:</strong> Os seguintes itens possuem acrônimos ou textos em branco ou vazios. Por favor, revise o arquivo.</p>
+                <div id="invalidContent"></div>
+            </div>
+        `;
+        fileContentDiv.appendChild(fileCard);
+        
+        console.log("updateListOrganogramaInvalido - data: " + JSON.stringify(data));
+
+        const invalidContent = document.getElementById("invalidContent");
+        invalidContent.innerHTML = construirListaInvalidos(data);
+    }
+
+    function construirListaInvalidos(invalidos) {
+        let html = '';
+        invalidos.forEach(item => {
+            console.log("construirListaInvalidos - item: " + JSON.stringify(item));
+
+            if(item.text === ""){
+              html += `<div class="duplicate-item mb-2 p-2 bg-light rounded">
+                          <div class="d-flex justify-content-between align-items-start">
+                              <div>
+                                  <strong class="text-danger">Nome do Órgão ou Unidade está em branco. Sigla: ${item.acronym}</strong>
+                              </div>
+                          </div>
+                      </div>`;
+
+            }            
+            if(item.acronym === ""){
+              html += `<div class="duplicate-item mb-2 p-2 bg-light rounded">
+                          <div class="d-flex justify-content-between align-items-start">
+                              <div>
+                                  <strong class="text-danger">Sigla do Órgão ou Unidade está vazio. Órgão ou Unidade: ${item.text}</strong>
+                              </div>
+                          </div>
+                      </div>`;
+
+            }
+        });
+        return html;
+    }
+
+    function updateFileListOrganograma(fileName, data) {
+      let fileContentDiv = document.getElementById("fileList");
+      fileContentDiv.innerHTML = "";
+
+      const fileCard = document.createElement("div");
+      fileCard.className = "card bg-secondary text-light mb-3";
+      fileCard.innerHTML = `
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0"><i class="fas fa-file-alt me-2"></i>${fileName}</h6>
+          <span class="badge bg-success">Processado</span>
+        </div>
+        <div class="card-body">
+          <p class="small mb-2">Estrutura hierárquica extraída:</p>
+          <div id="hierarchicalContent"></div>
+          <div class="mt-3 text-end">
+            <button type="button" id="btnAbrirOrganograma" class="btn btn-light" disabled>
+              <i class="fas fa-external-link-alt me-1"></i>Abrir organograma em nova aba
+            </button>
+          </div>
+        </div>`;
+      fileContentDiv.appendChild(fileCard);
+
+      // renderiza lista hierárquica
+      document.getElementById("hierarchicalContent").innerHTML =
+        construirListaHierarquicaOrganograma(data);
+
+      // busca dados do organograma no servidor
+      //google.script.run
+      //  .withSuccessHandler(function(response) {
+      //    if (!response || !response.success) {
+      //      showMessage(`Erro ao obter dados do organograma: ${response?.message || "desconhecido"}`, "danger");
+      //      return;
+      //    }
+      //    const rowsJsonString = (typeof response.dataString === "string")
+      //      ? response.dataString
+      //      : JSON.stringify(response.dataString);
+//
+      //    const btn = document.getElementById("btnAbrirOrganograma");
+      //    btn.disabled = false;
+      //    btn.onclick = function() {
+      //      gerarResultadoParaNovaAbaHorizontal(rowsJsonString);
+      //    };
+      //  })
+      //  .withFailureHandler(err => showMessage(`Erro de comunicação: ${err.message}`, "danger"))
+      //  .getChartDataTable();
+
+      // Substitua as duas chamadas por uma única
+      google.script.run
+        .withSuccessHandler(dados => {
+          if (dados.success) {
+            
+            const btn = document.getElementById("btnAbrirOrganograma");
+            btn.disabled = false;
+            btn.onclick = function() {
+              alert(dados.message + "\n\n⚠️ Diagrama ReactFlow deve estar SALVO na planilha para versão atualizada!");
+              gerarResultadoParaNovaAbaHorizontalGoogleCharts(dados.dataString);
+            }
+          }
+          else {
+            showMessage(`Erro ao obter dados do organograma: ${response?.message || "desconhecido"}`, "danger");
+            return;
+          }
+        })
+        .withFailureHandler(err => showMessage(`Erro de comunicação: ${err.message}`, "danger"))
+        .getChartDataTable(); //.getOrganogramaGoogleCharts();
+
+
+    }
+
+
+
+
+//function gerarResultadoParaNovaAbaHorizontal(dataRowsJson) {
+//  var w = window.open('', '_blank');
+//  if (!w) {
+//    alert('Permita pop-ups para visualizar o organograma.');
+//    return;
+//  }
+//
+//  function cleanName(t) {
+//    if (!t) return '';
+//    return t.replace(/<[^>]*>/g, ' ')
+//      .replace(/\s{2,}/g, ' ')
+//      .replace(/^-\s*/, '')
+//      .replace(/\s*-\s*$/, '')
+//      .trim();
+//  }
+//
+//  var rows = JSON.parse(dataRowsJson);
+//  var nodeMap = {};
+//  var linksData = [];
+//  var rootNode = null;
+//  
+//  for (var i = 0; i < rows.length; i++) {
+//    if (!rows[i] || !rows[i][0]) continue;
+//    
+//    var rawName = rows[i][0].f || rows[i][0].v || '';
+//    var nomeLimpo = cleanName(rawName);
+//    var pos = nomeLimpo.search(/[^A-Z0-9.-]/i);
+//    var sigla = pos > 0 ? nomeLimpo.substring(0, pos) : nomeLimpo;
+//    var nomeParte = nomeLimpo.substring(sigla.length).trim();
+//    
+//    var normalizedId = sigla.toUpperCase().replace(/\s+/g, '');
+//    
+//    nodeMap[normalizedId] = {
+//      id: normalizedId,
+//      name: sigla,
+//      fullName: nomeLimpo,
+//      parentId: null
+//    };
+//    
+//    if (rows[i][1]) {
+//      var parentRaw = rows[i][1].v || rows[i][1];
+//      var parentNormalized = cleanName(parentRaw).toUpperCase().replace(/\s+/g, '');
+//      nodeMap[normalizedId].parentId = parentNormalized;
+//      
+//      if (nodeMap[parentNormalized]) {
+//        linksData.push({source: parentNormalized, target: normalizedId});
+//      }
+//    } else {
+//      rootNode = normalizedId;
+//    }
+//  }
+//
+//  var nodesData = Object.values(nodeMap);
+//  var NS = 'http://www.w3.org/2000/svg';
+//
+//  var htmlContent = [
+//    '<!DOCTYPE html>',
+//    '<html><head>',
+//    '<meta charset="UTF-8">',
+//    '<title>Organograma</title>',
+//    '<style>',
+//    'body{margin:0;padding:20px;background:#f8f9fa;font-family:Arial,sans-serif;overflow:auto}',
+//    '.container{display:flex;flex-direction:column;height:100vh}',
+//    '.controls{padding:15px;background:#4682b4;color:white;display:flex;gap:10px;flex-wrap:wrap}',
+//    'input{padding:10px;border:none;border-radius:6px;width:250px}',
+//    'button{padding:10px 20px;background:#357abd;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold}',
+//    'button:hover{background:#2a5a8c}',
+//    '#status{padding:10px;background:#333;color:white;border-radius:6px;font-size:14px}',
+//    '.chart-container{flex:1;overflow:auto;border:2px solid #ddd;background:#fff;margin:10px 0}',
+//    'svg{width:100%;height:100%;min-width:4000px;min-height:3000px}',
+//    '.node{fill:#4a90e2;stroke:#2c5282;stroke-width:3;rx:12;ry:12;cursor:pointer}',
+//    '.node:hover{fill:#3182ce;stroke:#2a4365;stroke-width:4}',
+//    '.node text{fill:#fff;font:15px Arial,sans-serif;font-weight:bold;text-anchor:middle}',
+//    '.link{fill:none;stroke:#718096;stroke-width:3;stroke-linecap:round}',
+//    '.tooltip{position:absolute;background:#2d3748;color:white;padding:8px 12px;border-radius:6px;font-size:13px;pointer-events:none;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);max-width:250px}',
+//    '</style>',
+//    '</head><body>',
+//    '<div class="container">',
+//    '<div class="controls">',
+//    '<input id="search" placeholder="Pesquisar...">',
+//    '<button onclick="searchNodes()">Buscar</button>',
+//    '<button onclick="toggleLayout()">Layout H/V</button>',
+//    '<button onclick="resetView()">Reset</button>',
+//    '<button onclick="saveHtml()">Salvar</button>',
+//    '</div>',
+//    '<div id="status">Carregando...</div>',
+//    '<div class="chart-container">',
+//    '<svg id="chart"></svg>',
+//    '</div>',
+//    '</div>',
+//    '<div id="tooltip" class="tooltip" style="display:none"></div>',
+//    '<script>',
+//    'var nodesData = ' + JSON.stringify(nodesData) + ';',
+//    'var linksData = ' + JSON.stringify(linksData) + ';',
+//    'var rootId = "' + rootNode + '";',
+//    'var orientation = "horizontal";',
+//    'var positions = {};',
+//    'var NS = "' + NS + '";',
+//    '',
+//    'function layoutTree() {',
+//    '  document.getElementById("status").textContent = "Calculando layout...";',
+//    '  positions = {};',
+//    '  var levels = {};',
+//    '',
+//    '  function assignLevel(id, level) {',
+//    '    if (positions[id]) return;',
+//    '    positions[id] = {level: level, x: 0, y: 0};',
+//    '    levels[level] = levels[level] || [];',
+//    '    levels[level].push(id);',
+//    '    var children = linksData.filter(function(link) { return link.source === id; }).map(function(link) { return link.target; });',
+//    '    for (var i = 0; i < children.length; i++) {',
+//    '      assignLevel(children[i], level + 1);',
+//    '    }',
+//    '  }',
+//    '',
+//    '  if (rootId) assignLevel(rootId, 0);',
+//    '',
+//    '  var maxLevel = 0;',
+//    '  for (var l in levels) { maxLevel = Math.max(maxLevel, parseInt(l)); }',
+//    '  var levelSpacing = orientation === "horizontal" ? 350 : 250;',
+//    '  var nodeSpacing = 110;',
+//    '',
+//    '  for (var level = 0; level <= maxLevel; level++) {',
+//    '    var levelNodes = levels[level] || [];',
+//    '    var yStart = -(levelNodes.length - 1) * nodeSpacing / 2;',
+//    '    for (var i = 0; i < levelNodes.length; i++) {',
+//    '      var id = levelNodes[i];',
+//    '      var pos = positions[id];',
+//    '      if (orientation === "horizontal") {',
+//    '        pos.x = level * levelSpacing + 200;',
+//    '        pos.y = yStart + i * nodeSpacing;',
+//    '      } else {',
+//    '        pos.x = yStart + i * nodeSpacing;',
+//    '        pos.y = level * levelSpacing + 200;',
+//    '      }',
+//    '    }',
+//    '  }',
+//    '  render();',
+//    '}',
+//    '',
+//    'function render() {',
+//    '  var svg = document.getElementById("chart");',
+//    '  svg.innerHTML = "";',
+//    '  svg.setAttribute("viewBox", "-200 -200 4500 3500");',
+//    '',
+//    '  linksData.forEach(function(link) {',
+//    '    if (!positions[link.source] || !positions[link.target]) return;',
+//    '    var s = positions[link.source];',
+//    '    var t = positions[link.target];',
+//    '    var path = document.createElementNS("' + NS + '", "path");',
+//    '    var d = orientation === "horizontal" ?',
+//    '      "M" + s.x + "," + s.y + " L" + (s.x + 150) + "," + s.y + " L" + (t.x - 150) + "," + t.y + " L" + t.x + "," + t.y :',
+//    '      "M" + s.x + "," + s.y + " L" + s.x + "," + (s.y + 150) + " L" + t.x + "," + (t.y - 150) + " L" + t.x + "," + t.y;',
+//    '    path.setAttribute("d", d);',
+//    '    path.setAttribute("class", "link");',
+//    '    svg.appendChild(path);',
+//    '  });',
+//    '',
+//    '  nodesData.forEach(function(node) {',
+//    '    var pos = positions[node.id];',
+//    '    if (!pos) return;',
+//    '    var g = document.createElementNS("' + NS + '", "g");',
+//    '    g.setAttribute("class", "node");',
+//    '    g.setAttribute("data-fullname", node.fullName);',
+//    '    g.setAttribute("transform", "translate(" + pos.x + "," + pos.y + ")");',
+//    '    var rect = document.createElementNS("' + NS + '", "rect");',
+//    '    rect.setAttribute("x", "-85");',
+//    '    rect.setAttribute("y", "-30");',
+//    '    rect.setAttribute("width", "170");',
+//    '    rect.setAttribute("height", "60");',
+//    '    rect.setAttribute("rx", "12");',
+//    '    rect.setAttribute("ry", "12");',
+//    '    g.appendChild(rect);',
+//    '    var text = document.createElementNS("' + NS + '", "text");',
+//    '    text.setAttribute("x", "0");',
+//    '    text.setAttribute("y", "5");',
+//    '    text.textContent = node.name;',
+//    '    g.appendChild(text);',
+//    '    svg.appendChild(g);',
+//    '  });',
+//    '',
+//    '  document.getElementById("status").textContent = Object.keys(positions).length + " nós | " + linksData.length + " conexões";',
+//    '  addInteractivity();',
+//    '}',
+//    '',
+//    'function addInteractivity() {',
+//    '  var nodes = document.querySelectorAll(".node");',
+//    '  nodes.forEach(function(node) {',
+//    '    node.onmouseenter = function(e) {',
+//    '      var rect = e.target.getBoundingClientRect();',
+//    '      var tooltip = document.getElementById("tooltip");',
+//    '      tooltip.textContent = this.getAttribute("data-fullname");',
+//    '      tooltip.style.display = "block";',
+//    '      tooltip.style.left = (rect.left + rect.width/2 - 125) + "px";',
+//    '      tooltip.style.top = (rect.top - 40) + "px";',
+//    '    };',
+//    '    node.onmouseleave = function() {',
+//    '      document.getElementById("tooltip").style.display = "none";',
+//    '    };',
+//    '  });',
+//    '}',
+//    '',
+//    'function searchNodes() {',
+//    '  var term = document.getElementById("search").value.toLowerCase();',
+//    '  var nodes = document.querySelectorAll(".node");',
+//    '  for (var i = 0; i < nodes.length; i++) {',
+//    '    var text = nodes[i].querySelector("text").textContent.toLowerCase();',
+//    '    nodes[i].style.opacity = text.includes(term) ? "1" : "0.3";',
+//    '  }',
+//    '}',
+//    'function toggleLayout() {',
+//    '  orientation = orientation === "horizontal" ? "vertical" : "horizontal";',
+//    '  layoutTree();',
+//    '}',
+//    'function resetView() {',
+//    '  document.querySelectorAll(".node").forEach(function(n) { n.style.opacity = "1"; });',
+//    '  document.getElementById("search").value = "";',
+//    '}',
+//    'function saveHtml() {',
+//    '  var html = document.documentElement.outerHTML;',
+//    '  var blob = new Blob([html], {type: "text/html;charset=utf-8"});',
+//    '  var url = URL.createObjectURL(blob);',
+//    '  var a = document.createElement("a");',
+//    '  a.href = url;',
+//    '  a.download = "organograma.html";',
+//    '  a.click();',
+//    '  URL.revokeObjectURL(url);',
+//    '}',
+//    'layoutTree();',
+//    '<\/script>',
+//    '</body></html>'
+//  ].join('\n');
+//
+//  var blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
+//  var url = URL.createObjectURL(blob);
+//  w.location.href = url;
+//}
+
+function gerarResultadoParaNovaAbaHorizontalGoogleCharts(dataTableJson) {
+  var w = window.open('', '_blank');
+  if (!w) {
+    alert('Permita pop-ups para visualizar o organograma.');
+    return;
+  }
+
+  var urlGoogleChart = 'https://www.gstatic.com/charts/loader.js';
+  var textEndScript = '<\/script>';
+
+  var dataTable = JSON.parse(dataTableJson);
+  
+  var htmlTemplate = [
+    '<!DOCTYPE html>',
+    '<html>',
+    '<head>',
+    '  <meta charset="UTF-8">',
+    '  <title>Organograma PMEXE</title>',
+    '  <script src="' + urlGoogleChart + '">' + textEndScript,
+    '  <style>',
+    '    body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; overflow: auto; }',
+    '    #chart_div { width: 100vw; height: 100vh; }',
+    '    .header { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; text-align: center; }',
+    '    button { margin: 0 5px; padding: 10px 20px; background: #4285f4; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }',
+    '    button:hover { background: #3367d6; }',
+    '  </style>',
+    '</head>',
+    '<body>',
+    '  <div class="header">',
+    '    <h3>Organograma Completo (' + (dataTable.length-1) + ' departamentos)</h3>',
+    '    <button onclick="location.reload()">🔄 Recarregar</button>',
+    '    <button onclick="window.print()">🖨️ PDF</button>',
+    '  </div>',
+    '  <div id="chart_div" style="margin-top: 130px;">Carregando organograma...</div>',
+    '  <script>',
+    '    google.charts.load("current", {packages:["orgchart"]});',
+    '    google.charts.setOnLoadCallback(function() {',
+    '      var data = google.visualization.arrayToDataTable(' + JSON.stringify(dataTable) + ');',
+    '      var chart = new google.visualization.OrgChart(document.getElementById("chart_div"));',
+    '      chart.draw(data, {',
+    '        allowHtml: true,',
+    '        allowCollapse: true,',
+    '        size: "large"',
+    '      });',
+    '    });',
+    '  ' + textEndScript,
+    '</body>',
+    '</html>'
+  ].join('\n');
+
+  w.document.open();
+  w.document.write(htmlTemplate);
+  w.document.close();
+}
+
+
+
+
+/**
+ * Constrói e retorna o HTML de uma lista hierárquica numerada e com indentação.
+ */
+function construirListaHierarquicaOrganograma(lista) {
+    if (!lista || lista.length === 0) {
+        return '<p class="text-light-50">Nenhum dado de organograma para exibir.</p>';
+    }
+
+    let html = '<ul class="lista-hierarquica" style="list-style-type: none; padding-left: 0;">';
+    let counters = []; // Array para controlar a numeração (ex: [1], [1,1], [1,2])
+
+    lista.forEach(item => {
+        const level = item.nestingLevel || 0;
+
+        // Ajusta o array de contadores para o nível atual
+        if (level >= counters.length) {
+            counters.push(1);
+        } else {
+            counters.length = level + 1; // Reseta níveis mais profundos
+            counters[level]++;           // Incrementa o nível atual
+        }
+        const indexNumber = counters.join('.');
+
+        // Calcula a indentação explicitamente
+        const padding = level * 25; // 25 pixels de recuo por nível
+
+        const nomeHtml = item.Nome || '[Item sem nome]';
+        const siglaHtml = item.Sigla ? ` - <span class="lista-item-acronym">${item.Sigla}</span>` : '';
+
+        // Cria o elemento da lista com a indentação e os dados corretos
+        html += `<li style="padding-left: ${padding}px;">
+                    <div class="lista-item-content">
+                        <span class="lista-item-index">${indexNumber}</span>
+                        <div class="lista-item-text-container">
+                            <span class="lista-item-text">${nomeHtml}</span>${siglaHtml}
+                        </div>
+                    </div>
+                 </li>`;
+    });
+
+    html += '</ul>';
+    return html;
+}
+
+
+    // ============================================
+    // FUNÇÕES DE LOTAÇÃO
+    // ============================================
+
+
+    function inicializarLotacao(){
+      
+        const fileInput = document.getElementById('fileInputLotacao');
+        
+        const uploadButton = document.getElementById('btnFazerUploadLotacao');
+
+        // Habilita o botão novamente sempre que um novo arquivo for escolhido
+          fileInput.addEventListener('change', function() {
+            // Verifica se um arquivo foi realmente selecionado
+            if (this.files.length > 0) {
+              uploadButton.disabled = false;
+            }
+          });        
+    }
+
+    function uploadFileLotacao() {
+
+      const btn = document.getElementById("btnFazerUploadLotacao");
+      btn.disabled = true;
+      
+
+      google.script.run.withSuccessHandler(patriarca => {
+        if (!patriarca) {
+          showMessage("Nenhum Patriarca selecionado. Por favor, selecione um Patriarca antes de fazer upload.", "warning");
+          return;
+        }
+        processarUploadLotacao();
+      }).getSelectedPatriarca();
+
+      
+      btn.disabled = false;
+    }
+
+    function processarUploadLotacao() {
+      const fileInput = document.getElementById("fileInputLotacao");
+      if (!fileInput || !fileInput.files[0]) {
+        showMessage("Por favor, selecione um arquivo.", "warning");
+        return;
+      }
+      const file = fileInput.files[0];
+      showMessage("Lendo abas do arquivo...", "info");
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Content = e.target.result.split(",")[1];
+        google.script.run
+          .withSuccessHandler(response => {
+            if (response.success) {
+              showMessage("Abas lidas com sucesso. Selecione as que deseja processar.", "success");
+              updateFileListLotacao(file.name, response.data);
+            } else {
+              showMessage(`Erro ao ler abas: ${response.message}`, "danger");
+            }
+          })
+          .readSpreadsheetTabs(base64Content, file.name, file.type);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateFileListLotacao(fileName, tabsData) {
+      let fileContentDiv = document.getElementById("fileList");
+      fileContentDiv.innerHTML = "";
+      const fileCard = document.createElement("div");
+      fileCard.className = "card bg-secondary text-light mb-3";
+      let tabsHtml = tabsData.map((tab, index) => `
+        <div class="form-check mb-2">
+            <input class="form-check-input tab-checkbox" type="checkbox" value="${tab}" id="tab_${index}">
+            <label class="form-check-label" for="tab_${index}"><i class="fas fa-table me-2"></i>${tab}</label>
+        </div>`).join('');
+
+      fileCard.innerHTML = `
+        <div class="card-header"><h6 class="mb-0"><i class="fas fa-file-excel me-2"></i>${fileName}</h6></div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0">Selecione as abas para processar:</label>
+                <div>
+                    <button type="button" class="btn btn-outline-light btn-sm me-2" onclick="selecionarTodasAbas(true)">Marcar Todas</button>
+                    <button type="button" class="btn btn-outline-light btn-sm" onclick="selecionarTodasAbas(false)">Desmarcar Todas</button>
+                </div>
+            </div>
+            <div class="tabs-selection" style="max-height: 360px; overflow-y: auto;">${tabsHtml}</div>
+            <div class="mt-3 d-flex align-items-center">
+                <button type="button" id="btnProcessarAbas" class="btn btn-primary" onclick="processarAbasSelecionadas('${fileName}')">
+                    <i class="fas fa-play me-1"></i>Processar Abas Selecionadas
+                </button>
+                <div id="spinnerProcessar" class="spinner-border d-none" role="status" style="width: 2.2rem;height: 2.2rem;display: inline-block;margin-left: 22px;align-content: center;font-size: larger;">
+                  <span class="visually-hidden">Processando...</span>
+                </div>
+            </div>
+        </div>`;
+      fileContentDiv.appendChild(fileCard);
+    }
+
+    function selecionarTodasAbas(selecionar) {
+      document.querySelectorAll('.tab-checkbox').forEach(cb => cb.checked = selecionar);
+    }
+
+    function processarAbasSelecionadas(fileName) {
+      const abasSelecionadas = Array.from(document.querySelectorAll('.tab-checkbox:checked')).map(cb => cb.value);
+      if (abasSelecionadas.length === 0) {
+        showMessage("Selecione pelo menos uma aba para processar.", "warning");
+        return;
+      }
+      showMessage(`Processando ${abasSelecionadas.length} aba(s)...`, "info");
+      
+      const btn = document.getElementById("btnProcessarAbas");
+      const spinner = document.getElementById("spinnerProcessar");
+
+      btn.disabled = true;
+      spinner.classList.remove("d-none"); // mostra spinner
+
+      console.log('chamada da função processarAbasSelecionadas');
+      console.log('fileName: ' + fileName);
+      console.log('abasSelecionadas: ' + JSON.stringify(abasSelecionadas));
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.success) {
+            showMessage(`Abas processadas! Aba '${response.sheetName}' criada. Iniciando validação dos dados...`, "info");
+            // >>> NOVA ETAPA: CHAMAR A VALIDAÇÃO <<<
+            executarValidacaoLotacao();
+          } else {
+            showMessage(`Erro ao processar abas: ${response.message}`, "danger");
+          }
+        })
+        .withFailureHandler(error => showMessage(`Erro de comunicação: ${error.message}`, "danger"))
+        .processSelectedTabs(fileName, abasSelecionadas);
+    }
+
+    function executarValidacaoLotacao() {
+      let fileContentDiv = document.getElementById("fileList");
+      fileContentDiv.innerHTML = `<div class="text-center p-4">
+                                    <div class="spinner-border text-light" role="status"></div>
+                                    <p class="mt-2">Validando dados de lotação contra o organograma...</p>
+                                  </div>`;
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          console.log('validarDadosLotacao - response:', response);
+
+          if (!response || !response.success) {
+            showMessage(response?.message || 'Erro na validação.', 'danger');
+            return;
+          }
+
+          let payload = response.inconsistencias;
+          let grouped = {};
+
+          if (Array.isArray(payload)) {
+            // caso seja array de pares [key, value]
+            if (Array.isArray(payload[0]) && payload[0].length === 2) {
+              payload.forEach(([key, value]) => {
+                grouped[String(key)] = Array.isArray(value) ? value : [value];
+              });
+            } else {
+              // caso seja array simples de objetos
+              payload.forEach(it => {
+                const key = it.orgao || 'Sem Órgão';
+                (grouped[key] = grouped[key] || []).push(it);
+              });
+            }
+          } else if (payload && typeof payload === 'object') {
+            // já é objeto
+            Object.keys(payload).forEach(k => {
+              grouped[k] = Array.isArray(payload[k]) ? payload[k] : [payload[k]];
+            });
+          }
+
+          if (Object.keys(grouped).length === 0) {
+            exibirBotaoGerarJson();
+            return;
+          }
+
+          const fileContentDiv = document.getElementById("fileList");
+          fileContentDiv.innerHTML = "";
+
+          let globalHasCritical = false;
+
+          Object.keys(grouped).forEach(key => {
+            const itens = (grouped[key] || []).slice();
+
+            itens.forEach((item, idx) => {
+              console.log(`Item [${idx}] da aba ${key}:`, JSON.stringify(item, null, 2));
+            });
+
+            const hasCritical = itens.some(i => i.indicador_erro === true);
+            if (hasCritical) globalHasCritical = true;
+
+            const itensHtml = itens.map(item => {
+              const tipoCor = item.indicador_erro ? 'text-danger' : 'text-warning';
+              return `
+                <div class="duplicate-item mb-2 p-2 bg-light rounded text-dark">
+                  <div>
+                    <strong class="${tipoCor}">${item.tipo || 'Problema'}</strong>
+                    ${item.linha ? `(Linha ${item.linha})` : ''}
+                    <small class="text-muted d-block">${item.detalhe || ''}</small>
+                  </div>
+                </div>`;
+            }).join('');
+
+            const cardHtml = `
+              <div class="card bg-light text-dark mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0"><i class="fas fa-tasks me-2"></i>${key}</h6>
+                  <span class="badge bg-danger">${itens.length} problema(s)</span>
+                </div>
+                <div class="card-body" style="max-height: 250px; overflow-y: auto;">
+                  ${itensHtml}
+                </div>
+              </div>`;
+
+            fileContentDiv.insertAdjacentHTML('beforeend', cardHtml);
+          });
+
+          // --- depois de montar todos os cards, cria rodapé geral ---
+          if (globalHasCritical) {
+            // pelo menos um erro crítico => não permite gerar
+            fileContentDiv.insertAdjacentHTML('beforeend', `
+              <div class="card-footer text-muted small">
+                <i class="fas fa-times-circle me-1 text-danger"></i>
+                Corrija os <strong>erros críticos (em vermelho)</strong> para poder gerar os arquivos JSON.
+              </div>
+            `);
+          } else {
+            // só avisos => permite gerar JSON
+            fileContentDiv.insertAdjacentHTML('beforeend', `
+              <div class="card-footer text-center">
+                <div class="alert alert-warning small p-2 mb-3">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Foram encontrados apenas avisos (em amarelo). Você pode corrigi-los e reenviar o arquivo, ou prosseguir com a geração dos JSON.
+                </div>
+                <button class="btn btn-primary" onclick="executarGeracaoJson()">
+                  <i class="fas fa-cog me-2"></i>Gerar Arquivos JSON Mesmo com Avisos
+                </button>
+              </div>
+            `);
+          }
+
+        })
+        .withFailureHandler(error => {
+          showMessage(`Erro de comunicação na validação: ${error.message}`, "danger");
+        })
+        .validarDadosLotacao();
+
+    }
+
+    function exibirBotaoGerarJson() {
+        let fileContentDiv = document.getElementById("fileList");
+        fileContentDiv.innerHTML = `
+          <div class="card bg-success text-light mb-3">
+              <div class="card-header">
+                  <h6 class="mb-0"><i class="fas fa-check-circle me-2"></i>Validação Concluída</h6>
+              </div>
+              <div class="card-body text-center">
+                  <p>Nenhuma inconsistência encontrada nos dados de lotação!</p>
+                  <button class="btn btn-light" id="btnGerarJsonLotacao" onclick="executarGeracaoJson()">
+                      <i class="fas fa-cog me-2"></i>Gerar Arquivos JSON de Lotação
+                  </button>
+                  <div class="text-center p-4" id="divSpinner" style="display: none;">
+                    <div class="spinner-border" text-light" role="status"></div>
+                    <p class="mt-2">Gerando arquivos de envio da Carga de Lotação</p>
+                  </div>
+              </div>
+          </div>`;
+    }
+
+
+    function executarGeracaoJson() {
+
+      showMessage("Gerando arquivos JSON de lotação...", "info");
+
+      document.getElementById('divSpinner').style.display = 'block'; 
+
+      botao = document.getElementById('btnGerarJsonLotacao');
+      botao.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          document.getElementById('divSpinner').style.display = 'd-none'; 
+
+          if (response.success) {
+            showMessage(response.message, "success");
+            // Opcional: limpar a área ou exibir uma mensagem final
+            document.getElementById("fileList").innerHTML = `<div class="alert alert-success">${response.message}</div>`;
+          } else {
+            showMessage(`Erro ao gerar JSON: ${response.message}`, "danger");
+          }
+        })
+        .withFailureHandler(function(response) {
+          document.getElementById('divSpinner').style.display = 'd-none'; 
+          error => showMessage(`Erro de comunicação ao gerar JSON: ${error.message}`, "danger")
+        })
+        .gerarJsonLotacao();
+    }
+
+
+  // =============================================================
+  // FUNÇÕES DO ORGANOGRAMA (EDIÇÃO VISUAL)
+  // =============================================================
+
+  // Variáveis globais para gerenciar o estado do editor
+  var rfPatriarca = null;
+  var rfInstance = null; // Armazena a instância do ReactFlow
+  var setRfNodes = null; // Funções para atualizar o estado do React
+  var setRfEdges = null;
+
+  // Função principal que inicializa o editor do organograma
+  
+
+  function inicializarOrganogramaEdicao() {
+    google.script.run
+      .withSuccessHandler(patriarca => {
+        if (!patriarca) {
+          showMessage('Nenhum patriarca selecionado. Selecione um na aba Patriarcas primeiro.', 'danger');
+          document.getElementById('reactflow-container').innerHTML = '<div class="alert alert-warning">Nenhum patriarca selecionado.</div>';
+          return;
+        }
+        
+        rfPatriarca = patriarca;
+        
+        // Chamar função modificada
+        google.script.run
+          .withSuccessHandler(response => {
+            //console.log('retorno de getOrganogramaJsonParaEdicao: Nós: ' + JSON.stringify(response.data.nodes) + ' Ligações: ' + JSON.stringify(response.data.edges));
+            if (response.success) {
+              renderReactFlow(response.data.nodes, response.data.edges);
+            } else if (response.requiresUserChoice) {
+              // Mostrar modal de escolha para o usuário
+              mostrarModalEscolhaFonte(response);
+            } else {
+              showMessage(response.message || 'Erro ao carregar dados do organograma.', 'danger');
+            }
+          })
+          .withFailureHandler(err => {
+            showMessage('Erro ao buscar dados do organograma: ' + err.message, 'danger');
+          })
+          .getOrganogramaJsonParaEdicao();
+      })
+      .withFailureHandler(err => {
+        showMessage('Erro ao buscar dados do patriarca: ' + err.message, 'danger');
+      })
+      .getSelectedPatriarca();
+
+    // botão Salvar
+    document.getElementById('btnSalvarOrganogramaVisual').addEventListener("click", function (e) {
+      e.preventDefault();
+      salvarOrganogramaVisual();
+    });
+  
+    document.getElementById("btnOrganizarOrganogramaVisual").addEventListener("click", function (e) {
+      e.preventDefault();
+      organizarOrganogramaVisual();
+    });
+
+    
+    // botão Gerar Organograma para envio
+    document.getElementById('btnAbrirOrganograma').addEventListener("click", function (e) {
+      e.preventDefault();
+
+      showMessage("Espere! A aplicação está recuperando as informações para gerar a página!", "info");
+
+      //google.script.run
+      //  .withSuccessHandler(function(response) {
+      //      // Verificação de segurança
+      //      if (!response) {
+      //          showMessage("Falha de comunicação. O backend retornou uma resposta nula.", "danger");
+      //          return;
+      //      }
+//
+      //      if (!response.success) {
+      //          showMessage(response.message || "Ocorreu um erro desconhecido no backend.", "danger");
+      //          return;
+      //      }
+//
+      //      // --- INÍCIO DA CORREÇÃO ---
+      //      // Os dados agora estão aninhados dentro da propriedade 'data'
+      //      const data = response.data;
+      //      if (!data) {
+      //          showMessage("A resposta do backend foi bem-sucedida, mas o objeto de dados está ausente.", "warning");
+      //          return;
+      //      }
+//
+      //      // --- Processar dados para o gráfico ---
+      //      if (data.chartRows && data.chartRows.length > 0) {
+      //          gerarResultadoParaNovaAbaHorizontal(JSON.stringify(data.chartRows));                  
+      //      }
+      //  })
+      //  .withFailureHandler(function(err) {
+      //      showMessage("Erro crítico na comunicação com o servidor: " + err.message, "danger");
+      //  })
+      //  .getOrganogramaCompleto();
+      
+      // Substitua as duas chamadas por uma única
+      google.script.run
+        .withSuccessHandler(dados => {
+          if (dados.success) {
+
+            alert(dados.message + "\n\n⚠️ Diagrama ReactFlow deve estar SALVO na planilha para versão atualizada!");
+            gerarResultadoParaNovaAbaHorizontalGoogleCharts(dados.dataString);
+          }
+          else {
+            showMessage(`Erro ao obter dados do organograma: ${response?.message || "desconhecido"}`, "danger");
+            return;
+          }
+        })
+        .withFailureHandler(err => showMessage(`Erro de comunicação: ${err.message}`, "danger"))
+        .getChartDataTable(); //.getOrganogramaGoogleCharts();
+
+    });
+    
+    // Anexa os ouvintes de eventos DEPOIS das chamadas assíncronas
+    const searchInput = document.getElementById('nodeSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', (e) => {
+            buscarNos(e.target.value);
+        });
+    }
+
+    document.addEventListener('keydown', handleKeyboardShortcuts);      
+  }
+
+  function mostrarModalEscolhaFonte(response) {
+    const modalHtml = `
+      <div class="modal fade" id="modalEscolhaFonte" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Diferenças Detectadas</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p>Foram detectadas diferenças entre o arquivo salvo e os dados da planilha:</p>
+              <div class="alert alert-warning">
+                <ul class="list-unstyled mb-0">
+                  ${response.data.diferencas.map(dif => `
+                    <li><strong>${dif.tipo}:</strong> ${JSON.stringify(dif)}</li>
+                  `).join('')}
+                </ul>
+              </div>
+              <p><strong>Qual fonte de dados deseja usar?</strong></p>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <h6 class="card-title">Arquivo Salvo</h6>
+                      <p class="card-text small">Mantém o layout e posições dos nós como estavam salvos.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <h6 class="card-title">Dados da Planilha</h6>
+                      <p class="card-text small">Reconstrói o layout com os dados atuais da planilha.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="escolherFonte('json')">
+                <i class="fas fa-save me-1"></i>Usar Arquivo Salvo
+              </button>
+              <button type="button" class="btn btn-primary" onclick="escolherFonte('planilha')">
+                <i class="fas fa-table me-1"></i>Usar Dados da Planilha
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Remove modal anterior se existir
+    const existingModal = document.getElementById('modalEscolhaFonte');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    new bootstrap.Modal(document.getElementById('modalEscolhaFonte')).show();
+  }
+
+  function escolherFonte(escolha) {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalEscolhaFonte'));
+    if (modal) {
+      modal.hide();
+    }
+    
+    showMessage('Carregando dados escolhidos...', 'info');
+    
+    var data = [];
+
+    google.script.run
+      .withSuccessHandler(response => {
+        if (response.success) {
+          renderReactFlow(response.data.nodes, response.data.edges);
+          
+          data = response.data;
+
+          showMessage(`Organograma carregado usando ${escolha === 'json' ? 'arquivo salvo' : 'dados da planilha'}.`, 'success');
+        } else {
+          showMessage(response.message || 'Erro ao carregar dados do organograma.', 'danger');
+        }
+      })
+      .withFailureHandler(err => {
+        showMessage('Erro ao buscar dados do organograma: ' + err.message, 'danger');
+      })
+      .getOrganogramaJsonParaEdicao(escolha);
+      
+      // botão Salvar
+      document.getElementById('btnSalvarOrganogramaVisual').addEventListener("click", function (e) {
+        e.preventDefault();
+        salvarOrganogramaVisual();
+      });
+
+      document.getElementById("btnOrganizarOrganogramaVisual").addEventListener("click", function (e) {
+        e.preventDefault();
+        organizarOrganogramaVisual();
+      });
+      
+      // botão Gerar Organograma para envio
+      document.getElementById('btnAbrirOrganograma').addEventListener("click", function (e) {
+        e.preventDefault();
+
+        showMessage("Espere! A aplicação está recuperando as informações para gerar a página!", "info");
+
+        //google.script.run
+        //  .withSuccessHandler(function(response) {
+        //      // Verificação de segurança
+        //      if (!response) {
+        //          showMessage("Falha de comunicação. O backend retornou uma resposta nula.", "danger");
+        //          return;
+        //      }
+//
+        //      if (!response.success) {
+        //          showMessage(response.message || "Ocorreu um erro desconhecido no backend.", "danger");
+        //          return;
+        //      }
+//
+        //      // --- INÍCIO DA CORREÇÃO ---
+        //      // Os dados agora estão aninhados dentro da propriedade 'data'
+        //      const data = response.data;
+        //      if (!data) {
+        //          showMessage("A resposta do backend foi bem-sucedida, mas o objeto de dados está ausente.", "warning");
+        //          return;
+        //      }
+//
+        //      // --- Processar dados para o gráfico ---
+        //      if (data.chartRows && data.chartRows.length > 0) {
+        //          gerarResultadoParaNovaAbaHorizontal(JSON.stringify(data.chartRows));                  
+        //      }
+        //  })
+        //  .withFailureHandler(function(err) {
+        //      showMessage("Erro crítico na comunicação com o servidor: " + err.message, "danger");
+        //  })
+        //  .getOrganogramaCompleto();
+
+        // Substitua as duas chamadas por uma única
+        google.script.run
+          .withSuccessHandler(dados => {
+            if (dados.success) {
+              
+              const btn = document.getElementById("btnAbrirOrganograma");
+              btn.disabled = false;
+              btn.onclick = function() {
+                alert(dados.message + "\n\n⚠️ Diagrama ReactFlow deve estar SALVO na planilha para versão atualizada!");
+                gerarResultadoParaNovaAbaHorizontalGoogleCharts(dados.dataString);
+              }
+            }
+            else {
+              showMessage(`Erro ao obter dados do organograma: ${response?.message || "desconhecido"}`, "danger");
+              return;
+            }
+          })
+          .withFailureHandler(err => showMessage(`Erro de comunicação: ${err.message}`, "danger"))
+          .getChartDataTable(); //.getOrganogramaGoogleCharts();        
+      });
+      
+      // Anexa os ouvintes de eventos DEPOIS das chamadas assíncronas
+      const searchInput = document.getElementById('nodeSearchInput');
+      if (searchInput) {
+          searchInput.addEventListener('keyup', (e) => {
+              buscarNos(e.target.value);
+          });
+      }
+
+      document.addEventListener('keydown', handleKeyboardShortcuts);
+  }
+
+  // ==================================================================
+  // FUNÇÕES DE RENDERIZAÇÃO DO REACTFLOW
+  // ==================================================================
+
+  // ---------- ORGANIZAR ORGANOGRAMA (FRONTEND) ----------
+
+  // Espaçamento horizontal e vertical padrão para organograma
+  const ORG_DX = 300; // espaçamento horizontal entre nodes
+  const ORG_DY = 180; // espaçamento vertical entre níveis
+
+  // Constrói um mapa de filhos a partir das edges
+  function buildChildrenMap(edges) {
+    const childrenMap = {};
+    edges.forEach(edge => {
+      if (!childrenMap[edge.source]) {
+        childrenMap[edge.source] = [];
+      }
+      childrenMap[edge.source].push(edge.target);
+    });
+    return childrenMap;
+  }
+
+  // Encontra o node raiz (que não é target de nenhuma edge)
+  function findRootNodeId(nodes, edges) {
+    const targets = new Set(edges.map(e => e.target));
+    for (const node of nodes) {
+      if (!targets.has(node.id)) {
+        return node.id;
+      }
+    }
+    return null;
+  }
+
+  // Cria uma árvore de nodes, acrescentando a lista de filhos e largura inicial
+  function construirArvoreNodes(nodes, edges) {
+    const nodeMap = {};
+    nodes.forEach(n => {
+      nodeMap[n.id] = { ...n, children: [], width: 0, x: 0, y: 0 };
+    });
+    edges.forEach(e => {
+      if (nodeMap[e.source]) {
+        nodeMap[e.source].children.push(nodeMap[e.target]);
+      }
+    });
+    // Encontra patriarca
+    const rootId = findRootNodeId(nodes, edges);
+    return { nodeMap, patriarcaNode: nodeMap[rootId] };
+  }
+
+  // 1ª Passada (bottom-up): calcula a largura da sub-árvore para cada node
+  function calculateWidth(node) {
+    if (node.children.length === 0) {
+      node.width = ORG_DX; // largura padrão para nodes folha
+      return;
+    }
+    let totalWidth = 0;
+    node.children.forEach(child => {
+      calculateWidth(child);
+      totalWidth += child.width;
+    });
+    node.width = totalWidth;
+  }
+
+  // 2ª Passada (top-down): atribui posições X e Y a cada node
+  function assignPositions(node, level, startX) {
+    node.x = startX + (node.width / 2) - (ORG_DX / 2);
+    node.y = level * ORG_DY;
+
+    let currentX = startX;
+    node.children.forEach(child => {
+      assignPositions(child, level + 1, currentX);
+      currentX += child.width;
+    });
+  }
+
+  // Função principal para organizar organograma no React Flow
+  // Atualiza nodes com posições calculadas
+  function organizarOrganogramaReactFlow(nodes, edges) {
+    const { nodeMap, patriarcaNode } = construirArvoreNodes(nodes, edges);
+    calculateWidth(patriarcaNode);
+    assignPositions(patriarcaNode, 0, 0);
+
+    const nodesOrganizados = nodes.map(n => {
+      const node = nodeMap[n.id];
+      return {
+        ...n,
+        position: { x: node.x, y: node.y },
+        positionAbsolute: true // para React Flow fixar posição
+      };
+    });
+
+    return { nodes: nodesOrganizados, edges };
+  }
+
+  // Função chamada pelo botão "Organizar"
+  // Atualiza o estado do React Flow com nodes e edges organizados
+  function organizarOrganogramaVisual() {
+    if (!window.rfInstance) {
+      showMessage("Editor não inicializado.", "danger");
+      return;
+    }
+
+    const nodes = window.rfInstance.getNodes();
+    const edges = window.rfInstance.getEdges();
+
+    showMessage("Organizando organograma...", "info");
+
+    const resultado = organizarOrganogramaReactFlow(nodes, edges);
+
+    if (typeof window.setRfNodes === "function") {
+      window.setRfNodes(resultado.nodes);
+    }
+    if (typeof window.setRfEdges === "function") {
+      window.setRfEdges(resultado.edges);
+    }
+
+    showMessage("Organograma reorganizado com sucesso!", "success");
+  }
+
+  // Função auxiliar para mostrar mensagens ao usuário (exemplo)
+  // Substitua conforme seu método de exibição de mensagens
+  //function showMessage(msg, tipo) {
+  //  console.log(`[${tipo}] ${msg}`);
+  //}
+
+  // Vincular botão organizar ao clicar (chamada na inicialização)
+  //function bindOrganizarButton() {
+  //  const btn = document.getElementById("btnOrganizarOrganogramaVisual");
+  //  if (btn) {
+  //    btn.onclick = organizarOrganogramaVisual;
+  //  }
+  //}
+
+  // Renderiza o componente ReactFlow no container
+  function renderReactFlow(initialNodes, initialEdges) {
+    const { React } = window;
+    const { createRoot } = ReactDOM;
+    
+    const { 
+        ReactFlow, 
+        Controls, 
+        ReactFlowProvider, 
+        useNodesState, 
+        useEdgesState, 
+        useReactFlow, 
+        addEdge 
+    } = window.ReactFlow;
+
+    function RFEditor() {
+        // --- CORREÇÃO: Hooks declarados no topo da função ---
+        const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+        const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+        const reactFlowInstance = useReactFlow();
+
+        // Efeitos colaterais (useEffect) vêm depois dos hooks.
+        React.useEffect(() => {
+            window.rfInstance = reactFlowInstance;
+            window.setRfNodes = setNodes;
+            window.setRfEdges = setEdges;
+        }, [reactFlowInstance, setNodes, setEdges]);
+
+        // Callbacks vêm em seguida.
+        const onConnect = React.useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+
+        const onNodeDoubleClick = (event, node) => {
+            setNodes(nds => nds.map(n => ({ ...n, selected: n.id === node.id })));
+            openModalEditarOrgao(node);
+        };
+
+        // A declaração 'return' deve ser a última coisa na função.
+        return React.createElement(ReactFlow, {
+            nodes: nodes,
+            edges: edges,
+            onNodesChange: onNodesChange,
+            onEdgesChange: onEdgesChange,
+            onConnect: onConnect,
+            onNodeDoubleClick: onNodeDoubleClick,
+            fitView: true,
+            style: { width: '100%', height: '700px' }
+          },
+          
+          // MiniMap do ReactFlow
+          // Infelizmente o minimap não fica legível e nem está obdecendo o css
+          // Não consegui estabelecer qual o motivo deste problema
+
+          //React.createElement(window.ReactFlow.MiniMap, {
+          //  nodeColor: node => '#0077ff',
+          //  nodeStrokeColor: node => node.selected ? '#ff4500' : '#0047b3',
+          //  nodeStrokeWidth: 2,
+          //  style: { backgroundColor: 'transparent', borderRadius: 6 },
+          //  zoomable: false,
+          //  pannable: false,
+          //}),
+          React.createElement(Controls)
+        );
+    }
+
+    const container = document.getElementById('reactflow-root');
+    if (container) {
+        const root = createRoot(container);
+        root.render(
+            React.createElement(ReactFlowProvider, null,
+                React.createElement(RFEditor)
+            )
+        );
+    } else {
+        console.error("Erro fatal: O contêiner com id 'reactflow-root' não foi encontrado no DOM.");
+        showMessage("Erro de interface: Não foi possível carregar a área de desenho do organograma.", "danger");
+    }
+  }
+
+
+
+  // Função principal que gerencia todos os atalhos
+  function handleKeyboardShortcuts(event) {
+    // SOLUÇÃO: Adicione esta verificação no início da função
+    if (!window.rfInstance) {
+      return;
+    }
+
+    // Se o editor do organograma não estiver na tela, não faz nada
+    if (!document.getElementById('reactflow-root')) {
+      document.removeEventListener('keydown', handleKeyboardShortcuts);
+      return;
+    }
+
+    // Impede a ação padrão do navegador para as teclas que usamos
+    if (['Insert', 'Delete', 'F2', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      event.preventDefault();
+    }
+
+    const selectedNode = rfInstance.getNodes().find(n => n.selected);
+
+    switch (event.key) {
+      case 'Insert':
+        handleInsertKey(selectedNode);
+        break;
+      case 'Delete':
+        handleDeleteKey(selectedNode);
+        break;
+      case 'F2':
+        handleF2Key(selectedNode);
+        break;
+      case 'ArrowUp':
+      case 'ArrowDown':
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        handleArrowNavigation(event.key, selectedNode);
+        break;
+    }
+  }
+
+  
+  // 2.1 - Ação da tecla INSERT
+  function handleInsertKey(selectedNode) {
+      const parentNode = selectedNode || rfInstance.getNode('root');
+      openModalNovoOrgao(parentNode); // Usamos a função existente
+  }
+
+  // 2.2 - Ação da tecla DELETE
+  function handleDeleteKey(selectedNode) {
+    if (!selectedNode) {
+        showMessage('Selecione o nó que deseja excluir.', 'warning');
+        return;
+    }
+    if (selectedNode.id === 'root') {
+        showMessage('O nó raiz (Patriarca) não pode ser excluído.', 'danger');
+        return;
+    }
+    
+    // Abre o modal em modo de exclusão
+    const form = document.getElementById('formOrgao');
+    form.reset();
+    form.dataset.mode = 'delete'; // Modo especial
+    form.dataset.nodeId = selectedNode.id;
+
+    document.getElementById('modalOrgaoTitle').textContent = `Excluir "${selectedNode.data.label}"?`;
+    
+    // Desabilita campos e botões
+    document.getElementById('orgaoNome').value = selectedNode.data.nome;
+    document.getElementById('orgaoSigla').value = selectedNode.data.sigla;
+    document.getElementById('orgaoNome').disabled = true;
+    document.getElementById('orgaoSigla').disabled = true;
+    form.querySelector('button[type="submit"]').style.display = 'none'; // Esconde Salvar
+    document.getElementById('btnExcluirOrgao').style.display = 'block'; // Mostra Excluir
+
+    new bootstrap.Modal(document.getElementById('modalOrgao')).show();
+  }
+
+  // 2.4 - Ação da tecla F2
+  function handleF2Key(selectedNode) {
+    if (selectedNode) {
+        openModalEditarOrgao(selectedNode);
+    } else {
+        showMessage('Selecione um nó para editar.', 'warning');
+    }
+  }
+
+  // 2.3 - Ação das SETAS de navegação
+  function handleArrowNavigation(key, selectedNode) {
+    if (!rfInstance) return;
+
+    const nodes = rfInstance.getNodes();
+    const edges = rfInstance.getEdges();
+
+    // Se nenhum nó estiver selecionado, seleciona a raiz
+    if (!selectedNode) {
+        window.setRfNodes(nds => nds.map(n => ({ ...n, selected: n.id === 'root' })));
+        return;
+    }
+
+    const parentEdge = edges.find(e => e.target === selectedNode.id);
+    const parentId = parentEdge ? parentEdge.source : null;
+    
+    const childrenEdges = edges.filter(e => e.source === selectedNode.id);
+    const siblingsEdges = edges.filter(e => e.source === parentId);
+    
+    let nextNodeId = null;
+
+    switch (key) {
+        case 'ArrowUp':
+            nextNodeId = parentId;
+            break;
+        case 'ArrowDown':
+            if (childrenEdges.length > 0) {
+                nextNodeId = childrenEdges[0].target;
+            }
+            break;
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            const siblingIds = siblingsEdges.map(e => e.target);
+            const currentIndex = siblingIds.indexOf(selectedNode.id);
+
+            if (key === 'ArrowLeft' && currentIndex > 0) {
+                nextNodeId = siblingIds[currentIndex - 1];
+            } else if (key === 'ArrowRight' && currentIndex < siblingIds.length - 1) {
+                nextNodeId = siblingIds[currentIndex + 1];
+            }
+            break;
+    }
+
+    if (nextNodeId) {
+        window.setRfNodes(nds => nds.map(n => ({ ...n, selected: n.id === nextNodeId })));
+        rfInstance.fitView({ nodes: [{ id: nextNodeId }], duration: 200, maxZoom: 1.5 });
+    }
+  }
+
+  function openModalNovoOrgao(parentNode) {
+    if (!parentNode) {
+        showMessage('Selecione um nó para adicionar um filho ou pressione Insert para adicionar abaixo da raiz.', 'warning');
+        return;
+    }
+    document.getElementById('modalOrgaoTitle').textContent = 'Novo Item';
+    const form = document.getElementById('formOrgao');
+    form.reset();
+    form.dataset.mode = 'add';
+    form.dataset.parentId = parentNode.id;
+    document.getElementById('btnExcluirOrgao').style.display = 'none';
+    document.getElementById('orgaoNome').disabled = false;
+    document.getElementById('orgaoSigla').disabled = false;
+    form.querySelector('button[type="submit"]').style.display = 'block';
+
+    new bootstrap.Modal(document.getElementById('modalOrgao')).show();
+  }
+
+  function openModalEditarOrgao(node) {
+      document.getElementById('modalOrgaoTitle').textContent = 'Editar Item';
+      const form = document.getElementById('formOrgao');
+      form.reset();
+      form.dataset.mode = 'edit';
+      form.dataset.nodeId = node.id;
+      
+      document.getElementById('orgaoNome').value = node.data.nome || node.data.label;
+      document.getElementById('orgaoSigla').value = node.data.sigla;
+      //document.getElementById('btnExcluirOrgao').style.display = node.id === 'root' ? 'none' : 'block';
+      document.getElementById('btnExcluirOrgao').style.display = 'none';
+      form.querySelector('button[type="submit"]').style.display = 'block';
+
+      new bootstrap.Modal(document.getElementById('modalOrgao')).show();
+  }
+
+  
+  function validaInsercaoNos(termo) {
+    if (!rfInstance || !termo) {
+      return { success: false, message: 'A instância do Organograma não foi encontrada ou o termo de pesquisa está vazio!' };
+    }
+
+    const termoBusca = termo.toLowerCase();
+    const todosNos = rfInstance.getNodes();
+
+    const resultados = todosNos.filter(node => {
+        const nome = (node.data.nome || '').toLowerCase();
+        const sigla = (node.data.sigla || '').toLowerCase();
+        return nome.includes(termoBusca) || sigla.includes(termoBusca);
+    });
+
+    if(!resultados){
+      return { success: true, message: 'Termo de pesquisa não encontrado em Sigla ou Nome!' };
+    }
+    else{
+      var msg = '';
+      if(resultados.nome){
+        msg = 'Foi encontrado um órgão, setor ou unidade com o mesmo nome!';
+      }
+      if(resultados.sigla){
+        msg = 'Foi encontrado um órgão, setor ou unidade com a mesma sigla!';
+      }
+
+      return { success: false, message: msg };
+    }
+  }
+
+  // Salva as alterações do modal (adicionar ou editar)
+  document.getElementById('formOrgao').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const mode = this.dataset.mode;
+    const nome = document.getElementById('orgaoNome').value;
+    const sigla = document.getElementById('orgaoSigla').value;
+
+    var retValidaNome = validaInsercaoNos(nome);
+    if(retValidaNome.success){
+      
+    }
+
+
+    if (mode === 'edit') {
+        const nodeId = this.dataset.nodeId;
+        window.setRfNodes(nds => nds.map(n => {
+            if (n.id === nodeId) {
+                return {
+                    ...n,
+                    data: { ...n.data, label: `${sigla} - ${nome}`, nome: nome, sigla: sigla }
+                };
+            }
+            return n;
+        }));
+    } else if (mode === 'add') {
+        const parentId = this.dataset.parentId;
+        const parentNode = rfInstance.getNode(parentId);
+        
+        // Validação para garantir que um nó pai existe antes de adicionar um filho
+        if (!parentNode) {
+            showMessage('Erro: O nó pai selecionado não foi encontrado. Tente selecionar novamente.', 'danger');
+            return;
+        }
+
+        const newId = 'node-' + Date.now();
+        const newNode = {
+            id: newId,
+            type: 'default',
+            data: { label: `${sigla} - ${nome}`, nome: nome, sigla: sigla },
+            position: { x: parentNode.position.x + 50, y: parentNode.position.y + 150 },
+            className: 'xy-themenode',
+        };
+        const newEdge = { id: `e-${parentId}-${newId}`, source: parentId, target: newId, type: 'smoothstep' };
+
+        // CORREÇÃO: Usando 'setRfNodes' e 'setRfEdges'
+        window.setRfNodes(nds => [...nds, newNode]);
+        window.setRfEdges(eds => [...eds, newEdge]);
+    }
+    
+    // Esconde o modal após a operação
+    bootstrap.Modal.getInstance(document.getElementById('modalOrgao')).hide();
+  });
+
+  // Exclui um nó e todos os seus descendentes
+  function excluirOrgao() {
+    const nodeId = document.getElementById('formOrgao').dataset.nodeId;
+    if (!nodeId || nodeId === 'root' || !window.rfInstance) return;
+
+    const nodesToRemove = new Set([nodeId]);
+    const edges = window.rfInstance.getEdges();
+
+    // Função recursiva para encontrar todos os filhos
+    function findChildren(id) {
+      const children = edges.filter(e => e.source === id).map(e => e.target);
+      children.forEach(childId => {
+          if (!nodesToRemove.has(childId)) {
+              nodesToRemove.add(childId);
+              findChildren(childId);
+          }
+      });
+    }
+
+    findChildren(nodeId);
+
+    // --- CORREÇÃO: Usando a referência explícita do 'window' ---
+    if (typeof window.setRfNodes === 'function' && typeof window.setRfEdges === 'function') {
+        window.setRfNodes(nds => nds.filter(n => !nodesToRemove.has(n.id)));
+        window.setRfEdges(eds => eds.filter(e => !nodesToRemove.has(e.source) && !nodesToRemove.has(e.target)));
+    } else {
+        console.error('As funções de atualização do React Flow não estão disponíveis.');
+        showMessage('Erro interno ao tentar remover o nó.', 'danger');
+    }
+
+    // Fecha o modal
+    bootstrap.Modal.getInstance(document.getElementById('modalOrgao')).hide();
+  }
+
+  // Envia o estado atual do organograma para o backend para ser salvo
+  function salvarOrganogramaVisual() {
+    // Verifica se a instância do React Flow foi inicializada
+    if (!rfInstance) {
+      showMessage('Editor não inicializado.', 'danger');
+      return;
+    }
+
+    // Captura o estado mais recente dos nós (nodes) e arestas (edges)
+    const visualData = {
+      nodes: rfInstance.getNodes(),
+      edges: rfInstance.getEdges()
+    };
+
+    showMessage('Salvando organograma...', 'info');
+
+    // Executa a função do lado do servidor (em codigo.gs) para salvar os dados
+    google.script.run
+      .withSuccessHandler(function(response) {
+        if (response.success) {
+          showMessage(response.message, 'success');
+        } else {
+          showMessage(response.message, 'danger');
+        }
+      })
+      .withFailureHandler(function(err) {
+        showMessage('Erro ao salvar: ' + err.message, 'danger');
+      })
+      .salvarOrganogramaVisual(visualData); // Chama a função e passa os dados
+  }
+
+  function buscarNos(termo) {
+    if (!rfInstance || !termo) {
+        document.getElementById('nodeSearchResults').innerHTML = '';
+        return;
+    }
+
+    const termoBusca = termo.toLowerCase();
+    const todosNos = rfInstance.getNodes();
+
+    const resultados = todosNos.filter(node => {
+        const nome = (node.data.nome || '').toLowerCase();
+        const sigla = (node.data.sigla || '').toLowerCase();
+        return nome.includes(termoBusca) || sigla.includes(termoBusca);
+    });
+
+    exibirResultadosBusca(resultados);
+  }
+
+  /**
+   * Exibe os resultados da busca em uma lista clicável.
+   */
+  function exibirResultadosBusca(resultados) {
+    const containerResultados = document.getElementById('nodeSearchResults');
+    containerResultados.innerHTML = '';
+
+    if (resultados.length === 0) {
+        return;
+    }
+
+    const lista = document.createElement('div');
+    lista.className = 'list-group';
+
+    resultados.forEach(node => {
+        const item = document.createElement('a');
+        item.href = '#';
+        item.className = 'list-group-item list-group-item-action';
+        item.innerText = node.data.label; // Mostra "SIGLA - NOME"
+        item.onclick = (e) => {
+            e.preventDefault();
+            selecionarEcentralizarNo(node.id);
+            containerResultados.innerHTML = ''; // Limpa resultados após seleção
+            document.getElementById('nodeSearchInput').value = ''; // Limpa o campo de busca
+        };
+        lista.appendChild(item);
+    });
+
+    containerResultados.appendChild(lista);
+  }
+
+  /**
+   * Seleciona um nó, centraliza a visão nele e aplica zoom.
+   */
+  function selecionarEcentralizarNo(nodeId) {
+    if (!rfInstance || !window.setRfNodes) return;
+
+    // Remove a seleção de todos os outros nós e seleciona o nó alvo
+    window.setRfNodes(nodes =>
+        nodes.map(n => ({
+            ...n,
+            selected: n.id === nodeId,
+        }))
+    );
+
+    // Centraliza a visão no nó selecionado
+    rfInstance.fitView({
+        nodes: [{ id: nodeId }],
+        duration: 300,
+        maxZoom: 1.5,
+    });
+  }
+
+  </script>
+
+  <script>
+    let patriarcaSelecionado = null;
+    let orgaosDisponiveis = [];
+    let statusOrganogramaOk = false;
+
+    function verificarStatusOrganograma() {
+      const container = document.getElementById('statusOrganogramaContainer');
+      container.innerHTML = '<div class="text-center p-2"><div class="spinner-border spinner-border-sm text-info"></div></div>';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success && result.finalizado) {
+            statusOrganogramaOk = true;
+            container.innerHTML = `
+              <div class="alert alert-success mb-0">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Organograma Finalizado com Sucesso</strong><br>
+                <small>Você pode prosseguir com o envio das lotações.</small>
+              </div>
+            `;
+            verificarSeHabilitaBotaoEnvio(); // ATUALIZADO
+          } else if (result.success) {
+            statusOrganogramaOk = false;
+            container.innerHTML = `
+              <div class="alert alert-warning mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Organograma em Processamento</strong><br>
+                <small>Status: ${result.status || 'Processando'}. Aguarde a finalização antes de enviar lotações.</small>
+              </div>
+            `;
+            verificarSeHabilitaBotaoEnvio(); // ATUALIZADO
+          } else {
+            statusOrganogramaOk = false;
+            container.innerHTML = `
+              <div class="alert alert-danger mb-0">
+                <i class="fas fa-times-circle me-2"></i>
+                <strong>Organograma não encontrado ou não enviado</strong><br>
+                <small>${result.message}</small>
+              </div>
+            `;
+            verificarSeHabilitaBotaoEnvio(); // ATUALIZADO
+          }
+        })
+        .withFailureHandler(function(error) {
+          container.innerHTML = `
+            <div class="alert alert-danger mb-0">
+              <i class="fas fa-times-circle me-2"></i>
+              <strong>Erro ao verificar status</strong><br>
+              <small>${error}</small>
+            </div>
+          `;
+        })
+        .verificarStatusOrganogramaFinalizado(patriarcaSelecionado);
+    }
+
+    function carregarListaOrgaos() {
+      const container = document.getElementById('listaOrgaosContainer');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            orgaosDisponiveis = result.orgaos;
+            renderizarListaOrgaos(result.orgaos);
+          } else {
+            container.innerHTML = `
+              <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                ${result.message}
+              </div>
+            `;
+          }
+        })
+        .withFailureHandler(function(error) {
+          container.innerHTML = `
+            <div class="alert alert-danger">
+              <i class="fas fa-times-circle me-2"></i>
+              Erro ao carregar órgãos: ${error}
+            </div>
+          `;
+        })
+        .obterListaOrgaosDisponiveis(patriarcaSelecionado);
+    }
+
+    function marcarTodosOrgaos() {
+      const checkboxes = document.querySelectorAll('#listaOrgaosContainer input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = true);
+      atualizarContadorSelecionados();
+    }
+
+    function desmarcarTodosOrgaos() {
+      const checkboxes = document.querySelectorAll('#listaOrgaosContainer input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = false);
+      atualizarContadorSelecionados();
+    }
+
+    function atualizarContadorSelecionados() {
+      const checkboxes = document.querySelectorAll('#listaOrgaosContainer input[type="checkbox"]:checked');
+      document.getElementById('totalSelecionados').textContent = checkboxes.length;
+    }
+
+    function iniciarEnvioLotacoes() {
+      if (!statusOrganogramaOk) {
+        showMessage('O organograma precisa estar finalizado antes de enviar lotações', 'warning');
+        return;
+      }
+
+      const checkboxes = document.querySelectorAll('#listaOrgaosContainer input[type="checkbox"]:checked');
+      
+      if (checkboxes.length === 0) {
+        showMessage('Selecione pelo menos um órgão para enviar', 'warning');
+        return;
+      }
+
+      const orgaosSelecionados = Array.from(checkboxes).map(cb => cb.value);
+      const modoEnvio = document.getElementById('modoEnvio').value;
+
+      // Confirmar envio
+      if (!confirm(`Confirma o envio de ${orgaosSelecionados.length} órgão(s) no modo ${modoEnvio}?`)) {
+        return;
+      }
+
+      // Desabilitar botão e mostrar progresso
+      document.getElementById('btnEnviarLotacoes').disabled = true;
+      document.getElementById('progressoEnvioCard').style.display = 'block';
+      document.getElementById('progressoDetalhes').innerHTML = '<p class="text-muted">Iniciando envio...</p>';
+
+      // Chamar função apropriada
+      if (modoEnvio === 'sequencial') {
+        enviarModoSequencial(orgaosSelecionados);
+      } else {
+        enviarModoParalelo(orgaosSelecionados);
+      }
+    }
+
+    function enviarModoSequencial(orgaosSelecionados) {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          processarResultadoEnvio(result, 'sequencial');
+        })
+        .withFailureHandler(function(error) {
+          showMessage('Erro no envio: ' + error, 'danger');
+          document.getElementById('btnEnviarLotacoes').disabled = false;
+        })
+        .enviarLotacoesSequencial(patriarcaSelecionado, 'PRD', orgaosSelecionados);
+    }
+
+    function enviarModoParalelo(orgaosSelecionados) {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          processarResultadoEnvio(result, 'paralelo');
+        })
+        .withFailureHandler(function(error) {
+          showMessage('Erro no envio: ' + error, 'danger');
+          document.getElementById('btnEnviarLotacoes').disabled = false;
+        })
+        .enviarLotacoesParalelo(patriarcaSelecionado, 'PRD', orgaosSelecionados);
+    }
+
+    function processarResultadoEnvio(result, modo) {
+      if (!result.success) {
+        showMessage(result.message, 'danger');
+        document.getElementById('btnEnviarLotacoes').disabled = false;
+        return;
+      }
+
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.width = '100%';
+      progressBar.textContent = '100%';
+      progressBar.classList.remove('progress-bar-animated');
+      progressBar.classList.add('bg-success');
+
+      let detalhesHtml = `<h6>Resultado do Envio (Modo: ${modo})</h6>`;
+      detalhesHtml += `<p>${result.message}</p>`;
+      
+      if (result.resultados) {
+        detalhesHtml += '<ul class="list-unstyled">';
+        result.resultados.forEach(function(r) {
+          const icone = r.success ? 
+            '<i class="fas fa-check-circle text-success me-2"></i>' : 
+            '<i class="fas fa-times-circle text-danger me-2"></i>';
+          
+          detalhesHtml += `
+            <li class="mb-2">
+              ${icone}
+              <strong>${r.orgao}</strong>: ${r.message}
+              ${r.guidCarga ? '<br><small class="text-muted">GUID: ' + r.guidCarga + '</small>' : ''}
+            </li>
+          `;
+        });
+        detalhesHtml += '</ul>';
+      }
+
+      document.getElementById('progressoDetalhes').innerHTML = detalhesHtml;
+      showMessage(result.message, 'success');
+      
+      // Reabilitar botão após alguns segundos
+      setTimeout(function() {
+        document.getElementById('btnEnviarLotacoes').disabled = false;
+      }, 3000);
+    }
+
+    function showMessage(message, type) {
+      const container = document.getElementById('messageContainer');
+      container.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `;
+      
+      // Auto-dismiss após 5 segundos
+      setTimeout(function() {
+        const alert = container.querySelector('.alert');
+        if (alert) {
+          alert.classList.remove('show');
+          setTimeout(() => alert.remove(), 150);
+        }
+      }, 5000);
+    }
+
+
+  let statusTokenOk = false;
+
+  function carregarDadosIniciais() {
+    // Obter patriarca selecionado
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.idpatriarca) {
+          patriarcaSelecionado = result;
+          verificarToken(); // NOVO
+          verificarStatusOrganograma();
+          carregarListaOrgaos();
+        } else {
+          showMessage('Nenhum patriarca selecionado. Selecione um patriarca na tela principal.', 'warning');
+        }
+      })
+      .withFailureHandler(function(error) {
+        showMessage('Erro ao obter patriarca: ' + error, 'danger');
+      })
+      .getSelectedPatriarca();
+  }
+
+
+  function verificarToken() {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        const alertDiv = document.getElementById('alertTokenContainer');
+        
+        if (result.tokenValido) {
+          statusTokenOk = true;
+          alertDiv.innerHTML = `
+            <div class="alert alert-success alert-sm">
+              <i class="fas fa-check-circle me-2"></i>
+              ${result.message}
+            </div>
+          `;
+          verificarSeHabilitaBotaoEnvio();
+        } else {
+          statusTokenOk = false;
+          let actionButton = '';
+          
+          if (result.requiredAction === 'GERAR_TOKEN') {
+            actionButton = '<button class="btn btn-sm btn-warning mt-2" onclick="gerarNovoToken()"><i class="fas fa-key me-1"></i>Gerar Token</button>';
+          }
+          
+          alertDiv.innerHTML = `
+            <div class="alert alert-warning alert-sm">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              ${result.message}
+              ${actionButton}
+            </div>
+          `;
+          document.getElementById('btnEnviarLotacoes').disabled = true;
+        }
+      })
+      .withFailureHandler(function(error) {
+        statusTokenOk = false;
+        document.getElementById('alertTokenContainer').innerHTML = `
+          <div class="alert alert-danger alert-sm">
+            <i class="fas fa-times-circle me-2"></i>
+            Erro ao verificar token: ${error}
+          </div>
+        `;
+      })
+      .validarTokenParaEnvio(patriarcaSelecionado);
+  }
+
+    // NOVA FUNÇÃO
+    function gerarNovoToken() {
+      showMessage('Gerando novo token...', 'info');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showMessage('Token gerado com sucesso!', 'success');
+            verificarToken(); // Recarrega status do token
+          } else {
+            showMessage('Erro ao gerar token: ' + result.message, 'danger');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showMessage('Erro ao gerar token: ' + error, 'danger');
+        })
+        .getAccessToken(patriarcaSelecionado.idpatriarca);
+    }
+
+    // ATUALIZAR FUNÇÃO
+    function verificarSeHabilitaBotaoEnvio() {
+      const btn = document.getElementById('btnEnviarLotacoes');
+      
+      // Habilita apenas se organograma OK e token OK
+      if (statusOrganogramaOk && statusTokenOk) {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+  /**
+   * Carrega os dados dos patriarcas do backend e delega a renderização.
+   */
+  function carregarPatriarcasParaEnvio() {
+    const tbody = document.getElementById('tabela-patriarcas');
+    if (!tbody) {
+      console.error('Elemento tabela-patriarcas não encontrado');
+      return;
+    }
+
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Carregando patriarcas...</p></td></tr>`;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        // Esta validação agora é segura porque o backend sempre retornará um objeto
+        if (result.success && result.dados && result.dados.length > 0) {
+          renderizarTabelaPatriarcas(result.dados);
+        } else {
+          tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-muted"><i class="fas fa-info-circle fa-2x mb-2"></i><p>Nenhum patriarca pronto para envio ou em processamento foi encontrado.</p></td></tr>`;
+        }
+      })
+      .withFailureHandler(function(error) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-danger"><i class="fas fa-exclamation-triangle fa-2x mb-2"></i><p>Erro ao carregar patriarcas: ${error.message}</p></td></tr>`;
+      })
+      .listarPatriarcas();
+  }
+
+  /**
+   * Renderiza a tabela de patriarcas com status, cores e ações dinâmicas.
+   * @param {Array<object>} patriarcas - A lista de patriarcas retornada pelo backend.
+   */
+  function renderizarTabelaPatriarcas(patriarcas) {
+    const tbody = document.getElementById('tabela-patriarcas');
+    tbody.innerHTML = '';
+
+    // Objeto de configuração para gerenciar a UI de cada status
+    const statusConfig = {
+      'Em progresso':    { badge: 'warning',  icon: 'fa-cogs',            label: 'Pronto para Envio' },
+      'Enviando Carga':  { badge: 'info',     icon: 'fa-shipping-fast',   label: 'Processando Envio' },
+      'Carga processada':{ badge: 'success',  icon: 'fa-check-circle',    label: 'Envio Concluído' }
+    };
+
+    patriarcas.forEach(function(patriarca) {
+      const tr = document.createElement('tr');
+      tr.id = `patriarca-row-${patriarca.idPatriarca}`;
+      
+      var config = statusConfig[patriarca.status] || { badge: 'secondary', icon: 'fa-question-circle', label: patriarca.status };
+      let acoesHtml = '';
+
+      switch (patriarca.status) {
+        case 'Em progresso':
+          acoesHtml = `
+            <button id="btn-enviar-${patriarca.idPatriarca}" class="btn btn-sm btn-success" onclick="enviarCargaParaAPI(this, '${patriarca.idPatriarca}')">
+              <i class="fas fa-upload me-1"></i> Iniciar Envio
+            </button>`;
+          break;
+        
+        case 'Enviando Carga':
+          acoesHtml = `
+            <button class="btn btn-sm btn-outline-info" disabled>
+              <span class="spinner-grow spinner-grow-sm me-1" role="status" aria-hidden="true"></span>
+              Em Processamento...
+            </button>`;
+          break;
+        
+        case 'Carga processada':
+          // --- LÓGICA DE VERIFICAÇÃO DO TOKEN ---
+          if (patriarca.tokenValido) {
+            // Token válido: mostra o botão para enviar lotações.
+            acoesHtml = `
+              <button class="btn btn-sm btn-primary" onclick="abrirTelaEnvioLotacoes('${patriarca.idPatriarca}')">
+                <i class="fas fa-paper-plane me-1"></i> Enviar Lotações
+              </button>`;
+          } else {
+            // Token inválido: mostra o botão de reiniciar com um aviso.
+            acoesHtml = `
+              <div class="text-center">
+                <button class="btn btn-sm btn-warning" onclick="handleReiniciarProcesso(this, '${patriarca.idPatriarca}')">
+                  <i class="fas fa-redo me-1"></i> Reiniciar Processo
+                </button>
+                <small class="d-block text mt-1" style="color: white;" title="O token de segurança expirou. É preciso reiniciar para gerar um novo.">
+                  Token Expirado
+                </small>
+              </div>`;
+          }
+          break;
+
+        default:
+          acoesHtml = `<span class="text" style="color: white;">N/A</span>`;
+      }
+
+      // O resto da sua função de renderização continua aqui...
+      tr.innerHTML = `
+        <td><strong>${patriarca.sigla}</strong></td>
+        <td>${patriarca.nome}</td>
+        <td>
+          <span class="badge bg-${config.badge}">
+            <i class="fas ${config.icon} me-1"></i>
+            ${config.label}
+          </span>
+        </td>
+        <td class="text-center">${acoesHtml}</td>
+      `;
+      
+      tbody.appendChild(tr);
+    });
+  }
+
+  /**
+   * Inicia o processo de envio de organograma
+   * @param {string} idPatriarca - GUID do patriarca
+   * @param {string} sigla - Sigla do patriarca
+   * @param {string} nome - Nome do patriarca
+   */
+  function iniciarEnvioOrganograma(idPatriarca, sigla, nome) {
+    // Confirmar com usuário
+    if (!confirm(`Confirma o envio do organograma de ${nome} (${sigla})?`)) {
+      return;
+    }
+
+    // Mostrar mensagem de processamento
+    showMessageEnvio('Processando envio do organograma...', 'info');
+
+    // Preparar objeto patriarca
+    const patriarca = {
+      idpatriarca: idPatriarca,
+      sigla: sigla,
+      nome: nome
+    };
+
+    // Chamar função de envio
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          showMessageEnvio(
+            `✓ Organograma enviado com sucesso!<br>
+            <small>GUID da Carga: ${result.guidCarga}</small><br>
+            <small>O processamento foi iniciado. Verifique o status na opção "Validar Envio de Carga".</small>`,
+            'success'
+          );
+          
+          // Recarregar tabela após 2 segundos
+          setTimeout(function() {
+            console.log('Chamando carregarPatriarcasParaEnvio em iniciarEnvioOrganograma');
+            carregarPatriarcasParaEnvio();
+          }, 2000);
+        } else {
+          showMessageEnvio(
+            `✗ Erro ao enviar organograma: ${result.message}`,
+            'danger'
+          );
+        }
+      })
+      .withFailureHandler(function(error) {
+        showMessageEnvio(
+          `✗ Erro ao enviar organograma: ${error.message || error}`,
+          'danger'
+        );
+        console.error('Erro no envio:', error);
+      })
+      .enviarOrganogramaCargaInicial(patriarca, 'PRD'); // ou 'HML' para homologação
+  }
+
+  /**
+   * Exibe mensagem na área de mensagens
+   */
+  function showMessageEnvio(message, type) {
+    const container = document.getElementById('messageContainer');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    `;
+
+    // Auto-dismiss após 10 segundos (exceto erros)
+    if (type !== 'danger') {
+      setTimeout(function() {
+        const alert = container.querySelector('.alert');
+        if (alert) {
+          alert.classList.remove('show');
+          setTimeout(() => alert.remove(), 150);
+        }
+      }, 10000);
+    }
+  }
+
+  /**
+   * Verifica o status do envio do patriarca
+   * @param {string} idPatriarca - GUID do patriarca
+   * @param {string} sigla - Sigla do patriarca
+   */
+  function verificarStatusEnvio(idPatriarca, sigla) {
+    showMessageEnvio('Verificando status do envio...', 'info');
+
+    const patriarca = {
+      idpatriarca: idPatriarca,
+      sigla: sigla
+    };
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success && result.finalizado) {
+          if (result.comSucesso) {
+            showMessageEnvio(
+              `✓ Processamento concluído com SUCESSO!<br>
+              <small>${result.message}</small>`,
+              'success'
+            );
+          } else {
+            showMessageEnvio(
+              `✗ Processamento finalizado com ERRO<br>
+              <small>${result.message}</small>`,
+              'danger'
+            );
+          }
+        } else if (result.success) {
+          showMessageEnvio(
+            `⏳ Processamento em andamento<br>
+            <small>${result.message}</small><br>
+            <small>Tentativa ${result.tentativas || 0} de 5</small>`,
+            'warning'
+          );
+        } else {
+          showMessageEnvio(
+            `⚠ ${result.message}`,
+            'warning'
+          );
+        }
+      })
+      .withFailureHandler(function(error) {
+        showMessageEnvio(
+          `✗ Erro ao verificar status: ${error.message || error}`,
+          'danger'
+        );
+      })
+      .verificarStatusOrganogramaFinalizado(patriarca);
+  }
+
+  /**
+   * ==================================================================
+   *        >>> FUNÇÕES PARA A TELA DE ENVIO DE LOTAÇÕES  <<<
+   * ==================================================================
+   */
+
+  /**
+   * Orquestrador principal: carrega a página de envio de lotações.
+   * @param {string} idPatriarca O ID do patriarca.
+   */
+  function abrirTelaEnvioLotacoes(idPatriarca) {
+    // 1. Armazena o ID do patriarca na variável global
+    parametroParaPagina = idPatriarca;
+    
+    // 2. Chama a função carregarPagina da forma original, sem modificá-la
+    carregarPagina('selecionarOrgaosLotacao');
+  }
+
+  /**
+   *  Função de inicialização para a tela de lotações.
+   * Agora é chamada pelo script no arquivo selecionarOrgaosLotacao.html.
+   */
+  function carregarDadosIniciaisLotacao() {
+    // Pega o ID da variável global que foi definida antes de carregar a página
+    const idPatriarca = parametroParaPagina;
+
+    if (!idPatriarca) {
+      showMessage('Erro: Nenhum patriarca foi selecionado para o envio de lotações.', 'danger');
+      return;
+    }
+
+    const container = document.getElementById('lotacao-content-container');
+    const btnEnviar = document.getElementById('btnEnviarLotacoes');
+    
+    if (!container) {
+      console.error("Erro crítico: Container 'lotacao-content-container' não foi encontrado. Verifique o arquivo selecionarOrgaosLotacao.html.");
+      return;
+    }
+
+    container.innerHTML = `<div class="text-center p-4"><div class="spinner-border text-primary"></div><p class="mt-2">Carregando dados e validando arquivos...</p></div>`;
+    if (btnEnviar) btnEnviar.disabled = true;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          document.getElementById('patriarca-info').textContent = `Patriarca: ${result.data.patriarca.nome} (${result.data.patriarca.sigla})`;
+          renderizarListaOrgaos(result.data.orgaos);
+          if (btnEnviar) btnEnviar.disabled = false;
+        } else {
+          container.innerHTML = `<div class="alert alert-danger mx-3"><i class="fas fa-exclamation-triangle me-2"></i><strong>Erro de Pré-requisito:</strong> ${result.message}</div>`;
+        }
+      })
+      .withFailureHandler(function(err) {
+        container.innerHTML = `<div class="alert alert-danger mx-3"><strong>Erro Crítico:</strong> ${err.message}</div>`;
+      })
+      .obterDadosTelaLotacao(idPatriarca);
+  }
+
+  /**
+   * Renderiza a lista de órgãos com checkboxes.
+   */
+  function renderizarListaOrgaos(orgaos) {
+    const container = document.getElementById('listaOrgaosContainer');
+    let html = '<div class="list-group">';
+    orgaos.forEach((orgao, index) => {
+      html += `
+        <label class="list-group-item list-group-item-action bg-dark text-light border-secondary">
+          <input class="form-check-input me-3" type="checkbox" value="${orgao.sigla}" id="orgao-${index}" onchange="atualizarContadorSelecionados()">
+          <strong>${orgao.sigla}</strong> - ${orgao.nome}
+          <small class="d-block text-muted">Arquivo: ${orgao.arquivo}</small>
+        </label>
+      `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    document.getElementById('selecao-controles').style.display = 'block'; // Mostra os botões "Marcar/Desmarcar Todos"
+  }
+
+  /**
+   * Lida com o clique no botão para reiniciar o processo de um patriarca.
+   * Chama o backend para limpar o status e recarrega a tabela.
+   *
+   * @param {HTMLButtonElement} button O elemento do botão clicado.
+   * @param {string} idPatriarca O ID do patriarca a ser reiniciado.
+   */
+  function handleReiniciarProcesso(button, idPatriarca) {
+    button.disabled = true;
+    button.innerHTML = `
+      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+      Reiniciando...
+    `;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          showMessage(result.message, 'success');
+          // Recarrega a lista de patriarcas para refletir o novo status
+          carregarPatriarcasParaEnvio();
+        } else {
+          showMessage(`Falha ao reiniciar: ${result.message}`, 'danger');
+          // Reabilita o botão em caso de falha
+          button.disabled = false;
+          button.innerHTML = '<i class="fas fa-redo me-1"></i> Reiniciar Processo';
+        }
+      })
+      .withFailureHandler(function(error) {
+        showMessage(`Erro crítico ao reiniciar: ${error.message}`, 'danger');
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-redo me-1"></i> Reiniciar Processo';
+      })
+      .resetarStatusPatriarca(idPatriarca);
+  }
+
+  /**
+   * Busca os detalhes do último ciclo de envio e os exibe em um modal.
+   * @param {string} idPatriarca O ID do patriarca.
+   */
+  function mostrarDetalhesEnvio(idPatriarca) {
+    const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    const modalBody = document.getElementById('detailsModalBody');
+    const modalTitle = document.getElementById('detailsModalLabel');
+
+    modalTitle.innerHTML = '<i class="fas fa-history me-2"></i>Histórico do Último Envio';
+    modalBody.innerHTML = `<div class="d-flex justify-content-center align-items-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="ms-3">Buscando registros...</p></div>`;
+    modal.show();
+
+    google.script.run
+      .withSuccessHandler(function(registros) {
+        console.log('mostrarDetalhesEnvio - obterDetalhesDeEnvioPorPatriarca(' + idPatriarca + '): ' + JSON.stringify(registros));
+
+        if (registros && registros.length > 0) {
+          modalTitle.innerHTML = `<i class="fas fa-history me-2"></i>Histórico de Envio: <strong>${registros[0].nomePatriarca}</strong>`;
+          
+          let tableHtml = '<div class="table-responsive"><table class="table table-dark table-sm table-hover">';
+          tableHtml += `<thead>
+                          <tr>
+                            <th>Data/Hora</th>
+                            <th>Tipo</th>
+                            <th>GUID da Carga</th>
+                            <th style="text-align: center; vertical-align: middle;">Status do envio</th>
+                            <th style="text-align: center; vertical-align: middle;">Finalizado com sucesso</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+          
+          registros.forEach(reg => {
+            tableHtml += `
+              <tr>
+                <td>${reg.dataHoraEnvio || 'N/A'}</td> 
+                <td>${reg.tipoArquivo || 'N/A'}</td>
+                <td><small>${reg.guidCarga || 'N/A'}</small></td>
+                <td style="text-align: center; vertical-align: middle;"><span class="badge bg-info">${reg.status || 'N/A'}</span></td>
+                <td style="text-align: center; vertical-align: middle;">${reg.finalizado ? '<span class="badge bg-success">Sim</span>' : '<span class="badge bg-warning">Não</span>'}</td>
+              </tr>
+            `;
+          });
+
+          tableHtml += '</tbody></table></div>';
+          modalBody.innerHTML = tableHtml;
+        } else {
+          modalBody.innerHTML = '<div class="alert alert-warning text-center">Nenhum registro de envio encontrado para este patriarca.</div>';
+        }
+      })
+      .withFailureHandler(function(err) {
+        modalBody.innerHTML = `<div class="alert alert-danger">Erro ao buscar detalhes: ${err.message}</div>`;
+      })
+      .obterDetalhesDeEnvioPorPatriarca(idPatriarca);
+  }
+
+  </script>
+
+</body>
+</html>
