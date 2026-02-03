@@ -6,7 +6,6 @@ Este módulo fornece tags que simplificam verificações de permissões nos temp
 
 from django import template
 from accounts.models import UserRole
-from acoes_pngi.context_processors import get_user_app_permissions
 
 register = template.Library()
 
