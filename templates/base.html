@@ -318,6 +318,7 @@
 <body class="{% block body_class %}app-portal{% endblock %}">
 
     <!-- Header -->
+    {% block header %}
     <header class="app-header">
         <div class="container-fluid px-4">
             <div class="app-brand">
@@ -325,71 +326,19 @@
                     <i class="{% block app_icon %}fas fa-building{% endblock %}"></i>
                 </div>
                 <div class="app-name">
-                    <div class="app-name-main">{% block app_name %}Portal GPP{% endblock %}</div>
+                    <div class="app-name-main">{% block app_name %}GPP Plataform{% endblock %}</div>
                     <div class="app-name-sub">Plataforma de Aplicações da Gerência de Processos e Projetos</div>
                 </div>
             </div>
             
             <div class="app-header-actions">
-                {% if user.is_authenticated %}
-                    <!-- User Info with Dropdown -->
-                    <div class="dropdown">
-                        <button class="user-info" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar">
-                                {{ user.name|slice:":1"|upper }}
-                            </div>
-                            <div class="user-details">
-                                <div class="user-name">{{ user.name }}</div>
-                                {% if active_role_name %}
-                                <div class="user-role">
-                                    <i class="fas fa-user-tag"></i> {{ active_role_name }}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <i class="fas fa-chevron-down ms-2"></i>
-                        </button>
-                        
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="min-width: 280px;">
-                            <li class="dropdown-header">
-                                <div class="d-flex align-items-center">
-                                    <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1.1rem;">
-                                        {{ user.name|slice:":1"|upper }}
-                                    </div>
-                                    <div class="ms-3">
-                                        <div style="font-weight: 600; color: #2c3e50;">{{ user.name }}</div>
-                                        <small style="color: #6c757d;">{{ user.email }}</small>
-                                    </div>
-                                </div>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            
-                            {% if active_role_name %}
-                            <li class="dropdown-header" style="padding: 0.5rem 1rem;">
-                                <small class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Perfil Ativo</small>
-                                <div style="color: var(--app-primary); font-weight: 600; margin-top: 0.25rem;">
-                                    <i class="fas fa-user-tag me-1"></i> {{ active_role_name }}
-                                </div>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            {% endif %}
-                            
-                            <li>
-                                <a class="dropdown-item" href="{% url 'portal:dashboard' %}">
-                                    <i class="fas fa-home me-2"></i> Voltar ao Portal
-                                </a>
-                            </li>
-                            
-                            <li>
-                                <a class="dropdown-item text-danger" href="{% block logout_url %}{% url 'portal:logout' %}{% endblock %}">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Sair
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                {% endif %}
+                {% block header_actions %}
+                {# Cada aplicação define suas próprias ações de header (user menu, logout, etc) #}
+                {% endblock %}
             </div>
         </div>
     </header>
+    {% endblock %}
     
     <!-- Messages -->
     {% if messages %}
