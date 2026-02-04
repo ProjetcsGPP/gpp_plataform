@@ -27,6 +27,13 @@ def patriarca_list(request):
     
     Lista todos os patriarcas com filtros, paginação e lógica de ações.
     Equivalente a carregarPatriarcas() do GAS.
+    
+    LÓGICA DE NEGÓCIO:
+    - Status "Novo" (1) ou "Em Progresso" (2): sempre pode selecionar
+    - Status "Enviando Carga" (3) ou "Carga Processada" (4):
+        * Se < 1 hora desde dat_alteracao: pode selecionar normalmente
+        * Se >= 1 hora ou sem data: requer reset (botão "Atualizar e Selecionar")
+    - Outros status: bloqueado
     """
     # Filtros
     search = request.GET.get('search', '')
@@ -52,23 +59,45 @@ def patriarca_list(request):
     
     # Calcular ações disponíveis para cada patriarca
     for p in patriarcas:
-        # Verificar se pode ser selecionado (status Novo ou Em Progresso)
-        p.pode_selecionar = p.id_status_progresso.id_status_progresso in [1, 2]
-        p.requer_reset = False
+        status_desc = p.id_status_progresso.str_descricao
+        status_id_num = p.id_status_progresso.id_status_progresso
         
-        # Verificar se precisa de reset (timeout de 1 hora em status críticos)
-        if p.id_status_progresso.str_descricao in ['Enviando Carga', 'Carga Processada']:
+        # Valores padrão
+        p.pode_selecionar = False
+        p.requer_reset = False
+        p.expirado = False
+        
+        # Cenário 1: Status "Novo" ou "Em Progresso" -> pode selecionar diretamente
+        if status_id_num in [1, 2]:  # 1=Novo, 2=Em Progresso
+            p.pode_selecionar = True
+            p.acao = 'selecionar'
+        
+        # Cenário 2: Status "Enviando Carga" (3) ou "Carga Processada" (4)
+        elif status_id_num in [3, 4]:
+            expirado = True  # Começa assumindo que expirou (caso mais seguro)
+            
+            # Verifica se existe data de alteração válida
             if p.dat_alteracao:
                 tempo_decorrido = timezone.now() - p.dat_alteracao
-                p.requer_reset = tempo_decorrido > timedelta(hours=1)
-            else:
+                horas_decorridas = tempo_decorrido.total_seconds() / 3600
+                
+                # Se tem MENOS de 1 hora, NÃO expirou
+                if horas_decorridas <= 1:
+                    expirado = False
+            # Se dat_alteracao for nula/inválida, 'expirado' permanece True
+            
+            p.expirado = expirado
+            
+            if expirado:
+                # Se expirou (ou data inválida), mostra botão "Atualizar e Selecionar"
                 p.requer_reset = True
+                p.acao = 'reset'
+            else:
+                # Se ainda está no prazo, pode selecionar normalmente
+                p.pode_selecionar = True
+                p.acao = 'selecionar'
         
-        # Definir ação principal
-        if p.pode_selecionar:
-            p.acao = 'selecionar'
-        elif p.requer_reset:
-            p.acao = 'reset'
+        # Cenário 3: Outros status -> bloqueado
         else:
             p.acao = 'bloqueado'
         
