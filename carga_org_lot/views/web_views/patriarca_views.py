@@ -28,12 +28,29 @@ def patriarca_list(request):
     Lista todos os patriarcas com filtros, paginação e lógica de ações.
     Equivalente a carregarPatriarcas() do GAS.
     
-    LÓGICA DE NEGÓCIO:
-    - Status "Novo" (1) ou "Em Progresso" (2): sempre pode selecionar
-    - Status "Enviando Carga" (3) ou "Carga Processada" (4):
-        * Se < 1 hora desde dat_alteracao: pode selecionar normalmente
-        * Se >= 1 hora ou sem data: requer reset (botão "Atualizar e Selecionar")
-    - Outros status: bloqueado
+    LÓGICA DE NEGÓCIO (conforme STATUS_PATRIARCA.md):
+    
+    Status 1 (Nova Carga) - GAS 'novo':
+        - Sempre pode selecionar
+        
+    Status 2 (Organograma em Progresso) - GAS 'em progresso':
+        - Sempre pode selecionar
+        
+    Status 3 (Lotação em Progresso) - GAS 'em progresso':
+        - Sempre pode selecionar
+        
+    Status 4 (Pronto para Carga):
+        - Sempre pode selecionar
+        
+    Status 5 (Carga em Processamento) - GAS 'enviando carga':
+        - Se < 1 hora desde dat_alteracao: pode selecionar normalmente
+        - Se >= 1 hora ou sem data: requer reset (botão "Atualizar e Selecionar")
+        
+    Status 6 (Carga Finalizada) - GAS 'carga processada':
+        - Se < 1 hora desde dat_alteracao: pode selecionar normalmente
+        - Se >= 1 hora ou sem data: requer reset (botão "Atualizar e Selecionar")
+        
+    Outros status: bloqueado
     """
     # Filtros
     search = request.GET.get('search', '')
@@ -59,7 +76,6 @@ def patriarca_list(request):
     
     # Calcular ações disponíveis para cada patriarca
     for p in patriarcas:
-        status_desc = p.id_status_progresso.str_descricao
         status_id_num = p.id_status_progresso.id_status_progresso
         
         # Valores padrão
@@ -67,13 +83,15 @@ def patriarca_list(request):
         p.requer_reset = False
         p.expirado = False
         
-        # Cenário 1: Status "Novo" ou "Em Progresso" -> pode selecionar diretamente
-        if status_id_num in [1, 2]:  # 1=Novo, 2=Em Progresso
+        # Cenário 1: Status 1, 2, 3 ou 4 -> pode selecionar diretamente
+        # (Nova Carga, Organograma/Lotação em Progresso, Pronto para Carga)
+        if status_id_num in [1, 2, 3, 4]:
             p.pode_selecionar = True
             p.acao = 'selecionar'
         
-        # Cenário 2: Status "Enviando Carga" (3) ou "Carga Processada" (4)
-        elif status_id_num in [3, 4]:
+        # Cenário 2: Status 5 ou 6 (Carga em Processamento, Carga Finalizada)
+        # Aqui entra a lógica de timeout de 1 hora
+        elif status_id_num in [5, 6]:
             expirado = True  # Começa assumindo que expirou (caso mais seguro)
             
             # Verifica se existe data de alteração válida
@@ -82,7 +100,7 @@ def patriarca_list(request):
                 horas_decorridas = tempo_decorrido.total_seconds() / 3600
                 
                 # Se tem MENOS de 1 hora, NÃO expirou
-                if horas_decorridas <= 1:
+                if horas_decorridas < 1:
                     expirado = False
             # Se dat_alteracao for nula/inválida, 'expirado' permanece True
             
@@ -133,6 +151,7 @@ def patriarca_detail(request, pk):
     GET /carga_org_lot/patriarcas/{id}/
     
     Detalhes de um patriarca específico.
+    Disponível apenas para status 5 e 6 (com histórico de envio).
     """
     patriarca = get_object_or_404(
         TblPatriarca.objects.select_related(
@@ -254,17 +273,34 @@ def patriarca_select(request, pk):
     
     Seleciona patriarca na sessão.
     Equivalente a setSelectedPatriarca() do GAS.
+    
+    Permite seleção para status 1, 2, 3, 4, 5 (< 1h) e 6 (< 1h).
     """
     patriarca = get_object_or_404(TblPatriarca, pk=pk)
     
-    # Verificar se pode selecionar
-    if patriarca.id_status_progresso.id_status_progresso not in [1, 2]:
+    # Verificar se pode selecionar (status 1, 2, 3, 4 ou 5/6 sem timeout)
+    status_id = patriarca.id_status_progresso.id_status_progresso
+    
+    if status_id not in [1, 2, 3, 4, 5, 6]:
         messages.error(
             request,
-            f'Patriarca "{patriarca.str_sigla_patriarca}" não pode ser selecionado no status atual. '
-            f'Use a opção "Resetar" se necessário.'
+            f'Patriarca "{patriarca.str_sigla_patriarca}" não pode ser selecionado no status atual.'
         )
         return redirect('carga_org_lot:patriarca_list')
+    
+    # Se status 5 ou 6, verifica timeout
+    if status_id in [5, 6]:
+        if patriarca.dat_alteracao:
+            tempo_decorrido = timezone.now() - patriarca.dat_alteracao
+            horas_decorridas = tempo_decorrido.total_seconds() / 3600
+            
+            if horas_decorridas >= 1:
+                messages.error(
+                    request,
+                    f'Patriarca "{patriarca.str_sigla_patriarca}" expirou (>1 hora). '
+                    f'Use a opção "Atualizar e Selecionar".'
+                )
+                return redirect('carga_org_lot:patriarca_list')
     
     # Salvar na sessão
     request.session['patriarca_selecionado'] = {
@@ -283,7 +319,7 @@ def patriarca_select(request, pk):
         f'Você pode prosseguir com as operações de carga no dashboard.'
     )
     
-    # Redirecionar para dashboard ao invés de upload_organograma (evita HTTP 405)
+    # Redirecionar para dashboard
     return redirect('carga_org_lot:dashboard')
 
 
@@ -292,16 +328,20 @@ def patriarca_reset(request, pk):
     """
     GET /carga_org_lot/patriarcas/{id}/reset/
     
-    Reseta status do patriarca para "Em Progresso".
+    Reseta status do patriarca para "Organograma em Progresso" (Status 2).
     Equivalente a resetPatriarca() do GAS.
+    
+    Usado quando:
+    - Patriarca em status 5 ou 6 expirou (>= 1 hora)
+    - Usuário deseja fazer nova carga com novos dados
     """
     patriarca = get_object_or_404(TblPatriarca, pk=pk)
     
-    # Obter status "Em Progresso"
+    # Obter status "Organograma em Progresso" (Status 2)
     try:
         status_em_progresso = TblStatusProgresso.objects.get(id_status_progresso=2)
     except TblStatusProgresso.DoesNotExist:
-        messages.error(request, 'Status "Em Progresso" não encontrado no sistema.')
+        messages.error(request, 'Status "Organograma em Progresso" (2) não encontrado no sistema.')
         return redirect('carga_org_lot:patriarca_list')
     
     # Atualizar patriarca
@@ -323,9 +363,9 @@ def patriarca_reset(request, pk):
     
     messages.success(
         request,
-        f'Patriarca "{patriarca.str_sigla_patriarca}" foi resetado para "Em Progresso" '
-        f'e selecionado automaticamente. Você pode prosseguir com as operações no dashboard.'
+        f'Patriarca "{patriarca.str_sigla_patriarca}" foi resetado para "Organograma em Progresso" '
+        f'e selecionado automaticamente. Você pode prosseguir com novo ciclo de carga no dashboard.'
     )
     
-    # Redirecionar para dashboard ao invés de upload_organograma (evita HTTP 405)
+    # Redirecionar para dashboard
     return redirect('carga_org_lot:dashboard')
