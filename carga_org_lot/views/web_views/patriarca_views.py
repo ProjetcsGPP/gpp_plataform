@@ -250,7 +250,7 @@ def patriarca_update(request, pk):
 @carga_org_lot_required
 def patriarca_select(request, pk):
     """
-    POST /carga_org_lot/patriarcas/{id}/selecionar/
+    GET /carga_org_lot/patriarcas/{id}/selecionar/
     
     Seleciona patriarca na sessão.
     Equivalente a setSelectedPatriarca() do GAS.
@@ -280,20 +280,17 @@ def patriarca_select(request, pk):
     messages.success(
         request,
         f'Patriarca "{patriarca.str_sigla_patriarca}" selecionado com sucesso! '
-        f'Você pode prosseguir com as operações de carga.'
+        f'Você pode prosseguir com as operações de carga no dashboard.'
     )
     
-    # Redirecionar para próximo passo lógico
-    if patriarca.tem_organograma_ativo:
-        return redirect('carga_org_lot:upload_lotacao')
-    else:
-        return redirect('carga_org_lot:upload_organograma')
+    # Redirecionar para dashboard ao invés de upload_organograma (evita HTTP 405)
+    return redirect('carga_org_lot:dashboard')
 
 
 @carga_org_lot_required
 def patriarca_reset(request, pk):
     """
-    POST /carga_org_lot/patriarcas/{id}/reset/
+    GET /carga_org_lot/patriarcas/{id}/reset/
     
     Reseta status do patriarca para "Em Progresso".
     Equivalente a resetPatriarca() do GAS.
@@ -327,7 +324,8 @@ def patriarca_reset(request, pk):
     messages.success(
         request,
         f'Patriarca "{patriarca.str_sigla_patriarca}" foi resetado para "Em Progresso" '
-        f'e selecionado automaticamente. Você pode prosseguir com o upload do organograma.'
+        f'e selecionado automaticamente. Você pode prosseguir com as operações no dashboard.'
     )
     
-    return redirect('carga_org_lot:upload_organograma')
+    # Redirecionar para dashboard ao invés de upload_organograma (evita HTTP 405)
+    return redirect('carga_org_lot:dashboard')
