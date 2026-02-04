@@ -1,3 +1,11 @@
+"""
+URLs Web (Django templates) para a aplicação Carga Org/Lot.
+Prefixo aplicado em gpp_platform/urls.py: /carga_org_lot/
+
+Este arquivo contém as rotas para as views web (páginas HTML renderizadas pelo Django).
+Para APIs REST (consumidas pelo Next.js), veja api_urls.py.
+"""
+
 from django.urls import path
 from django.views.generic import RedirectView
 from ..views.web_views import (
@@ -39,13 +47,13 @@ from ..views.web_views import (
     search_orgao_ajax,
 )
 
-app_name = 'carga_org_lot'
+app_name = 'carga_org_lot_web'  # ✅ Namespace para views web (Django templates)
 
 urlpatterns = [
     # ============================================
     # AUTENTICAÇÃO
     # ============================================
-    path('', RedirectView.as_view(pattern_name='carga_org_lot:login'), name='home'),
+    path('', RedirectView.as_view(pattern_name='carga_org_lot_web:login'), name='home'),
     path('login/', carga_login, name='login'),
     path('logout/', carga_logout, name='logout'),
     
