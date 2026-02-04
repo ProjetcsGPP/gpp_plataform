@@ -42,6 +42,6 @@ urlpatterns = [
     path('', include('portal.urls.web_urls')),                      # Portal (index, etc)
     path('accounts/', include('accounts.urls.web_urls')),           # Gestão de contas (ADICIONAR/DESCOMENTAR)
     path('acoes-pngi/', include('acoes_pngi.urls.web_urls')),      # Ações PNGI
-    path('carga_org_lot/', include('carga_org_lot.urls.web_urls')), # Carga de Organogramas
+    path('carga_org_lot/', include('carga_org_lot.urls')),          # Carga de Organogramas (arquivo urls.py principal)
     # path('db/', include('db_service.urls')),                      # TODO: criar
 ]
