@@ -214,7 +214,7 @@ def patriarca_create(request):
                     'Erro crítico: Status "Nova Carga" (ID=1) não encontrado no banco de dados. '
                     'Entre em contato com o administrador do sistema.'
                 )
-                return redirect('carga_org_lot:patriarca_list')
+                return redirect('carga_org_lot_web:patriarca_list')
             
             # Criar patriarca
             patriarca = form.save(commit=False)
@@ -228,7 +228,7 @@ def patriarca_create(request):
                 f'Patriarca "{patriarca.str_sigla_patriarca}" criado com sucesso! '
                 f'Status inicial: "{status_nova_carga.str_descricao}".'
             )
-            return redirect('carga_org_lot:patriarca_list')
+            return redirect('carga_org_lot_web:patriarca_list')
         else:
             messages.error(
                 request,
@@ -270,7 +270,7 @@ def patriarca_update(request, pk):
                 request,
                 f'Patriarca "{patriarca.str_sigla_patriarca}" atualizado com sucesso!'
             )
-            return redirect('carga_org_lot:patriarca_list')
+            return redirect('carga_org_lot_web:patriarca_list')
         else:
             messages.error(
                 request,
@@ -308,7 +308,7 @@ def patriarca_select(request, pk):
             request,
             f'Patriarca "{patriarca.str_sigla_patriarca}" não pode ser selecionado no status atual.'
         )
-        return redirect('carga_org_lot:patriarca_list')
+        return redirect('carga_org_lot_web:patriarca_list')
     
     # Se status 5 ou 6, verifica timeout
     if status_id in [5, 6]:
@@ -322,7 +322,7 @@ def patriarca_select(request, pk):
                     f'Patriarca "{patriarca.str_sigla_patriarca}" expirou (>1 hora). '
                     f'Use a opção "Atualizar e Selecionar".'
                 )
-                return redirect('carga_org_lot:patriarca_list')
+                return redirect('carga_org_lot_web:patriarca_list')
     
     # Salvar na sessão
     request.session['patriarca_selecionado'] = {
@@ -342,7 +342,7 @@ def patriarca_select(request, pk):
     )
     
     # Redirecionar para dashboard
-    return redirect('carga_org_lot:dashboard')
+    return redirect('carga_org_lot_web:dashboard')
 
 
 @carga_org_lot_required
@@ -364,7 +364,7 @@ def patriarca_reset(request, pk):
         status_em_progresso = TblStatusProgresso.objects.get(id_status_progresso=2)
     except TblStatusProgresso.DoesNotExist:
         messages.error(request, 'Status "Organograma em Progresso" (2) não encontrado no sistema.')
-        return redirect('carga_org_lot:patriarca_list')
+        return redirect('carga_org_lot_web:patriarca_list')
     
     # Atualizar patriarca
     patriarca.id_status_progresso = status_em_progresso
@@ -390,4 +390,4 @@ def patriarca_reset(request, pk):
     )
     
     # Redirecionar para dashboard
-    return redirect('carga_org_lot:dashboard')
+    return redirect('carga_org_lot_web:dashboard')
