@@ -1,4 +1,7 @@
 {% extends "carga_org_lot/base.html" %}
+{% load static %}
+
+{% block title %}Enviar Carga - GPP Carga Org/Lot{% endblock %}
 
 {% block page_title %}Enviar Carga{% endblock %}
 
@@ -97,7 +100,7 @@
 function enviarCarga(patriarcaId, patriarcaSigla) {
     if (confirm(`Confirma o envio da carga do patriarca ${patriarcaSigla}?`)) {
         // Redirecionar para a URL de envio
-        window.location.href = `{% url 'carga_org_lot:carga_iniciar' 0 %}`.replace('0', patriarcaId);
+        window.location.href = `{% url 'carga_org_lot_web:carga_iniciar' 0 %}`.replace('0', patriarcaId);
     }
 }
 </script>

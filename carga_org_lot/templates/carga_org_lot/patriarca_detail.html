@@ -5,7 +5,7 @@
 
 {% block page_title %}Detalhes do Patriarca{% endblock %}
 
-{% block content %}
+{% block page_content %}
 <div class="row mb-4">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center">
@@ -14,10 +14,10 @@
                 {{ patriarca.str_sigla_patriarca }} - {{ patriarca.str_nome }}
             </h2>
             <div>
-                <a href="{% url 'carga_org_lot:patriarca_list' %}" class="btn btn-secondary">
+                <a href="{% url 'carga_org_lot_web:patriarca_list' %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Voltar
                 </a>
-                <a href="{% url 'carga_org_lot:patriarca_update' patriarca.id_patriarca %}" class="btn btn-warning">
+                <a href="{% url 'carga_org_lot_web:patriarca_update' patriarca.id_patriarca %}" class="btn btn-warning">
                     <i class="fas fa-edit"></i> Editar
                 </a>
             </div>
@@ -100,13 +100,13 @@
             <div class="col-12">
                 <div class="btn-group" role="group">
                     {% if patriarca.id_status_progresso.id_status_progresso in "1,2"|split:"," %}
-                        <a href="{% url 'carga_org_lot:patriarca_select' patriarca.id_patriarca %}" 
+                        <a href="{% url 'carga_org_lot_web:patriarca_select' patriarca.id_patriarca %}" 
                            class="btn btn-success"
                            onclick="return confirm('Deseja selecionar o patriarca {{ patriarca.str_sigla_patriarca }} para trabalhar?')">
                             <i class="fas fa-check"></i> Selecionar Patriarca
                         </a>
                     {% else %}
-                        <a href="{% url 'carga_org_lot:patriarca_reset' patriarca.id_patriarca %}" 
+                        <a href="{% url 'carga_org_lot_web:patriarca_reset' patriarca.id_patriarca %}" 
                            class="btn btn-danger"
                            onclick="return confirm('Deseja resetar o patriarca {{ patriarca.str_sigla_patriarca }}? Isso alterará o status para Em Progresso.')">
                             <i class="fas fa-redo"></i> Resetar Status
@@ -147,7 +147,7 @@
                                 <td>{{ org.dat_processamento|date:"d/m/Y H:i" }}</td>
                                 <td>{{ org.int_qtd_orgaos|default:"-" }}</td>
                                 <td class="text-center">
-                                    <a href="{% url 'carga_org_lot:organograma_detail' org.id_organograma_versao %}" 
+                                    <a href="{% url 'carga_org_lot_web:organograma_detail' org.id_organograma_versao %}" 
                                        class="btn btn-sm btn-outline-info">
                                         <i class="fas fa-eye"></i> Detalhes
                                     </a>
@@ -195,7 +195,7 @@
                                 <td>{{ lot.dat_processamento|date:"d/m/Y H:i" }}</td>
                                 <td>{{ lot.int_qtd_servidores|default:"-" }}</td>
                                 <td class="text-center">
-                                    <a href="{% url 'carga_org_lot:lotacao_detail' lot.id_lotacao_versao %}" 
+                                    <a href="{% url 'carga_org_lot_web:lotacao_detail' lot.id_lotacao_versao %}" 
                                        class="btn btn-sm btn-outline-info">
                                         <i class="fas fa-eye"></i> Detalhes
                                     </a>
@@ -271,7 +271,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-center">
-                                    <a href="{% url 'carga_org_lot:carga_detail' carga.id_carga_patriarca %}" 
+                                    <a href="{% url 'carga_org_lot_web:carga_detail' carga.id_carga_patriarca %}" 
                                        class="btn btn-sm btn-outline-info">
                                         <i class="fas fa-eye"></i> Detalhes
                                     </a>

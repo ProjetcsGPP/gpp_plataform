@@ -5,7 +5,7 @@
 
 {% block page_title %}{{ action }} Patriarca{% endblock %}
 
-{% block content %}
+{% block page_content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card">
@@ -100,7 +100,7 @@
                     
                     <!-- Botões -->
                     <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'carga_org_lot:patriarca_list' %}" class="btn btn-secondary">
+                        <a href="{% url 'carga_org_lot_web:patriarca_list' %}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Voltar
                         </a>
                         <button type="submit" class="btn btn-primary">

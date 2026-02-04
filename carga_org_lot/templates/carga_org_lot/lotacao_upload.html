@@ -1,4 +1,7 @@
 {% extends "carga_org_lot/base.html" %}
+{% load static %}
+
+{% block title %}Upload de Lotação - GPP Carga Org/Lot{% endblock %}
 
 {% block page_title %}Upload de Lotação{% endblock %}
 
@@ -20,7 +23,7 @@
         Atenção!
     </h5>
     <p>Você precisa selecionar um Patriarca antes de fazer o upload da lotação.</p>
-    <a href="{% url 'carga_org_lot:patriarca_list' %}" class="btn btn-warning">
+    <a href="{% url 'carga_org_lot_web:patriarca_list' %}" class="btn btn-warning">
         <i class="fas fa-landmark me-2"></i>
         Ir para Seleção de Patriarca
     </a>
@@ -37,7 +40,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data" action="{% url 'carga_org_lot:lotacao_processar' %}">
+                <form method="post" enctype="multipart/form-data" action="{% url 'carga_org_lot_web:lotacao_processar' %}">
                     {% csrf_token %}
                     
                     <div class="mb-3">

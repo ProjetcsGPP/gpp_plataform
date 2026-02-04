@@ -5,7 +5,7 @@
 
 {% block page_title %}Cadastro de Patriarcas{% endblock %}
 
-{% block content %}
+{% block page_content %}
 <div class="row mb-4">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center">
@@ -13,7 +13,7 @@
                 <i class="fas fa-landmark me-2 text-primary"></i>
                 Cadastro de Patriarcas
             </h2>
-            <a href="{% url 'carga_org_lot:patriarca_create' %}" class="btn btn-primary">
+            <a href="{% url 'carga_org_lot_web:patriarca_create' %}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Novo Patriarca
             </a>
         </div>
@@ -49,7 +49,7 @@
                 <button type="submit" class="btn btn-primary me-2">
                     <i class="fas fa-search"></i> Filtrar
                 </button>
-                <a href="{% url 'carga_org_lot:patriarca_list' %}" class="btn btn-secondary">
+                <a href="{% url 'carga_org_lot_web:patriarca_list' %}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Limpar
                 </a>
             </div>
@@ -124,7 +124,7 @@
                                 <div class="btn-group btn-group-sm" role="group">
                                     {# Botão Visualizar - SÓ HABILITADO PARA STATUS 5 OU 6 #}
                                     {% if patriarca.id_status_progresso.id_status_progresso in "5,6"|make_list or patriarca.id_status_progresso.id_status_progresso == 5 or patriarca.id_status_progresso.id_status_progresso == 6 %}
-                                        <a href="{% url 'carga_org_lot:patriarca_detail' patriarca.id_patriarca %}" 
+                                        <a href="{% url 'carga_org_lot_web:patriarca_detail' patriarca.id_patriarca %}" 
                                            class="btn btn-outline-info"
                                            data-bs-toggle="tooltip"
                                            title="Visualizar detalhes do patriarca">
@@ -140,7 +140,7 @@
                                     {% endif %}
                                     
                                     {# Botão Editar #}
-                                    <a href="{% url 'carga_org_lot:patriarca_update' patriarca.id_patriarca %}" 
+                                    <a href="{% url 'carga_org_lot_web:patriarca_update' patriarca.id_patriarca %}" 
                                        class="btn btn-outline-warning"
                                        data-bs-toggle="tooltip"
                                        title="Editar informações do patriarca">
@@ -225,7 +225,7 @@
     {% else %}
         <div class="alert alert-info text-center">
             <i class="fas fa-info-circle me-2"></i>
-            Nenhum patriarca encontrado. <a href="{% url 'carga_org_lot:patriarca_create' %}">Criar primeiro patriarca</a>
+            Nenhum patriarca encontrado. <a href="{% url 'carga_org_lot_web:patriarca_create' %}">Criar primeiro patriarca</a>
         </div>
     {% endif %}
 </div>

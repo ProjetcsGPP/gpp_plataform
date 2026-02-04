@@ -1,4 +1,7 @@
 {% extends "carga_org_lot/base.html" %}
+{% load static %}
+
+{% block title %}Upload de Organograma - GPP Carga Org/Lot{% endblock %}
 
 {% block page_title %}Upload de Organograma{% endblock %}
 
@@ -23,7 +26,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data" action="{% url 'carga_org_lot:organograma_processar' %}">
+                <form method="post" enctype="multipart/form-data" action="{% url 'carga_org_lot_web:organograma_processar' %}">
                     {% csrf_token %}
                     
                     <div class="mb-3">

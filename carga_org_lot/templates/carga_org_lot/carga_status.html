@@ -1,4 +1,7 @@
 {% extends "carga_org_lot/base.html" %}
+{% load static %}
+
+{% block title %}Validar Estado da Carga - GPP Carga Org/Lot{% endblock %}
 
 {% block page_title %}Validar Estado da Carga{% endblock %}
 
@@ -98,7 +101,7 @@
                                 </td>
                                 <td>
                                     {% if carga.guid_token %}
-                                    <a href="{% url 'carga_org_lot:carga_verificar' carga.guid_token %}" 
+                                    <a href="{% url 'carga_org_lot_web:carga_verificar' carga.guid_token %}" 
                                        class="btn btn-sm btn-carga-outline">
                                         <i class="fas fa-search me-1"></i>
                                         Detalhes

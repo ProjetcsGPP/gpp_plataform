@@ -1,4 +1,7 @@
 {% extends "carga_org_lot/base.html" %}
+{% load static %}
+
+{% block title %}Editar Organograma - GPP Carga Org/Lot{% endblock %}
 
 {% block page_title %}Editar Organograma{% endblock %}
 
@@ -154,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnSalvar')?.addEventListener('click', salvarAlteracoes);
     document.getElementById('btnCancelar')?.addEventListener('click', () => {
         if (confirm('Descartar alterações não salvas?')) {
-            window.location.href = "{% url 'carga_org_lot:dashboard' %}";
+            window.location.href = "{% url 'carga_org_lot_web:dashboard' %}";
         }
     });
 });
