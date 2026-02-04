@@ -24,7 +24,7 @@ def carga_login(request):
         ).exists()
         
         if has_access:
-            return redirect('carga_org_lot_web:dashboard')
+            return redirect('carga_org_lot:dashboard')
         else:
             messages.error(request, 'Você não tem permissão para acessar esta aplicação.')
             logout(request)
@@ -69,7 +69,7 @@ def carga_login(request):
                 # Login bem-sucedido
                 login(request, user)
                 messages.success(request, f'Bem-vindo(a) ao Carga Org/Lot, {user.name}!')
-                return redirect('carga_org_lot_web:dashboard')
+                return redirect('carga_org_lot:dashboard')
                 
             except Aplicacao.DoesNotExist:
                 messages.error(request, 'Aplicação não encontrada no sistema.')
@@ -89,7 +89,7 @@ def carga_logout(request):
     """
     logout(request)
     messages.success(request, 'Logout realizado com sucesso.')
-    return redirect('carga_org_lot_web:login')
+    return redirect('carga_org_lot:login')
 
 
 def carga_org_lot_required(view_func):
@@ -99,7 +99,7 @@ def carga_org_lot_required(view_func):
     """
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return redirect('carga_org_lot_web:login')
+            return redirect('carga_org_lot:login')
         
         # Verifica se usuário tem acesso à aplicação
         has_access = UserRole.objects.filter(
@@ -109,7 +109,7 @@ def carga_org_lot_required(view_func):
         
         if not has_access:
             messages.error(request, 'Você não tem permissão para acessar esta aplicação.')
-            return redirect('carga_org_lot_web:login')
+            return redirect('carga_org_lot:login')
         
         return view_func(request, *args, **kwargs)
     
