@@ -29,8 +29,7 @@ class TblPatriarca(models.Model):
     id_externo_patriarca = models.UUIDField(
         unique=True, 
         db_column='idexternopatriarca',
-        default=uuid.uuid4,
-        editable=False
+        help_text='UUID do patriarca no sistema PRODEST'
     )
     str_sigla_patriarca = models.CharField(
         max_length=20, 
