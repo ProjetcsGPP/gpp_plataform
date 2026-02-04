@@ -142,23 +142,23 @@
                                     
                                     {% if patriarca.acao == 'selecionar' %}
                                         {# Cenário 1 ou 2 sem timeout: Botão verde "Selecionar" #}
-                                        <a href="{% url 'carga_org_lot:patriarca_select' patriarca.id_patriarca %}" 
-                                           class="btn btn-success"
-                                           data-bs-toggle="tooltip"
-                                           title="Selecionar patriarca para trabalhar"
-                                           onclick="return confirm('Deseja selecionar o patriarca {{ patriarca.str_sigla_patriarca }} para trabalhar?')">
+                                        <button type="button"
+                                                class="btn btn-success"
+                                                data-bs-toggle="tooltip"
+                                                title="Selecionar patriarca para trabalhar"
+                                                onclick="abrirModalConfirmacao('selecionar', '{{ patriarca.id_patriarca }}', '{{ patriarca.str_sigla_patriarca }}', '{{ patriarca.str_nome }}')">
                                             <i class="fas fa-check"></i> Selecionar
-                                        </a>
+                                        </button>
                                         
                                     {% elif patriarca.acao == 'reset' %}
                                         {# Cenário 2 com timeout: Botão azul "Atualizar e Selecionar" #}
-                                        <a href="{% url 'carga_org_lot:patriarca_reset' patriarca.id_patriarca %}" 
-                                           class="btn btn-info"
-                                           data-bs-toggle="tooltip"
-                                           title="Reiniciar o Patriarca para novo envio de cargas e Selecionar automaticamente"
-                                           onclick="return confirm('Deseja resetar o patriarca {{ patriarca.str_sigla_patriarca }}?\n\nIsso alterará o status para \"Em Progresso\" e permitirá novo envio de cargas.')">
+                                        <button type="button"
+                                                class="btn btn-info"
+                                                data-bs-toggle="tooltip"
+                                                title="Reiniciar o Patriarca para novo envio de cargas e Selecionar automaticamente"
+                                                onclick="abrirModalConfirmacao('reset', '{{ patriarca.id_patriarca }}', '{{ patriarca.str_sigla_patriarca }}', '{{ patriarca.str_nome }}')">
                                             <i class="fas fa-redo"></i> Atualizar e Selecionar
-                                        </a>
+                                        </button>
                                         
                                     {% else %}
                                         {# Cenário 3: Bloqueado #}
@@ -220,6 +220,35 @@
         </div>
     {% endif %}
 </div>
+
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="modalConfirmacao" tabindex="-1" aria-labelledby="modalConfirmacaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" id="modalHeader">
+                <h5 class="modal-title" id="modalConfirmacaoLabel">
+                    <i class="fas fa-question-circle me-2"></i>
+                    <span id="modalTitulo">Confirmar Ação</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="modalCorpo">
+                <div class="text-center py-3">
+                    <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+                    <p>Carregando...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarAcao">
+                    <i class="fas fa-check me-1"></i>Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -230,6 +259,99 @@
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
+    });
+
+    // Variáveis globais para o modal
+    let modalConfirmacao = null;
+    let acaoAtual = null;
+    let patriarcaIdAtual = null;
+
+    // Inicializa o modal
+    document.addEventListener('DOMContentLoaded', function() {
+        modalConfirmacao = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+    });
+
+    /**
+     * Abre modal de confirmação para selecionar ou resetar patriarca
+     */
+    function abrirModalConfirmacao(acao, patriarcaId, patriarcaSigla, patriarcaNome) {
+        acaoAtual = acao;
+        patriarcaIdAtual = patriarcaId;
+
+        const modalHeader = document.getElementById('modalHeader');
+        const modalTitulo = document.getElementById('modalTitulo');
+        const modalCorpo = document.getElementById('modalCorpo');
+        const btnConfirmar = document.getElementById('btnConfirmarAcao');
+
+        if (acao === 'selecionar') {
+            // Modal para SELECIONAR
+            modalHeader.className = 'modal-header bg-success text-white';
+            modalTitulo.innerHTML = '<i class="fas fa-check-circle me-2"></i>Selecionar Patriarca';
+            modalCorpo.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-landmark fa-4x text-success mb-3"></i>
+                    <h5 class="mb-3">Deseja selecionar o patriarca?</h5>
+                    <div class="alert alert-info text-start">
+                        <strong>Sigla:</strong> ${patriarcaSigla}<br>
+                        <strong>Nome:</strong> ${patriarcaNome}
+                    </div>
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Após confirmar, você poderá prosseguir com o upload de organograma e lotação.
+                    </p>
+                </div>
+            `;
+            btnConfirmar.className = 'btn btn-success';
+            btnConfirmar.innerHTML = '<i class="fas fa-check me-1"></i>Confirmar Seleção';
+        } else if (acao === 'reset') {
+            // Modal para RESET
+            modalHeader.className = 'modal-header bg-info text-white';
+            modalTitulo.innerHTML = '<i class="fas fa-redo me-2"></i>Atualizar e Selecionar';
+            modalCorpo.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle fa-4x text-warning mb-3"></i>
+                    <h5 class="mb-3">Deseja resetar o patriarca?</h5>
+                    <div class="alert alert-info text-start">
+                        <strong>Sigla:</strong> ${patriarcaSigla}<br>
+                        <strong>Nome:</strong> ${patriarcaNome}
+                    </div>
+                    <div class="alert alert-warning text-start">
+                        <strong><i class="fas fa-info-circle me-1"></i>Atenção:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>O status será alterado para <strong>"Em Progresso"</strong></li>
+                            <li>O patriarca será selecionado automaticamente</li>
+                            <li>Você poderá realizar novo envio de cargas</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            btnConfirmar.className = 'btn btn-info';
+            btnConfirmar.innerHTML = '<i class="fas fa-redo me-1"></i>Confirmar Reset';
+        }
+
+        // Mostra o modal
+        modalConfirmacao.show();
+    }
+
+    /**
+     * Confirma a ação e redireciona
+     */
+    document.getElementById('btnConfirmarAcao').addEventListener('click', function() {
+        if (!acaoAtual || !patriarcaIdAtual) {
+            alert('Erro: Ação ou patriarca não identificados.');
+            return;
+        }
+
+        // Monta a URL correta
+        let url = '';
+        if (acaoAtual === 'selecionar') {
+            url = `/carga_org_lot/patriarcas/${patriarcaIdAtual}/selecionar/`;
+        } else if (acaoAtual === 'reset') {
+            url = `/carga_org_lot/patriarcas/${patriarcaIdAtual}/reset/`;
+        }
+
+        // Redireciona
+        window.location.href = url;
     });
 </script>
 {% endblock %}
