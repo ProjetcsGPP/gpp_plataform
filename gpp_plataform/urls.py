@@ -40,8 +40,8 @@ urlpatterns = [
     # Prefixo: /<app>/
     # =========================================================================
     path('', include('portal.urls.web_urls')),                      # Portal (index, etc)
-    path('accounts/', include('accounts.urls.web_urls')),           # Gestão de contas (ADICIONAR/DESCOMENTAR)
+    path('accounts/', include('accounts.urls.web_urls')),           # Gestão de contas
     path('acoes-pngi/', include('acoes_pngi.urls.web_urls')),      # Ações PNGI
-    path('carga_org_lot/', include('carga_org_lot.urls')),          # Carga de Organogramas (arquivo urls.py principal)
+    path('carga_org_lot/', include('carga_org_lot.urls.web_urls')),  # ✅ Carga de Organogramas (web views)
     # path('db/', include('db_service.urls')),                      # TODO: criar
 ]
