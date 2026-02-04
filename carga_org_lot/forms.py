@@ -97,22 +97,35 @@ class PatriarcaForm(forms.ModelForm):
     def clean_id_externo_patriarca(self):
         """
         Validação customizada para ID externo (UUID)
-        """
-        id_externo = self.cleaned_data.get('id_externo_patriarca', '').strip()
         
+        Trata dois casos:
+        1. Criação: valor vem como string do formulário
+        2. Edição: valor pode vir como UUID object do banco
+        """
+        id_externo = self.cleaned_data.get('id_externo_patriarca')
+        
+        # Se já for None ou vazio
         if not id_externo:
             raise ValidationError('O Id Patriarca - PRODEST é obrigatório.')
         
-        # Validar formato UUID
-        try:
-            uuid_obj = uuid.UUID(id_externo, version=4)
-            # Garantir que o UUID está no formato correto (lowercase, com hifens)
-            id_externo_formatado = str(uuid_obj)
-        except (ValueError, AttributeError):
-            raise ValidationError(
-                'Formato inválido. O Id Patriarca - PRODEST deve ser um UUID válido '
-                '(formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).'
-            )
+        # Se já é um objeto UUID (vindo do banco na edição)
+        if isinstance(id_externo, uuid.UUID):
+            uuid_obj = id_externo
+        else:
+            # Se é string (vindo do formulário)
+            id_externo_str = str(id_externo).strip()
+            
+            if not id_externo_str:
+                raise ValidationError('O Id Patriarca - PRODEST é obrigatório.')
+            
+            # Validar formato UUID
+            try:
+                uuid_obj = uuid.UUID(id_externo_str, version=4)
+            except (ValueError, AttributeError):
+                raise ValidationError(
+                    'Formato inválido. O Id Patriarca - PRODEST deve ser um UUID válido '
+                    '(formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).'
+                )
         
         # Verificar duplicação
         qs = TblPatriarca.objects.filter(id_externo_patriarca=uuid_obj)
@@ -121,7 +134,7 @@ class PatriarcaForm(forms.ModelForm):
         
         if qs.exists():
             raise ValidationError(
-                f'Já existe um patriarca com o Id Patriarca - PRODEST "{id_externo_formatado}".'
+                f'Já existe um patriarca com o Id Patriarca - PRODEST "{uuid_obj}".'
             )
         
         return uuid_obj
