@@ -93,6 +93,15 @@
                                 {% else %}
                                     <span class="badge badge-status-processado">{{ patriarca.id_status_progresso.str_descricao }}</span>
                                 {% endif %}
+                                
+                                {# Badge de EXPIRADO quando timeout é detectado #}
+                                {% if patriarca.expirado %}
+                                    <span class="badge bg-danger ms-1" 
+                                          data-bs-toggle="tooltip" 
+                                          title="Processo expirou (>1 hora desde última alteração). Requer atualização.">
+                                        <i class="fas fa-clock"></i> Expirado
+                                    </span>
+                                {% endif %}
                             </td>
                             <td class="text-center">
                                 {% if patriarca.tem_organograma %}
@@ -113,36 +122,51 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
+                                    {# Botão Visualizar #}
                                     <a href="{% url 'carga_org_lot:patriarca_detail' patriarca.id_patriarca %}" 
                                        class="btn btn-outline-info"
-                                       title="Detalhes">
+                                       data-bs-toggle="tooltip"
+                                       title="Visualizar detalhes do patriarca">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    
+                                    {# Botão Editar #}
                                     <a href="{% url 'carga_org_lot:patriarca_update' patriarca.id_patriarca %}" 
                                        class="btn btn-outline-warning"
-                                       title="Editar">
+                                       data-bs-toggle="tooltip"
+                                       title="Editar informações do patriarca">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     
+                                    {# === LÓGICA CONDICIONAL DE AÇÕES (GAS carregarPatriarcas) === #}
+                                    
                                     {% if patriarca.acao == 'selecionar' %}
+                                        {# Cenário 1 ou 2 sem timeout: Botão verde "Selecionar" #}
                                         <a href="{% url 'carga_org_lot:patriarca_select' patriarca.id_patriarca %}" 
-                                           class="btn btn-outline-success"
-                                           title="Selecionar para trabalhar"
-                                           onclick="return confirm('Deseja selecionar o patriarca {{ patriarca.str_sigla_patriarca }}?')">
-                                            <i class="fas fa-check"></i>
+                                           class="btn btn-success"
+                                           data-bs-toggle="tooltip"
+                                           title="Selecionar patriarca para trabalhar"
+                                           onclick="return confirm('Deseja selecionar o patriarca {{ patriarca.str_sigla_patriarca }} para trabalhar?')">
+                                            <i class="fas fa-check"></i> Selecionar
                                         </a>
+                                        
                                     {% elif patriarca.acao == 'reset' %}
+                                        {# Cenário 2 com timeout: Botão azul "Atualizar e Selecionar" #}
                                         <a href="{% url 'carga_org_lot:patriarca_reset' patriarca.id_patriarca %}" 
-                                           class="btn btn-outline-danger"
-                                           title="Resetar status"
-                                           onclick="return confirm('Deseja resetar o patriarca {{ patriarca.str_sigla_patriarca }}? Isso alterará o status para Em Progresso.')">
-                                            <i class="fas fa-redo"></i>
+                                           class="btn btn-info"
+                                           data-bs-toggle="tooltip"
+                                           title="Reiniciar o Patriarca para novo envio de cargas e Selecionar automaticamente"
+                                           onclick="return confirm('Deseja resetar o patriarca {{ patriarca.str_sigla_patriarca }}?\n\nIsso alterará o status para \"Em Progresso\" e permitirá novo envio de cargas.')">
+                                            <i class="fas fa-redo"></i> Atualizar e Selecionar
                                         </a>
+                                        
                                     {% else %}
+                                        {# Cenário 3: Bloqueado #}
                                         <button class="btn btn-outline-secondary" 
                                                 disabled
-                                                title="Patriarca bloqueado no status atual">
-                                            <i class="fas fa-lock"></i>
+                                                data-bs-toggle="tooltip"
+                                                title="Patriarca bloqueado no status atual. Não é possível selecionar neste momento.">
+                                            <i class="fas fa-lock"></i> Bloqueado
                                         </button>
                                     {% endif %}
                                 </div>
@@ -196,4 +220,16 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Inicializa tooltips do Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
 {% endblock %}
