@@ -196,18 +196,37 @@ def patriarca_create(request):
     
     Cria novo patriarca.
     Equivalente a incluirNovoPatriarca() do GAS.
+    
+    Todo novo patriarca começa automaticamente com:
+    - id_status_progresso = 1 (Nova Carga)
+    - dat_criacao = agora
+    - id_usuario_criacao = usuário logado
     """
     if request.method == 'POST':
         form = PatriarcaForm(request.POST)
         if form.is_valid():
+            # Obter status "Nova Carga" (ID = 1)
+            try:
+                status_nova_carga = TblStatusProgresso.objects.get(id_status_progresso=1)
+            except TblStatusProgresso.DoesNotExist:
+                messages.error(
+                    request,
+                    'Erro crítico: Status "Nova Carga" (ID=1) não encontrado no banco de dados. '
+                    'Entre em contato com o administrador do sistema.'
+                )
+                return redirect('carga_org_lot:patriarca_list')
+            
+            # Criar patriarca
             patriarca = form.save(commit=False)
+            patriarca.id_status_progresso = status_nova_carga  # Forçar status 1
             patriarca.id_usuario_criacao = request.user
             patriarca.dat_criacao = timezone.now()
             patriarca.save()
             
             messages.success(
                 request,
-                f'Patriarca "{patriarca.str_sigla_patriarca}" criado com sucesso!'
+                f'Patriarca "{patriarca.str_sigla_patriarca}" criado com sucesso! '
+                f'Status inicial: "{status_nova_carga.str_descricao}".'
             )
             return redirect('carga_org_lot:patriarca_list')
         else:
@@ -233,6 +252,9 @@ def patriarca_update(request, pk):
     
     Edita patriarca existente.
     Equivalente a editarPatriarca() do GAS.
+    
+    Atenção: O campo id_status_progresso NÃO pode ser alterado via formulário.
+    O status é gerenciado automaticamente pelo sistema durante o ciclo de vida.
     """
     patriarca = get_object_or_404(TblPatriarca, pk=pk)
     
