@@ -35,13 +35,13 @@ from ..views.web_views import (
     search_orgao_ajax,
 )
 
-app_name = 'carga_org_lot_web'
+app_name = 'carga_org_lot'
 
 urlpatterns = [
     # ============================================
     # AUTENTICAÇÃO
     # ============================================
-    path('', RedirectView.as_view(pattern_name='carga_org_lot_web:login'), name='home'),
+    path('', RedirectView.as_view(pattern_name='carga_org_lot:login'), name='home'),
     path('login/', carga_login, name='login'),
     path('logout/', carga_logout, name='logout'),
     
