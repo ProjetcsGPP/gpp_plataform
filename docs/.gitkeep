@@ -1,0 +1,30 @@
+# Documentação de Estrutura do Projeto
+
+Este diretório contém a documentação automática da estrutura de todas as apps.
+
+## Gerar/Atualizar Documentação
+
+```bash
+python manage.py generate_docs
+```
+
+## Arquivos
+
+- `app_structure.json` - Estrutura completa em formato JSON
+- `app_structure.md` - Documentação formatada em Markdown
+
+## O que está documentado
+
+✅ Estrutura de pastas e arquivos  
+✅ Todos os models com seus fields  
+✅ Todas as views (web e API)  
+✅ Padrões de URLs e namespaces  
+✅ Models registrados no Django Admin  
+
+## Uso
+
+Antes de criar ou modificar:
+1. Execute `python manage.py generate_docs`
+2. Abra `app_structure.md` e procure pelas views/models que quer usar
+3. Verifique o namespace e o padrão de URL corretos
+4. Se precisar adicionar uma nova view, atualize o `__all__` do módulo e regenere
