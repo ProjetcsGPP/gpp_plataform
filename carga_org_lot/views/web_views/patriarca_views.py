@@ -256,9 +256,9 @@ def patriarca_select(request, pk):
     
     # Redirecionar para próximo passo lógico
     if patriarca.tem_organograma_ativo:
-        return redirect('carga_org_lot:lotacao_upload')
+        return redirect('carga_org_lot:upload_lotacao')
     else:
-        return redirect('carga_org_lot:organograma_upload')
+        return redirect('carga_org_lot:upload_organograma')
 
 
 @carga_org_lot_required
@@ -301,4 +301,4 @@ def patriarca_reset(request, pk):
         f'e selecionado automaticamente. Você pode prosseguir com o upload do organograma.'
     )
     
-    return redirect('carga_org_lot:organograma_upload')
+    return redirect('carga_org_lot:upload_organograma')
