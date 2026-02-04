@@ -11,6 +11,10 @@ from ..views.web_views import (
     # Patriarcas
     patriarca_list,
     patriarca_detail,
+    patriarca_create,
+    patriarca_update,
+    patriarca_select,
+    patriarca_reset,
     
     # Organogramas
     organograma_list,
@@ -54,7 +58,11 @@ urlpatterns = [
     # PATRIARCAS
     # ============================================
     path('patriarcas/', patriarca_list, name='patriarca_list'),
-    path('patriarcas/<int:patriarca_id>/', patriarca_detail, name='patriarca_detail'),
+    path('patriarcas/novo/', patriarca_create, name='patriarca_create'),
+    path('patriarcas/<int:pk>/', patriarca_detail, name='patriarca_detail'),
+    path('patriarcas/<int:pk>/editar/', patriarca_update, name='patriarca_update'),
+    path('patriarcas/<int:pk>/selecionar/', patriarca_select, name='patriarca_select'),
+    path('patriarcas/<int:pk>/reset/', patriarca_reset, name='patriarca_reset'),
     
     # ============================================
     # ORGANOGRAMAS
