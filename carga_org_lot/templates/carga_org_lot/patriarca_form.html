@@ -22,6 +22,7 @@
                     <!-- Sigla do Patriarca -->
                     <div class="mb-3">
                         <label for="{{ form.str_sigla_patriarca.id_for_label }}" class="form-label">
+                            <i class="fas fa-tag me-1"></i>
                             {{ form.str_sigla_patriarca.label }}
                             <span class="text-danger">*</span>
                         </label>
@@ -39,6 +40,7 @@
                     <!-- Nome Completo -->
                     <div class="mb-3">
                         <label for="{{ form.str_nome.id_for_label }}" class="form-label">
+                            <i class="fas fa-building me-1"></i>
                             {{ form.str_nome.label }}
                             <span class="text-danger">*</span>
                         </label>
@@ -53,22 +55,45 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Status -->
+                    <!-- Id Patriarca - PRODEST (UUID) -->
                     <div class="mb-3">
-                        <label for="{{ form.id_status_progresso.id_for_label }}" class="form-label">
-                            {{ form.id_status_progresso.label }}
+                        <label for="{{ form.id_externo_patriarca.id_for_label }}" class="form-label">
+                            <i class="fas fa-fingerprint me-1"></i>
+                            {{ form.id_externo_patriarca.label }}
                             <span class="text-danger">*</span>
                         </label>
-                        {{ form.id_status_progresso }}
-                        {% if form.id_status_progresso.help_text %}
-                            <div class="form-text">{{ form.id_status_progresso.help_text }}</div>
+                        {{ form.id_externo_patriarca }}
+                        {% if form.id_externo_patriarca.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ form.id_externo_patriarca.help_text }}
+                            </div>
                         {% endif %}
-                        {% if form.id_status_progresso.errors %}
+                        <div class="form-text text-muted">
+                            <i class="fas fa-envelope me-1"></i>
+                            Este UUID é fornecido pela PRODEST via e-mail.
+                        </div>
+                        {% if form.id_externo_patriarca.errors %}
                             <div class="invalid-feedback d-block">
-                                {{ form.id_status_progresso.errors.0 }}
+                                {{ form.id_externo_patriarca.errors.0 }}
                             </div>
                         {% endif %}
                     </div>
+                    
+                    <!-- Informação sobre Status (apenas visual) -->
+                    {% if action == 'Criar' %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Status Inicial:</strong> O patriarca será criado automaticamente com o status <strong>"Nova Carga"</strong>.
+                        </div>
+                    {% elif patriarca %}
+                        <div class="alert alert-secondary">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Status Atual:</strong> {{ patriarca.id_status_progresso.str_descricao }}
+                            <br>
+                            <small class="text-muted">O status do patriarca é gerenciado automaticamente pelo sistema e não pode ser alterado manualmente.</small>
+                        </div>
+                    {% endif %}
                     
                     <!-- Erros Não-Campo -->
                     {% if form.non_field_errors %}
@@ -93,13 +118,27 @@
         <!-- Informações adicionais para edição -->
         {% if patriarca %}
             <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Informações do Registro
+                    </h6>
+                </div>
                 <div class="card-body">
-                    <h6 class="card-title">Informações</h6>
                     <ul class="list-unstyled mb-0">
-                        <li><strong>ID Externo:</strong> {{ patriarca.id_externo_patriarca }}</li>
-                        <li><strong>Criado em:</strong> {{ patriarca.dat_criacao|date:"d/m/Y H:i" }} por {{ patriarca.id_usuario_criacao.username }}</li>
+                        <li class="mb-2">
+                            <strong><i class="fas fa-hashtag me-1"></i> ID Interno:</strong> 
+                            <code>{{ patriarca.id_patriarca }}</code>
+                        </li>
+                        <li class="mb-2">
+                            <strong><i class="fas fa-clock me-1"></i> Criado em:</strong> 
+                            {{ patriarca.dat_criacao|date:"d/m/Y H:i" }} por {{ patriarca.id_usuario_criacao.username }}
+                        </li>
                         {% if patriarca.dat_alteracao %}
-                            <li><strong>Última alteração:</strong> {{ patriarca.dat_alteracao|date:"d/m/Y H:i" }} por {{ patriarca.id_usuario_alteracao.username }}</li>
+                            <li class="mb-2">
+                                <strong><i class="fas fa-history me-1"></i> Última alteração:</strong> 
+                                {{ patriarca.dat_alteracao|date:"d/m/Y H:i" }} por {{ patriarca.id_usuario_alteracao.username }}
+                            </li>
                         {% endif %}
                     </ul>
                 </div>
@@ -111,12 +150,41 @@
 
 {% block extra_js %}
 <script>
-// Transformação automática da sigla para maiúsculas
 document.addEventListener('DOMContentLoaded', function() {
+    // Transformação automática da sigla para maiúsculas
     const siglaInput = document.querySelector('input[name="str_sigla_patriarca"]');
     if (siglaInput) {
         siglaInput.addEventListener('input', function(e) {
             e.target.value = e.target.value.toUpperCase();
+        });
+    }
+    
+    // Validação visual do UUID em tempo real
+    const uuidInput = document.querySelector('input[name="id_externo_patriarca"]');
+    if (uuidInput) {
+        // Regex para UUID v4: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+        const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        
+        uuidInput.addEventListener('input', function(e) {
+            const value = e.target.value.trim();
+            
+            if (value === '') {
+                // Campo vazio - remover classes de validação
+                e.target.classList.remove('is-valid', 'is-invalid');
+            } else if (uuidRegex.test(value)) {
+                // UUID válido
+                e.target.classList.remove('is-invalid');
+                e.target.classList.add('is-valid');
+            } else {
+                // UUID inválido
+                e.target.classList.remove('is-valid');
+                e.target.classList.add('is-invalid');
+            }
+        });
+        
+        // Converter para lowercase ao perder foco (padrão UUID)
+        uuidInput.addEventListener('blur', function(e) {
+            e.target.value = e.target.value.toLowerCase();
         });
     }
 });
