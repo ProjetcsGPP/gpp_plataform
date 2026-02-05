@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.conf import settings
 
 
 class Eixo(models.Model):
@@ -347,20 +348,17 @@ class AcaoAnotacaoAlinhamento(models.Model):
     def __str__(self):
         return f'{self.idacao.strapelido} - {self.idtipoanotacaoalinhamento} - {self.datdataanotacaoalinhamento.strftime("%d/%m/%Y")}'
 
-
 class UsuarioResponsavel(models.Model):
     """
     Usuários responsáveis por ações com informações de contato e órgão
-    Relacionado à tabela tblusuario (assumindo que existe em outro app)
+    Relacionado à tabela tblusuario via AUTH_USER_MODEL
     """
-    idusuarioresponsavel = models.BigAutoField(
+    idusuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        db_column='idusuario',
         primary_key=True,
-        db_column='idusuarioresponsavel'
-    )
-    # FK para tblusuario - ajuste o related_name conforme necessário
-    idusuario = models.BigIntegerField(
-        unique=True,
-        db_column='idusuario'
+        related_name='responsavel_pngi'
     )
     strtelefone = models.CharField(max_length=20, db_column='strtelefone')
     strorgao = models.CharField(max_length=20, db_column='strorgao')
@@ -372,13 +370,47 @@ class UsuarioResponsavel(models.Model):
         managed = True
         verbose_name = 'Usuário Responsável'
         verbose_name_plural = 'Usuários Responsáveis'
-        ordering = ['idusuario']
+
+    def __str__(self):
+        return f'{self.idusuario.name} - {self.strorgao}'
+
+
+class RelacaoAcaoUsuarioResponsavel(models.Model):
+    """
+    RelaçãoMany-to-Many entre Ações e Usuários Responsáveis
+    Uma ação pode ter vários responsáveis e um responsável pode ter várias ações
+    """
+    idacaousuarioresponsavel = models.BigAutoField(
+        primary_key=True,
+        db_column='idacaousuarioresponsavel'
+    )
+    idacao = models.ForeignKey(
+        'Acoes',
+        on_delete=models.CASCADE,
+        db_column='idacao',
+        related_name='responsaveis'
+    )
+    idusuarioresponsavel = models.ForeignKey(
+        'UsuarioResponsavel',
+        on_delete=models.CASCADE,
+        db_column='idusuarioresponsavel',
+        related_name='acoes'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
+    
+    class Meta:
+        db_table = 'acoes_pngi.tblrelacaoacaousuarioresponsavel'
+        managed = True
+        verbose_name = 'Relação Ação X Usuário Responsável'
+        verbose_name_plural = 'Relações Ação X Usuários Responsáveis'
+        ordering = ['idacaousuarioresponsavel']
         constraints = [
             models.UniqueConstraint(
-                fields=['idusuario'],
-                name='idxusuarioresponsavel'
+                fields=['idacao', 'idusuarioresponsavel'],
+                name='idxrelacaoacaousuarioresponsavel'
             )
         ]
 
     def __str__(self):
-        return f'Usuário {self.idusuario} - {self.strorgao}'
+        return f'{self.idacao.strapelido} - {self.idusuarioresponsavel.idusuario.name}'
