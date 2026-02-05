@@ -15,7 +15,7 @@ class Eixo(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tbleixos'
+        db_table = 'tbleixos'
         managed = True
         verbose_name = 'Eixo'
         verbose_name_plural = 'Eixos'
@@ -43,7 +43,7 @@ class SituacaoAcao(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tblsituacaoacao'
+        db_table = 'tblsituacaoacao'
         managed = True
         verbose_name = 'Situação de Ação'
         verbose_name_plural = 'Situações de Ações'
@@ -69,7 +69,7 @@ class VigenciaPNGI(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tblvigenciapngi'
+        db_table = 'tblvigenciapngi'
         managed = True
         verbose_name = 'Vigência PNGI'
         verbose_name_plural = 'Vigências PNGI'
@@ -124,7 +124,7 @@ class TipoEntraveAlerta(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tbltipoentravealerta'
+        db_table = 'tbltipoentravealerta'
         managed = True
         verbose_name = 'Tipo de Entrave/Alerta'
         verbose_name_plural = 'Tipos de Entraves/Alertas'
@@ -165,7 +165,7 @@ class Acoes(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tblacoes'
+        db_table = 'tblacoes'
         managed = True
         verbose_name = 'Ação'
         verbose_name_plural = 'Ações'
@@ -193,7 +193,7 @@ class AcaoPrazo(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tblacaoprazo'
+        db_table = 'tblacaoprazo'
         managed = True
         verbose_name = 'Prazo de Ação'
         verbose_name_plural = 'Prazos de Ações'
@@ -247,7 +247,7 @@ class AcaoDestaque(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tblacaodestaque'
+        db_table = 'tblacaodestaque'
         managed = True
         verbose_name = 'Destaque de Ação'
         verbose_name_plural = 'Destaques de Ações'
@@ -279,7 +279,7 @@ class TipoAnotacaoAlinhamento(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tbltipoanotacaoalinhamento'
+        db_table = 'tbltipoanotacaoalinhamento'
         managed = True
         verbose_name = 'Tipo de Anotação de Alinhamento'
         verbose_name_plural = 'Tipos de Anotações de Alinhamento'
@@ -333,7 +333,7 @@ class AcaoAnotacaoAlinhamento(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tblacaoanotacaoalinhamento'
+        db_table = 'tblacaoanotacaoalinhamento'
         managed = True
         verbose_name = 'Anotação de Alinhamento'
         verbose_name_plural = 'Anotações de Alinhamento'
@@ -366,7 +366,7 @@ class UsuarioResponsavel(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
-        db_table = 'acoes_pngi.tblusuarioresponsavel'
+        db_table = 'tblusuarioresponsavel'
         managed = True
         verbose_name = 'Usuário Responsável'
         verbose_name_plural = 'Usuários Responsáveis'
@@ -400,7 +400,7 @@ class RelacaoAcaoUsuarioResponsavel(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     
     class Meta:
-        db_table = 'acoes_pngi.tblrelacaoacaousuarioresponsavel'
+        db_table = 'tblrelacaoacaousuarioresponsavel'
         managed = True
         verbose_name = 'Relação Ação X Usuário Responsável'
         verbose_name_plural = 'Relações Ação X Usuários Responsáveis'
