@@ -13,6 +13,7 @@ from acoes_pngi.context_processors import (
     acoes_pngi_context,
     acoes_pngi_models_context,
 )
+from accounts.models import Aplicacao
 
 User = get_user_model()
 
@@ -314,7 +315,8 @@ class EdgeCaseTest(TestCase):
         
         # Mock Aplicacao.objects.get para lançar DoesNotExist
         with patch('acoes_pngi.context_processors.Aplicacao.objects.get') as mock_get:
-            mock_get.side_effect = __import__('acoes_pngi').models.Aplicacao.DoesNotExist()
+            # Usar Aplicacao.DoesNotExist do módulo accounts.models
+            mock_get.side_effect = Aplicacao.DoesNotExist()
             
             context = acoes_pngi_context(request)
             
