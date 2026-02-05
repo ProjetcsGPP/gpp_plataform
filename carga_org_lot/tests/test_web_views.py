@@ -66,10 +66,11 @@ class BaseWebViewTestCase(TestCase):
             )
             logger.info(f"Status Progresso {'criado' if created else 'recuperado'}: {cls.status_progresso.str_descricao}")
             
-            # Patriarca de teste - CORREÇÃO: str_nome_patriarca -> str_nome, user_criacao -> id_usuario_criacao
+            # Patriarca de teste - CORREÇÃO: adicionar id_externo_patriarca
             cls.patriarca = TblPatriarca.objects.create(
                 str_sigla_patriarca='SEGER',
                 str_nome='Secretaria de Estado de Gestão e Recursos Humanos',
+                id_externo_patriarca='EXT-SEGER-001',  # CAMPO OBRIGATÓRIO
                 id_status_progresso=cls.status_progresso,
                 id_usuario_criacao=cls.user
             )
@@ -311,11 +312,12 @@ class PaginationTest(BaseWebViewTestCase):
         super().setUpTestData()
         
         try:
-            # Cria múltiplos patriarcas para testar paginação - CORREÇÃO: nomes de campos
+            # Cria múltiplos patriarcas para testar paginação - CORREÇÃO: adicionar id_externo_patriarca
             for i in range(25):
                 TblPatriarca.objects.create(
                     str_sigla_patriarca=f'ORG{i:02d}',
                     str_nome=f'Organização {i:02d}',
+                    id_externo_patriarca=f'EXT-ORG{i:02d}',  # CAMPO OBRIGATÓRIO
                     id_status_progresso=cls.status_progresso,
                     id_usuario_criacao=cls.user
                 )
