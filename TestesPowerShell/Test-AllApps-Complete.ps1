@@ -51,6 +51,31 @@ if (-not (Test-Path "manage.py")) {
 Write-Host "✓ manage.py encontrado!" -ForegroundColor Green
 
 # ============================================================================
+# ATIVAR VIRTUALENV
+# ============================================================================
+
+$venvPath = Join-Path $projectRoot "venv"
+$activateScript = Join-Path $venvPath "Scripts\Activate.ps1"
+
+if (-not (Test-Path $activateScript)) {
+    Write-Host "✗ ERRO: Virtualenv não encontrado em $venvPath" -ForegroundColor Red
+    Write-Host "Por favor, crie o virtualenv primeiro!" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "Ativando virtualenv..." -ForegroundColor Cyan
+& $activateScript
+
+# Verificar que virtualenv foi ativado
+if (-not $env:VIRTUAL_ENV) {
+    Write-Host "✗ ERRO: Falha ao ativar virtualenv" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "✓ Virtualenv ativado!" -ForegroundColor Green
+Write-Host "  Versão Python: $(python --version)" -ForegroundColor Gray
+
+# ============================================================================
 # CONFIGURAÇÕES
 # ============================================================================
 
@@ -82,7 +107,7 @@ $appConfig = @{
         )
     }
     'acoes_pngi' = @{
-        'name' = 'Áções PNGI'
+        'name' = 'Ações PNGI'
         'code' = 'ACOES_PNGI'
         'paths' = @(
             '/acoes_pngi/'
