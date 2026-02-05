@@ -126,7 +126,7 @@ class AcoesPNGIContextTest(TestCase):
         request.resolver_match = Mock(app_name='acoes_pngi')
         request.session = {}
         
-        # Mock de UserRole
+        # Mock de UserRole - usando QuerySet vazio (correto)
         mock_role = Mock()
         mock_role.id = 1
         mock_role.nomeperfil = 'Gestor PNGI'
@@ -136,7 +136,12 @@ class AcoesPNGIContextTest(TestCase):
         mock_user_role.role = mock_role
         
         with patch('acoes_pngi.context_processors.UserRole.objects.filter') as mock_qs:
-            mock_qs.return_value.select_related.return_value = [mock_user_role]
+            # QuerySet.select_related().first() deve retornar mock_user_role
+            # Ou QuerySet.select_related().__iter__ deve ser iteravel
+            mock_queryset = MagicMock()
+            mock_queryset.__iter__.return_value = [mock_user_role]
+            mock_queryset.select_related.return_value = mock_queryset
+            mock_qs.return_value = mock_queryset
             
             context = acoes_pngi_context(request)
             
@@ -164,7 +169,10 @@ class AcoesPNGIContextTest(TestCase):
         mock_user_role.role = mock_role
         
         with patch('acoes_pngi.context_processors.UserRole.objects.filter') as mock_qs:
-            mock_qs.return_value.select_related.return_value = [mock_user_role]
+            mock_queryset = MagicMock()
+            mock_queryset.__iter__.return_value = [mock_user_role]
+            mock_queryset.select_related.return_value = mock_queryset
+            mock_qs.return_value = mock_queryset
             
             context = acoes_pngi_context(request)
             roles = context['user_roles_in_app']
@@ -258,7 +266,10 @@ class IntegrationTest(TestCase):
         mock_user_role.role = mock_role
         
         with patch('acoes_pngi.context_processors.UserRole.objects.filter') as mock_qs:
-            mock_qs.return_value.select_related.return_value = [mock_user_role]
+            mock_queryset = MagicMock()
+            mock_queryset.__iter__.return_value = [mock_user_role]
+            mock_queryset.select_related.return_value = mock_queryset
+            mock_qs.return_value = mock_queryset
             
             ctx_perms = acoes_permissions(request)
             ctx_app = acoes_pngi_context(request)
@@ -301,12 +312,13 @@ class EdgeCaseTest(TestCase):
         request.resolver_match = Mock(app_name='acoes_pngi')
         request.session = {}
         
+        # Mock Aplicacao.objects.get para lançar DoesNotExist
         with patch('acoes_pngi.context_processors.Aplicacao.objects.get') as mock_get:
-            mock_get.side_effect = Exception("Aplicacao não existe")
+            mock_get.side_effect = __import__('acoes_pngi').models.Aplicacao.DoesNotExist()
             
             context = acoes_pngi_context(request)
             
-            # Deve retornar contexto padrão
+            # Deve retornar contexto com fallback
             self.assertIn('app_context', context)
             self.assertEqual(context['app_context']['code'], 'ACOES_PNGI')
     
@@ -338,7 +350,11 @@ class EdgeCaseTest(TestCase):
         request.session = {}
         
         with patch('acoes_pngi.context_processors.UserRole.objects.filter') as mock_qs:
-            mock_qs.return_value.select_related.return_value = []
+            # QuerySet vazio
+            mock_queryset = MagicMock()
+            mock_queryset.__iter__.return_value = []
+            mock_queryset.select_related.return_value = mock_queryset
+            mock_qs.return_value = mock_queryset
             
             context = acoes_pngi_context(request)
             
