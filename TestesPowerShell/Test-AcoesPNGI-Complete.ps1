@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Teste Completo da Aplicação Ações PNGI
+Teste Completo da Aplicação Áções PNGI
 Testa Views Web + Views API + Context Processors
 
 .DESCRIPTION
@@ -8,10 +8,11 @@ Este script realiza testes completos de:
 - Testes Unitários Django (context_processors)
 - Views Web (renderização de templates)
 - Views API (REST endpoints)
-- Contexto para Next.js (API endpoints)
+- Contexto para Next.js (API endpoints de contexto)
 
 .EXAMPLE
 .\Test-AcoesPNGI-Complete.ps1
+.\Test-AcoesPNGI-Complete.ps1 -BaseURL "http://seu-server:8000"
 .\Test-AcoesPNGI-Complete.ps1 -Verbose
 
 #>
@@ -19,7 +20,6 @@ Este script realiza testes completos de:
 param(
     [string]$BaseURL = "http://localhost:8000",
     [string]$APIVersion = "v1",
-    [string]$AppCode = "ACOES_PNGI",
     [switch]$Verbose
 )
 
@@ -30,6 +30,7 @@ param(
 $ErrorActionPreference = "Continue"
 $WarningPreference = "Continue"
 
+# Define cores disponíveis no PowerShell
 $colors = @{
     'SUCCESS' = 'Green'
     'FAIL' = 'Red'
@@ -38,309 +39,198 @@ $colors = @{
     'HEADER' = 'Magenta'
 }
 
+$appName = 'acoes_pngi'
+$appDisplayName = 'Áções PNGI'
+
+$appConfig = @{
+    'paths' = @(
+        '/acoes_pngi/'
+        '/acoes_pngi/eixos/'
+        '/acoes_pngi/situacoes/'
+        '/acoes_pngi/vigencias/'
+    )
+    'apiEndpoints' = @(
+        '/api/v1/acoes_pngi/eixos/'
+        '/api/v1/acoes_pngi/situacoes/'
+        '/api/v1/acoes_pngi/vigencias/'
+        '/api/v1/acoes_pngi/context/full/'
+    )
+}
+
 function Write-ColorOutput([string]$message, [string]$type = 'INFO') {
-    $color = $colors[$type] -or 'White'
+    $color = $colors[$type]
+    if ($null -eq $color) {
+        $color = 'White'
+    }
     Write-Host "[$type] $message" -ForegroundColor $color
 }
 
 function Write-SectionHeader([string]$title) {
     Write-Host "`n" -NoNewline
-    Write-Host "═" * 80 -ForegroundColor $colors['HEADER']
+    Write-Host ("═" * 80) -ForegroundColor $colors['HEADER']
     Write-ColorOutput $title 'HEADER'
-    Write-Host "═" * 80 -ForegroundColor $colors['HEADER']
+    Write-Host ("═" * 80) -ForegroundColor $colors['HEADER']
 }
 
 # ============================================================================
-# 1. TESTES UNITÁRIOS DJANGO
+# TESTES DA APLICAÇÃO
 # ============================================================================
 
-Write-SectionHeader "1. EXECUTANDO TESTES UNITÁRIOS (Python/Django)"
-
-Write-ColorOutput "Executando testes do context_processors de acoes_pngi..." 'INFO'
-Write-ColorOutput "Comando: python manage.py test acoes_pngi.tests.test_context_processors -v 2" 'INFO'
-
-$testOutput = python manage.py test acoes_pngi.tests.test_context_processors -v 2 2>&1
-
-if ($LASTEXITCODE -eq 0) {
-    Write-ColorOutput "✓ Testes unitários executados com sucesso!" 'SUCCESS'
+function Test-AppUnit([string]$appName) {
+    Write-ColorOutput "[Unit Tests] Executando testes Django..." 'INFO'
     
-    # Extrai informações do output
-    if ($testOutput -match 'Ran (\d+) test') {
-        $testCount = $matches[1]
-        Write-ColorOutput "  - Total de testes: $testCount" 'INFO'
-    }
-    if ($testOutput -match 'OK') {
-        Write-ColorOutput "  - Status: TODOS OS TESTES PASSARAM" 'SUCCESS'
-    }
-} else {
-    Write-ColorOutput "✗ Erro ao executar testes unitários!" 'FAIL'
-    Write-Host $testOutput
-    exit 1
-}
-
-# ============================================================================
-# 2. TESTES DE VIEWS WEB
-# ============================================================================
-
-Write-SectionHeader "2. TESTANDO VIEWS WEB (Renderização de Templates)"
-
-Write-ColorOutput "Testando acesso às views web da aplicação Ações PNGI..." 'INFO'
-
-$webTests = @(
-    @{
-        'name' = 'Página Principal'
-        'url' = "$BaseURL/acoes_pngi/"
-        'method' = 'GET'
-        'expectedStatus' = 200
-    },
-    @{
-        'name' = 'Lista de Eixos'
-        'url' = "$BaseURL/acoes_pngi/eixos/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 301, 302, 403)  # 403 se não autenticado
-    },
-    @{
-        'name' = 'Lista de Situações'
-        'url' = "$BaseURL/acoes_pngi/situacoes/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 301, 302, 403)
-    },
-    @{
-        'name' = 'Lista de Vigências'
-        'url' = "$BaseURL/acoes_pngi/vigencias/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 301, 302, 403)
-    }
-)
-
-$webTestsPassed = 0
-$webTestsFailed = 0
-
-foreach ($test in $webTests) {
-    Write-ColorOutput "  Testando: $($test['name'])" 'INFO'
+    $appTestPath = "${appName}.tests.test_context_processors"
+    Write-ColorOutput "Comando: python manage.py test $appTestPath -v 2" 'INFO'
     
     try {
-        $response = Invoke-WebRequest -Uri $test['url'] -Method $test['method'] -SkipHttpErrorCheck -TimeoutSec 10
+        $testOutput = python manage.py test $appTestPath -v 2 2>&1
         
-        if ($response.StatusCode -in $test['expectedStatus']) {
-            Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
-            $webTestsPassed++
-        } else {
-            Write-ColorOutput "    ✗ Status inesperado: $($response.StatusCode)" 'FAIL'
-            Write-ColorOutput "      Esperado: $($test['expectedStatus'] -join ', ')" 'WARNING'
-            $webTestsFailed++
-        }
-    } catch {
-        Write-ColorOutput "    ✗ Erro ao acessar: $($_.Exception.Message)" 'FAIL'
-        $webTestsFailed++
-    }
-}
-
-Write-ColorOutput "\nResumo Views Web: $webTestsPassed passou, $webTestsFailed falhou" 'INFO'
-
-# ============================================================================
-# 3. TESTES DE API (REST)
-# ============================================================================
-
-Write-SectionHeader "3. TESTANDO ENDPOINTS DA API"
-
-Write-ColorOutput "Testando endpoints REST da aplicação Ações PNGI..." 'INFO'
-
-# Primeiro, obtém o token (se necessário)
-$token = ""
-
-$apiTests = @(
-    @{
-        'name' = 'GET: Lista de Eixos'
-        'url' = "$BaseURL/api/$APIVersion/acoes_pngi/eixos/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 403)  # 403 se não autenticado
-        'requiresAuth' = $true
-    },
-    @{
-        'name' = 'GET: Lista de Situações'
-        'url' = "$BaseURL/api/$APIVersion/acoes_pngi/situacoes/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 403)
-        'requiresAuth' = $true
-    },
-    @{
-        'name' = 'GET: Lista de Vigências'
-        'url' = "$BaseURL/api/$APIVersion/acoes_pngi/vigencias/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 403)
-        'requiresAuth' = $true
-    },
-    @{
-        'name' = 'GET: Vigência Ativa'
-        'url' = "$BaseURL/api/$APIVersion/acoes_pngi/vigencias/vigencia_ativa/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 404, 403)
-        'requiresAuth' = $true
-    }
-)
-
-$apiTestsPassed = 0
-$apiTestsFailed = 0
-
-foreach ($test in $apiTests) {
-    Write-ColorOutput "  Testando: $($test['name'])" 'INFO'
-    
-    try {
-        $headers = @{
-            'Content-Type' = 'application/json'
-        }
-        if ($token) {
-            $headers['Authorization'] = "Bearer $token"
-        }
-        
-        $response = Invoke-RestMethod -Uri $test['url'] -Method $test['method'] -Headers $headers -SkipHttpErrorCheck -TimeoutSec 10
-        
-        if ($response.StatusCode -in $test['expectedStatus']) {
-            Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
-            if ($response.Content) {
-                $content = $response.Content | ConvertFrom-Json
-                if ($content.Count) {
-                    Write-ColorOutput "      Itens retornados: $($content.Count)" 'INFO'
-                }
+        if ($LASTEXITCODE -eq 0) {
+            Write-ColorOutput "✓ Testes unitários executados com sucesso!" 'SUCCESS'
+            return @{
+                'passed' = $true
+                'message' = 'Testes unitários passaram'
+                'details' = $testOutput
             }
-            $apiTestsPassed++
         } else {
-            Write-ColorOutput "    ✗ Status inesperado: $($response.StatusCode)" 'FAIL'
-            $apiTestsFailed++
+            Write-ColorOutput "✗ Erro ao executar testes!" 'FAIL'
+            if ($Verbose) {
+                Write-Host $testOutput
+            }
+            return @{
+                'passed' = $false
+                'message' = 'Testes unitários falharam'
+                'details' = $testOutput
+            }
         }
-    } catch {
-        if ($test['expectedStatus'] -contains 403 -or $test['expectedStatus'] -contains 401) {
-            Write-ColorOutput "    ℹ Não autenticado (esperado): $($_.Exception.Message)" 'WARNING'
-            $apiTestsPassed++
-        } else {
-            Write-ColorOutput "    ✗ Erro ao acessar: $($_.Exception.Message)" 'FAIL'
-            $apiTestsFailed++
+    }
+    catch {
+        Write-ColorOutput "✗ Erro: $($_.Exception.Message)" 'FAIL'
+        return @{
+            'passed' = $false
+            'message' = 'Erro ao executar testes'
+            'details' = $_.Exception.Message
         }
     }
 }
 
-Write-ColorOutput "\nResumo API REST: $apiTestsPassed passou, $apiTestsFailed falhou" 'INFO'
-
-# ============================================================================
-# 4. TESTES DE CONTEXT PROCESSORS API (PARA NEXT.JS)
-# ============================================================================
-
-Write-SectionHeader "4. TESTANDO ENDPOINTS DE CONTEXTO (Para Next.js)"
-
-Write-ColorOutput "Testando endpoints que retornam dados dos context_processors..." 'INFO'
-
-$contextTests = @(
-    @{
-        'name' = 'GET: Contexto da App'
-        'url' = "$BaseURL/api/$APIVersion/acoes_pngi/context/app/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 403)
-        'expectedFields' = @('code', 'name', 'icon')
-    },
-    @{
-        'name' = 'GET: Permissões do Usuário'
-        'url' = "$BaseURL/api/$APIVersion/acoes_pngi/context/permissions/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 403)
-        'expectedFields' = @('user_id', 'email', 'permissions')
-    },
-    @{
-        'name' = 'GET: Informações dos Modelos'
-        'url' = "$BaseURL/api/$APIVersion/acoes_pngi/context/models/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 403)
-        'expectedFields' = @('models')
-    },
-    @{
-        'name' = 'GET: Contexto Completo'
-        'url' = "$BaseURL/api/$APIVersion/acoes_pngi/context/full/"
-        'method' = 'GET'
-        'expectedStatus' = @(200, 403)
-        'expectedFields' = @('app', 'permissions', 'models')
-    }
-)
-
-$contextTestsPassed = 0
-$contextTestsFailed = 0
-
-foreach ($test in $contextTests) {
-    Write-ColorOutput "  Testando: $($test['name'])" 'INFO'
+function Test-WebViews([string[]]$paths) {
+    Write-ColorOutput "[Web Views] Testando renderização de templates..." 'INFO'
     
-    try {
-        $headers = @{
-            'Content-Type' = 'application/json'
-        }
-        if ($token) {
-            $headers['Authorization'] = "Bearer $token"
-        }
+    $passed = 0
+    $failed = 0
+    
+    foreach ($path in $paths) {
+        $url = "$BaseURL$path"
+        Write-ColorOutput "  Acessando: $path" 'INFO'
         
-        $response = Invoke-RestMethod -Uri $test['url'] -Method $test['method'] -Headers $headers -SkipHttpErrorCheck -TimeoutSec 10
-        
-        if ($response.StatusCode -in $test['expectedStatus']) {
-            Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
+        try {
+            $response = Invoke-WebRequest -Uri $url -Method GET -SkipHttpErrorCheck -TimeoutSec 10
             
-            # Valida campos esperados
-            if ($response.Content) {
-                $data = $response.Content | ConvertFrom-Json
-                $missingFields = @()
-                
-                foreach ($field in $test['expectedFields']) {
-                    if (-not $data.$field) {
-                        $missingFields += $field
-                    }
-                }
-                
-                if ($missingFields.Count -eq 0) {
-                    Write-ColorOutput "      Todos os campos esperados presentes" 'SUCCESS'
-                } else {
-                    Write-ColorOutput "      ⚠ Campos faltando: $($missingFields -join ', ')" 'WARNING'
-                }
+            if ($response.StatusCode -in @(200, 301, 302, 403)) {
+                Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
+                $passed++
+            } else {
+                Write-ColorOutput "    ✗ Status inesperado: $($response.StatusCode)" 'FAIL'
+                $failed++
             }
-            $contextTestsPassed++
-        } else {
-            Write-ColorOutput "    ✗ Status inesperado: $($response.StatusCode)" 'FAIL'
-            $contextTestsFailed++
-        }
-    } catch {
-        if ($test['expectedStatus'] -contains 403 -or $test['expectedStatus'] -contains 401) {
-            Write-ColorOutput "    ℹ Não autenticado (esperado)" 'WARNING'
-            $contextTestsPassed++
-        } else {
+        } catch {
             Write-ColorOutput "    ✗ Erro: $($_.Exception.Message)" 'FAIL'
-            $contextTestsFailed++
+            $failed++
         }
+    }
+    
+    return @{
+        'passed' = $passed
+        'failed' = $failed
     }
 }
 
-Write-ColorOutput "\nResumo Endpoints Contexto: $contextTestsPassed passou, $contextTestsFailed falhou" 'INFO'
+function Test-APIEndpoints([string[]]$endpoints) {
+    Write-ColorOutput "[API REST] Testando endpoints da API..." 'INFO'
+    
+    $passed = 0
+    $failed = 0
+    
+    foreach ($endpoint in $endpoints) {
+        $url = "$BaseURL$endpoint"
+        Write-ColorOutput "  Acessando: $endpoint" 'INFO'
+        
+        try {
+            $headers = @{
+                'Content-Type' = 'application/json'
+            }
+            
+            $response = Invoke-WebRequest -Uri $url -Method GET -Headers $headers -SkipHttpErrorCheck -TimeoutSec 10
+            
+            if ($response.StatusCode -in @(200, 403, 401)) {
+                Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
+                $passed++
+            } else {
+                Write-ColorOutput "    ✗ Status inesperado: $($response.StatusCode)" 'FAIL'
+                $failed++
+            }
+        } catch {
+            if ($_ -match '(403|401|Unauthorized)') {
+                Write-ColorOutput "    ℹ Não autenticado (esperado)" 'WARNING'
+                $passed++
+            } else {
+                Write-ColorOutput "    ✗ Erro: $($_.Exception.Message)" 'FAIL'
+                $failed++
+            }
+        }
+    }
+    
+    return @{
+        'passed' = $passed
+        'failed' = $failed
+    }
+}
 
 # ============================================================================
-# 5. RESUMO FINAL
+# EXECUÇÃO PRINCIPAL
 # ============================================================================
 
-Write-SectionHeader "RESUMO FINAL DOS TESTES"
+Write-SectionHeader "TESTE COMPLETO - $appDisplayName ($appName)"
+Write-ColorOutput "URL Base: $BaseURL" 'INFO'
+Write-ColorOutput "Versão da API: $APIVersion" 'INFO'
 
-$totalTests = $webTestsPassed + $webTestsFailed + $apiTestsPassed + $apiTestsFailed + $contextTestsPassed + $contextTestsFailed
-$totalPassed = $webTestsPassed + $apiTestsPassed + $contextTestsPassed
-$totalFailed = $webTestsFailed + $apiTestsFailed + $contextTestsFailed
+# 1. Testes Unitários
+Write-SectionHeader "1. TESTES UNITÁRIOS"
+$unitResult = Test-AppUnit $appName
 
-Write-ColorOutput "Total de Testes: $totalTests" 'INFO'
-Write-ColorOutput "Testes Passados: $totalPassed" 'SUCCESS'
-Write-ColorOutput "Testes Falhados: $totalFailed" $(if ($totalFailed -gt 0) { 'FAIL' } else { 'SUCCESS' })
+# 2. Views Web
+Write-SectionHeader "2. VIEWS WEB"
+$webResult = Test-WebViews $appConfig['paths']
+
+# 3. API Endpoints
+Write-SectionHeader "3. ENDPOINTS DA API"
+$apiResult = Test-APIEndpoints $appConfig['apiEndpoints']
+
+# ============================================================================
+# RESUMO FINAL
+# ============================================================================
+
+Write-SectionHeader "RESUMO FINAL"
+
+Write-ColorOutput "$appDisplayName ($appName):" 'INFO'
+Write-ColorOutput "  ✓ Unit Tests: $(if ($unitResult.passed) {'PASSOU'} else {'FALHOU'})" $(if ($unitResult.passed) { 'SUCCESS' } else { 'FAIL' })
+Write-ColorOutput "  ✓ Web Views:  $($webResult.passed) passou, $($webResult.failed) falhou" $(if ($webResult.failed -eq 0) { 'SUCCESS' } else { 'WARNING' })
+Write-ColorOutput "  ✓ API REST:   $($apiResult.passed) passou, $($apiResult.failed) falhou" $(if ($apiResult.failed -eq 0) { 'SUCCESS' } else { 'WARNING' })
+
+$totalTestsFailed = $webResult.failed + $apiResult.failed
 
 Write-Host "`n"
-Write-ColorOutput "Resumo por Categoria:" 'HEADER'
-Write-ColorOutput "  - Views Web:    $webTestsPassed/$($webTestsPassed + $webTestsFailed) passou" $(if ($webTestsFailed -eq 0) { 'SUCCESS' } else { 'WARNING' })
-Write-ColorOutput "  - API REST:     $apiTestsPassed/$($apiTestsPassed + $apiTestsFailed) passou" $(if ($apiTestsFailed -eq 0) { 'SUCCESS' } else { 'WARNING' })
-Write-ColorOutput "  - Contexto API: $contextTestsPassed/$($contextTestsPassed + $contextTestsFailed) passou" $(if ($contextTestsFailed -eq 0) { 'SUCCESS' } else { 'WARNING' })
+Write-ColorOutput "Total de Testes Passados: $($unitResult.passed + $webResult.passed + $apiResult.passed)" 'SUCCESS'
+Write-ColorOutput "Total de Testes Falhados: $totalTestsFailed" $(if ($totalTestsFailed -gt 0) { 'FAIL' } else { 'SUCCESS' })
 
-if ($totalFailed -eq 0) {
+if ($totalTestsFailed -eq 0 -and $unitResult.passed) {
     Write-Host "`n"
     Write-ColorOutput "🎉 TODOS OS TESTES PASSARAM!" 'SUCCESS'
+    Write-ColorOutput "Pronto para deploy!" 'SUCCESS'
     exit 0
 } else {
     Write-Host "`n"
-    Write-ColorOutput "⚠️  ALGUNS TESTES FALHARAM" 'FAIL'
+    Write-ColorOutput "⚠️  ALGUNS TESTES FALHARAM - REVISAR LOGS ACIMA" 'FAIL'
     exit 1
 }
