@@ -11,6 +11,7 @@ from carga_org_lot.models import (
     TblOrgaoUnidade,
     TblStatusProgresso,
 )
+import uuid
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -66,10 +67,11 @@ class BaseWebViewTestCase(TestCase):
             )
             logger.info(f"Status Progresso {'criado' if created else 'recuperado'}: {cls.status_progresso.str_descricao}")
             
-            # Patriarca de teste - CORREÇÃO: str_nome_patriarca -> str_nome, user_criacao -> id_usuario_criacao
+            # Patriarca de teste - CORREÇÃO: adicionar id_externo_patriarca
             cls.patriarca = TblPatriarca.objects.create(
                 str_sigla_patriarca='SEGER',
                 str_nome='Secretaria de Estado de Gestão e Recursos Humanos',
+                id_externo_patriarca='494a207b-67a9-4fda-9b9c-3bcf90ebb4af',  # CAMPO OBRIGATÓRIO
                 id_status_progresso=cls.status_progresso,
                 id_usuario_criacao=cls.user
             )
@@ -311,11 +313,13 @@ class PaginationTest(BaseWebViewTestCase):
         super().setUpTestData()
         
         try:
-            # Cria múltiplos patriarcas para testar paginação - CORREÇÃO: nomes de campos
+            
+            # Cria múltiplos patriarcas para testar paginação - CORREÇÃO: adicionar id_externo_patriarca
             for i in range(25):
                 TblPatriarca.objects.create(
                     str_sigla_patriarca=f'ORG{i:02d}',
                     str_nome=f'Organização {i:02d}',
+                    id_externo_patriarca=str(uuid.uuid4()),  # ✅ Gera UUID único, #f'EXT-ORG{i:02d}',  # CAMPO OBRIGATÓRIO
                     id_status_progresso=cls.status_progresso,
                     id_usuario_criacao=cls.user
                 )
