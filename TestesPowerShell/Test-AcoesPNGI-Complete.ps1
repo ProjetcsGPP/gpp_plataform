@@ -24,6 +24,27 @@ param(
 )
 
 # ============================================================================
+# NAVEGAR PARA RAIZ DO PROJETO
+# ============================================================================
+
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+$projectRoot = Split-Path -Parent $scriptPath
+
+Write-Host "Mudando para diretório do projeto..." -ForegroundColor Cyan
+Write-Host "Caminho do script: $scriptPath" -ForegroundColor Gray
+Write-Host "Raíz do projeto: $projectRoot" -ForegroundColor Gray
+
+Set-Location $projectRoot
+
+if (-not (Test-Path "manage.py")) {
+    Write-Host "✗ ERRO: manage.py não encontrado em $projectRoot" -ForegroundColor Red
+    Write-Host "Por favor, execute o script da pasta raiz do projeto!" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "✓ manage.py encontrado!" -ForegroundColor Green
+
+# ============================================================================
 # CONFIGURAÇÕES
 # ============================================================================
 
@@ -81,6 +102,7 @@ function Test-AppUnit([string]$appName) {
     
     $appTestPath = "${appName}.tests.test_context_processors"
     Write-ColorOutput "Comando: python manage.py test $appTestPath -v 2" 'INFO'
+    Write-ColorOutput "Diretório: $(Get-Location)" 'INFO'
     
     try {
         $testOutput = python manage.py test $appTestPath -v 2 2>&1
@@ -96,6 +118,8 @@ function Test-AppUnit([string]$appName) {
             Write-ColorOutput "✗ Erro ao executar testes!" 'FAIL'
             if ($Verbose) {
                 Write-Host $testOutput
+            } else {
+                Write-Host "Erro: $($testOutput | Select-Object -First 5)" -ForegroundColor Red
             }
             return @{
                 'passed' = $false
@@ -194,6 +218,7 @@ function Test-APIEndpoints([string[]]$endpoints) {
 Write-SectionHeader "TESTE COMPLETO - $appDisplayName ($appName)"
 Write-ColorOutput "URL Base: $BaseURL" 'INFO'
 Write-ColorOutput "Versão da API: $APIVersion" 'INFO'
+Write-ColorOutput "Diretório: $(Get-Location)" 'INFO'
 
 # 1. Testes Unitários
 Write-SectionHeader "1. TESTES UNITÁRIOS"
