@@ -51,7 +51,8 @@ def acoes_permissions(request):
             context['acoes_models_perms'] = models_with_perms
             
         except Exception as e:
-            logger.error(f"Erro ao carregar permissões de Ações PNGI: {str(e)}")
+            logger.warning(f"Aviso ao carregar permissões de Ações PNGI: {str(e)}")
+            # Não faz raise - apenas continua com contexto vazio
     
     return context
 
@@ -90,49 +91,56 @@ def acoes_pngi_context(request):
     context = {}
     
     # Detecta se está em uma view do acoes_pngi
-    if request.resolver_match and request.resolver_match.app_name == 'acoes_pngi':
-        # Busca informações da aplicação
-        try:
-            aplicacao = Aplicacao.objects.get(codigointerno='ACOES_PNGI')
-            
-            context['app_context'] = {
-                'code': aplicacao.codigointerno,
-                'name': aplicacao.nomeaplicacao,
-                'icon': 'fas fa-tasks',  # Ícone específico para Ações PNGI
-                'url_namespace': 'acoes_pngi',
-            }
-        except Aplicacao.DoesNotExist:
-            # Fallback se aplicação não existir no BD
-            context['app_context'] = {
-                'code': 'ACOES_PNGI',
-                'name': 'Ações PNGI',
-                'icon': 'fas fa-tasks',
-                'url_namespace': 'acoes_pngi',
-            }
-        
-        # Se usuário autenticado, busca seus perfis nesta app
-        if request.user.is_authenticated:
+    try:
+        if request.resolver_match and request.resolver_match.app_name == 'acoes_pngi':
+            # Busca informações da aplicação
             try:
-                user_roles = UserRole.objects.filter(
-                    user=request.user,
-                    aplicacao__codigointerno='ACOES_PNGI'
-                ).select_related('role', 'aplicacao')
+                aplicacao = Aplicacao.objects.get(codigointerno='ACOES_PNGI')
                 
-                # Pega o perfil ativo da sessão
-                active_role_id = request.session.get('active_role_acoes_pngi')
-                
-                context['user_roles_in_app'] = [
-                    {
-                        'id': ur.role.id,
-                        'name': ur.role.nomeperfil,  # Campo correto do modelo Role
-                        'code': ur.role.codigoperfil,
-                        'is_active': (active_role_id == ur.role.id) if active_role_id else (ur == user_roles.first())
-                    }
-                    for ur in user_roles
-                ]
-            except Exception as e:
-                logger.error(f"Erro ao carregar perfis do usuário em Ações PNGI: {str(e)}")
-                context['user_roles_in_app'] = []
+                context['app_context'] = {
+                    'code': aplicacao.codigointerno,
+                    'name': aplicacao.nomeaplicacao,
+                    'icon': 'fas fa-tasks',  # Ícone específico para Ações PNGI
+                    'url_namespace': 'acoes_pngi',
+                }
+            except Aplicacao.DoesNotExist:
+                # Fallback se aplicação não existir no BD
+                context['app_context'] = {
+                    'code': 'ACOES_PNGI',
+                    'name': 'Ações PNGI',
+                    'icon': 'fas fa-tasks',
+                    'url_namespace': 'acoes_pngi',
+                }
+            
+            # Se usuário autenticado, busca seus perfis nesta app
+            if request.user.is_authenticated:
+                try:
+                    user_roles_qs = UserRole.objects.filter(
+                        user=request.user,
+                        aplicacao__codigointerno='ACOES_PNGI'
+                    ).select_related('role', 'aplicacao')
+                    
+                    # Pega o perfil ativo da sessão
+                    active_role_id = request.session.get('active_role_acoes_pngi')
+                    
+                    # Converte QuerySet para lista para evitar problema .first() em lista
+                    user_roles_list = list(user_roles_qs)
+                    first_role = user_roles_list[0] if user_roles_list else None
+                    
+                    context['user_roles_in_app'] = [
+                        {
+                            'id': ur.role.id,
+                            'name': ur.role.nomeperfil,  # Campo correto do modelo Role
+                            'code': ur.role.codigoperfil,
+                            'is_active': (active_role_id == ur.role.id) if active_role_id else (ur == first_role)
+                        }
+                        for ur in user_roles_list
+                    ]
+                except Exception as e:
+                    logger.warning(f"Aviso ao carregar perfis do usuário em Ações PNGI: {str(e)}")
+                    context['user_roles_in_app'] = []
+    except Exception as e:
+        logger.warning(f"Aviso geral no context processor acoes_pngi_context: {str(e)}")
     
     return context
 
@@ -186,7 +194,7 @@ def acoes_pngi_models_context(request):
                 },
             }
         except Exception as e:
-            logger.error(f"Erro ao carregar informações de modelos em Ações PNGI: {str(e)}")
+            logger.warning(f"Aviso ao carregar informações de modelos em Ações PNGI: {str(e)}")
             context['acoes_models_info'] = {}
     
     return context
