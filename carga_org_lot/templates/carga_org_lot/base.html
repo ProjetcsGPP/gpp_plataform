@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+{% load static %}
+
+{# ========== CONFIGURAÇÕES DO HEADER ========== #}
+{% block body_class %}app-carga{% endblock %}
+
+{# ========== LABEL DO CONTEXTO (Altera de "Aplicação Ativa" para "Perfis Disponíveis") ========== #}
+{% block app_context_label %}Perfis Disponíveis{% endblock %}
+
+{# ========== MENU DROPDOWN DO USUÁRIO ========== #}
+{% block dropdown_menu_items %}
+{# Listar perfis do usuário nesta aplicação #}
+{% if user_roles_in_app %}
+    {% for role in user_roles_in_app %}
+    <li>
+        <a class="dropdown-item {% if role.is_active %}active{% endif %}" 
+           href="#" 
+           onclick="alert('Funcionalidade de troca de perfil em desenvolvimento'); return false;">
+            <i class="fas fa-user-tag me-2"></i> 
+            {{ role.name }}
+            {% if role.is_active %}
+                <i class="fas fa-check-circle text-success ms-2" style="font-size: 0.9rem;"></i>
+            {% endif %}
+        </a>
+    </li>
+    {% endfor %}
+    <li><hr class="dropdown-divider"></li>
+{% else %}
+    <li>
+        <a class="dropdown-item disabled" href="#">
+            <i class="fas fa-info-circle me-2"></i> 
+            Nenhum perfil configurado
+        </a>
+    </li>
+    <li><hr class="dropdown-divider"></li>
+{% endif %}
+
+{# Links de navegação #}
+<li>
+    <a class="dropdown-item" href="/dashboard/">
+        <i class="fas fa-home me-2"></i> Voltar ao Portal
+    </a>
+</li>
+<li>
+    <a class="dropdown-item" href="/carga_org_lot/">
+        <i class="fas fa-tachometer-alt me-2"></i> Dashboard Carga
+    </a>
+</li>
+<li>
+    <a class="dropdown-item" href="/carga_org_lot/patriarcas/">
+        <i class="fas fa-landmark me-2"></i> Patriarcas
+    </a>
+</li>
+{% endblock %}
+
+{# ========== URL DE LOGOUT ESPECÍFICA ========== #}
+{% block logout_url %}/logout/{% endblock %}
+
+{# ========== CSS CUSTOMIZADO ========== #}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'carga_org_lot/css/menu.css' %}">
+<style>
+    /* Reset do padding do main-content para layout customizado */
+    .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Container principal com sidebar */
+    .carga-layout {
+        display: flex;
+        min-height: calc(100vh - 200px); /* Altura total menos header e footer */
+        position: relative;
+    }
+    
+    /* Sidebar específico do Carga Org/Lot */
+    .sidebar {
+        width: 260px;
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+        overflow-y: auto;
+        position: sticky;
+        top: 0;
+        height: calc(100vh - 120px);
+        flex-shrink: 0;
+    }
+    
+    .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .sidebar-header h4 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #28a745;
+    }
+    
+    .sidebar-header small {
+        font-size: 0.75rem;
+        display: block;
+        margin-top: 5px;
+        opacity: 0.8;
+    }
+    
+    .sidebar .nav-link {
+        padding: 12px 20px;
+        color: #e0e0e0;
+        text-decoration: none;
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+    
+    .sidebar .nav-link:hover {
+        background-color: #2d5016;
+        color: white;
+        border-left-color: #28a745;
+    }
+    
+    .sidebar .nav-link.active {
+        background-color: rgba(40, 167, 69, 0.15);
+        color: white;
+        border-left-color: #4caf50;
+        font-weight: 500;
+    }
+    
+    .sidebar .nav-link i {
+        width: 20px;
+        text-align: center;
+        margin-right: 10px;
+    }
+    
+    .sidebar .nav-link.submenu {
+        padding-left: 50px;
+        font-size: 0.85rem;
+    }
+    
+    .sidebar .nav-link .fa-chevron-down {
+        transition: transform 0.3s;
+        font-size: 0.7rem;
+        margin-left: auto;
+    }
+    
+    .sidebar .nav-link[aria-expanded="true"] .fa-chevron-down {
+        transform: rotate(180deg);
+    }
+    
+    /* Área de conteúdo principal */
+    .content-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Banner superior */
+    .banner {
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        color: white;
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .banner-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    
+    .patriarca-info {
+        font-size: 0.9rem;
+        padding: 5px 15px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Conteúdo */
+    .page-content {
+        padding: 25px;
+        flex: 1;
+    }
+    
+    /* Botão menu mobile */
+    .menu-toggle {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #28a745;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1000;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .menu-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+    
+    /* Estilo para perfil ativo no dropdown */
+    .dropdown-item.active {
+        background-color: #d4edda;
+        color: #28a745;
+        font-weight: 600;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .carga-layout {
+            flex-direction: column;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            z-index: 1050;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.show {
+            transform: translateX(0);
+        }
+        
+        .menu-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .banner {
+            flex-direction: column;
+            gap: 10px;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{# ========== CONTEÚDO PRINCIPAL ========== #}
+{% block content %}
+<!-- Botão Menu Mobile -->
+<button class="menu-toggle" id="menuToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="carga-layout">
+    <!-- SIDEBAR (MENU LATERAL) -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-sitemap"></i> Carga Org/Lot</h4>
+            <small>Sistema de Carga de Organograma e Lotação</small>
+        </div>
+        
+        <ul class="nav flex-column">
+            <!-- Dashboard -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/" 
+                   class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            
+            <!-- Cadastro de Patriarca -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/patriarcas/" 
+                   class="nav-link {% if 'patriarca' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-landmark"></i> Cadastro de Patriarca
+                </a>
+            </li>
+            
+            <!-- Organograma (Menu Expansível) -->
+            <li class="nav-item">
+                <a class="nav-link" 
+                   data-bs-toggle="collapse" 
+                   href="#menuOrganograma" 
+                   role="button"
+                   aria-expanded="{% if 'organograma' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
+                   aria-controls="menuOrganograma">
+                    <i class="fas fa-sitemap"></i> Organograma
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="collapse {% if 'organograma' in request.resolver_match.url_name %}show{% endif %}" 
+                     id="menuOrganograma">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a href="/carga_org_lot/organograma/upload/" 
+                               class="nav-link submenu {% if request.resolver_match.url_name == 'organograma_upload' %}active{% endif %}">
+                                <i class="fas fa-file-upload"></i> Ler Arquivo
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/carga_org_lot/organograma/editar/" 
+                               class="nav-link submenu {% if request.resolver_match.url_name == 'organograma_edit' %}active{% endif %}">
+                                <i class="fas fa-edit"></i> Editar Organograma
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <!-- Ler Arquivo Lotação -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/lotacao/upload/" 
+                   class="nav-link {% if 'lotacao' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-users-cog"></i> Ler Arquivo Lotação
+                </a>
+            </li>
+            
+            <!-- Enviar Carga -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/carga/enviar/" 
+                   class="nav-link {% if request.resolver_match.url_name == 'carga_enviar' %}active{% endif %}">
+                    <i class="fas fa-paper-plane"></i> Enviar Carga
+                </a>
+            </li>
+            
+            <!-- Validar Estado Carga -->
+            <li class="nav-item">
+                <a href="/carga_org_lot/carga/status/" 
+                   class="nav-link {% if request.resolver_match.url_name == 'carga_status' %}active{% endif %}">
+                    <i class="fas fa-clipboard-check"></i> Validar Estado Carga
+                </a>
+            </li>
+            
+            <!-- Separador -->
+            <li class="nav-item mt-4">
+                <hr style="border-color: rgba(255, 255, 255, 0.1); margin: 15px 20px;">
+            </li>
+            
+            <!-- Sair -->
+            <li class="nav-item">
+                <a href="/logout/" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- ÁREA DE CONTEÚDO -->
+    <div class="content-area">
+        <!-- Banner Superior -->
+        <div class="banner">
+            <span class="banner-title">{% block page_title %}Carga Única de Organograma e Lotação{% endblock %}</span>
+            <span class="patriarca-info">
+                {% if request.session.patriarca_selecionado %}
+                    <i class="fas fa-landmark me-2"></i>
+                    Patriarca: {{ request.session.patriarca_selecionado.nome }} ({{ request.session.patriarca_selecionado.sigla }})
+                {% else %}
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Nenhum Patriarca selecionado
+                {% endif %}
+            </span>
+        </div>
+
+        <!-- Container de Conteúdo -->
+        <div class="page-content container-fluid">
+            <!-- Conteúdo da Página -->
+            {% block page_content %}
+            <!-- Conteúdo específico de cada página -->
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{# ========== JAVASCRIPT ========== #}
+{% block extra_js %}
+<script>
+    // Menu Mobile Toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        if (menuToggle && sidebar) {
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+            });
+            
+            // Fechar menu ao clicar em um link (mobile)
+            const sidebarLinks = sidebar.querySelectorAll('.nav-link');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.remove('show');
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

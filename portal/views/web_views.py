@@ -54,10 +54,13 @@ def portal_login(request):
     return render(request, 'portal/login.html')
 
 
-@login_required(login_url='/portal/login/')
+@login_required(login_url='/login/')  # ✅ Corrigido: usa /login/ em vez de /portal/login/
 def portal_dashboard(request):
     """
     Dashboard do Portal - exibe aplicações disponíveis para o usuário
+    
+    Protegido por @login_required com redirecionamento para /login/
+    (consistênte com settings.LOGIN_URL = '/login/')
     """
     user = request.user
     

@@ -1,0 +1,186 @@
+{% extends "carga_org_lot/base.html" %}
+{% load static %}
+
+{% block title %}Editar Organograma - GPP Carga Org/Lot{% endblock %}
+
+{% block page_title %}Editar Organograma{% endblock %}
+
+{% block extra_css %}
+<style>
+    #reactflow-container {
+        width: 100%;
+        height: calc(100vh - 250px);
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+    }
+    
+    .controls-panel {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .node-info-panel {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 300px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10;
+        display: none;
+    }
+    
+    .node-info-panel.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <h2 class="text-carga-primary">
+            <i class="fas fa-edit me-2"></i>
+            Editar Organograma Visualmente
+        </h2>
+        <p class="text-muted">Visualize e edite a estrutura hierárquica do organograma</p>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="controls-panel">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-carga-outline" id="btnZoomIn">
+                            <i class="fas fa-search-plus"></i> Zoom +
+                        </button>
+                        <button type="button" class="btn btn-sm btn-carga-outline" id="btnZoomOut">
+                            <i class="fas fa-search-minus"></i> Zoom -
+                        </button>
+                        <button type="button" class="btn btn-sm btn-carga-outline" id="btnFitView">
+                            <i class="fas fa-compress-arrows-alt"></i> Ajustar
+                        </button>
+                        <button type="button" class="btn btn-sm btn-carga-outline" id="btnLayoutAuto">
+                            <i class="fas fa-magic"></i> Layout Automático
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" class="btn btn-sm btn-success" id="btnSalvar">
+                        <i class="fas fa-save me-1"></i> Salvar Alterações
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="btnCancelar">
+                        <i class="fas fa-times me-1"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="position-relative">
+            <div id="reactflow-container"></div>
+            
+            <!-- Painel de Informações do Nó -->
+            <div class="node-info-panel" id="nodeInfoPanel">
+                <h5 class="text-carga-primary mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informações do Nó
+                </h5>
+                <div id="nodeInfoContent">
+                    <p class="text-muted">Selecione um nó para ver detalhes</p>
+                </div>
+                <hr>
+                <button type="button" class="btn btn-sm btn-danger w-100" id="btnDeleteNode" style="display: none;">
+                    <i class="fas fa-trash me-1"></i> Excluir Nó
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>
+                Instruções de Uso
+            </h6>
+            <ul class="mb-0 small">
+                <li><strong>Visualizar:</strong> Clique em um nó para ver suas informações</li>
+                <li><strong>Mover:</strong> Arraste os nós para reposicioná-los</li>
+                <li><strong>Zoom:</strong> Use os botões de controle ou a roda do mouse</li>
+                <li><strong>Layout:</strong> Clique em "Layout Automático" para reorganizar automaticamente</li>
+                <li><strong>Salvar:</strong> Não esqueça de salvar suas alterações!</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- ReactFlow será carregado via CDN ou build -->
+<script src="https://cdn.jsdelivr.net/npm/reactflow@11/dist/umd/index.min.js"></script>
+
+<script>
+// Dados do organograma (virão da API)
+const organogramaData = {{ organograma_json|safe }};
+
+// Inicialização do ReactFlow (implementar posteriormente)
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('ReactFlow: Carregando organograma...', organogramaData);
+    
+    // TODO: Implementar integração completa com ReactFlow
+    // Por enquanto, exibe mensagem temporária
+    const container = document.getElementById('reactflow-container');
+    container.innerHTML = `
+        <div class="d-flex align-items-center justify-content-center h-100">
+            <div class="text-center">
+                <i class="fas fa-cog fa-spin fa-3x text-carga-primary mb-3"></i>
+                <h4>Carregando Editor Visual</h4>
+                <p class="text-muted">A integração com ReactFlow será implementada em breve</p>
+            </div>
+        </div>
+    `;
+    
+    // Event listeners dos botões
+    document.getElementById('btnSalvar')?.addEventListener('click', salvarAlteracoes);
+    document.getElementById('btnCancelar')?.addEventListener('click', () => {
+        if (confirm('Descartar alterações não salvas?')) {
+            window.location.href = "{% url 'carga_org_lot_web:dashboard' %}";
+        }
+    });
+});
+
+function salvarAlteracoes() {
+    // TODO: Implementar salvamento via AJAX
+    alert('Funcionalidade de salvamento será implementada');
+}
+
+function mostrarInfoNo(nodeData) {
+    const panel = document.getElementById('nodeInfoPanel');
+    const content = document.getElementById('nodeInfoContent');
+    const btnDelete = document.getElementById('btnDeleteNode');
+    
+    content.innerHTML = `
+        <p><strong>Nome:</strong> ${nodeData.nome}</p>
+        <p><strong>Sigla:</strong> ${nodeData.sigla}</p>
+        <p><strong>Nível:</strong> ${nodeData.nivel}</p>
+        <p><strong>Número Hierárquico:</strong> ${nodeData.numero}</p>
+    `;
+    
+    panel.classList.add('active');
+    btnDelete.style.display = 'block';
+}
+</script>
+{% endblock %}

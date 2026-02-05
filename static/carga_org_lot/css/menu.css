@@ -1,0 +1,345 @@
+/* ========================================
+   MENU LATERAL - Carga Org/Lot
+   ======================================== */
+
+:root {
+    --carga-primary: #28a745;
+    --carga-primary-dark: #1e7e34;
+    --carga-primary-light: #d4edda;
+    --carga-accent: #20c997;
+}
+
+/* ========================================
+   CARDS E ESTATÍSTICAS
+   ======================================== */
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--carga-primary);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.stat-card .icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, var(--carga-primary) 0%, var(--carga-primary-dark) 100%);
+    color: white;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 10px 0;
+}
+
+.stat-card p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.stat-card .badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+/* ========================================
+   TABELAS
+   ======================================== */
+
+.table-responsive {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.table thead th {
+    background: linear-gradient(135deg, var(--carga-primary) 0%, var(--carga-primary-dark) 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 15px;
+}
+
+.table tbody tr {
+    transition: all 0.2s;
+}
+
+.table tbody tr:hover {
+    background-color: var(--carga-primary-light);
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 12px 15px;
+}
+
+/* ========================================
+   BOTÕES
+   ======================================== */
+
+.btn-carga-primary {
+    background: linear-gradient(135deg, var(--carga-primary) 0%, var(--carga-primary-dark) 100%);
+    border: none;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+}
+
+.btn-carga-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    color: white;
+}
+
+.btn-carga-outline {
+    border: 2px solid var(--carga-primary);
+    color: var(--carga-primary);
+    background: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-carga-outline:hover {
+    background: var(--carga-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   BADGES E LABELS
+   ======================================== */
+
+.badge-status-novo {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.badge-status-progresso {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-status-completo {
+    background-color: var(--carga-primary);
+    color: white;
+}
+
+.badge-status-erro {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-status-enviando {
+    background-color: #fd7e14;
+    color: white;
+}
+
+/* ========================================
+   FORMULÁRIOS
+   ======================================== */
+
+.form-control:focus {
+    border-color: var(--carga-primary);
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* ========================================
+   PROGRESS BARS
+   ======================================== */
+
+.progress {
+    height: 24px;
+    border-radius: 12px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, var(--carga-primary) 0%, var(--carga-accent) 100%);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* ========================================
+   TIMELINE
+   ======================================== */
+
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--carga-primary-light);
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 30px;
+}
+
+.timeline-icon {
+    position: absolute;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--carga-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.timeline-content {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.timeline-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+/* ========================================
+   ALERTS CUSTOMIZADOS
+   ======================================== */
+
+.alert-carga {
+    border-left: 4px solid var(--carga-primary);
+    background-color: var(--carga-primary-light);
+    color: var(--carga-primary-dark);
+    border-radius: 8px;
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+
+.spinner-carga {
+    border: 3px solid var(--carga-primary-light);
+    border-top: 3px solid var(--carga-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   TOOLTIPS
+   ======================================== */
+
+.tooltip-carga {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.tooltip-carga:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    z-index: 1000;
+}
+
+/* ========================================
+   UTILITÁRIOS
+   ======================================== */
+
+.text-carga-primary {
+    color: var(--carga-primary) !important;
+}
+
+.bg-carga-primary {
+    background-color: var(--carga-primary) !important;
+}
+
+.bg-carga-light {
+    background-color: var(--carga-primary-light) !important;
+}
+
+.border-carga {
+    border-color: var(--carga-primary) !important;
+}
+
+/* ========================================
+   ANIMAÇÕES
+   ======================================== */
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}

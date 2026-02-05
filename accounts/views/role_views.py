@@ -56,14 +56,16 @@ def set_active_role(request, role_id, app_code=None):
         f'Papel {user_role.role.nomeperfil} ativado para {user_role.aplicacao.nomeaplicacao}'
     )
     
-    # Redireciona para dashboard da aplicação usando os namespaces WEB corretos
+    # Redireciona para dashboard da aplicação usando namespaces corretos
+    # Padrão: <app>_web:dashboard para views Django | <app>_api para APIs REST (Next.js)
     if app_code == 'ACOES_PNGI':
-        return redirect('acoes_pngi_web:dashboard')  # ← CORRIGIDO
+        return redirect('acoes_pngi_web:dashboard')
     elif app_code == 'CARGA_ORG_LOT':
-        return redirect('carga_org_lot_web:dashboard')  # ← CORRIGIDO
+        return redirect('carga_org_lot_web:dashboard')  # ✅ Namespace correto (web_urls.py)
     elif app_code == 'PORTAL':
-        return redirect('portal:dashboard')  # ← Este já estava correto
+        return redirect('portal:dashboard')
     else:
+        # Fallback genérico: tenta redirecionar usando o namespace da aplicação
         return redirect('/')
 
 

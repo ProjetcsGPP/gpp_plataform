@@ -1,218 +1,171 @@
-{% extends "base.html" %}
+{% extends "carga_org_lot/base.html" %}
 {% load static %}
 {% load permission_tags %}
 
 {% block title %}Dashboard - Carga Org/Lot{% endblock %}
 
-{% block body_class %}app-carga{% endblock %}
+{% block page_title %}Dashboard - Carga Org/Lot{% endblock %}
 
-{% block app_icon %}fas fa-sitemap{% endblock %}
-{% block app_name %}Carga Org/Lot{% endblock %}
+{% block page_content %}
+<!-- Cards de Resumo -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-1">Patriarcas Ativos</h5>
+                        <h2 class="mb-0">12</h2>
+                    </div>
+                    <div class="opacity-50">
+                        <i class="fas fa-landmark fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card bg-info text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-1">Cargas Processadas</h5>
+                        <h2 class="mb-0">45</h2>
+                    </div>
+                    <div class="opacity-50">
+                        <i class="fas fa-check-circle fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-1">Pendentes</h5>
+                        <h2 class="mb-0">3</h2>
+                    </div>
+                    <div class="opacity-50">
+                        <i class="fas fa-hourglass-half fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-1">Usuários Ativos</h5>
+                        <h2 class="mb-0">28</h2>
+                    </div>
+                    <div class="opacity-50">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-{% block logout_url %}{% url 'carga_org_lot_web:logout' %}{% endblock %}
-
-{% block extra_css %}
-<style>
-    .sidebar {
-        min-height: calc(100vh - 140px);
-        background-color: #343a40;
-        color: white;
-    }
-    .sidebar .nav-link {
-        color: rgba(255,255,255,0.8);
-        padding: 0.75rem 1rem;
-        border-radius: 0.25rem;
-        margin-bottom: 0.25rem;
-    }
-    .sidebar .nav-link:hover {
-        background-color: rgba(255,255,255,0.1);
-        color: white;
-    }
-    .sidebar .nav-link.active {
-        background-color: var(--app-primary);
-        color: white;
-    }
-    .user-info-sidebar {
-        padding: 1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        margin-bottom: 1rem;
-    }
-    .role-selector {
-        background-color: rgba(0,0,0,0.2);
-        padding: 0.5rem;
-        border-radius: 0.25rem;
-        margin-top: 0.5rem;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <nav class="col-md-2 col-lg-2 d-md-block sidebar">
-            <div class="position-sticky pt-3">
-                <!-- Seletor de Papel -->
-                <div class="user-info-sidebar">
-                    <div class="role-selector">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted d-block">Perfil Ativo:</small>
-                                <strong>{{ active_role_name }}</strong>
-                            </div>
-                            {% if user_roles_for_app.count > 1 %}
-                            <a href="{% url 'accounts:switch_role' 'CARGA_ORG_LOT' %}" 
-                               class="btn btn-sm btn-outline-light" 
-                               title="Trocar perfil">
-                                <i class="fas fa-exchange-alt"></i>
-                            </a>
+<!-- Área de Conteúdo -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-app-light">
+                <h5 class="text-app-primary mb-0">
+                    <i class="fas fa-user-circle me-2"></i>
+                    Bem-vindo(a), {{ user.name }}!
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    <strong>Perfil Ativo:</strong> 
+                    <span class="badge bg-success">{{ active_role_name|default:"Sem perfil" }}</span>
+                </p>
+                
+                {% if user_roles_in_app %}
+                <div class="alert alert-info">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Seus Perfis Disponíveis nesta Aplicação
+                    </h6>
+                    <p class="mb-2">Você possui {{ user_roles_in_app|length }} perfil(is) configurado(s) para o sistema Carga Org/Lot:</p>
+                    <ul class="list-group list-group-flush">
+                        {% for role in user_roles_in_app %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-user-tag me-2 text-success"></i>
+                                <strong>{{ role.name }}</strong>
+                            </span>
+                            {% if role.is_active %}
+                                <span class="badge bg-success rounded-pill">
+                                    <i class="fas fa-check"></i> Ativo agora
+                                </span>
+                            {% else %}
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="alert('Funcionalidade de troca de perfil em desenvolvimento')">
+                                    <i class="fas fa-exchange-alt"></i> Alternar para este perfil
+                                </button>
                             {% endif %}
-                        </div>
-                    </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
-
-                <!-- Menu -->
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'carga_org_lot_web:dashboard' %}">
-                            <i class="fas fa-home me-2"></i> Dashboard
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#cadastroSubmenu">
-                            <i class="fas fa-database me-2"></i> Cadastro
-                            <i class="fas fa-chevron-down float-end mt-1"></i>
-                        </a>
-                        <ul class="collapse nav flex-column ms-3" id="cadastroSubmenu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-list me-2"></i> Tipos e Classificações
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-sitemap me-2"></i> Patriarca
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-users-cog me-2"></i> Usuários e Perfis
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#organizarSubmenu">
-                            <i class="fas fa-project-diagram me-2"></i> Organizar Patriarca
-                            <i class="fas fa-chevron-down float-end mt-1"></i>
-                        </a>
-                        <ul class="collapse nav flex-column ms-3" id="organizarSubmenu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-edit me-2"></i> Criar/Editar Organograma
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#execucaoSubmenu">
-                            <i class="fas fa-play-circle me-2"></i> Execução
-                            <i class="fas fa-chevron-down float-end mt-1"></i>
-                        </a>
-                        <ul class="collapse nav flex-column ms-3" id="execucaoSubmenu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-upload me-2"></i> Enviar Cargas
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#relatoriosSubmenu">
-                            <i class="fas fa-chart-bar me-2"></i> Relatórios
-                            <i class="fas fa-chevron-down float-end mt-1"></i>
-                        </a>
-                        <ul class="collapse nav flex-column ms-3" id="relatoriosSubmenu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-search me-2"></i> Consultar Patriarcas
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <hr class="text-white">
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'portal:dashboard' %}">
-                            <i class="fas fa-arrow-left me-2"></i> Voltar ao Portal
-                        </a>
-                    </li>
-                </ul>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Você não possui perfis configurados nesta aplicação.
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                <p class="text-muted mb-0">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Selecione uma opção no <strong>menu lateral</strong> para começar a trabalhar.
+                </p>
             </div>
-        </nav>
+        </div>
+    </div>
+</div>
 
-        <!-- Conteúdo Principal -->
-        <main class="col-md-10 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Dashboard - Carga Org/Lot</h1>
+<!-- Ações Rápidas -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-app-light">
+                <h5 class="text-app-primary mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Ações Rápidas
+                </h5>
             </div>
-
-            <!-- Cards de Resumo -->
-            <div class="row">
-                <div class="col-md-3 mb-4">
-                    <div class="card bg-app-primary text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Patriarcas Ativos</h5>
-                            <h2>12</h2>
-                        </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="/carga_org_lot/patriarcas/" class="btn btn-success btn-lg w-100 d-flex flex-column align-items-center py-3">
+                            <i class="fas fa-landmark mb-2" style="font-size: 2.5rem;"></i>
+                            <span>Gerenciar Patriarcas</span>
+                        </a>
                     </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card bg-success text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Cargas Processadas</h5>
-                            <h2>45</h2>
-                        </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="/carga_org_lot/organograma/upload/" class="btn btn-outline-success btn-lg w-100 d-flex flex-column align-items-center py-3">
+                            <i class="fas fa-file-upload mb-2" style="font-size: 2.5rem;"></i>
+                            <span>Upload Organograma</span>
+                        </a>
                     </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card bg-warning text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Pendentes</h5>
-                            <h2>3</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card bg-info text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Usuários Ativos</h5>
-                            <h2>28</h2>
-                        </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="/carga_org_lot/carga/status/" class="btn btn-outline-info btn-lg w-100 d-flex flex-column align-items-center py-3">
+                            <i class="fas fa-clipboard-check mb-2" style="font-size: 2.5rem;"></i>
+                            <span>Validar Cargas</span>
+                        </a>
                     </div>
                 </div>
             </div>
-
-            <!-- Área de Conteúdo -->
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header bg-app-light">
-                            <h5 class="text-app-primary mb-0">Bem-vindo(a), {{ user.name }}!</h5>
-                        </div>
-                        <div class="card-body">
-                            <p>Você está acessando como: <strong>{{ active_role_name }}</strong></p>
-                            <p>Selecione uma opção no menu lateral para começar.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+        </div>
     </div>
 </div>
 {% endblock %}

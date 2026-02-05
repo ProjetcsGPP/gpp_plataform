@@ -61,9 +61,11 @@ TEMPLATES = [{
             'django.contrib.auth.context_processors.auth',
             'django.contrib.messages.context_processors.messages',
             
+            # Context processors das apps
             'accounts.context_processors.active_role_context',
-            
             'acoes_pngi.context_processors.acoes_permissions',
+            'acoes_pngi.context_processors.acoes_pngi_context',  # NOVO - dropdown com perfis
+            'carga_org_lot.context_processors.carga_org_lot_context',
         ],
     },
 }]

@@ -1,0 +1,293 @@
+{% extends "carga_org_lot/base.html" %}
+{% load static %}
+
+{% block title %}{{ patriarca.str_sigla_patriarca }} - Detalhes - GPP Carga Org/Lot{% endblock %}
+
+{% block page_title %}Detalhes do Patriarca{% endblock %}
+
+{% block page_content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">
+                <i class="fas fa-landmark me-2 text-primary"></i>
+                {{ patriarca.str_sigla_patriarca }} - {{ patriarca.str_nome }}
+            </h2>
+            <div>
+                <a href="{% url 'carga_org_lot_web:patriarca_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <a href="{% url 'carga_org_lot_web:patriarca_update' patriarca.id_patriarca %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informações Gerais -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>
+            Informações Gerais
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Sigla:</dt>
+                    <dd class="col-sm-8"><strong>{{ patriarca.str_sigla_patriarca }}</strong></dd>
+                    
+                    <dt class="col-sm-4">Nome Completo:</dt>
+                    <dd class="col-sm-8">{{ patriarca.str_nome }}</dd>
+                    
+                    <dt class="col-sm-4">ID Externo:</dt>
+                    <dd class="col-sm-8"><code>{{ patriarca.id_externo_patriarca }}</code></dd>
+                    
+                    <dt class="col-sm-4">Status:</dt>
+                    <dd class="col-sm-8">
+                        {% if patriarca.id_status_progresso.id_status_progresso == 1 %}
+                            <span class="badge badge-status-novo">{{ patriarca.id_status_progresso.str_descricao }}</span>
+                        {% elif patriarca.id_status_progresso.id_status_progresso == 2 %}
+                            <span class="badge badge-status-progresso">{{ patriarca.id_status_progresso.str_descricao }}</span>
+                        {% elif patriarca.id_status_progresso.id_status_progresso == 3 %}
+                            <span class="badge badge-status-enviando">{{ patriarca.id_status_progresso.str_descricao }}</span>
+                        {% else %}
+                            <span class="badge badge-status-processado">{{ patriarca.id_status_progresso.str_descricao }}</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+            
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Organograma:</dt>
+                    <dd class="col-sm-8">
+                        {% if patriarca.tem_organograma_ativo %}
+                            <i class="fas fa-check-circle text-success"></i> Ativo
+                        {% else %}
+                            <i class="fas fa-times-circle text-danger"></i> Não carregado
+                        {% endif %}
+                    </dd>
+                    
+                    <dt class="col-sm-4">Lotação:</dt>
+                    <dd class="col-sm-8">
+                        {% if patriarca.tem_lotacao_ativa %}
+                            <i class="fas fa-check-circle text-success"></i> Ativa
+                        {% else %}
+                            <i class="fas fa-times-circle text-danger"></i> Não carregada
+                        {% endif %}
+                    </dd>
+                    
+                    <dt class="col-sm-4">Criado em:</dt>
+                    <dd class="col-sm-8">{{ patriarca.dat_criacao|date:"d/m/Y H:i" }}</dd>
+                    
+                    <dt class="col-sm-4">Criado por:</dt>
+                    <dd class="col-sm-8">{{ patriarca.id_usuario_criacao.username }}</dd>
+                    
+                    {% if patriarca.dat_alteracao %}
+                        <dt class="col-sm-4">Atualizado em:</dt>
+                        <dd class="col-sm-8">{{ patriarca.dat_alteracao|date:"d/m/Y H:i" }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+        
+        <!-- Botões de Ação -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="btn-group" role="group">
+                    {% if patriarca.id_status_progresso.id_status_progresso in "1,2"|split:"," %}
+                        <a href="{% url 'carga_org_lot_web:patriarca_select' patriarca.id_patriarca %}" 
+                           class="btn btn-success"
+                           onclick="return confirm('Deseja selecionar o patriarca {{ patriarca.str_sigla_patriarca }} para trabalhar?')">
+                            <i class="fas fa-check"></i> Selecionar Patriarca
+                        </a>
+                    {% else %}
+                        <a href="{% url 'carga_org_lot_web:patriarca_reset' patriarca.id_patriarca %}" 
+                           class="btn btn-danger"
+                           onclick="return confirm('Deseja resetar o patriarca {{ patriarca.str_sigla_patriarca }}? Isso alterará o status para Em Progresso.')">
+                            <i class="fas fa-redo"></i> Resetar Status
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Organogramas Recentes -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-sitemap me-2"></i>
+            Organogramas Recentes (últimos 5)
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if organogramas %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Versão</th>
+                            <th>Arquivo</th>
+                            <th>Processado em</th>
+                            <th>Total de Órgãos</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for org in organogramas %}
+                            <tr>
+                                <td><code>{{ org.int_versao }}</code></td>
+                                <td><small>{{ org.str_nome_arquivo|default:"N/A" }}</small></td>
+                                <td>{{ org.dat_processamento|date:"d/m/Y H:i" }}</td>
+                                <td>{{ org.int_qtd_orgaos|default:"-" }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'carga_org_lot_web:organograma_detail' org.id_organograma_versao %}" 
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i> Detalhes
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                Nenhum organograma carregado ainda.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Lotações Recentes -->
+<div class="card mb-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-users me-2"></i>
+            Lotações Recentes (últimas 5)
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if lotacoes %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Versão</th>
+                            <th>Arquivo</th>
+                            <th>Processada em</th>
+                            <th>Total de Servidores</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lot in lotacoes %}
+                            <tr>
+                                <td><code>{{ lot.int_versao }}</code></td>
+                                <td><small>{{ lot.str_nome_arquivo|default:"N/A" }}</small></td>
+                                <td>{{ lot.dat_processamento|date:"d/m/Y H:i" }}</td>
+                                <td>{{ lot.int_qtd_servidores|default:"-" }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'carga_org_lot_web:lotacao_detail' lot.id_lotacao_versao %}" 
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i> Detalhes
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                Nenhuma lotação carregada ainda.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Histórico de Cargas -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-history me-2"></i>
+            Histórico de Cargas (últimas 10)
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if cargas %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Iniciada em</th>
+                            <th>Finalizada em</th>
+                            <th>Duração</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for carga in cargas %}
+                            <tr>
+                                <td>
+                                    {% if carga.id_tipo_carga.str_descricao == "Organograma" %}
+                                        <span class="badge bg-info">{{ carga.id_tipo_carga.str_descricao }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ carga.id_tipo_carga.str_descricao }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if carga.id_status_carga.str_descricao == "Sucesso" %}
+                                        <span class="badge bg-success">{{ carga.id_status_carga.str_descricao }}</span>
+                                    {% elif carga.id_status_carga.str_descricao == "Erro" %}
+                                        <span class="badge bg-danger">{{ carga.id_status_carga.str_descricao }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ carga.id_status_carga.str_descricao }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ carga.dat_data_hora_inicio|date:"d/m/Y H:i:s" }}</small></td>
+                                <td>
+                                    {% if carga.dat_data_hora_fim %}
+                                        <small>{{ carga.dat_data_hora_fim|date:"d/m/Y H:i:s" }}</small>
+                                    {% else %}
+                                        <small class="text-muted">Em andamento</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if carga.dat_data_hora_fim %}
+                                        <small>{{ carga.int_duracao_segundos }}s</small>
+                                    {% else %}
+                                        <small class="text-muted">-</small>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'carga_org_lot_web:carga_detail' carga.id_carga_patriarca %}" 
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i> Detalhes
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                Nenhuma carga registrada ainda.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

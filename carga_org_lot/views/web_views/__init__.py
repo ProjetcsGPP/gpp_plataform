@@ -24,6 +24,10 @@ __all__ = [
     # Patriarca
     'patriarca_list',
     'patriarca_detail',
+    'patriarca_create',      # ← ADICIONADO
+    'patriarca_update',      # ← ADICIONADO
+    'patriarca_select',      # ← ADICIONADO
+    'patriarca_reset',       # ← ADICIONADO
     
     # Organograma
     'organograma_list',
