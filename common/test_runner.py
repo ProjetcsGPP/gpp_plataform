@@ -1,13 +1,23 @@
 # common/test_runner.py
 from django.test.runner import DiscoverRunner
 from django.db import connection
+import sys
+import io
 
 
 class GPPTestRunner(DiscoverRunner):
     """
     Test runner customizado para GPP Platform
     Cria schemas necessários antes de executar migrations
+    
+    Nota: Trata UnicodeEncodeError no Windows com Python 3.13+
     """
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Fix para UnicodeEncodeError no Windows com caracteres especiais
+        if sys.stdout and hasattr(sys.stdout, 'buffer'):
+            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     
     def setup_databases(self, **kwargs):
         """
@@ -27,7 +37,8 @@ class GPPTestRunner(DiscoverRunner):
                 cursor.execute("CREATE SCHEMA IF NOT EXISTS carga_org_lot;")
                 
                 if self.verbosity >= 1:
-                    self.log("✓ Schemas criados")
+                    # Usar ASCII art em vez de Unicode para evitar problemas
+                    self.log("[OK] Schemas criados")
                 
                 # Popular tblaplicacao se existir
                 cursor.execute("""
@@ -40,7 +51,7 @@ class GPPTestRunner(DiscoverRunner):
                 
                 if cursor.fetchone()[0]:
                     if self.verbosity >= 1:
-                        self.log("✓ Populando tblaplicacao...")
+                        self.log("[OK] Populando tblaplicacao...")
                     
                     # Inserir ou atualizar aplicações
                     cursor.execute("""
@@ -65,7 +76,7 @@ class GPPTestRunner(DiscoverRunner):
                     app_ids = {row[1]: row[0] for row in cursor.fetchall()}
                     
                     if self.verbosity >= 1:
-                        self.log(f"✓ Aplicações populadas: {app_ids}")
+                        self.log(f"[OK] Aplicacoes populadas: {app_ids}")
                     
                     # Popular accounts_role com os IDs reais
                     cursor.execute("""
@@ -78,7 +89,7 @@ class GPPTestRunner(DiscoverRunner):
                     
                     if cursor.fetchone()[0]:
                         if self.verbosity >= 1:
-                            self.log("✓ Populando accounts_role...")
+                            self.log("[OK] Populando accounts_role...")
                         
                         # Usar os IDs reais das aplicações
                         portal_id = app_ids.get('PORTAL')
@@ -89,9 +100,9 @@ class GPPTestRunner(DiscoverRunner):
                             cursor.execute("""
                                 INSERT INTO accounts_role (nomeperfil, codigoperfil, aplicacao_id)
                                 VALUES 
-                                    ('Usuário do Portal', 'USER_PORTAL', %s),
+                                    ('Usuario do Portal', 'USER_PORTAL', %s),
                                     ('Gestor Carga Org/Lot', 'GESTOR_CARGA', %s),
-                                    ('Gestor Ações PNGI', 'GESTOR_PNGI', %s)
+                                    ('Gestor Acoes PNGI', 'GESTOR_PNGI', %s)
                                 ON CONFLICT (aplicacao_id, codigoperfil) DO UPDATE SET
                                     nomeperfil = EXCLUDED.nomeperfil;
                             """, [portal_id, carga_id, acoes_id])
@@ -106,20 +117,20 @@ class GPPTestRunner(DiscoverRunner):
                             
                             roles = cursor.fetchall()
                             if self.verbosity >= 1:
-                                self.log(f"✓ Roles criadas: {roles}")
+                                self.log(f"[OK] Roles criadas: {len(roles)} roles")
                         else:
                             if self.verbosity >= 1:
-                                self.log("⚠ Não foi possível obter IDs de todas as aplicações")
+                                self.log("[WARN] Nao foi possivel obter IDs de todas as aplicacoes")
                     else:
                         if self.verbosity >= 1:
-                            self.log("⚠ Tabela accounts_role não encontrada")
+                            self.log("[WARN] Tabela accounts_role nao encontrada")
                 
                 if self.verbosity >= 1:
-                    self.log("✓ Ambiente de testes configurado!\n")
+                    self.log("[OK] Ambiente de testes configurado!\n")
                 
             except Exception as e:
                 if self.verbosity >= 1:
-                    self.log(f"⚠ Erro ao configurar ambiente: {e}\n")
+                    self.log(f"[ERROR] Erro ao configurar ambiente: {str(e)}\n")
                 import traceback
                 if self.verbosity >= 1:
                     self.log(traceback.format_exc())
