@@ -97,8 +97,7 @@ $process = Start-Process -FilePath python `
         "manage.py",
         "test",
         $appTestPath,
-        "-v", "2",
-        "--no-migrations"  # Importante: usar no-migrations para ir mais rápido
+        "-v", "2"
     ) `
     -NoNewWindow `
     -PassThru `
