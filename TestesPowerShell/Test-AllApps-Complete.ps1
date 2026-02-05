@@ -36,6 +36,7 @@ param(
 $ErrorActionPreference = "Continue"
 $WarningPreference = "Continue"
 
+# Define cores disponíveis no PowerShell
 $colors = @{
     'SUCCESS' = 'Green'
     'FAIL' = 'Red'
@@ -78,7 +79,10 @@ $appConfig = @{
 }
 
 function Write-ColorOutput([string]$message, [string]$type = 'INFO') {
-    $color = $colors[$type] -or 'White'
+    $color = $colors[$type]
+    if ($null -eq $color) {
+        $color = 'White'
+    }
     Write-Host "[$type] $message" -ForegroundColor $color
 }
 
@@ -101,33 +105,45 @@ function Write-AppHeader([string]$appName, [string]$appDisplayName) {
 # ============================================================================
 
 function Test-AppUnit([string]$appName) {
-    Write-ColorOutput "\n[Unit Tests] Executando testes Django para $appName..." 'INFO'
+    Write-ColorOutput "[Unit Tests] Executando testes Django para $appName..." 'INFO'
     
     $appTestPath = "${appName}.tests.test_context_processors"
     Write-ColorOutput "Comando: python manage.py test $appTestPath -v 2" 'INFO'
     
-    $testOutput = python manage.py test $appTestPath -v 2 2>&1
-    
-    if ($LASTEXITCODE -eq 0) {
-        Write-ColorOutput "✓ Testes unitários executados com sucesso!" 'SUCCESS'
-        return @{
-            'passed' = $true
-            'message' = 'Testes unitários passaram'
-            'details' = $testOutput
+    try {
+        $testOutput = python manage.py test $appTestPath -v 2 2>&1
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-ColorOutput "✓ Testes unitários executados com sucesso!" 'SUCCESS'
+            return @{
+                'passed' = $true
+                'message' = 'Testes unitários passaram'
+                'details' = $testOutput
+            }
+        } else {
+            Write-ColorOutput "✗ Erro ao executar testes!" 'FAIL'
+            if ($Verbose) {
+                Write-Host $testOutput
+            }
+            return @{
+                'passed' = $false
+                'message' = 'Testes unitários falharam'
+                'details' = $testOutput
+            }
         }
-    } else {
-        Write-ColorOutput "✗ Erro ao executar testes!" 'FAIL'
-        Write-Host $testOutput
+    }
+    catch {
+        Write-ColorOutput "✗ Erro: $($_.Exception.Message)" 'FAIL'
         return @{
             'passed' = $false
-            'message' = 'Testes unitários falharam'
-            'details' = $testOutput
+            'message' = 'Erro ao executar testes'
+            'details' = $_.Exception.Message
         }
     }
 }
 
 function Test-WebViews([string]$appName, [string[]]$paths) {
-    Write-ColorOutput "\n[Web Views] Testando renderização de templates..." 'INFO'
+    Write-ColorOutput "[Web Views] Testando renderização de templates..." 'INFO'
     
     $passed = 0
     $failed = 0
@@ -159,7 +175,7 @@ function Test-WebViews([string]$appName, [string[]]$paths) {
 }
 
 function Test-APIEndpoints([string]$appName, [string[]]$endpoints) {
-    Write-ColorOutput "\n[API REST] Testando endpoints da API..." 'INFO'
+    Write-ColorOutput "[API REST] Testando endpoints da API..." 'INFO'
     
     $passed = 0
     $failed = 0
@@ -173,7 +189,7 @@ function Test-APIEndpoints([string]$appName, [string[]]$endpoints) {
                 'Content-Type' = 'application/json'
             }
             
-            $response = Invoke-RestMethod -Uri $url -Method GET -Headers $headers -SkipHttpErrorCheck -TimeoutSec 10
+            $response = Invoke-WebRequest -Uri $url -Method GET -Headers $headers -SkipHttpErrorCheck -TimeoutSec 10
             
             if ($response.StatusCode -in @(200, 403, 401)) {
                 Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
@@ -250,7 +266,7 @@ foreach ($app in $Apps) {
 
 Write-SectionHeader "RESUMO FINAL - TODAS AS APLICAÇÕES"
 
-Write-ColorOutput "\nResultados por Aplicação:" 'HEADER'
+Write-ColorOutput "Resultados por Aplicação:" 'HEADER'
 
 foreach ($app in $Apps) {
     if (-not $globalResults.ContainsKey($app)) {
