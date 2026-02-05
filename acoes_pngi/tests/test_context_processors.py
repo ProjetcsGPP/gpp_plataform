@@ -23,9 +23,9 @@ class AcoesPermissionsContextTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123'
+            email='testuser@example.com',
+            password='testpass123',
+            name='Test User'
         )
     
     def test_unauthenticated_user_permissions(self):
@@ -81,9 +81,9 @@ class AcoesPNGIContextTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123'
+            email='testuser@example.com',
+            password='testpass123',
+            name='Test User'
         )
     
     def test_context_outside_acoes_pngi_app(self):
@@ -178,9 +178,9 @@ class AcoesPNGIModelsContextTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123'
+            email='testuser@example.com',
+            password='testpass123',
+            name='Test User'
         )
     
     def test_models_context_structure(self):
@@ -235,9 +235,9 @@ class IntegrationTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123'
+            email='testuser@example.com',
+            password='testpass123',
+            name='Test User'
         )
     
     def test_all_context_processors_together(self):
@@ -294,8 +294,9 @@ class EdgeCaseTest(TestCase):
         """Verifica comportamento quando aplicação não existe"""
         request = self.factory.get('/')
         request.user = User.objects.create_user(
-            username='testuser',
-            password='testpass123'
+            email='testuser@example.com',
+            password='testpass123',
+            name='Test User'
         )
         request.resolver_match = Mock(app_name='acoes_pngi')
         request.session = {}
@@ -313,8 +314,9 @@ class EdgeCaseTest(TestCase):
         """Verifica comportamento quando resolver_match é None"""
         request = self.factory.get('/')
         request.user = User.objects.create_user(
-            username='testuser',
-            password='testpass123'
+            email='testuser@example.com',
+            password='testpass123',
+            name='Test User'
         )
         request.resolver_match = None
         
@@ -328,8 +330,9 @@ class EdgeCaseTest(TestCase):
         """Verifica comportamento com usuário que não tem perfis"""
         request = self.factory.get('/')
         request.user = User.objects.create_user(
-            username='testuser',
-            password='testpass123'
+            email='testuser@example.com',
+            password='testpass123',
+            name='Test User'
         )
         request.resolver_match = Mock(app_name='acoes_pngi')
         request.session = {}
