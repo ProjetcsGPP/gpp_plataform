@@ -5,10 +5,13 @@ Usa AppContextMiddleware para detecção automática da aplicação.
 
 import logging
 from django.apps import apps
+from django.db.models import Q, Prefetch
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django_filters.rest_framework import DjangoFilterBackend
+
 from accounts.models import User, UserRole
 from common.serializers import (
     UserSerializer,
@@ -18,12 +21,17 @@ from common.serializers import (
     PortalAuthSerializer
 )
 from common.services.portal_auth import get_portal_auth_service
-from ..models import Eixo, SituacaoAcao, VigenciaPNGI
+from ..models import (
+    Eixo, SituacaoAcao, VigenciaPNGI, TipoEntraveAlerta, Acoes,
+    AcaoPrazo, AcaoDestaque, TipoAnotacaoAlinhamento,
+    AcaoAnotacaoAlinhamento, UsuarioResponsavel, RelacaoAcaoUsuarioResponsavel
+)
 from ..serializers import (
-    EixoSerializer,
-    SituacaoAcaoSerializer,
-    VigenciaPNGISerializer,
-    EixoListSerializer,
+    EixoSerializer, SituacaoAcaoSerializer, VigenciaPNGISerializer,
+    TipoEntraveAlertaSerializer, AcoesSerializer, AcoesListSerializer,
+    AcaoPrazoSerializer, AcaoDestaqueSerializer, TipoAnotacaoAlinhamentoSerializer,
+    AcaoAnotacaoAlinhamentoSerializer, UsuarioResponsavelSerializer,
+    RelacaoAcaoUsuarioResponsavelSerializer, EixoListSerializer,
     VigenciaPNGIListSerializer
 )
 
@@ -125,9 +133,6 @@ def portal_auth(request):
 # VIEWSET DE GERENCIAMENTO DE USUÁRIOS
 # ============================================================================
 
-
-
-
 class UserManagementViewSet(viewsets.ViewSet):
     """
     ViewSet para gerenciamento de usuários da aplicação.
@@ -136,8 +141,8 @@ class UserManagementViewSet(viewsets.ViewSet):
     """
     permission_classes = [IsAuthenticated]
     
-    lookup_field = 'pk'  # ← ADICIONAR ESTA LINHA
-    lookup_value_regex = '.*'  # ← ADICIONAR ESTA LINHA
+    lookup_field = 'pk'
+    lookup_value_regex = '.*'
     
     def retrieve(self, request, pk=None):
         """GET /api/v1/acoes_pngi/users/{email}/"""
@@ -291,21 +296,17 @@ class UserManagementViewSet(viewsets.ViewSet):
 class EixoViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gerenciar Eixos do PNGI.
-    
-    Endpoints:
-    - GET    /api/v1/acoes_pngi/eixos/           - Lista eixos
-    - POST   /api/v1/acoes_pngi/eixos/           - Cria eixo
-    - GET    /api/v1/acoes_pngi/eixos/{id}/      - Detalhe
-    - PUT    /api/v1/acoes_pngi/eixos/{id}/      - Atualiza
-    - DELETE /api/v1/acoes_pngi/eixos/{id}/      - Deleta
-    - GET    /api/v1/acoes_pngi/eixos/list_light/ - Listagem otimizada
     """
     queryset = Eixo.objects.all()
     serializer_class = EixoSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['stralias']
+    search_fields = ['strdescricaoeixo', 'stralias']
+    ordering_fields = ['stralias', 'strdescricaoeixo', 'created_at']
+    ordering = ['stralias']
     
     def get_serializer_class(self):
-        """Retorna serializer otimizado para listagem"""
         if self.action == 'list':
             return EixoListSerializer
         return EixoSerializer
@@ -323,38 +324,30 @@ class EixoViewSet(viewsets.ModelViewSet):
 class SituacaoAcaoViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gerenciar Situações de Ações do PNGI.
-    
-    Endpoints:
-    - GET    /api/v1/acoes_pngi/situacoes/       - Lista situações
-    - POST   /api/v1/acoes_pngi/situacoes/       - Cria situação
-    - GET    /api/v1/acoes_pngi/situacoes/{id}/  - Detalhe
-    - PUT    /api/v1/acoes_pngi/situacoes/{id}/  - Atualiza
-    - DELETE /api/v1/acoes_pngi/situacoes/{id}/  - Deleta
     """
     queryset = SituacaoAcao.objects.all()
     serializer_class = SituacaoAcaoSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strdescricaosituacao']
+    ordering_fields = ['strdescricaosituacao', 'created_at']
+    ordering = ['strdescricaosituacao']
 
 
 class VigenciaPNGIViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gerenciar Vigências do PNGI.
-    
-    Endpoints:
-    - GET    /api/v1/acoes_pngi/vigencias/                - Lista vigências
-    - POST   /api/v1/acoes_pngi/vigencias/                - Cria vigência
-    - GET    /api/v1/acoes_pngi/vigencias/{id}/           - Detalhe
-    - PUT    /api/v1/acoes_pngi/vigencias/{id}/           - Atualiza
-    - DELETE /api/v1/acoes_pngi/vigencias/{id}/           - Deleta
-    - GET    /api/v1/acoes_pngi/vigencias/vigencia_ativa/ - Vigência ativa
-    - POST   /api/v1/acoes_pngi/vigencias/{id}/ativar/    - Ativa vigência
     """
     queryset = VigenciaPNGI.objects.all()
     serializer_class = VigenciaPNGISerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['isvigenciaativa']
+    search_fields = ['strdescricaovigenciapngi']
+    ordering_fields = ['datiniciovigencia', 'datfinalvigencia', 'created_at']
+    ordering = ['-datiniciovigencia']
     
     def get_serializer_class(self):
-        """Retorna serializer otimizado para listagem"""
         if self.action == 'list':
             return VigenciaPNGIListSerializer
         return VigenciaPNGISerializer
@@ -371,6 +364,13 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
                 {'detail': 'Nenhuma vigência ativa encontrada'},
                 status=status.HTTP_404_NOT_FOUND
             )
+    
+    @action(detail=False, methods=['get'])
+    def vigente(self, request):
+        """Retorna vigências vigentes no momento"""
+        vigencias_ativas = [v for v in self.get_queryset() if v.esta_vigente]
+        serializer = self.get_serializer(vigencias_ativas, many=True)
+        return Response(serializer.data)
     
     @action(detail=True, methods=['post'])
     def ativar(self, request, pk=None):
@@ -400,3 +400,155 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
                 {'detail': f'Erro ao ativar vigência: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class TipoEntraveAlertaViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciamento de Tipos de Entrave/Alerta.
+    """
+    queryset = TipoEntraveAlerta.objects.all()
+    serializer_class = TipoEntraveAlertaSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strdescricaotipoentravealerta']
+    ordering_fields = ['strdescricaotipoentravealerta', 'created_at']
+    ordering = ['strdescricaotipoentravealerta']
+
+
+class AcoesViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciamento de Ações do PNGI.
+    """
+    queryset = Acoes.objects.select_related(
+        'idvigenciapngi', 'idtipoentravealerta'
+    ).prefetch_related(
+        'prazos', 'destaques', 'anotacoes_alinhamento', 'responsaveis'
+    )
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['idvigenciapngi', 'idtipoentravealerta']
+    search_fields = ['strapelido', 'strdescricaoacao', 'strdescricaoentrega']
+    ordering_fields = ['strapelido', 'datdataentrega', 'created_at']
+    ordering = ['strapelido']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return AcoesListSerializer
+        return AcoesSerializer
+
+    @action(detail=True, methods=['get'])
+    def prazos_ativos(self, request, pk=None):
+        """Retorna prazos ativos da ação"""
+        acao = self.get_object()
+        prazos = acao.prazos.filter(isacaoprazoativo=True)
+        serializer = AcaoPrazoSerializer(prazos, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def responsaveis_list(self, request, pk=None):
+        """Retorna lista de responsáveis da ação"""
+        acao = self.get_object()
+        relacoes = acao.responsaveis.select_related('idusuarioresponsavel__idusuario')
+        serializer = RelacaoAcaoUsuarioResponsavelSerializer(relacoes, many=True)
+        return Response(serializer.data)
+
+
+class AcaoPrazoViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciamento de Prazos de Ações.
+    """
+    queryset = AcaoPrazo.objects.select_related('idacao')
+    serializer_class = AcaoPrazoSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['idacao', 'isacaoprazoativo']
+    search_fields = ['strprazo', 'idacao__strapelido']
+    ordering_fields = ['created_at', 'isacaoprazoativo']
+    ordering = ['-isacaoprazoativo', '-created_at']
+
+    @action(detail=False, methods=['get'])
+    def ativos(self, request):
+        """Retorna apenas prazos ativos"""
+        prazos = self.get_queryset().filter(isacaoprazoativo=True)
+        serializer = self.get_serializer(prazos, many=True)
+        return Response(serializer.data)
+
+
+class AcaoDestaqueViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciamento de Destaques de Ações.
+    """
+    queryset = AcaoDestaque.objects.select_related('idacao')
+    serializer_class = AcaoDestaqueSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['idacao']
+    search_fields = ['idacao__strapelido']
+    ordering_fields = ['datdatadestaque', 'created_at']
+    ordering = ['-datdatadestaque']
+
+
+class TipoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciamento de Tipos de Anotação de Alinhamento.
+    """
+    queryset = TipoAnotacaoAlinhamento.objects.all()
+    serializer_class = TipoAnotacaoAlinhamentoSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strdescricaotipoanotacaoalinhamento']
+    ordering_fields = ['strdescricaotipoanotacaoalinhamento', 'created_at']
+    ordering = ['strdescricaotipoanotacaoalinhamento']
+
+
+class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciamento de Anotações de Alinhamento.
+    """
+    queryset = AcaoAnotacaoAlinhamento.objects.select_related(
+        'idacao', 'idtipoanotacaoalinhamento'
+    )
+    serializer_class = AcaoAnotacaoAlinhamentoSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['idacao', 'idtipoanotacaoalinhamento']
+    search_fields = [
+        'idacao__strapelido',
+        'strdescricaoanotacaoalinhamento',
+        'strnumeromonitoramento'
+    ]
+    ordering_fields = ['datdataanotacaoalinhamento', 'created_at']
+    ordering = ['-datdataanotacaoalinhamento']
+
+
+class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciamento de Usuários Responsáveis.
+    """
+    queryset = UsuarioResponsavel.objects.select_related('idusuario')
+    serializer_class = UsuarioResponsavelSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['strorgao']
+    search_fields = ['idusuario__name', 'idusuario__email', 'strorgao', 'strtelefone']
+    ordering_fields = ['created_at']
+    ordering = ['idusuario__name']
+
+
+class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciamento de Relações entre Ações e Usuários Responsáveis.
+    """
+    queryset = RelacaoAcaoUsuarioResponsavel.objects.select_related(
+        'idacao', 'idusuarioresponsavel__idusuario'
+    )
+    serializer_class = RelacaoAcaoUsuarioResponsavelSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['idacao', 'idusuarioresponsavel']
+    search_fields = [
+        'idacao__strapelido',
+        'idusuarioresponsavel__idusuario__name'
+    ]
+    ordering_fields = ['created_at']
+    ordering = ['idacaousuarioresponsavel']
