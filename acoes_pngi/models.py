@@ -41,7 +41,6 @@ class SituacaoAcao(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
-
     class Meta:
         db_table = 'tblsituacaoacao'
         managed = True
