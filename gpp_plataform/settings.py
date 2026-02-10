@@ -148,7 +148,10 @@ DATABASES = {
     }
 }
 
-DATABASE_ROUTERS = ['carga_org_lot.db_router.CargaOrgLotRouter']
+DATABASE_ROUTERS = [
+        'carga_org_lot.db_router.CargaOrgLotRouter',
+        'acoes_pngi.db_router.AcoesPNGIRouter',
+]
 
 AUTH_USER_MODEL = 'accounts.User'
 
