@@ -8,7 +8,6 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
 
 from ...models import Acoes, AcaoPrazo, AcaoDestaque
 from ...serializers import (
@@ -31,11 +30,19 @@ class AcoesViewSet(viewsets.ModelViewSet):
         'prazos', 'destaques', 'anotacoes_alinhamento', 'responsaveis'
     )
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['idvigenciapngi', 'idtipoentravealerta']
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strapelido', 'strdescricaoacao', 'strdescricaoentrega']
     ordering_fields = ['strapelido', 'datdataentrega', 'created_at']
     ordering = ['strapelido']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Filtros opcionais via query params
+        if self.request.query_params.get('idvigenciapngi'):
+            queryset = queryset.filter(idvigenciapngi=self.request.query_params.get('idvigenciapngi'))
+        if self.request.query_params.get('idtipoentravealerta'):
+            queryset = queryset.filter(idtipoentravealerta=self.request.query_params.get('idtipoentravealerta'))
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -66,11 +73,19 @@ class AcaoPrazoViewSet(viewsets.ModelViewSet):
     queryset = AcaoPrazo.objects.select_related('idacao')
     serializer_class = AcaoPrazoSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['idacao', 'isacaoprazoativo']
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strprazo', 'idacao__strapelido']
     ordering_fields = ['created_at', 'isacaoprazoativo']
     ordering = ['-isacaoprazoativo', '-created_at']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Filtros opcionais
+        if self.request.query_params.get('idacao'):
+            queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
+        if self.request.query_params.get('isacaoprazoativo'):
+            queryset = queryset.filter(isacaoprazoativo=self.request.query_params.get('isacaoprazoativo'))
+        return queryset
 
     @action(detail=False, methods=['get'])
     def ativos(self, request):
@@ -87,8 +102,14 @@ class AcaoDestaqueViewSet(viewsets.ModelViewSet):
     queryset = AcaoDestaque.objects.select_related('idacao')
     serializer_class = AcaoDestaqueSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['idacao']
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['idacao__strapelido']
     ordering_fields = ['datdatadestaque', 'created_at']
     ordering = ['-datdatadestaque']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Filtro opcional
+        if self.request.query_params.get('idacao'):
+            queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
+        return queryset

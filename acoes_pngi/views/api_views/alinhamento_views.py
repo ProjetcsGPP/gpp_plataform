@@ -6,7 +6,6 @@ Inclui: TipoAnotacaoAlinhamento, AcaoAnotacaoAlinhamento.
 import logging
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
 
 from ...models import TipoAnotacaoAlinhamento, AcaoAnotacaoAlinhamento
 from ...serializers import (
@@ -24,7 +23,7 @@ class TipoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
     queryset = TipoAnotacaoAlinhamento.objects.all()
     serializer_class = TipoAnotacaoAlinhamentoSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaotipoanotacaoalinhamento']
     ordering_fields = ['strdescricaotipoanotacaoalinhamento', 'created_at']
     ordering = ['strdescricaotipoanotacaoalinhamento']
@@ -39,8 +38,7 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
     )
     serializer_class = AcaoAnotacaoAlinhamentoSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['idacao', 'idtipoanotacaoalinhamento']
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = [
         'idacao__strapelido',
         'strdescricaoanotacaoalinhamento',
@@ -48,3 +46,12 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
     ]
     ordering_fields = ['datdataanotacaoalinhamento', 'created_at']
     ordering = ['-datdataanotacaoalinhamento']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Filtros opcionais
+        if self.request.query_params.get('idacao'):
+            queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
+        if self.request.query_params.get('idtipoanotacaoalinhamento'):
+            queryset = queryset.filter(idtipoanotacaoalinhamento=self.request.query_params.get('idtipoanotacaoalinhamento'))
+        return queryset

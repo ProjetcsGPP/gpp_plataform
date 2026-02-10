@@ -9,7 +9,6 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
 
 from ...models import Eixo, SituacaoAcao, VigenciaPNGI, TipoEntraveAlerta
 from ...serializers import (
@@ -29,8 +28,7 @@ class EixoViewSet(viewsets.ModelViewSet):
     queryset = Eixo.objects.all()
     serializer_class = EixoSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['stralias']
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaoeixo', 'stralias']
     ordering_fields = ['stralias', 'strdescricaoeixo', 'created_at']
     ordering = ['stralias']
@@ -57,7 +55,7 @@ class SituacaoAcaoViewSet(viewsets.ModelViewSet):
     queryset = SituacaoAcao.objects.all()
     serializer_class = SituacaoAcaoSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaosituacao']
     ordering_fields = ['strdescricaosituacao', 'created_at']
     ordering = ['strdescricaosituacao']
@@ -70,11 +68,17 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
     queryset = VigenciaPNGI.objects.all()
     serializer_class = VigenciaPNGISerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['isvigenciaativa']
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaovigenciapngi']
     ordering_fields = ['datiniciovigencia', 'datfinalvigencia', 'created_at']
     ordering = ['-datiniciovigencia']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Filtro opcional por vigência ativa
+        if self.request.query_params.get('isvigenciaativa'):
+            queryset = queryset.filter(isvigenciaativa=True)
+        return queryset
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -136,7 +140,7 @@ class TipoEntraveAlertaViewSet(viewsets.ModelViewSet):
     queryset = TipoEntraveAlerta.objects.all()
     serializer_class = TipoEntraveAlertaSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaotipoentravealerta']
     ordering_fields = ['strdescricaotipoentravealerta', 'created_at']
     ordering = ['strdescricaotipoentravealerta']
