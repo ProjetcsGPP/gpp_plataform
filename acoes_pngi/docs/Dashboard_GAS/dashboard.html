@@ -1,0 +1,2366 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_self">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Aes MGI</title>
+
+  <!-- 1. JQUERY (OBRIGATÓRIO SER O PRIMEIRO) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- 2. BOOTSTRAP JS (OBRIGATÓRIO VIR APÓS O JQUERY) -->
+  <!-- Carregar aqui garante que os componentes do Bootstrap inicializem sem conflitos -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- 3. ARQUIVOS CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
+  <!-- 4. OUTRAS BIBLIOTECAS JS -->
+  <script src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #468BC4 0%, #3F93B8 100%);
+      min-height: 100vh;
+    }
+    .navbar {
+      background: linear-gradient(135deg, #468BC4 0%, #3F93B8 100%);
+    }
+    .card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .project-card {
+      transition: transform 0.2s;
+      min-height: 200px;
+      max-height: 240px;
+    }
+    .project-card:hover {
+      transform: translateY(-5px);
+    }
+    .btn-primary {
+       background: linear-gradient(45deg, #468BC4, #3F93B8);
+      border: none;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(45deg, #3a7ab8, #356fa2);
+    }
+    .btn-details {
+      background: linear-gradient(45deg, #56AAF0, #4A9DE6);
+      border: none;
+    }
+    .btn-details:hover {
+      background: linear-gradient(45deg, #4897dc, #3d88c9);
+    }
+    #containerVisGraficos {
+      max-width: 98%;
+      margin: auto;
+    }
+    .chart-wrapper {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;  /* Era 85px */
+      margin-left: 10px; /* Era 40px */
+      margin-right: 10px; /* Era 40px */
+    }
+    .chart-block {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      width: 30%; /* Era 45% */
+      max-width: 590px; /* Era 590px */
+      min-height: 300px; /* Era 300px */
+    }
+    .canvas-eixo {
+      max-width: 150px; /* Era 210px */
+      max-height: 150px; /* Era 210px */
+    }
+    .chart-legend {
+      margin-top: 40px;
+      margin-left: 20px;
+      min-width: 150px;
+    }
+    .alert {
+      margin-top: 20px;
+    }
+    /* Estilos exclusivos para editModal */
+    #editModal .modal-body .edit-item {
+      margin-bottom: 0.8rem;
+    }
+    #editModal .modal-body .edit-label {
+      font-size: smaller;
+      font-weight: bold;
+      color: #667eea;
+    }
+    #editModal .modal-body .edit-value {
+      font-size: smaller;
+      padding-left: 10px;
+    }
+    #editModal select.form-select.edit-value {
+      max-width: 300px;
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #f8f9fa;
+    }
+    #editModal .edit-item.inline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #editModal .edit-item.inline .edit-label {
+      min-width: 100px;
+      margin-bottom: 0;
+    }
+    #editModal .edit-item.inline select.form-select.edit-value {
+      max-width: 300px;
+      flex: 1;
+    }
+    /* Estilos exclusivos para detailsModal */
+    #detailsModal .modal-body .detail-item {
+      margin-bottom: 0.8rem;
+    }
+    #detailsModal .modal-body .detail-label {
+      font-size: smaller;
+      font-weight: bold;
+      color: #667eea;
+    }
+    #detailsModal .modal-body .detail-value {
+      font-size: smaller;
+      padding-left: 10px;
+    }
+    .select2-selection--multiple {
+      display: block;
+      width: 100%;
+      padding: .375rem 2.25rem .375rem .75rem !important;
+      -moz-padding-start: calc(0.75rem - 3px);
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #212529;
+      background-color: #fff !important;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+      background-repeat: no-repeat !important;
+      background-position: right .75rem center !important;
+      background-size: 16px 12px !important;
+      border: 1px solid #ced4da !important;
+      border-radius: .25rem !important;
+     transition: border-color .15s 
+  ease-in-out, box-shadow .15s 
+  ease-in-out;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+    .select2-container {
+      width: 100% !important;
+    }
+    select.select2-container.selection.select2-selection {
+      background-color: #fff !important;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+	    background-repeat: no-repeat !important;
+	    background-position: right .75rem center !important;
+	    background-size: 16px 12px !important;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container d-flex justify-content-between align-items-center mt-3" style="max-width: 2020px;">
+      <a class="navbar-brand" href="#">Dashboard - Ações PNGI</a>
+      <div class="navbar-nav ms-auto">
+        <span class="navbar-text me-3" id="userName">Olá, usuário</span>
+        <button class="btn btn-outline-light btn-sm" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-3">
+    <div id="messageContainer"></div>
+  </div>
+
+  <div class="card mb-4" id="containerVisGraficos" style="margin-left: 55px;margin-right: 56px;margin-bottom: 5px;">
+    <div class="card-body">
+      <h5 class="card-title">Gráficos das Ações</h5>
+      <div class="chart-wrapper" style="justify-content: space-between; margin-left: 5px; margin-right: 23px;">
+        <!-- Gráfico 1: Pizza por Eixo -->
+        <div class="chart-block" style="padding: 39px 0px 0px 0px;">
+          <canvas id="projectStatusChartEixo" class="canvas-eixo"></canvas>
+          <div id="chartLegendEixo" class="chart-legend" style="font-size: medium; width: 100%;"></div>
+        </div>
+        <!-- Gráfico 2: Barras horizontais por Situação -->
+        <div class="chart-block">
+          <canvas id="projectStatusChartSituacao"></canvas>
+          <div id="chartLegendSituacao"></div>
+        </div>
+        <!-- Gráfico 3: Barras agrupadas por Eixo e Situação -->
+        <div class="chart-block">
+          <canvas id="groupedBarChart" style="display: block; box-sizing: border-box; height: 250px; width: 500px;"></canvas>
+          <div id="chartLegendGrouped" class="chart-legend"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-4" id="containerFiltro" style="margin-left: 57px;margin-right: 56px;margin-bottom: 10px;">
+    <div class="card-body" style="padding: 0;">
+      <div style="max-width: 1955px; margin: auto; padding: 1.5rem;">
+        <!-- PRIMEIRA LINHA: Visualização + contador -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span id="projectsCount" class="fw-bold text-dark"></span>
+          <div>
+            <button class="btn btn-outline-primary me-2" id="btnCard" title="Visualizar em Cartões">
+              <i class="fas fa-th-large"></i> Visualizar em Cartões
+            </button>
+            <button class="btn btn-outline-secondary" id="btnList" title="Visualizar em Tabela">
+              <i class="fas fa-table"></i> Visualizar em Tabela
+            </button>
+          </div>
+        </div>
+        <!-- SEGUNDA LINHA: Dropdowns -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <label class="form-label fw-bold text-dark" for="selectPessoas">Participantes</label>
+            <select class="form-select" id="selectPessoas"></select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold text-dark" for="selectEixo">Eixo</label>
+            <select class="form-select" id="selectEixo"></select>
+          </div>
+          
+          <div class="col-md-3">
+            <label class="form-label fw-bold text-dark" for="multiSelectDropdown">Situação</label>
+            <div class="dropdown">
+              <button class="btn btn-light dropdown-toggle" type="button" id="multiSelectDropdown" style="height:100%; width: 100%; text-align: left; border: 1px solid #ced4da; background-color: white;" data-bs-toggle="dropdown" aria-expanded="false"></button>
+              <ul class="dropdown-menu w-100" aria-labelledby="multiSelectDropdown" id="situacaoCheckboxContainer">
+                <!-- Opções aqui -->
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+              <!-- Linha do Cabeçalho: Label à esquerda, Checkboxes à direita -->
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                  
+                  <!-- Label que muda de texto dinamicamente -->
+                  <label id="labelFiltroDynamic" class="form-label fw-bold text-dark mb-0">Vencimentos</label>
+                  
+                  <!-- Container Fixo para os Checkboxes -->
+                  <div class="d-flex align-items-center">
+                      <!-- Wrapper do checkbox "Prazos Fixos" -->
+                      <div id="checkboxPrazosWrapper" class="form-check form-switch">
+                          <input class="form-check-input" type="checkbox" id="checkboxPrazos">
+                          <label class="form-check-label" for="checkboxPrazos" style="font-size: 0.8rem;">Prazos Fixos</label>
+                      </div>
+                      
+                      <!-- Wrapper do checkbox "Incluir Vencidas", que será mostrado/ocultado -->
+                      <div id="checkboxVencimentosWrapper" class="form-check form-switch ms-2">
+                          <input class="form-check-input" type="checkbox" id="checkboxVencimentos">
+                          <label class="form-check-label" for="checkboxVencimentos" style="font-size: 0.8rem;">Incluir Vencidas</label>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Container dos FILTROS (um por vez será visível) -->
+              <div class="mt-2">
+                
+                <!-- Container do Filtro de VENCIMENTOS (Multiselect) -->
+                <div id="vencimentosContainer">
+                    <div class="dropdown" id="vencimentosDropdownContainer">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="vencimentosMultiSelectDropdown" style="width: 100%; text-align: left; border: 1px solid #ced4da; background-color: white;" data-bs-toggle="dropdown" aria-expanded="false">
+                            Selecione os Vencimentos
+                        </button>
+                        <ul class="dropdown-menu w-100" aria-labelledby="vencimentosMultiSelectDropdown" id="idOpcoesVencimentosContainer"></ul>
+                    </div>
+                </div>
+
+                <!-- Container do Filtro de PRAZOS FIXOS (Select) - Inicialmente escondido -->
+                <div id="prazosFixosContainer" class="d-none">
+                    <select class="form-select" id="idSelectPrazos">
+                        <option value="todos">Todos</option>
+                        <option value="esteMes">Este Mês</option>
+                        <option value="proximoMes">Próximo Mês</option>
+                        <option value="emTresMeses">Em até 3 meses</option>
+                        <option value="emCincoMeses">Em até 5 meses</option>
+                    </select>
+                </div>
+              </div>
+          </div>
+
+        <!-- TERCEIRA LINHA: Ordenação + buscar/limpar -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <div class="d-flex align-items-center">
+            <span class="me-2  fw-bold text-dark" style="white-space:nowrap;">Ordenar por:</span>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Ordenar por" id="orderBtnGroup">
+              <button type="button" class="btn btn-light border border-secondary active" id="orderNumero" title="Número da Ação">
+                <i class="fas fa-hashtag"></i>
+              </button>
+              <button type="button" class="btn btn-light border border-secondary" id="orderPrazo" title="Prazo">
+                <i class="fas fa-calendar-alt"></i>
+              </button>
+              <button type="button" class="btn btn-light border border-secondary" id="orderMonitoramento" title="Monitoramento">
+                <i class="fas fa-chart-line"></i>
+              </button>
+              <button type="button" class="btn btn-light border border-secondary" id="orderSituacao" title="Situação">
+                <i class="fas fa-tasks"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <button class="btn btn-success" style="min-width: 42px;width: 160px;height: 38px;" onclick="loadProjects(false, true)" title="Pesquisar"><i class="fas fa-search"></i> Pesquisar</button>
+            <button class="btn btn-secondary" style="min-width: 42px;width: 160px;height: 38px;" onclick="clearFilters()" title="Limpar Filtros"><i class="fas fa-times"></i> Limpar Filtros</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="card mt-4" id="containerCardsAndTable" style="margin-left: 57px; margin-right: 56px; margin-bottom: 10px; margin-top: 10px; max-height: 100vh; overflow-y: auto;">
+    <div id="projectsContainerCards" class="container" style="display:block; max-width: 1950px; padding-top: 15px;">
+      <div class="row" id="projectsContainer">
+        <div class="col-12 text-center">
+          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="projectsContainerTable" class="container" style="display:none; max-width: 1950px; padding-top: 15px;">
+      <table class="table table-striped table-hover bg-white">
+        <thead class="table-light">
+          <tr>
+            <th>Número</th>
+            <th>Projeto</th>
+            <th>Descrição</th>
+            <th style="width: 8%; text-align: left;">Status</th>
+            <th style="width: 8%; text-align: center;">Data Conclusão</th>
+            <th style="width: 7%; text-align: center;">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tableProjectsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog  modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalTitle" >Editar Ação</h5>
+        </div>
+        <div class="modal-body" id="editModalBody">>
+          <form id="editForm">
+            <!-- código será adicionado dinamicamente. -->
+          </form>
+        </div>
+        <div class="container mt-3">
+          <div id="editMessageContainer"></div>
+        </div>        
+        <div class="modal-footer">
+          <!-- <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button> -->
+          <button class="btn btn-secondary" id="btnCancelarEditModal">Cancelar</button>
+          <button class="btn btn-primary" onclick="saveProject()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="detailsModalTitle">Detalhes da Ação</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body" id="detailsModalBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+      function renderHtmlPage(loadFunctionName) {
+        google.script.run
+          .withSuccessHandler(function(html) {
+            document.open();
+            document.write(html);
+            document.close();
+          })
+          [loadFunctionName]();
+      }
+
+      // Variáveis globais
+      var currentProjects = [];
+      var editModal;
+      var detailsModal;
+      var situacaoColorMap = {};
+      var myChartEixo = null;
+      var myChartSituacao = null;
+      var myChartgroupedBarChart = null;
+      var orderBy = "numero";
+      var allProjects = [];
+      var optionsSelect = [];
+      var originalFormState = {};
+      var userTipo = "";
+      var siteURL = "";
+      var isCheckedVencidas = false;
+
+      google.script.run
+        .withSuccessHandler(function (user) {
+          // ...
+          userTipo = user.tipo_usuario || "";
+          // ...
+        })
+        .getUserProperties();
+
+
+      document.getElementById('btnCancelarEditModal').addEventListener('click', function (e) {
+        e.preventDefault(); // impede o fechamento automático
+
+        const currentState = {
+          situacao: document.getElementById('editSituacao')?.value || '',
+          monitoramento: document.getElementById('editMonitoramento')?.value || '',
+          data: document.getElementById('editProxDataMonitoramento')?.value || '',
+          acoes: document.getElementById('editProxAcoes')?.value || ''
+        };
+
+        const isChanged = Object.keys(originalFormState).some(key => originalFormState[key] !== currentState[key]);
+
+        if (isChanged) {
+          const confirmCancel = confirm('Você tem modificações não salvas. Deseja realmente sair?');
+          if (!confirmCancel) return; // se cancelar, não fecha
+        }
+
+        if (editModal) {
+          editModal.hide(); // fecha só se for confirmado ou não houve alteração
+          editModal = null;
+        }
+        iniciarCicloVerificacaoAtualizacao();
+      });
+
+
+      document.title = 'Dashboard - Ações MGI';
+
+      document.addEventListener('DOMContentLoaded', function () {
+        console.log("DOM Carregado. Iniciando a configuração do Dashboard...");
+
+        // ================================================================
+        // 1. CORREÇÃO DROPDOWN: DELEGAÇÃO DE EVENTO DE CLIQUE
+        // Isso garante que TODOS os dropdowns, incluindo o de Vencimentos, funcionem sempre.
+        // ================================================================
+        document.body.addEventListener('click', function(event) {
+            const dropdownButton = event.target.closest('[data-bs-toggle="dropdown"]');
+
+            if (dropdownButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                const dropdownMenu = dropdownButton.nextElementSibling;
+                
+                if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+                    const isCurrentlyShown = dropdownMenu.classList.contains('show');
+                    // Fecha todos os outros menus abertos antes de abrir um novo
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        if (menu !== dropdownMenu) {
+                            menu.classList.remove('show');
+                            const btn = menu.previousElementSibling;
+                            if (btn) btn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    // Alterna o menu clicado
+                    dropdownMenu.classList.toggle('show');
+                    dropdownButton.setAttribute('aria-expanded', !isCurrentlyShown);
+                }
+            } else {
+                // Fecha todos os menus se o clique for fora de uma área de dropdown
+                const clickedInsideDropdown = event.target.closest('.dropdown-menu');
+                if (!clickedInsideDropdown) {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                        const btn = menu.previousElementSibling;
+                        if (btn) btn.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            }
+        });
+
+        // ================================================================
+        // 2. CONFIGURAÇÃO INICIAL DOS FILTROS E OUTRAS AÇÕES
+        // ================================================================
+        
+        // Configuração dos filtros de prazo
+        const checkboxPrazos = document.getElementById('checkboxPrazos');
+        const checkboxVencimentos = document.getElementById('checkboxVencimentos');
+        const selectPrazos = document.getElementById('idSelectPrazos');
+        
+        if (checkboxPrazos && checkboxVencimentos && selectPrazos) {
+            checkboxPrazos.addEventListener('change', handleCheckboxPrazosChange);
+            //selectPrazos.addEventListener('change', () => filtrosProjeto(window.lastUserEmail, false));
+            checkboxVencimentos.addEventListener('change', handleCheckboxVencimentosChange);
+
+            checkboxPrazos.checked = true; // Inicia com "Prazos Fixos" ativo
+            checkboxVencimentos.checked = true;
+            isCheckedVencidas = true;
+            
+            handleCheckboxPrazosChange(); // Configura o layout inicial
+        }
+
+        // Suas outras inicializações (validação de sessão, modais, botões, etc.)
+        var siteURL = 'minhaURL';
+        let queryParams = new URLSearchParams(window.location.search);
+        queryParams.set('page', 'dashboard');
+
+        google.script.run.withSuccessHandler(res => { siteURL = res?.siteURL || null; }).getSiteProperty();
+
+        const dateInput = document.getElementById('editProxDataMonitoramento');
+        if (dateInput) { dateInput.min = new Date().toISOString().split('T')[0]; }
+
+        google.script.run.withSuccessHandler(user => {
+            if (!user?.sessionId || !user?.email) {
+                renderHtmlPage('loadLogin');
+                return;
+            }
+            window.lastUserEmail = user.email;
+            document.getElementById('userName').textContent = 'Olá, ' + (user.nome || 'usuário');
+            carregarDropdowns();
+            loadSituacaoColors(map => {
+                situacaoColorMap = map || {};
+                loadProjects(false, false);
+            });
+        }).getUserProperties();
+
+        ['editModal', 'detailsModal'].forEach(id => {
+            const modalEl = document.getElementById(id);
+            if (modalEl) modalEl.addEventListener('hidden.bs.modal', iniciarCicloVerificacaoAtualizacao);
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+          currentProjects = [];
+          editModal = null;
+          detailsModal = null;
+          situacaoColorMap = {};
+          myChartEixo = null;
+          myChartSituacao = null;
+          orderBy = "numero";
+          allProjects = [];
+          optionsSelect = [];
+          originalFormState = {};
+          userTipo = "";
+          sessionStorage.removeItem('ultimaVersao');
+
+          google.script.run
+            .withSuccessHandler(function(result) {
+              siteURL = result && result.siteURL ? result.siteURL : null;
+            })
+            .getSiteProperty();
+
+          google.script.run
+            .withSuccessHandler(function() {
+              google.script.run
+                .withSuccessHandler(function() {
+                  if (siteURL) {
+                    renderHtmlPage('loadLogin');
+                  } else {
+                    window.location.reload();
+                  }
+                })
+                .removeAllSiteProperties();
+            })
+            .removeAllUserProperties();
+          siteURL = "";
+        });
+
+        document.getElementById('orderBtnGroup').addEventListener('click', function (e) {
+          if (e.target.closest('button')) {
+            Array.from(this.querySelectorAll('button')).forEach(btn => btn.classList.remove('active'));
+            e.target.closest('button').classList.add('active');
+            if (e.target.closest('button').id === 'orderNumero') orderBy = "numero";
+            if (e.target.closest('button').id === 'orderPrazo') orderBy = "prazo";
+            if (e.target.closest('button').id === 'orderMonitoramento') orderBy = "monitoramento";
+            if (e.target.closest('button').id === 'orderSituacao') orderBy = "situacao";
+            sortProjects();
+            updateProjectViews();
+          }
+        });
+
+        document.getElementById('btnCard').addEventListener('click', function () {
+          this.classList.add('btn-primary');
+          this.classList.remove('btn-outline-primary');
+          document.getElementById('btnList').classList.remove('btn-primary');
+          document.getElementById('btnList').classList.add('btn-outline-secondary');
+          document.getElementById('projectsContainerCards').style.display = 'block';
+          document.getElementById('projectsContainerTable').style.display = 'none';
+        });
+        
+        document.getElementById('btnList').addEventListener('click', function () {
+          this.classList.add('btn-primary');
+          this.classList.remove('btn-outline-secondary');
+          document.getElementById('btnCard').classList.remove('btn-primary');
+          document.getElementById('btnCard').classList.add('btn-outline-primary');
+          document.getElementById('projectsContainerCards').style.display = 'none';
+          document.getElementById('projectsContainerTable').style.display = 'block';
+          
+          const email = (window.lastUserEmail || "");
+          renderTableView(email);
+        });
+
+        validaTempoDaSessao();
+
+        google.script.run.withSuccessHandler(opts => { if (opts) optionsSelect = Array.from(opts); }).getOptionsForDropdown('DROPDOWN_SITUACAO', false, true);
+    });
+
+
+
+
+      function showMessage(message, type = 'info') {
+        const messageContainer = document.getElementById('messageContainer');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        messageContainer.appendChild(alert);
+        setTimeout(() => {
+          if (alert.parentNode) {
+            alert.parentNode.removeChild(alert);
+          }
+        }, 5000);
+      }
+
+      function validaTempoDaSessao() {
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result.sessionExpired) {
+              showMessage('Sessão expirada! Faça login novamente!', 'warning');
+
+              google.script.run
+                .withSuccessHandler(function() {
+                  sessionStorage.removeItem('ultimaVersao');
+                  renderHtmlPage('loadLogin');
+                })
+                .removeAllUserProperties();
+            }
+          })
+          .validateTimeOutUserSession();
+      }
+
+          
+      function popularDropdownSituacaoComCheckbox() {
+        const container = document.getElementById('situacaoCheckboxContainer');
+        const dropdownButton = document.getElementById('multiSelectDropdown');
+
+        // Impede o fechamento do menu ao clicar nos itens
+        container.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Função para atualizar o texto do botão
+        function updateButtonText() {
+            const selectedItems = [];
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                selectedItems.push(checkbox.value);
+            });
+
+            if (selectedItems.includes('Todos')) {
+                dropdownButton.innerText = 'Todos';
+            } else if (selectedItems.length > 2) {
+                dropdownButton.innerText = `${selectedItems.length} selecionadas`;
+            } else if (selectedItems.length > 0) {
+                dropdownButton.innerText = selectedItems.join(', ');
+            }
+            // Não haverá caso de 0 selecionados por causa da validação
+        }
+
+        // Busca as opções e as popula no dropdown
+        google.script.run
+            .withSuccessHandler(function(resultOptions) {
+                if (resultOptions && Array.isArray(resultOptions)) {
+                    container.innerHTML = ''; // Limpa opções antigas
+
+                    // 1. Adiciona a opção "Todos" primeiro
+                    const liTodos = document.createElement('li');
+                    liTodos.innerHTML = `<label class="dropdown-item mb-0"><input type="checkbox" class="me-2" value="Todos" checked> Todos</label>`;
+                    container.appendChild(liTodos);
+
+                    // Adiciona as outras opções
+                    Array.from(resultOptions).forEach(situacao => {
+                        if (situacao && situacao.trim() !== '') {
+                            const li = document.createElement('li');
+                            li.innerHTML = `<label class="dropdown-item mb-0"><input type="checkbox" class="me-2" value="${situacao}"> ${situacao}</label>`;
+                            container.appendChild(li);
+                        }
+                    });
+
+                    // 2. Adiciona o listener de eventos para a lógica de seleção
+                    container.addEventListener('change', function(e) {
+                        const targetCheckbox = e.target;
+                        const isChecked = targetCheckbox.checked;
+                        const value = targetCheckbox.value;
+                        const allCheckboxes = container.querySelectorAll('input[type="checkbox"]');
+                        const todosCheckbox = container.querySelector('input[value="Todos"]');
+                        const otherCheckboxes = container.querySelectorAll('input[type="checkbox"]:not([value="Todos"])');
+
+                        if (value === 'Todos' && isChecked) {
+                            // Se "Todos" for marcado, desmarca os outros
+                            otherCheckboxes.forEach(cb => cb.checked = false);
+                        } else if (value !== 'Todos' && isChecked) {
+                            // Se outro item for marcado, desmarca "Todos"
+                            todosCheckbox.checked = false;
+                        }
+
+                        // 3. Validação: garante que pelo menos uma opção esteja marcada
+                        const anyChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+                        if (!anyChecked) {
+                            // Se o usuário desmarcou o último item, marca "Todos" como fallback
+                            todosCheckbox.checked = true;
+                        }
+                        
+                        updateButtonText();
+                    });
+
+                    // 4. Inicializa o texto do botão
+                    updateButtonText();
+
+                } else {
+                    container.innerHTML = '<li><span class="dropdown-item-text">Erro ao carregar</span></li>';
+                }
+            })
+            .withFailureHandler(function(error) {
+                console.log('Falha ao carregar opções de situação: ', error);
+                container.innerHTML = '<li><span class="dropdown-item-text">Erro ao carregar</span></li>';
+            })
+            .getOptionsForDropdown('DROPDOWN_SITUACAO', false, true); // O false garante que "Todos" não virá duplicado do backend
+      }
+
+      /**
+       * Controla o layout e a visibilidade dos filtros de forma definitiva.
+       */
+      function handleCheckboxPrazosChange() {
+          const isChecked = document.getElementById('checkboxPrazos').checked;
+
+          // Elementos de layout
+          const labelFiltro = document.getElementById('labelFiltroDynamic');
+          const checkboxVencimentosWrapper = document.getElementById('checkboxVencimentosWrapper');
+                
+                // Containers de Filtro
+      const vencimentosContainer = document.getElementById('vencimentosContainer');
+      const prazosFixosContainer = document.getElementById('prazosFixosContainer');
+
+      // 1. Atualiza o texto do label principal
+      if (labelFiltro) {
+          labelFiltro.textContent = isChecked ? 'Prazo' : 'Vencimentos';
+      }
+      
+      // 2. Controla a visibilidade do checkbox "Incluir Vencidas"
+      if (checkboxVencimentosWrapper) {
+          checkboxVencimentosWrapper.style.visibility = isChecked ? 'hidden' : 'visible';
+      }
+      
+      // 3. Alterna qual container de filtro está visível
+      if (vencimentosContainer && prazosFixosContainer) {
+          vencimentosContainer.classList.toggle('d-none', isChecked);
+          prazosFixosContainer.classList.toggle('d-none', !isChecked);
+      }
+
+      // 4. Dispara a filtragem para atualizar os dados
+      if (window.lastUserEmail) {
+          filtrosProjeto(window.lastUserEmail, false);
+      }
+    }
+
+
+
+    function handleCheckboxVencimentosChange() {
+      popularDropdownPrazosComCheckbox();
+    }
+
+    /**
+     * Retorna o último dia do mês para um ano e mês específicos.
+     * @param {number} year O ano.
+     * @param {number} month O mês (0-indexado, onde 0 é Janeiro).
+     * @returns {Date} Um objeto Date representando o último dia do mês.
+     */
+    function getLastDayOfMonth(year, month) {
+        // O truque é pegar o dia 0 do mês seguinte, que retrocede para o último dia do mês anterior.
+        return new Date(year, month + 1, 0);
+    }
+
+    /**
+     * Converte a opção selecionada no filtro de prazos para uma data de vencimento limite.
+     * @param {string} option O valor da opção selecionada (ex: 'esteMes').
+     * @returns {Date|null} A data de vencimento limite ou null se não houver filtro.
+     */
+    function getDateForFilter(option) {
+        const today = new Date();
+        switch(option) {
+            case 'todos':
+                return null; // Nenhum filtro
+            case 'esteMes':
+                // Retorna o último dia do mês corrente
+                return getLastDayOfMonth(today.getFullYear(), today.getMonth());
+            case 'proximoMes':
+                // Retorna o último dia do próximo mês
+                return getLastDayOfMonth(today.getFullYear(), today.getMonth() + 1);
+            case 'emTresMeses':
+                // Retorna o último dia do mês daqui a 3 meses
+                return getLastDayOfMonth(today.getFullYear(), today.getMonth() + 3);
+            case 'emCincoMeses':
+                // Retorna o último dia do mês daqui a 5 meses
+                return getLastDayOfMonth(today.getFullYear(), today.getMonth() + 5);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Converte uma string de data no formato "DD/MM/YYYY" para um objeto Date.
+     * @param {string} str A data em formato de string.
+     * @returns {Date|null} O objeto Date ou null se o formato for inválido.
+     */
+    function parseBRDate(str) {
+        // CORREÇÃO: Verifica se 'str' é uma string válida antes de prosseguir.
+        if (!str || typeof str !== 'string') {
+            return null;
+        }
+
+        const parts = str.split('/');
+        if (parts.length === 3) {
+            const [dia, mes, ano] = parts.map(Number);
+            // Verifica se todas as partes são números válidos
+            if (!isNaN(dia) && !isNaN(mes) && !isNaN(ano)) {
+                // O mês no construtor do Date é 0-indexado (0 = Janeiro)
+                return new Date(ano, mes - 1, dia);
+            }
+        }
+        return null; // Retorna null para qualquer outro caso inválido
+    }
+
+
+    function popularDropdownPrazosComCheckbox() {
+
+      const container = document.getElementById('idOpcoesVencimentosContainer');
+      const dropdownButton = document.getElementById('vencimentosMultiSelectDropdown');
+      
+      // CORREÇÃO: Usa o ID correto 'checkboxVencimentos' e adiciona uma verificação de segurança.
+      const chkboxVencimentos = document.getElementById('checkboxVencimentos');
+      const isCheckedVencidas = chkboxVencimentos ? chkboxVencimentos.checked : true; // Assume 'true' como padrão se o checkbox não for encontrado.
+
+      // 1. Clona o container para remover listeners antigos e substitui no DOM
+      const newContainer = container.cloneNode(false); // Usar false é mais eficiente, já que vamos limpar o conteúdo
+      container.parentNode.replaceChild(newContainer, container);
+      // newContainer.innerHTML já está vazio, então a linha `newContainer.innerHTML = '';` é desnecessária.
+
+      // 2. CORREÇÃO: Adiciona o listener de 'click' ao NOVO container
+      // Este listener agora permanecerá ativo e impedirá que o menu se feche.
+      newContainer.addEventListener('click', function(e) {
+          e.stopPropagation();
+      });
+
+      // O resto da sua função continua exatamente como estava...
+      function updateButtonText() {
+          const selectedItems = [];
+          const checkboxes = newContainer.querySelectorAll('input[type="checkbox"]:checked');
+          checkboxes.forEach(checkbox => {
+              selectedItems.push(checkbox.value);
+          });
+
+          if (selectedItems.includes('Todos')) {
+              dropdownButton.innerText = 'Todos';
+          } else if (selectedItems.length > 2) {
+              dropdownButton.innerText = `${selectedItems.length} selecionados`;
+          } else if (selectedItems.length > 0) {
+              dropdownButton.innerText = selectedItems.join(', ');
+          }
+      }
+
+      google.script.run
+          .withSuccessHandler(function(resultOptions) {
+              if (resultOptions && Array.isArray(resultOptions)) {
+                  const liTodos = document.createElement('li');
+                  liTodos.innerHTML = `<label class="dropdown-item mb-0"><input type="checkbox" class="me-2" value="Todos" checked> Todos</label>`;
+                  newContainer.appendChild(liTodos);
+
+                  resultOptions.forEach(prazo => {
+                      if (prazo && prazo.trim() !== '') {
+                          const li = document.createElement('li');
+                          li.innerHTML = `<label class="dropdown-item mb-0"><input type="checkbox" class="me-2" value="${prazo}"> ${prazo}</label>`;
+                          newContainer.appendChild(li);
+                      }
+                  });
+
+                  newContainer.addEventListener('change', function(e) {
+                      const targetCheckbox = e.target;
+                      if (!targetCheckbox.matches('input[type="checkbox"]')) return;
+
+                      const isChecked = targetCheckbox.checked;
+                      const value = targetCheckbox.value;
+                      const allCheckboxes = newContainer.querySelectorAll('input[type="checkbox"]');
+                      const todosCheckbox = newContainer.querySelector('input[value="Todos"]');
+                      const otherCheckboxes = newContainer.querySelectorAll('input[type="checkbox"]:not([value="Todos"])');
+
+                      if (value === 'Todos' && isChecked) {
+                          otherCheckboxes.forEach(cb => cb.checked = false);
+                      } else if (value !== 'Todos' && isChecked) {
+                          todosCheckbox.checked = false;
+                      }
+
+                      const anyChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+                      if (!anyChecked) {
+                          todosCheckbox.checked = true;
+                      }
+                      
+                      updateButtonText();
+                  });
+
+                  updateButtonText();
+
+              } else {
+                  newContainer.innerHTML = '<li><span class="dropdown-item-text">Erro</span></li>';
+              }
+          })
+          .withFailureHandler(function(error) {
+              console.log('Falha ao carregar opções de prazos: ', error);
+              newContainer.innerHTML = '<li><span class="dropdown-item-text">Erro</span></li>';
+          })
+          .getOptionsForDropdownForDates(false, true, isCheckedVencidas);
+    }    
+
+    function loadProjects(isAlertIsBeingDisplayed = false, isEdit = false) {
+      // Verifica sessão antes de carregar
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (!result || !result.sessionId) {
+            renderHtmlPage('loadLogin');
+            return;
+          }
+          if (!isEdit) {
+            carregarProjetos(result.email, isAlertIsBeingDisplayed);
+          }
+          else {
+            filtrosProjeto(result.email, isAlertIsBeingDisplayed)
+          }          
+        })
+        .withFailureHandler(function(error) {
+          showMessage('Erro ao validar sessão: ' + error.message, 'danger');
+          renderHtmlPage('loadLogin');
+        })
+        .getUserProperties();
+    }
+      
+    function carregarProjetos(userEmail, isAlertIsBeingDisplayed) {
+      console.log("carregarProjetos");
+      validaTempoDaSessao();
+
+      if (isAlertIsBeingDisplayed) {
+          const container = document.getElementById("messageContainer");
+          var alerta = document.getElementById("alertaReload");
+          if (alerta) {
+              alerta.parentNode.removeChild(alerta);
+          }
+      }
+
+      const container = document.getElementById('projectsContainer');
+      container.innerHTML = `<div class="col-12 text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div></div>`;
+
+      // --- INÍCIO DA CORREÇÃO ---
+      // Filtros lidos da forma correta
+      const filtroPessoas = document.getElementById('selectPessoas').value;
+      const filtroEixo = document.getElementById('selectEixo').value;
+
+      const situacaoContainer = document.getElementById('situacaoCheckboxContainer');
+      const prazosContainer = document.getElementById('idOpcoesVencimentosContainer');
+
+      // Garante que os containers existem antes de tentar ler
+      const arraySituacoes = [];
+      if (situacaoContainer) {
+          const filtroSituacaoCheckboxes = situacaoContainer.querySelectorAll('input[type="checkbox"]:checked');
+          filtroSituacaoCheckboxes.forEach(checkbox => {
+              const situacao = checkbox.value;
+              if (situacao && situacao !== 'Todos') {
+                  arraySituacoes.push(situacao);
+              }
+          });
+      }
+
+      const arrayPrazos = [];
+      if (prazosContainer) {
+          const filtroPrazosCheckboxes = prazosContainer.querySelectorAll('input[type="checkbox"]:checked');
+          filtroPrazosCheckboxes.forEach(checkbox => {
+              const prazo = checkbox.value;
+              if (prazo && prazo !== 'Todos') {
+                  arrayPrazos.push(prazo);
+              }
+          });
+      }
+      // --- FIM DA CORREÇÃO ---
+
+
+      google.script.run
+          .withSuccessHandler(function(result) {
+              // ... (O resto da sua função com a lógica de sucesso continua aqui)
+              // ... (O importante é que a parte de cima, que causava o erro, foi corrigida)
+
+              // Coloquei o restante da sua função original aqui para referência
+              console.log('Exec getProjects.result', result);
+              if (result.success) {
+                  let projetos;
+                  let erroMsg = null;
+                  try {
+                      if (result && result.gzip && result.data) {
+                          const compressed = Uint8Array.from(atob(result.data), c => c.charCodeAt(0));
+                          const decompressed = pako.ungzip(compressed, { to: 'string' });
+                          const parsed = JSON.parse(decompressed);
+                          if (parsed.success && Array.isArray(parsed.projetos)) {
+                              projetos = parsed.projetos;
+                              renderStatusChart(projetos, situacaoColorMap); // gráficos com TODOS os projetos
+                          } else {
+                              erroMsg = parsed.message || "erro interno";
+                          }
+                      } else if (result && result.success && Array.isArray(result.projects)) {
+                          projetos = result.projects;
+                      } else {
+                          erroMsg = (result && result.message) ? result.message : "erro interno";
+                      }
+                  } catch (e) {
+                      erroMsg = "Erro ao processar os dados: " + e;
+                  }
+
+                  if (erroMsg !== null && erroMsg !== undefined && erroMsg !== "") {
+                      showMessage('Erro ao carregar projetos: ' + erroMsg, 'danger');
+                      container.innerHTML = '<div class="col-12 text-center text-danger"><p>Erro ao carregar dados.</p></div>';
+                      return;
+                  }
+
+                  allProjects = projetos;
+                  currentProjects = [...allProjects]; // Começa com todos os projetos
+
+                  // Aplica os filtros iniciais
+                  if (filtroEixo && filtroEixo !== 'Todos') {
+                    currentProjects = currentProjects.filter(p => p.EIXO && p.EIXO.trim().toLowerCase() === filtroEixo.trim().toLowerCase());
+                  }
+                  if (arraySituacoes.length > 0) {
+                    currentProjects = currentProjects.filter(p => p.SITUACAO && arraySituacoes.map(s => s.trim().toLowerCase()).includes(p.SITUACAO.trim().toLowerCase()));
+                  }
+                  if (filtroPessoas && filtroPessoas !== 'Todos') {
+                    currentProjects = currentProjects.filter(p => Array.isArray(p.participantes) && p.participantes.map(e => e.toLowerCase().trim()).includes(filtroPessoas.toLowerCase().trim()));
+                  }
+                  if (arrayPrazos.length > 0) {
+                    currentProjects = currentProjects.filter(p => p.PRAZOS && arrayPrazos.map(s => s.trim().toLowerCase()).includes(p.PRAZOS.trim().toLowerCase()));
+                  }
+
+
+                  sortProjects();
+                  window.lastUserEmail = userEmail;
+                  
+                  google.script.run.withSuccessHandler(function(version) {
+                      window.globalAcoesVersion = version;
+                      iniciarCicloVerificacaoAtualizacao();
+                      displayProjects(currentProjects, userEmail, situacaoColorMap);
+                  }).getGlobalAcoesVersion();
+                  
+                  document.getElementById('projectsCount').textContent = currentProjects.length === 1 ? '1 ação encontrada' : `${currentProjects.length} ações encontradas`;
+
+              } else if (result.loginRedirect) {
+                  showMessage('Sessão expirada! Faça login novamente!', 'warning');
+                  google.script.run.withSuccessHandler(loadLogin);
+              } else {
+                  showMessage('Erro ao carregar projetos: ' + result.message, 'danger');
+              }
+          })
+          .withFailureHandler(function(resultError) {
+              showMessage('Erro ao carregar projetos: ' + resultError.message, 'danger');
+          })
+          .getProjects(); // getProjects não precisa mais de parâmetros se o filtro é feito no cliente
+    }
+
+
+    function filtrosProjeto(userEmail, isAlertIsBeingDisplayed) {
+
+
+
+//<!-- Container Fixo para os Checkboxes -->
+//<div class="d-flex align-items-center">
+//    <!-- Wrapper do checkbox "Prazos Fixos" -->
+//    <div id="checkboxPrazosWrapper" class="form-check form-switch">
+//        <input class="form-check-input" type="checkbox" id="checkboxPrazos">
+//        <label class="form-check-label" for="checkboxPrazos" style="font-size: 0.8rem;">Prazos Fixos</label>
+//    </div>
+//    
+//    <!-- Wrapper do checkbox "Incluir Vencidas", que será mostrado/ocultado -->
+//    <div id="checkboxVencimentosWrapper" class="form-check form-switch ms-2">
+//        <input class="form-check-input" type="checkbox" id="checkboxVencimentos">
+//        <label class="form-check-label" for="checkboxVencimentos" style="font-size: 0.8rem;">Incluir Vencidas</label>
+//    </div>
+//</div>
+
+//<!-- Container dos FILTROS (um por vez será visível) -->
+//<div class="mt-2">
+//  
+//  <!-- Container do Filtro de VENCIMENTOS (Multiselect) -->
+//  <div id="vencimentosContainer">
+//      <div class="dropdown" id="vencimentosDropdownContainer">
+//          <button class="btn btn-light dropdown-toggle" type="button" id="vencimentosMultiSelectDropdown" style="width: 100%; text-align: left; border: 1px solid #ced4da; background-color: white;" data-bs-toggle="dropdown" //aria-expanded="false">
+//              Selecione os Vencimentos
+//          </button>
+//          <ul class="dropdown-menu w-100" aria-labelledby="vencimentosMultiSelectDropdown" id="idOpcoesVencimentosContainer"></ul>
+//      </div>
+//  </div>
+//
+//  <!-- Container do Filtro de PRAZOS FIXOS (Select) - Inicialmente escondido -->
+//  <div id="prazosFixosContainer" class="d-none">
+//      <select class="form-select" id="idSelectPrazos">
+//          <option value="todos">Todos</option>
+//          <option value="esteMes">Este Mês</option>
+//          <option value="proximoMes">Próximo Mês</option>
+//          <option value="emTresMeses">Em até 3 meses</option>
+//          <option value="emCincoMeses">Em até 5 meses</option>
+//      </select>
+//  </div>
+//</div>
+
+
+
+      // --- INÍCIO DA CORREÇÃO ---
+      const filtroPessoas = document.getElementById('selectPessoas').value;
+      const filtroEixo = document.getElementById('selectEixo').value;
+      const situacaoContainer = document.getElementById('situacaoCheckboxContainer');
+      const opcoesVencimentosContainer = document.getElementById('idOpcoesVencimentosContainer'); // <<-- VARIÁVEL MOVIDA PARA CIMA
+      const isPrazosFixos = document.getElementById('checkboxPrazos')?.checked || false;
+   
+
+      const arraySituacoes = [];
+      if (situacaoContainer) {
+          const filtroSituacaoCheckboxes = situacaoContainer.querySelectorAll('input[type="checkbox"]:checked');
+          filtroSituacaoCheckboxes.forEach(checkbox => {
+              const situacao = checkbox.value;
+              if (situacao && situacao !== 'Todos') {
+                  arraySituacoes.push(situacao);
+              }
+          });
+      }
+
+      console.log('arraySituacoes: ' + JSON.stringify(arraySituacoes));
+
+      const arrayVencimentos = [];
+      if (opcoesVencimentosContainer) {
+          const filtroPrazosCheckboxes = opcoesVencimentosContainer.querySelectorAll('input[type="checkbox"]:checked');
+          filtroPrazosCheckboxes.forEach(checkbox => {
+              const prazo = checkbox.value;
+              if (prazo && prazo !== 'Todos') {
+                  arrayVencimentos.push(prazo);
+              }
+          });
+      }
+      
+      console.log('arrayVencimentos: ' + JSON.stringify(arrayVencimentos));
+
+      // --- FIM DA CORREÇÃO ---
+
+      let filteredProjects = [...allProjects]; // Começa com a lista completa de todos os projetos
+
+      if (filtroEixo && filtroEixo !== 'Todos') {
+          filteredProjects = filteredProjects.filter(p => p.EIXO && p.EIXO.trim().toLowerCase() === filtroEixo.trim().toLowerCase());
+      }
+
+      if (arraySituacoes.length > 0) {
+          filteredProjects = filteredProjects.filter(p => p.SITUAÇÃO && arraySituacoes.map(s => s.trim().toLowerCase()).includes(p.SITUAÇÃO.trim().toLowerCase()));
+      }
+      
+      if (filtroPessoas && filtroPessoas !== 'Todos') {
+          filteredProjects = filteredProjects.filter(p => Array.isArray(p.participantes) && p.participantes.map(e => e.toLowerCase().trim()).includes(filtroPessoas.toLowerCase().trim()));
+      }
+
+      if (isPrazosFixos) {
+          // Modo Prazos Fixos: Filtra por VENCIMENTO usando o select
+          const filtroPrazoFixo = document.getElementById('idSelectPrazos').value;
+          const filterDate = getDateForFilter(filtroPrazoFixo);
+          
+          if (filterDate) {
+              filterDate.setHours(23, 59, 59, 999);
+              filteredProjects = filteredProjects.filter(p => {
+                  // CORREÇÃO: Chamamos a parseBRDate mais segura
+                  const projectDate = parseBRDate(p.PRAZOS);
+                  
+                  return projectDate && projectDate <= filterDate;
+              });
+          }
+      } else {
+          // Modo Vencimentos: Filtra por PRAZOS usando o multiselect
+          const arrayVencimentosEscolhidos = [];
+          if (opcoesVencimentosContainer) {
+              const filtroPrazosCheckboxes = opcoesVencimentosContainer.querySelectorAll('input[type="checkbox"]:checked');
+              filtroPrazosCheckboxes.forEach(checkbox => {
+                  if (checkbox.value && checkbox.value !== 'Todos') {
+                      arrayVencimentosEscolhidos.push(checkbox.value.trim().toLowerCase());
+                  }
+              });
+          }
+          console.log('arrayVencimentosEscolhidos: ' + JSON.stringify(arrayVencimentosEscolhidos));
+          if (arrayVencimentosEscolhidos.length > 0) {
+              filteredProjects = filteredProjects.filter(p => p.PRAZOS && arrayVencimentosEscolhidos.includes(p.PRAZOS.trim().toLowerCase()));
+          }
+      }
+
+      currentProjects = filteredProjects; // Atualiza a lista global de projetos visíveis
+      sortProjects();
+      displayProjects(currentProjects, userEmail, situacaoColorMap);
+      document.getElementById('projectsCount').textContent = currentProjects.length === 1 ? '1 ação encontrada' : `${currentProjects.length} ações encontradas`;
+      
+      const btnList = document.getElementById('btnList');
+      if (btnList && btnList.classList.contains('btn-primary')) {
+        // Se o botão de lista estiver ativo, chama a função para renderizar a tabela
+        renderTableView(userEmail);
+      }
+    }
+
+
+    function displayProjects(projects, userEmail, situacaoColorsMap) {
+      const container = document.getElementById('projectsContainer');
+      if (!projects.length) {
+        container.innerHTML = '<div class="col-12 text-center"><p class="text-muted">Nenhum projeto encontrado.</p></div>';
+        return;
+      }
+      const normalize = str => (str || 'Não definida').normalize('NFD').replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+      container.innerHTML = projects.map(p => {
+        const status = p["SITUAÇÃO"] || 'Sem status';
+        const isAcaoNaoConcluida = status !== 'CONCLUÍDA';
+        const key = normalize(status);
+        const cor = situacaoColorsMap && situacaoColorsMap[key] ? situacaoColorsMap[key] : { background: '#6c757d', font: '#ffffff' };
+        const title = `${p["nº"] ? p["nº"] + ' - ' : ''}${p["ÁLIAS"] || 'Sem nome'}`;
+        const isParticipante = userEmail &&
+              Array.isArray(p.participantes) &&
+              p.participantes.map(e => e.trim().toLowerCase()).includes(userEmail.trim().toLowerCase());
+
+        const isGestor = userTipo && userTipo.trim().toLowerCase() === "gestor";
+        console.log("Ação: " + p["nº"]);
+        console.log("Prazo: " +  p["PRAZOS"]);
+        var canEdit = false;
+        
+        // se isAcaoNaoConcluida = true, verifica se o usuário é participante ou gestor.
+        if (isAcaoNaoConcluida){
+          canEdit = !!(isParticipante || isGestor);
+        }
+        
+        //console.log("canEdit: " + canEdit);
+
+        return `
+          <div class="col-md-4 mb-3">
+            <div class="card project-card h-100">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title" style="font-size: 1rem; font-weight: bold;">${title}</h5>
+                <p class="card-text" style="font-size: 0.85rem;">${p["Entregas/Produtos"] || 'Sem descrição'}</p>
+                <div class="mt-auto">
+                  <small class="text-muted" style="font-size: 0.8rem;font-weight: 700;">Situação atual: </small>
+                  <span class="badge mb-2" style="font-size: 0.75rem; background-color: ${cor.background}; color: ${cor.font};">${status}</span>                  
+                  <div class="mb-2">
+                    <small class="text-muted" style="font-size: 0.8rem;font-weight: 700;">Prazo: </small>
+                    <small class="text-muted" style="font-size: 0.8rem;">${p["PRAZOS"] || 'Não definida'}</small>
+                  </div>
+                  <div class="mb-2">
+                    <small class="text-muted" style="font-size: 0.8rem;font-weight: 700;">Eixo: </small>
+                    <small class="text-muted" style="font-size: 0.8rem;">${p["EIXO"] || 'Não definido'}</small>
+                  </div>
+                  <div class="d-flex justify-content-end">
+                    <button class="btn btn-sm btn-primary" style="margin-right: 10px;" onclick="editProject('${p["ÁLIAS"]}')" ${!canEdit ? 'disabled title="Apenas participantes podem editar"' : ''}>
+                      <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button class="btn btn-sm btn-details" onclick="showProjectDetails('${p["ÁLIAS"]}')">
+                      <i class="fas fa-eye"></i> Detalhes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderTableView(userEmail) {
+      const projects = currentProjects || [];
+      const tbody = document.getElementById('tableProjectsBody');
+      if (!projects.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum projeto encontrado</td></tr>';
+        return;
+      }
+      tbody.innerHTML = projects.map(p => {
+
+        const isParticipante = userEmail &&
+              Array.isArray(p.participantes) &&
+              p.participantes.map(e => e.trim().toLowerCase()).includes(userEmail.trim().toLowerCase());
+
+        const isGestor = userTipo && userTipo.trim().toLowerCase() === "gestor";
+        const canEdit = !!(isParticipante || isGestor);
+
+        return `
+        <tr>
+          <td>${p["nº"] || 'Sem nome'}</td>
+          <td>${p["ÁLIAS"] || 'Sem nome'}</td>
+          <td>${p["Entregas/Produtos"] || 'Sem descrição'}</td>
+          <td style='width: 8%; text-align: left;'>${p["SITUAÇÃO"] || 'Sem status'}</td>
+          <td style='width: 8%; text-align: center;'>${p["PRAZOS"] || 'Não definida'}</td>
+          <td style='width: 7%; text-align: center;'>
+            <div class="d-flex gap-2 w-100">
+              <button class="btn btn-sm btn-primary flex-fill" onclick="editProject('${p["ÁLIAS"]}')" ${!canEdit ? 'disabled title="Apenas participantes podem editar"' : ''}>
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-details flex-fill" onclick="showProjectDetails('${p["ÁLIAS"]}')">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+
+    /**
+     * Redefine um dropdown de checkboxes para o estado inicial ("Todos" selecionado).
+     * @param {string} containerId - O ID do elemento <ul> que contém os checkboxes.
+     * @param {string} buttonId - O ID do botão <button> do dropdown.
+     */
+    function resetMultiSelectDropdown(containerId, buttonId) {
+        const container = document.getElementById(containerId);
+        if (!container) return; // Sai da função se o elemento não for encontrado
+
+        // Desmarca todos os checkboxes
+        const allCheckboxes = container.querySelectorAll('input[type="checkbox"]');
+        allCheckboxes.forEach(cb => cb.checked = false);
+
+        // Marca a opção "Todos"
+        const todosCheckbox = container.querySelector('input[value="Todos"]');
+        if (todosCheckbox) {
+            todosCheckbox.checked = true;
+        }
+
+        // Atualiza o texto do botão
+        const dropdownButton = document.getElementById(buttonId);
+        if (dropdownButton) {
+            dropdownButton.innerText = 'Todos';
+        }
+    }
+
+
+    /**
+     * Limpa todos os filtros e redefine a visualização para o estado padrão.
+     */
+    function clearFilters() {
+        // 1. Redefine os dropdowns de select
+        document.getElementById('selectPessoas').value = 'Todos';
+        document.getElementById('selectEixo').value = 'Todos';
+
+        // 2. Redefine os dropdowns de multiselect
+        resetMultiSelectDropdown('situacaoCheckboxContainer', 'multiSelectDropdown');
+        resetMultiSelectDropdown('idOpcoesVencimentosContainer', 'vencimentosMultiSelectDropdown');
+
+        // 3. CORREÇÃO: Redefine o checkbox 'checkboxVencimentos' usando o ID correto
+        const chkboxVencimentos = document.getElementById('checkboxVencimentos');
+        if (chkboxVencimentos) {
+            chkboxVencimentos.checked = true; // Define o estado padrão desejado
+            popularDropdownPrazosComCheckbox(); // Recarrega o dropdown de prazos para refletir a mudança
+        }
+        
+        // 4. Garante que o filtro de Prazos Fixos esteja desativado e o de Vencimentos ativado
+        const checkboxPrazos = document.getElementById('checkboxPrazos');
+        if(checkboxPrazos){
+          checkboxPrazos.checked = false; // Garante que a visão de Vencimentos seja a padrão ao limpar
+          handleCheckboxPrazosChange();
+        }
+
+        // 5. Redefine a ordenação
+        orderBy = "numero";
+        Array.from(document.getElementById('orderBtnGroup').querySelectorAll('button')).forEach((btn, idx) => {
+            btn.classList.toggle('active', idx === 0);
+        });
+
+        // 6. Aplica os filtros limpos para atualizar os projetos na tela
+        filtrosProjeto(window.lastUserEmail, false);
+    }
+
+
+
+
+    function preencherSelect(id, lista) {
+      const select = document.getElementById(id);
+      //select.innerHTML = '<option value="Todos">Todos</option>';
+      const listaFintrada = [...new Set(lista)];
+      if (Array.isArray(listaFintrada)) {
+        listaFintrada.forEach(v => {
+          //if (v !== 'Todos') {
+            const opt = document.createElement('option');
+            opt.value = v; opt.textContent = v;
+            select.appendChild(opt);
+          //}
+        });
+      }
+    }
+
+    // nova
+    function editProject(alias) {
+      // Busca o projeto na lista atual para obter o número (nº)
+      const project = currentProjects.find(p => p["ÁLIAS"] === alias);
+      if (!project) {
+        showMessage('Projeto não encontrado', 'danger');
+        return;
+      }
+      const numProject = project["nº"];
+      if (!numProject) {
+        showMessage('Número do projeto não encontrado', 'danger');
+        return;
+      }
+
+      validaTempoDaSessao();
+
+      // Fecha outra modal se estiver aberta
+      if (detailsModal && detailsModal._isShown) {
+        detailsModal.hide();
+        detailsModal = null;
+        iniciarCicloVerificacaoAtualizacao();
+      }
+
+      // Exibe o modal imediatamente com spinner de carregamento
+      const modalTitle = document.getElementById('editModalTitle');
+      const modalBody = document.getElementById('editModalBody');
+      modalTitle.textContent = `Editar: ${project["ÁLIAS"]}`;
+      modalBody.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="min-height:100px;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando detalhes...</span>
+          </div>
+        </div>
+      `;
+
+      if (!editModal) {
+        editModal = new bootstrap.Modal(document.getElementById('editModal'), { backdrop: 'static', keyboard: false });
+      }
+      pararCicloVerificacaoAtualizacao();
+      editModal.show();
+
+      var situacaoAcao = project["SITUAÇÃO"];
+      //console.log("situacaoAcao: " + situacaoAcao);
+
+      // Chama o backend buscando detalhes completos e atualizados
+      google.script.run
+        .withSuccessHandler(function(res) {
+          let erroMsg = null;
+          let projetoDetalhado = null;
+          try {
+            if (res && res.gzip && res.data) {
+              const compressed = Uint8Array.from(atob(res.data), c => c.charCodeAt(0));
+              const decompressed = pako.ungzip(compressed, { to: 'string' });
+              const parsed = JSON.parse(decompressed);
+              if (parsed.success && parsed.projeto) {
+                projetoDetalhado = parsed.projeto;
+              } else {
+                erroMsg = parsed.message || "erro interno";
+              }
+            } else if (res && res.success && res.projeto) {
+              projetoDetalhado = res.projeto;
+            } else {
+              erroMsg = res && res.message ? res.message : "erro interno";
+            }
+          } catch(e) {
+            erroMsg = "Erro ao processar os dados: " + e;
+          }
+          if (erroMsg !== null) {
+            modalBody.innerHTML = `<div class="alert alert-danger">Erro ao carregar detalhe: ${erroMsg}</div>`;
+            return;
+          }
+          exibirDetalhesProjetoToEditModal(projetoDetalhado, optionsSelect, situacaoAcao);
+        })
+        .withFailureHandler(function(error) {
+          modalBody.innerHTML = `<div class="alert alert-danger">Erro ao buscar detalhes do projeto</div>`;
+        })
+        .getProjectDetail(numProject);
+    }
+
+
+    // Função para exibir os detalhes na modal após carregar
+    function exibirDetalhesProjetoToEditModal(projeto, optionsSelect, situacaoAcao) {
+      const modalTitle = document.getElementById('editModalTitle');
+      const modalBody = document.getElementById('editModalBody');
+      modalTitle.textContent = `Editar: ${projeto["ÁLIAS"]}`;
+      let dataFormatada = 'Não definida';
+      //console.log("Prazos: " + projeto["PRAZOS"]);
+      if (projeto["PRAZOS"]) {
+        try {
+          const data = parseBRDate(projeto["PRAZOS"]);
+          dataFormatada = new Date(data).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+        } catch(e) {}
+      }
+      // Participantes
+      const participantesHtml = Array.isArray(projeto.participantes) && projeto.participantes.length > 0
+        ? `<ul>${projeto.participantes.map(p => `<li>${p}</li>`).join('')}</ul>`
+        : 'Nenhum participante listado.';
+
+      // Listar monitoramentos até o último realmente preenchido
+      // criar dropdown de monitoramentos para edição
+      const monitoramentos = [];
+      let ultimoMonitoramentoComConteudo = 0;
+      for (let i = 1; i <= 24; i++) {
+        const key = i + "º Monitoramento";
+        if (projeto.hasOwnProperty(key) && projeto[key] && projeto[key].toString().trim() !== "") {
+          ultimoMonitoramentoComConteudo = i;
+        }
+        else{
+          const key2 = i + "º";
+          monitoramentos.push(key2);
+        }
+      }
+
+      let monitoramentoAtualHtml = "";
+      var numMonitoramento = "";
+      var dataProximoMonitoramento = "";
+      var responsavel = "";
+      var proximaAcao = "";
+
+      // ordenar do último para o primeiro
+      for (let i = ultimoMonitoramentoComConteudo; i >= 1; i--) {
+        const key = i + "º Monitoramento";
+        if (projeto.hasOwnProperty(key) && projeto[key] && projeto[key].toString().trim() !== "") {
+          monitoramentoAtualHtml = `<b>${key}:</b> ${projeto[key]}`;
+          numMonitoramento = i + "º";
+
+          // Extrair a data após ', Próxima data: '
+          dataProximoMonitoramento = projeto[key].match(/, Próxima data:\s*([0-9]{2}\/[0-9]{2}\/[0-9]{4})/i);
+
+          // Extrair texto após ', Próxima ação: '
+          const regexAcao = /, Próxima ação:\s*([^,]*)/i;
+          const matchAcao = projeto[key].match(regexAcao);
+          proximaAcao = matchAcao ? matchAcao[1].trim() : null;
+
+          // Extrair texto após ', Responsável: '
+          const regexResponsavel = /, Responsável:\s*([^,]*)/i;
+          const matchResponsavel = projeto[key].match(regexResponsavel);
+          responsavel = matchResponsavel ? matchResponsavel[1].trim() : null;
+
+          break;
+        }
+      }
+
+      if(optionsSelect.length > 0){
+        for (let i = 0; i < optionsSelect.length; i++) {
+          if(i == 0){
+            var selectOptions = `<option value="${optionsSelect[i]}">${optionsSelect[i]}</option>
+          `;
+          }
+          else{
+            selectOptions = selectOptions + `<option value="${optionsSelect[i]}">${optionsSelect[i]}</option>
+          `;
+          }
+        };
+      }
+      
+      if(monitoramentos.length > 0){
+        for (let i = -1; i < 1; i++) {
+          if(i == -1){
+            var selectOptionsMonitoramentos = `<option value=" "></option>
+          `;
+          }
+          else{
+            selectOptionsMonitoramentos = selectOptionsMonitoramentos + `<option value="${monitoramentos[i]}">${monitoramentos[i]}</option>
+          `;
+          }
+        };
+      }
+
+      var innerHTML = `
+        <div class="edit-item"><span class="edit-label">Eixo:</span><span class="edit-value"> ${projeto["EIXO"] || 'N/A'}</span></div>
+        <div class="edit-item"><span class="edit-label">Nº da Ação:</span><span id="editAcaoId" class="edit-value"> ${projeto["nº"] || 'N/A'}</span></div>
+        <div class="edit-item"><span class="edit-label">Descrição da Ação:</span><span class="edit-value"> ${projeto["AÇÕES"] || 'N/A'}</span></div>
+        <div class="edit-item"><span class="edit-label">Descrição/Entregas:</span><span class="edit-value"> ${projeto["Entregas/Produtos"] || 'N/A'}</span></div>
+        <div class="edit-item inline">
+          <span class="edit-label">Situação:</span>
+          <select class="form-select edit-value" id="editSituacao">
+            ${selectOptions}
+          </select> 
+        </div>
+        <div class="edit-item"><span class="edit-label">Prazo:</span><span class="edit-value"> ${dataFormatada}</span></div>
+        <div class="edit-item"><span class="edit-label">Participantes:</span><div class="edit-value"> ${participantesHtml}</div></div>
+        <div class="edit-item inline">
+          <span class="edit-label">Último monitoramento: </span>
+          <span class="edit-value">${monitoramentoAtualHtml}</span>
+        </div>
+        <div class="edit-item inline">
+          <col-md-6 style="width: 46%;">
+            <span class="edit-label">Monitoramento Atual: </span>
+            <select class="form-select edit-value" id="editMonitoramento">
+              ${selectOptionsMonitoramentos}
+            </select> 
+          </col-md-6>
+          <col-md-6 style="width: 46%;">
+            <label for="editProxDataMonitoramento" class="edit-label">Próxima Data de Monitoramento: </label>
+            <input 
+              type="text"
+              class="form-control edit-value"
+              id="editProxDataMonitoramento"
+              placeholder="Selecionar data futura"
+              onfocus="this.type='date'"
+              onblur="if(this.value===''){ this.type='text'; }"
+            ></input>          
+          </col-md-6>
+        </div>
+        <div class="edit-item inline">
+          <label for="editProxAcoes" class="edit-label">Próximas Ações: </label>
+          <textarea 
+            class="form-control edit-value" 
+            id="editProxAcoes" 
+            maxlength="300" 
+            rows="3"
+            placeholder="Descreva as próximas ações (até 300 caracteres)"
+          ></textarea>
+          <small id="charCountProxAcoes" class="text-muted">0 / 300</small>
+        </div>
+      `;
+      
+      modalBody.innerHTML = innerHTML;
+      
+      //const dropdown = document.getElementById('editSituacao');
+      //editSituacao.value = situacaoAcao;
+
+      setTimeout(() => {
+        const dropdown = document.getElementById('editSituacao');
+        if (dropdown){
+          dropdown.value = situacaoAcao;
+        }
+
+        originalFormState = {
+          numAcao: projeto["nº"] || '',
+          situacao: situacaoAcao || '',
+          monitoramento: numMonitoramento || '',
+          data: dataProximoMonitoramento || '',
+          acoes: proximaAcao || ''
+        };
+
+        const proxInput = document.getElementById('editProxDataMonitoramento');
+        if (proxInput) {
+          proxInput.type = 'text'; // mostra o campo em branco
+          proxInput.value = '';    // limpa valor
+          proxInput.placeholder = 'Selecionar data futura';
+
+          proxInput.addEventListener('focus', function () {
+            this.type = 'date';
+            const today = new Date().toISOString().split('T')[0];
+            this.min = today;
+          });
+
+          proxInput.addEventListener('blur', function () {
+            if (this.value === '') {
+              this.type = 'text';
+            }
+          });
+        }
+
+        // Contador de caracteres de Próximas Ações
+        const proxAcoesInput = document.getElementById('editProxAcoes');
+        const counter = document.getElementById('charCountProxAcoes');
+
+        if (proxAcoesInput && counter) {
+          proxAcoesInput.addEventListener('input', () => {
+            const len = proxAcoesInput.value.length;
+            counter.textContent = `${len} / 300`;
+          });
+        }
+      }, 0);
+
+    }
+
+    // Função para ordenar os projetos filtrados
+    function sortProjects() {
+      if (!Array.isArray(currentProjects)) return;
+      switch (orderBy) {
+        case "numero":
+          currentProjects.sort((a, b) => {
+            const nA = parseInt(a["nº"]) || 0;
+            const nB = parseInt(b["nº"]) || 0;
+            return nA - nB;
+          });
+          break;
+        case "prazo":
+          currentProjects.sort((a, b) => {
+            const data_a = parseBRDate(a["PRAZOS"]);
+            const data_b = parseBRDate(b["PRAZOS"]);
+
+            const dA = data_a ? new Date(data_a) : new Date(0);
+            const dB = data_b ? new Date(data_b) : new Date(0);
+            //console.log("data_a: " + data_a.toLocaleDateString());
+            //console.log("data_b: " + data_b.toLocaleDateString());
+            //console.log("dA: " + dA.toLocaleDateString());
+            //console.log("dB: " + dB.toLocaleDateString());
+            const dFinal = dB - dA;
+            //console.log("dB - dA: " + dFinal.toString());
+            return dA - dB; 
+          });
+          break;
+        case "monitoramento":
+          currentProjects.sort((a, b) => {
+            const mA = Number(a["Monitoramento Atual"]) || 0;
+            const mB = Number(b["Monitoramento Atual"]) || 0;
+            return mB - mA; // decrescente
+          });
+          break;
+        case "situacao":
+          currentProjects.sort((a, b) => {
+            const sA = (a["SITUAÇÃO"] || '').toUpperCase();
+            const sB = (b["SITUAÇÃO"] || '').toUpperCase();
+            return sA.localeCompare(sB, 'pt');
+          });
+          break;
+      }
+    }
+
+    // Atualiza cards/tabela após ordenar
+    function updateProjectViews(userEmail) {
+      const email = userEmail || (window.lastUserEmail || "");
+      
+      if (document.getElementById('projectsContainerTable').style.display === 'block') {
+        renderTableView(email);
+      } else {
+        displayProjects(currentProjects, email, situacaoColorMap);
+      }
+    }
+
+    function carregarDropdowns() {
+      google.script.run.withSuccessHandler(opcoes => preencherSelect('selectPessoas', opcoes)).getOptionsForDropdown('DROPDOWN_PESSOAS', true, true);
+      google.script.run.withSuccessHandler(opcoes => preencherSelect('selectEixo', opcoes)).getOptionsForDropdown('DROPDOWN_EIXO', true, true);
+      popularDropdownSituacaoComCheckbox();
+      popularDropdownPrazosComCheckbox(); // NOVA LINHA
+    }
+
+    function loadSituacaoColors(callback) {
+      google.script.run
+        .withSuccessHandler(function(data) {
+          const map = {};
+          (data || []).forEach(item => {
+            const key = (item.acao || '').normalize('NFD').replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+            map[key] = {
+              background: item.backgroundColor,
+              font: item.fontColor
+            };
+          });
+          callback(map);
+        })
+        .withFailureHandler(function() { callback({}); })
+        .getSituacaoColors();
+    }
+
+    function renderStatusChart(projects, situacaoColorsMap) {
+      const contagemEixo = {};
+      const contagemSituacao = {};
+      const normalize = str => (str || 'Não definida').normalize('NFD').replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+
+      projects.forEach(p => {
+        const eixo = (p["EIXO"] || 'Não definido').trim();
+        const situacao = normalize(p["SITUAÇÃO"]);
+        contagemEixo[eixo] = (contagemEixo[eixo] || 0) + 1;
+        contagemSituacao[situacao] = (contagemSituacao[situacao] || 0) + 1;
+      });
+
+      const eixoLabels = Object.keys(contagemEixo);
+      const eixoColors = eixoLabels.map((_, i) => [
+        '#4e79a7', '#f28e2c', '#e15759',
+        '#76b7b2', '#59a14f', '#edc949',
+        '#af7aa1', '#ff9da7', '#9c755f',
+        '#bab0ab'
+      ][i % 10]);
+
+      const eixoAbreviacoes = {
+        'Transformação Digital': 'Transformação Digital',
+        'Transferências e Parcerias': 'Transformação e Parcerias',
+        'Inovação e Desenvolvimento de Competências e Lideranças': 'Inovação e Desenv. de Compet. e Lideranças',
+        'Patrimônio Imobiliário e Responsabilidade Socioambiental': 'Patr. Imob. e Resp. Socioambiental',
+        'Logística e Compras Públicas': 'Logística e Compras Públicas'
+      };
+
+      const situacaoLabels = Object.keys(contagemSituacao);
+      const situacaoColors = situacaoLabels.map(s => (situacaoColorsMap && situacaoColorsMap[s] ? situacaoColorsMap[s].background : '#999999'));
+
+      if (window.myChartEixo) window.myChartEixo.destroy();
+      if (window.myChartSituacao) window.myChartSituacao.destroy();
+      if (window.myChartgroupedBarChart) window.myChartgroupedBarChart.destroy();
+
+      window.myChartEixo = new Chart(document.getElementById('projectStatusChartEixo').getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: eixoLabels,
+          datasets: [{ data: eixoLabels.map(e => contagemEixo[e]), backgroundColor: eixoColors }]
+        },
+        options: { 
+          responsive: true, 
+          plugins: { 
+            legend: { 
+              display: false 
+            }, 
+            title: { 
+              display: true, 
+              text: 'Distribuição por Eixo', 
+              font: { size: 16 }, 
+              padding: { top: 10, bottom: 10 } 
+            } 
+          }
+        },
+        plugins: [{
+          id: 'htmlLegend',
+          afterUpdate(chart) {
+            const legend = document.getElementById('chartLegendEixo');
+                legend.innerHTML = chart.data.labels.map((l, i) => {
+                  const labelAbrev = eixoAbreviacoes[l] || l; // usa abreviação se existir
+                  return `
+                    <div style="display:flex; align-items:center; margin-bottom:5px;">
+                      <span style="background:${chart.data.datasets[0].backgroundColor[i]};
+                                  width:12px;height:12px;margin-right:5px;border-radius:2px;"></span>
+                      <span>${labelAbrev} (${chart.data.datasets[0].data[i]})</span>
+                    </div>`;
+                }).join('');
+          }
+        }]
+      });      
+      
+      const totalAcoes = projects.length;
+      
+      window.myChartSituacao = new Chart(document.getElementById('projectStatusChartSituacao').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: situacaoLabels,
+          datasets: [{ data: situacaoLabels.map(s => contagemSituacao[s]), backgroundColor: situacaoColors }]
+        },
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          scales: {
+            x: {
+              beginAtZero: true,
+              max: totalAcoes,
+              title: {
+                display: true,
+                text: 'Total de Ações', 
+                font: { size: 16 },
+                position: 'top'
+              },
+              ticks: {
+                precision: 0, // força inteiros
+                stepSize: 3   // escala de 1 em 1
+              }
+            },
+            y: {
+              offset: true,
+              ticks: {
+                autoSkip: false
+              },
+              grid: {
+                offset: true
+              }
+            }
+          },
+          plugins: { 
+            legend: { 
+              display: false 
+            }, 
+            title: { 
+              display: true, 
+              text: 'Situação por Ação', 
+              font: { size: 16 }, 
+              padding: { top: 10, bottom: 10 } 
+            } 
+          }
+        }
+      });
+
+      // Situações e cores fixas na ordem desejada
+        const situacoes = [
+          'ATRASADA',
+          'EM ANDAMENTO',
+          'REPACTUADA',
+          'AGUARDANDO FEED',
+          'CONCLUÍDA',
+          'CANCELADA',
+          'NÃO INICIADA'
+        ];
+        const situacaoColorsGroupedBar = {
+          'ATRASADA': { bg: 'rgba(255, 99, 132, 0.2)', border: 'rgb(255, 99, 132)' },
+          'EM ANDAMENTO': { bg: 'rgba(75, 192, 192, 0.2)', border: 'rgb(75, 192, 192)' },
+          'REPACTUADA': { bg: 'rgba(255, 205, 86, 0.2)', border: 'rgb(255, 205, 86)' },
+          'AGUARDANDO FEED': { bg: 'rgba(201, 203, 207, 0.2)', border: 'rgb(201, 203, 207)' },
+          'CONCLUÍDA': { bg: 'rgba(255, 159, 64, 0.2)', border: 'rgb(255, 159, 64)' },
+          'CANCELADA': { bg: 'rgba(54, 162, 235, 0.2)', border: 'rgb(54, 162, 235)' },
+          'NÃO INICIADA': { bg: 'rgba(153, 102, 255, 0.2)', border: 'rgb(153, 102, 255)' }
+        };
+
+        const eixoLabelsGroupedBar = [
+          'TD',
+          'TP',
+          'IDCL',
+          'PIRS',
+          'LCP'
+        ];
+
+        const eixoNomeParaInicial = {
+          'Transformação Digital': 'TD',
+          'Transferências e Parcerias': 'TP',
+          'Inovação e Desenvolvimento de Competências e Lideranças': 'IDCL',
+          'Patrimônio Imobiliário e Responsabilidade Socioambiental': 'PIRS',
+          'Logística e Compras Públicas': 'LCP'
+        };
+
+        const contagemPorSituacaoEixo = {};
+
+        situacoes.forEach(sit => {
+          contagemPorSituacaoEixo[sit] = eixoLabelsGroupedBar.map(() => 0);
+        });
+
+        projects.forEach(p => {
+          const eixoCompleto = (p["EIXO"] || '').trim();
+          const situacao = (p["SITUAÇÃO"] || '').trim();
+          const eixoInicial = eixoNomeParaInicial[eixoCompleto];
+          const eixoIndex = eixoLabelsGroupedBar.indexOf(eixoInicial);
+          const sitIndex = situacoes.indexOf(situacao);
+
+          if (eixoIndex !== -1 && sitIndex !== -1) {
+            contagemPorSituacaoEixo[situacao][eixoIndex]++;
+          }
+        });
+
+        const datasets = situacoes.map(sit => ({
+          label: sit,
+          data: contagemPorSituacaoEixo[sit],
+          backgroundColor: situacaoColorsGroupedBar[sit].bg,
+          borderColor: situacaoColorsGroupedBar[sit].border,
+          borderWidth: 1
+        }));
+
+        // Renderiza gráfico de barras agrupadas
+        window.myChartgroupedBarChart = new Chart(document.getElementById('groupedBarChart').getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: eixoLabelsGroupedBar, // <-- Use as iniciais aqui!
+            datasets: datasets
+          },
+          options: {
+            plugins: {
+              title: {
+                display: true,
+                text: 'Situação das Ações por Eixo',
+                font: { size: 16 }, 
+                padding: { top: 10, bottom: 10 } 
+              },
+              legend: {
+                labels: {
+                  font: {
+                    size: 9   // <-- ajuste aqui (padrão é 12)
+                  }
+                }
+              }
+            },
+            responsive: true,
+            scales: {
+              x: {},
+              y: { 
+                beginAtZero: true,
+                ticks: {
+                  precision: 0, // força inteiros
+                  stepSize: 2   // escala de 1 em 1
+                }
+              }
+            }
+          }
+        });      
+    }
+
+    function showEditMessage(message, type = 'info') {
+      const editMessageContainer = document.getElementById('editMessageContainer');
+      // Se já existe um alerta, remova antes de criar outro
+      const existingAlert = editMessageContainer.querySelector('.alert');
+      if (existingAlert) {
+        existingAlert.parentNode.removeChild(existingAlert);
+      }
+
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} alert-dismissible fade show`;
+      alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      editMessageContainer.appendChild(alert);
+      setTimeout(() => {
+        if (alert.parentNode) {
+          alert.parentNode.removeChild(alert);
+        }
+      }, 5000);
+    }
+
+
+    function saveProject() {
+      
+      //console.log("Entrei em  saveProject");
+
+      validaTempoDaSessao();
+
+      //console.log("Depois de validaTempoDaSessao()");
+
+      const confirmSave = confirm('Deseja realmente salvar as alterações?');
+      if (!confirmSave) return;
+
+      const numAcao = parseInt(document.getElementById('editAcaoId').textContent.trim(), 10);
+
+      if (!numAcao) {
+        showMessage('Número da ação não encontrado', 'danger');
+        return;
+      }
+
+      //console.log("Antes de pegar os valores dos campos");
+
+      const situacaoField = document.getElementById('editSituacao');
+      const situacaoSelecionada = situacaoField.value;
+      const situacaoFilled = situacaoSelecionada.trim() !== "";
+
+      const monitoramentoField = document.getElementById('editMonitoramento');
+      const monitoramentoSelecionado = monitoramentoField.value;
+      const monitoramentoFilled = monitoramentoSelecionado.trim() !== "";
+
+      const textoMonitoramentoSelecionado = monitoramentoField.options[monitoramentoField.selectedIndex]?.text || "";
+
+      const dataField = document.getElementById('editProxDataMonitoramento');
+      const dataSelecionadaStr = dataField.value ? new Date(dataField.value).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '';
+      const dataFilled = dataField.value && dataSelecionadaStr !== 'Invalid Date';
+
+      const acoesField = document.getElementById('editProxAcoes');
+      const acoesTexto = acoesField.value;
+      const acoesFilled = acoesTexto.trim() !== "";
+
+      const bAlteraSituacao = situacaoSelecionada.trim() !== originalFormState.situacao.trim();
+
+      //console.log("bAlteraSituacao: " + bAlteraSituacao);
+
+      // Verifica se algum campo do grupo monitoramento foi preenchido
+      const algumPreenchidoMonitoramento = monitoramentoFilled || dataFilled || acoesFilled;
+
+      //console.log("algumPreenchidoMonitoramento: " + algumPreenchidoMonitoramento);
+
+      // Caso o grupo de monitoramento foi iniciado, todos devem estar preenchidos.
+      if (algumPreenchidoMonitoramento) {
+        if (!monitoramentoFilled) {
+          showEditMessage('Por favor, selecione o monitoramento.', 'warning');
+          monitoramentoField.focus();
+          return;
+        }
+        if (!dataFilled) {
+          showEditMessage('Por favor, selecione a próxima data de monitoramento.', 'warning');
+          dataField.focus();
+          return;
+        }
+        if (!acoesFilled) {
+          showEditMessage('Por favor, descreva as próximas ações.', 'warning');
+          acoesField.focus();
+          return;
+        }
+      }
+
+      // Se nada foi alterado, não faz nada
+      if (!bAlteraSituacao && !algumPreenchidoMonitoramento) {
+        showEditMessage('Nenhuma alteração detectada.', 'warning');
+        return;
+      }
+
+      // Monta os objetos de atualização
+      let updateSituacao = {};
+      let updateData = {};
+
+      if (bAlteraSituacao) {
+        updateSituacao = { situacao: situacaoSelecionada };
+      }
+
+      if (algumPreenchidoMonitoramento) {
+        updateData = {
+          monitoramento: textoMonitoramentoSelecionado,
+          data: dataSelecionadaStr,
+          proximasacoes: acoesTexto
+        };
+      }
+
+      //console.log("Objetos updateSituacao e updateData criados");
+
+      //console.log("Antes de chamar saveAcao");
+      
+      //console.log("numAcao: " + numAcao);
+      //console.log("updateSituacao: " + JSON.stringify(updateSituacao));
+      //console.log("updateData: " + JSON.stringify(updateData));
+      //console.log("originalFormState: " + JSON.stringify(originalFormState));
+
+      google.script.run
+        .withSuccessHandler(function(resultUser) {
+          
+      //console.log("resultUser: " + JSON.stringify(resultUser));
+      
+          if (resultUser && resultUser.sessionId) {
+            showEditMessage('Aguarde a resposta para atualizar a Ação! ', 'info');
+            google.script.run
+              .withSuccessHandler(function(res) {
+                // errorCode = 0(gravação feita)
+                // errorCode = 1000(tempo expirado)
+                // errorCode = 1001(Usuário não é válido para salvar!)
+                // errorCode = 1002(erro de gravação)
+                // errorCode = 1003(ação não encontrada)
+                // errorCode = 1004(objeto original já alterado)
+                //console.log("Resultado da chamada saveAcao: success: " + res.success + " errorCode: " + res.errorCode +  " msg: " + res.message);
+
+                if (res.success) {
+                  if (editModal){
+                    editModal.hide();
+                    editModal = null;
+                    iniciarCicloVerificacaoAtualizacao();
+                  }
+                  loadProjects(false, false);
+                  showMessage('Ação atualizada com sucesso!', 'success');
+                } else {
+                  showEditMessage('Erro ao atualizar Ação! ' + res.message, 'danger');
+
+                  if (res.errorCode == 1000) {
+                    setTimeout(function() {
+                      google.script.run
+                        .withSuccessHandler(function() {
+                          sessionStorage.removeItem('ultimaVersao');
+                          renderHtmlPage('loadLogin');
+                        })
+                        .removeAllUserProperties();
+                    }, 5000);
+                  }
+                  if (res.errorCode == 1004) {
+                    setTimeout(function() {
+                      if (editModal){
+                        editModal.hide();
+                        editModal = null;
+                        iniciarCicloVerificacaoAtualizacao();
+                      }
+                      loadProjects(false, false);
+                    }, 5000);
+                  }
+                }
+              })
+              .withFailureHandler(function(err) {
+                showEditMessage('Erro ao atualizar Ação! - ' + err.message, 'danger');
+              })
+              .saveAcao(resultUser, numAcao, updateSituacao, updateData, originalFormState);
+          }
+        })
+        .withFailureHandler(function(erroruser) {
+          if (editModal){
+            editModal.hide();
+            editModal = null;
+            iniciarCicloVerificacaoAtualizacao();
+          }              
+          showMessage('Erro selecionar informações do usuário para gravação: ' + erroruser.message, 'danger');
+        })
+        .getUserProperties();
+    }
+
+
+    function showProjectDetails(alias) {
+      // Busca o projeto na lista atual para obter o número (nº)
+      const project = currentProjects.find(p => p["ÁLIAS"] === alias);
+      if (!project) {
+        showMessage('Projeto não encontrado', 'danger');
+        return;
+      }
+      const numProject = project["nº"];
+      if (!numProject) {
+        showMessage('Número do projeto não encontrado', 'danger');
+        return;
+      }
+
+      validaTempoDaSessao();
+
+      // Fecha outra modal se estiver aberta
+      if (editModal && editModal._isShown) {
+        editModal.hide();
+        editModal.null;
+        iniciarCicloVerificacaoAtualizacao();
+      }
+
+      // Exibe o modal imediatamente com spinner de carregamento
+      const modalTitle = document.getElementById('detailsModalTitle');
+      const modalBody = document.getElementById('detailsModalBody');
+      modalTitle.textContent = `Detalhes: ${project["ÁLIAS"]}`;
+      modalBody.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="min-height:100px;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando detalhes...</span>
+          </div>
+        </div>
+      `;
+      
+      if (!detailsModal) {
+        detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'), { backdrop: 'static', keyboard: false });
+      }
+      pararCicloVerificacaoAtualizacao();
+      detailsModal.show();
+
+      // Chama o backend buscando detalhes completos e atualizados
+      google.script.run
+        .withSuccessHandler(function(res) {
+          let erroMsg = null;
+          let projetoDetalhado = null;
+          try {
+            if (res && res.gzip && res.data) {
+              const compressed = Uint8Array.from(atob(res.data), c => c.charCodeAt(0));
+              const decompressed = pako.ungzip(compressed, { to: 'string' });
+              const parsed = JSON.parse(decompressed);
+              if (parsed.success && parsed.projeto) {
+                projetoDetalhado = parsed.projeto;
+              } else {
+                erroMsg = parsed.message || "erro interno";
+              }
+            } else if (res && res.success && res.projeto) {
+              projetoDetalhado = res.projeto;
+            } else {
+              erroMsg = res && res.message ? res.message : "erro interno";
+            }
+          } catch(e) {
+            erroMsg = "Erro ao processar os dados: " + e;
+          }
+          if (erroMsg !== null) {
+            modalBody.innerHTML = `<div class="alert alert-danger">Erro ao carregar detalhe: ${erroMsg}</div>`;
+            return;
+          }
+          exibirDetalhesProjetoModal(projetoDetalhado);
+        })
+        .withFailureHandler(function(error) {
+          modalBody.innerHTML = `<div class="alert alert-danger">Erro ao buscar detalhes do projeto</div>`;
+        })
+        .getProjectDetail(numProject);
+    }
+
+
+    // Função para exibir os detalhes na modal após carregar
+    function exibirDetalhesProjetoModal(projeto) {
+      const modalTitle = document.getElementById('detailsModalTitle');
+      const modalBody = document.getElementById('detailsModalBody');
+      modalTitle.textContent = `Detalhes: ${projeto["ÁLIAS"]}`;
+      let dataFormatada = 'Não definida';     
+
+      //console.log("Prazos: " + projeto["PRAZOS"]);
+      if (projeto["PRAZOS"]) {
+        try {
+          const data = parseBRDate(projeto["PRAZOS"]);
+          dataFormatada = new Date(data).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+        } catch(e) {}
+      }
+      // Participantes
+      const participantesHtml = Array.isArray(projeto.participantes) && projeto.participantes.length > 0
+        ? `<ul>${projeto.participantes.map(p => `<li>${p}</li>`).join('')}</ul>`
+        : 'Nenhum participante listado.';
+
+      // Listar monitoramentos até o último realmente preenchido
+      const monitoramentos = [];
+      let ultimoMonitoramentoComConteudo = 0;
+      for (let i = 1; i <= 24; i++) {
+        const key = i + "º Monitoramento";
+        if (projeto.hasOwnProperty(key) && projeto[key] && projeto[key].toString().trim() !== "") {
+          ultimoMonitoramentoComConteudo = i;
+        }
+      }
+
+      // ordenar do último para o primeiro
+      //console.log('ultimoMonitoramentoComConteudo: ' + ultimoMonitoramentoComConteudo.toString());
+      for (let i = ultimoMonitoramentoComConteudo; i >= 1; i--) {
+        
+      //console.log('i: ' + i.toString());
+        const key = i + "º Monitoramento";
+        if (projeto.hasOwnProperty(key) && projeto[key] && projeto[key].toString().trim() !== "") {
+          monitoramentos.push({ label: key, value: projeto[key] });
+        }
+      }
+
+      let monitoramentoHtml = "";
+      if (monitoramentos.length > 0) {
+        monitoramentoHtml = "<ul>";
+        monitoramentos.forEach(m => {
+          monitoramentoHtml += `<li><b>${m.label}:</b> ${m.value}</li>`;
+        });
+        monitoramentoHtml += "</ul>";
+      } else {
+        monitoramentoHtml = "Nenhum monitoramento informado.";
+      }
+
+      modalBody.innerHTML = `
+        <div class="detail-item"><span class="detail-label">Eixo:</span><span class="detail-value"> ${projeto["EIXO"] || 'N/A'}</span></div>
+        <div class="detail-item"><span class="detail-label">Nº da Ação:</span><span class="detail-value"> ${projeto["nº"] || 'N/A'}</span></div>
+        <div class="detail-item"><span class="detail-label">Descrição da Ação:</span><span class="detail-value"> ${projeto["AÇÕES"] || 'N/A'}</span></div>
+        <div class="detail-item"><span class="detail-label">Situação:</span><span class="detail-value"> ${projeto["SITUAÇÃO"] || 'N/A'}</span></div>
+        <div class="detail-item"><span class="detail-label">Descrição/Entregas:</span><span class="detail-value"> ${projeto["Entregas/Produtos"] || 'N/A'}</span></div>
+        <div class="detail-item"><span class="detail-label">Prazo:</span><span class="detail-value"> ${dataFormatada}</span></div>
+        <div class="detail-item"><span class="detail-label">Monitoramento Atual:</span><span class="detail-value"> ${projeto["Monitoramento Atual"] || 'N/A'}</span></div>
+        <div class="detail-item"><span class="detail-label">Participantes:</span><div class="detail-value"> ${participantesHtml}</div></div>
+        <div class="detail-item"><span class="detail-label">Monitoramentos:</span><div class="detail-value"> ${monitoramentoHtml}</div></div>
+      `;
+    }
+
+  </script>
+  
+  <script>
+    
+    var verificacaoAtualizacaoTimer = null;
+
+    function iniciarCicloVerificacaoAtualizacao(intervaloMs = 10000) {
+      //console.log('iniciarCicloVerificacaoAtualizacao');
+      if (typeof window.globalAcoesVersion === 'undefined' || window.globalAcoesVersion === null) return;
+      pararCicloVerificacaoAtualizacao();
+      function checarAtualizacao() {
+        google.script.run
+          .withSuccessHandler(function(version) {
+            if (parseInt(version, 10) !== parseInt(window.globalAcoesVersion, 10)) {
+              exibirAlertaAtualizacaoDashboard();
+            } else {
+              verificacaoAtualizacaoTimer = setTimeout(checarAtualizacao, intervaloMs);
+            }
+          })
+          .withFailureHandler(function(error) {
+            verificacaoAtualizacaoTimer = setTimeout(checarAtualizacao, intervaloMs * 1.5);
+          })
+          .getGlobalAcoesVersion();
+      }
+      verificacaoAtualizacaoTimer = setTimeout(checarAtualizacao, intervaloMs);
+    }
+
+    function pararCicloVerificacaoAtualizacao() {
+      if (verificacaoAtualizacaoTimer !== null) {
+        //console.log('pararCicloVerificacaoAtualizacao');
+        clearTimeout(verificacaoAtualizacaoTimer);
+        verificacaoAtualizacaoTimer = null;
+      }
+    }
+
+    function exibirAlertaAtualizacaoDashboard() {
+      const container = document.getElementById('messageContainer');
+      var alertaExistente = document.getElementById('alertaReload');
+      if (alertaExistente) alertaExistente.parentNode.removeChild(alertaExistente);
+      const alerta = document.createElement('div');
+      alerta.id = 'alertaReload';
+      alerta.className = 'alert alert-warning alert-dismissible fade show';
+      alerta.innerHTML = `
+        <strong>Dados atualizados!</strong> Um usuário alterou as ações.<br>
+        <button class="btn btn-sm btn-primary mt-2" onclick="loadProjects(true, false)">Recarregar agora</button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      container.appendChild(alerta);
+    }
+
+  </script>
+
+</body>
+</html>
