@@ -1,6 +1,3 @@
-## 4. acoes_pngi/README.md
-
-```markdown
 # Ações PNGI - Gestão de Ações do PNGI
 
 Aplicação para gerenciamento de ações do Plano Nacional de Gestão da Inovação (PNGI) do Governo do Espírito Santo.
@@ -15,242 +12,198 @@ A aplicação **Ações PNGI** permite:
 - Dashboard com estatísticas e visualizações
 - APIs REST para integração com frontend Next.js
 
-## 🏗️ Estrutura
+## 🏭 Estrutura
 
+```
 acoes_pngi/
-├── models.py # Eixo, SituacaoAcao, VigenciaPNGI
-├── serializers.py # Serializers DRF
+├── models.py              # 11 modelos (Eixo, Situação, Vigência, Ações, etc)
+├── serializers.py         # Serializers DRF
+├── permissions.py         # Sistema de permissões por role
 ├── views/
-│ ├── api_views.py # ViewSets para APIs REST
-│ └── web_views.py # Views tradicionais (templates)
+│   ├── README.md           # Documentação de views
+│   ├── api_views.py        # Arquivo de compatibilidade
+│   ├── web_views.py        # Arquivo de compatibilidade
+│   ├── api_views/          # Módulos API especializados
+│   │   ├── auth_views.py
+│   │   ├── core_views.py
+│   │   ├── acoes_views.py
+│   │   ├── alinhamento_views.py
+│   │   └── responsavel_views.py
+│   └── web_views/          # Módulos Web especializados
+│       ├── core_web_views.py
+│       ├── acoes_web_views.py
+│       ├── alinhamento_web_views.py
+│       └── responsavel_web_views.py
 ├── urls/
-│ ├── api_urls.py # Rotas da API
-│ └── web_urls.py # Rotas web
+│   ├── api_urls.py         # Rotas da API
+│   └── web_urls.py         # Rotas web
 ├── templates/
-│ └── acoes_pngi/
-│ ├── login.html
-│ └── dashboard.html
-├── admin.py # Configuração do Django Admin
-└── migrations/ # Migrações do banco
+│   └── acoes_pngi/
+├── admin.py               # Configuração do Django Admin
+└── migrations/            # Migrações do banco
+```
 
-text
+## 🔐 Sistema de Permissões
+
+### Roles Disponíveis
+
+A aplicação utiliza 4 perfis com permissões hierárquicas:
+
+| Role               | Código            | Permissões                                     |
+|--------------------|-------------------|-----------------------------------------------|
+| Coordenador PNGI   | COORDENADOR_PNGI  | Acesso total + gerencia configurações        |
+| Gestor PNGI        | GESTOR_PNGI       | Acesso total às ações                         |
+| Operador Ação     | OPERADOR_ACAO     | Operações em ações (sem configurações)     |
+| Consultor PNGI     | CONSULTOR_PNGI    | Apenas leitura (sem escrita)                  |
+
+### Classes de Permissão
+
+```python
+from acoes_pngi.permissions import (
+    IsAcoesPNGIUser,      # Base - qualquer perfil com acesso
+    CanViewAcoesPngi,     # Leitura - todos os perfis
+    CanEditAcoesPngi,     # Edição - Coordenador, Gestor, Operador
+    CanManageAcoesPngi,   # Gerenciamento - Coordenador, Gestor
+)
+```
+
+### Uso nas Views
+
+```python
+from rest_framework import viewsets
+from acoes_pngi.permissions import CanEditAcoesPngi
+
+class AcoesViewSet(viewsets.ModelViewSet):
+    permission_classes = [CanEditAcoesPngi]
+    queryset = Acoes.objects.all()
+    # ...
+```
+
+### Verificação Dupla
+
+O sistema implementa verificação em dois níveis:
+
+1. **Via JWT** (`request.auth`):
+   - Verifica roles no token
+   - Valida atributos específicos
+
+2. **Fallback via Banco**:
+   - Consulta `accounts_aplicacao` (codigointerno='ACOES_PNGI')
+   - Consulta `accounts_role` (codigoperfil)
+   - Verifica `accounts_userrole`
 
 ## 📊 Modelos
 
-### Eixo
+### Principais Entidades
 
-Representa os eixos estratégicos do PNGI.
+- **Eixo**: Eixos estratégicos do PNGI (TD, TP, IDCL, PIRS, LCP)
+- **SituacaoAcao**: Situações das ações (Atrasada, Concluída, etc)
+- **VigenciaPNGI**: Períodos de vigência do PNGI
+- **TipoEntraveAlerta**: Tipos de entraves/alertas
+- **Acoes**: Ações do PNGI
+- **AcaoPrazo**: Prazos associados às ações
+- **AcaoDestaque**: Destaques de ações
+- **TipoAnotacaoAlinhamento**: Tipos de anotações
+- **AcaoAnotacaoAlinhamento**: Anotações de alinhamento
+- **UsuarioResponsavel**: Usuários responsáveis
+- **RelacaoAcaoUsuarioResponsavel**: Relação ação-responsável
 
-**Campos**:
-```python
-ideixo              # PK (AutoField)
-strdescricaoeixo    # Descrição do eixo (max 255 chars)
-stralias            # Alias em maiúsculas (max 5 chars)
-created_at          # Data de criação
-updated_at          # Data de atualização
-Eixos cadastrados:
+Veja documentação completa em: [models.py](./models.py)
 
-TD - Transformação Digital
+## 🔌 APIs REST
 
-TP - Transferências e Parcerias
+Base URL: `/api/v1/acoes_pngi/`
 
-IDCL - Inovação e Desenvolvimento de Competências e Lideranças
+### Endpoints de Autenticação
 
-PIRS - Patrimônio Imobiliário e Responsabilidade Socioambiental
+```
+POST   /api/v1/acoes_pngi/auth/portal/        # Autenticação via portal
+```
 
-LCP - Logística e Compras Públicas
+### Endpoints de Usuários
 
-Exemplo de uso:
+```
+POST   /api/v1/acoes_pngi/users/sync/         # Sincronizar usuário
+GET    /api/v1/acoes_pngi/users/list/         # Listar usuários
+GET    /api/v1/acoes_pngi/users/{email}/      # Buscar por email
+```
 
-python
-from acoes_pngi.models import Eixo
+### Endpoints de Eixos
 
-# Criar eixo
-eixo = Eixo.objects.create(
-    strdescricaoeixo='Transformação Digital',
-    stralias='TD'
-)
-
-# Buscar eixos
-eixos = Eixo.objects.all()
-eixo_td = Eixo.objects.get(stralias='TD')
-SituacaoAcao
-Situações possíveis de uma ação do PNGI.
-
-Campos:
-
-python
-idsituacaoacao       # PK (AutoField)
-strdescricaosituacao # Descrição em maiúsculas (max 100 chars)
-Situações cadastradas:
-
-ATRASADA
-
-CONCLUÍDA
-
-REPACTUADA
-
-EM ANDAMENTO
-
-CANCELADA
-
-NÃO INICIADA
-
-AGUARDANDO FEED
-
-Exemplo de uso:
-
-python
-from acoes_pngi.models import SituacaoAcao
-
-# Criar situação
-situacao = SituacaoAcao.objects.create(
-    strdescricaosituacao='EM ANDAMENTO'
-)
-
-# Buscar situações
-situacoes = SituacaoAcao.objects.all()
-VigenciaPNGI
-Períodos de vigência do PNGI.
-
-Campos:
-
-python
-idvigenciapngi           # PK (AutoField)
-strdescricaovigenciapngi # Descrição (max 200 chars)
-datiniciovigencia        # Data de início
-datfinalvigencia         # Data de término
-isvigenciaativa          # Se está ativa (apenas uma por vez)
-created_at               # Data de criação
-updated_at               # Data de atualização
-Regras:
-
-Apenas uma vigência pode estar ativa por vez
-
-Data final deve ser posterior à data inicial
-
-Ao ativar uma vigência, as demais são desativadas automaticamente
-
-Exemplo de uso:
-
-python
-from acoes_pngi.models import VigenciaPNGI
-from datetime import date
-
-# Criar vigência
-vigencia = VigenciaPNGI.objects.create(
-    strdescricaovigenciapngi='PNGI 2024-2028',
-    datiniciovigencia=date(2024, 1, 1),
-    datfinalvigencia=date(2028, 12, 31),
-    isvigenciaativa=True  # Desativa outras automaticamente
-)
-
-# Buscar vigência ativa
-vigencia_atual = VigenciaPNGI.objects.filter(isvigenciaativa=True).first()
-🔌 APIs REST
-Base URL: /api/v1/acoes_pngi/
-
-Endpoints de Eixos
-text
+```
 GET    /api/v1/acoes_pngi/eixos/              # Listar eixos
 POST   /api/v1/acoes_pngi/eixos/              # Criar eixo
 GET    /api/v1/acoes_pngi/eixos/{id}/         # Detalhe de eixo
 PUT    /api/v1/acoes_pngi/eixos/{id}/         # Atualizar eixo
-PATCH  /api/v1/acoes_pngi/eixos/{id}/         # Atualização parcial
 DELETE /api/v1/acoes_pngi/eixos/{id}/         # Deletar eixo
 GET    /api/v1/acoes_pngi/eixos/list_light/   # Listagem otimizada
-Exemplo de request (criar eixo):
+```
 
-bash
-curl -X POST http://localhost:8000/api/v1/acoes_pngi/eixos/ \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer {token}" \
-  -d '{
-    "strdescricaoeixo": "Novo Eixo",
-    "stralias": "NE"
-  }'
-Endpoints de Situações
-text
+### Endpoints de Situações
+
+```
 GET    /api/v1/acoes_pngi/situacoes/          # Listar situações
 POST   /api/v1/acoes_pngi/situacoes/          # Criar situação
-GET    /api/v1/acoes_pngi/situacoes/{id}/     # Detalhe de situação
-PUT    /api/v1/acoes_pngi/situacoes/{id}/     # Atualizar situação
-DELETE /api/v1/acoes_pngi/situacoes/{id}/     # Deletar situação
-Endpoints de Vigências
-text
+GET    /api/v1/acoes_pngi/situacoes/{id}/     # Detalhe
+PUT    /api/v1/acoes_pngi/situacoes/{id}/     # Atualizar
+DELETE /api/v1/acoes_pngi/situacoes/{id}/     # Deletar
+```
+
+### Endpoints de Vigências
+
+```
 GET    /api/v1/acoes_pngi/vigencias/                # Listar vigências
 POST   /api/v1/acoes_pngi/vigencias/                # Criar vigência
-GET    /api/v1/acoes_pngi/vigencias/{id}/           # Detalhe de vigência
-PUT    /api/v1/acoes_pngi/vigencias/{id}/           # Atualizar vigência
-DELETE /api/v1/acoes_pngi/vigencias/{id}/           # Deletar vigência
+GET    /api/v1/acoes_pngi/vigencias/{id}/           # Detalhe
+PUT    /api/v1/acoes_pngi/vigencias/{id}/           # Atualizar
+DELETE /api/v1/acoes_pngi/vigencias/{id}/           # Deletar
 GET    /api/v1/acoes_pngi/vigencias/vigencia_ativa/ # Vigência ativa
+GET    /api/v1/acoes_pngi/vigencias/vigente/        # Vigências vigentes
 POST   /api/v1/acoes_pngi/vigencias/{id}/ativar/    # Ativar vigência
-Exemplo (buscar vigência ativa):
+```
 
-bash
-curl http://localhost:8000/api/v1/acoes_pngi/vigencias/vigencia_ativa/ \
-  -H "Authorization: Bearer {token}"
-Endpoints de Autenticação
-text
-POST   /api/v1/acoes_pngi/auth/portal/        # Autenticação via portal
-Endpoints de Usuários
-text
-POST   /api/v1/acoes_pngi/users/sync/         # Sincronizar usuário
-GET    /api/v1/acoes_pngi/users/list/         # Listar usuários
-GET    /api/v1/acoes_pngi/users/{email}/      # Buscar por email
-🖥️ Interface Web
-Base URL: /acoes-pngi/
+### Endpoints de Ações
 
-Páginas
-text
+```
+GET    /api/v1/acoes_pngi/acoes/                      # Listar ações
+POST   /api/v1/acoes_pngi/acoes/                      # Criar ação
+GET    /api/v1/acoes_pngi/acoes/{id}/                 # Detalhe
+PUT    /api/v1/acoes_pngi/acoes/{id}/                 # Atualizar
+DELETE /api/v1/acoes_pngi/acoes/{id}/                 # Deletar
+GET    /api/v1/acoes_pngi/acoes/{id}/prazos_ativos/   # Prazos ativos
+GET    /api/v1/acoes_pngi/acoes/{id}/responsaveis_list/ # Responsáveis
+```
+
+Veja documentação completa em: [views/README.md](./views/README.md)
+
+## 🖥️ Interface Web
+
+Base URL: `/acoes-pngi/`
+
+### Páginas Principais
+
+```
 GET    /acoes-pngi/                  # Login (redireciona)
 GET    /acoes-pngi/login/            # Página de login
 GET    /acoes-pngi/dashboard/        # Dashboard (requer auth)
 POST   /acoes-pngi/logout/           # Logout
-Login
-Validação de email e senha
+```
 
-Verificação de permissões (UserRole)
+### Dashboard
 
-Redirecionamento automático se já autenticado
-
-Dashboard
 Exibe:
+- Total de eixos cadastrados
+- Total de situações
+- Total de vigências
+- Vigências ativas
+- Últimos 5 eixos criados
+- Vigência atual (se houver)
 
-Total de eixos cadastrados
+## 🎯 Casos de Uso
 
-Total de situações
+### 1. Cadastrar Novo Eixo (via API)
 
-Total de vigências
-
-Vigências ativas
-
-Últimos 5 eixos criados
-
-Vigência atual (se houver)
-
-🔐 Permissões
-Roles Disponíveis
-GESTOR_PNGI: Acesso total à aplicação
-
-USER_PNGI: Acesso de leitura
-
-Verificação de Acesso
-python
-from accounts.models import UserRole
-
-# Na view
-has_access = UserRole.objects.filter(
-    user=request.user,
-    aplicacao__codigointerno='ACOES_PNGI'
-).exists()
-
-if not has_access:
-    # Negar acesso
-    ...
-🎯 Casos de Uso
-1. Cadastrar Novo Eixo (via API)
-python
+```python
 import requests
 
 response = requests.post(
@@ -265,8 +218,11 @@ response = requests.post(
 if response.status_code == 201:
     eixo = response.json()
     print(f"Eixo criado: {eixo['strdescricaoeixo']}")
-2. Ativar Nova Vigência
-python
+```
+
+### 2. Ativar Nova Vigência
+
+```python
 from acoes_pngi.models import VigenciaPNGI
 from datetime import date
 
@@ -277,20 +233,24 @@ nova_vigencia = VigenciaPNGI.objects.create(
     datfinalvigencia=date(2032, 12, 31),
     isvigenciaativa=True  # Desativa outras
 )
-3. Buscar Estatísticas para Dashboard
-python
-from acoes_pngi.models import Eixo, SituacaoAcao, VigenciaPNGI
+```
 
-stats = {
-    'total_eixos': Eixo.objects.count(),
-    'total_situacoes': SituacaoAcao.objects.count(),
-    'total_vigencias': VigenciaPNGI.objects.count(),
-    'vigencias_ativas': VigenciaPNGI.objects.filter(
-        isvigenciaativa=True
-    ).count(),
-}
-🧪 Testes
-bash
+### 3. Verificar Permissão de Usuário
+
+```python
+from acoes_pngi.permissions import CanEditAcoesPngi
+
+permission = CanEditAcoesPngi()
+has_permission = permission.has_permission(request, view)
+
+if has_permission:
+    # Permite edição
+    ...
+```
+
+## 🧪 Testes
+
+```bash
 # Testar aplicação
 python manage.py test acoes_pngi
 
@@ -299,31 +259,98 @@ python manage.py test acoes_pngi.tests.test_models
 
 # Testar APIs
 python manage.py test acoes_pngi.tests.test_api_views
-📚 Relacionamentos
-text
+
+# Testar permissões
+python manage.py test acoes_pngi.tests.test_permissions
+```
+
+## 📚 Relacionamentos
+
+```
 acoes_pngi
-  ├── Depende de: accounts (autenticação)
+  ├── Depende de: accounts (autenticação e autorização)
   ├── Usa: common (serializers e serviços)
   └── Schema DB: acoespngi
-🛠️ Configuração
-Adicionar ao INSTALLED_APPS
-python
+```
+
+## 🛠️ Configuração
+
+### 1. Adicionar ao INSTALLED_APPS
+
+```python
 INSTALLED_APPS = [
     # ...
     'acoes_pngi',
 ]
-Registrar no Portal
-sql
-INSERT INTO tblaplicacao (codigointerno, nomeaplicacao, baseurl, isshowinportal)
-VALUES ('ACOES_PNGI', 'Gestão de Ações PNGI', 'http://localhost:8000/acoes-pngi/', true);
-Criar Role
-sql
-INSERT INTO accountsrole (nomeperfil, codigoperfil, aplicacaoid)
-SELECT 'Gestor PNGI', 'GESTOR_PNGI', idaplicacao
-FROM tblaplicacao WHERE codigointerno = 'ACOES_PNGI';
-📖 Referências
-PNGI - Documentação Oficial
+```
 
-DRF ViewSets
+### 2. Registrar Aplicação no Banco
 
-Ações PNGI - Gestão de Ações do Plano Nacional de Gestão da Inovação
+```sql
+INSERT INTO accounts_aplicacao (codigointerno, nome)
+VALUES ('ACOES_PNGI', 'Ações PNGI');
+```
+
+### 3. Criar Roles
+
+```sql
+-- Coordenador
+INSERT INTO accounts_role (nomeperfil, codigoperfil, aplicacao_id)
+SELECT 'Coordenador - Gerencia Configurações', 'COORDENADOR_PNGI', id
+FROM accounts_aplicacao WHERE codigointerno = 'ACOES_PNGI';
+
+-- Gestor
+INSERT INTO accounts_role (nomeperfil, codigoperfil, aplicacao_id)
+SELECT 'Gestor Acoes PNGI', 'GESTOR_PNGI', id
+FROM accounts_aplicacao WHERE codigointerno = 'ACOES_PNGI';
+
+-- Operador
+INSERT INTO accounts_role (nomeperfil, codigoperfil, aplicacao_id)
+SELECT 'Operador - Apenas Ações', 'OPERADOR_ACAO', id
+FROM accounts_aplicacao WHERE codigointerno = 'ACOES_PNGI';
+
+-- Consultor
+INSERT INTO accounts_role (nomeperfil, codigoperfil, aplicacao_id)
+SELECT 'Consultor - Apenas Leitura', 'CONSULTOR_PNGI', id
+FROM accounts_aplicacao WHERE codigointerno = 'ACOES_PNGI';
+```
+
+### 4. Executar Migrações
+
+```bash
+python manage.py makemigrations acoes_pngi
+python manage.py migrate acoes_pngi
+```
+
+## 📝 Documentação Adicional
+
+- [Estrutura de Views](./views/README.md)
+- [Documentação de Views Específicas](./VIEWS_DOCUMENTATION.md)
+- [DRF ViewSets](https://www.django-rest-framework.org/api-guide/viewsets/)
+- [Django Permissions](https://docs.djangoproject.com/en/stable/topics/auth/)
+
+## 👥 Manutenção
+
+### Padrão de Código
+
+A aplicação segue o padrão arquitetural de `carga_org_lot`:
+
+- Views modulares em `views/api_views/` e `views/web_views/`
+- Permissões hierárquicas com verificação dupla
+- Serializers otimizados com `ListSerializer`
+- Router específico em `db_router.py`
+
+### Ao Adicionar Novas Funcionalidades
+
+1. Criar modelo em `models.py`
+2. Criar serializer em `serializers.py`
+3. Criar ViewSet em `views/api_views/[categoria]_views.py`
+4. Criar CBVs em `views/web_views/[categoria]_web_views.py`
+5. Adicionar exports nos `__init__.py`
+6. Adicionar rotas em `urls/`
+7. Atualizar documentação
+
+---
+
+**Desenvolvido por:** Equipe GPP - SEGER/ES  
+**Documentação atualizada:** Fevereiro 2026
