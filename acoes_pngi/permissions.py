@@ -1,17 +1,148 @@
 from rest_framework.permissions import BasePermission
+from accounts.models import UserRole, Aplicacao
 
 
 # ============================================================================
-# PERMISSÕES EXISTENTES (mantidas)
+# PERMISSÕES HIERÁRQUICAS (para testes)
 # ============================================================================
 
-class CanManageCarga(BasePermission):
+class IsAcoesPNGIUser(BasePermission):
+    """
+    Permissão base para verificar se usuário tem qualquer acesso à aplicação Ações PNGI.
+    Aceita qualquer um dos 4 perfis: COORDENADOR_PNGI, GESTOR_PNGI, OPERADOR_ACAO, CONSULTOR_PNGI.
+    """
     def has_permission(self, request, view):
         user = request.user
         if not user or not user.is_authenticated:
             return False
 
-        # RBAC: checa se usuário tem role 'GESTOR_PNGI' para esta aplicação
+        # Tenta via JWT (request.auth)
+        if hasattr(request, 'auth') and request.auth:
+            roles = request.auth.get('roles', [])
+            has_role = any(
+                r['application__code'] == 'ACOES_PNGI' and 
+                r['role__code'] in ['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO', 'CONSULTOR_PNGI']
+                for r in roles
+            )
+            return has_role
+        
+        # Fallback: verifica diretamente no banco (para testes e sessões)
+        try:
+            app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+            if not app_acoes:
+                return False
+            
+            has_role = UserRole.objects.filter(
+                user=user,
+                aplicacao=app_acoes,
+                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO', 'CONSULTOR_PNGI']
+            ).exists()
+            
+            return has_role
+            
+        except Exception:
+            return False
+
+
+class CanViewAcoesPngi(IsAcoesPNGIUser):
+    """
+    Permissão para visualização (leitura).
+    Permite acesso a TODOS os perfis: COORDENADOR_PNGI, GESTOR_PNGI, OPERADOR_ACAO, CONSULTOR_PNGI.
+    
+    Herda de IsAcoesPNGIUser, então qualquer usuário com acesso à aplicação pode visualizar.
+    """
+    pass
+
+
+class CanEditAcoesPngi(BasePermission):
+    """
+    Permissão para edição de ações.
+    Permite: COORDENADOR_PNGI, GESTOR_PNGI, OPERADOR_ACAO.
+    Bloqueia: CONSULTOR_PNGI (apenas leitura).
+    """
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        # Tenta via JWT (request.auth)
+        if hasattr(request, 'auth') and request.auth:
+            roles = request.auth.get('roles', [])
+            has_role = any(
+                r['application__code'] == 'ACOES_PNGI' and 
+                r['role__code'] in ['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO']
+                for r in roles
+            )
+            return has_role
+        
+        # Fallback: verifica diretamente no banco
+        try:
+            app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+            if not app_acoes:
+                return False
+            
+            has_role = UserRole.objects.filter(
+                user=user,
+                aplicacao=app_acoes,
+                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO']
+            ).exists()
+            
+            return has_role
+            
+        except Exception:
+            return False
+
+
+class CanManageAcoesPngi(BasePermission):
+    """
+    Permissão para gerenciamento completo (incluindo configurações).
+    Permite: COORDENADOR_PNGI, GESTOR_PNGI.
+    Bloqueia: OPERADOR_ACAO (apenas ações), CONSULTOR_PNGI (apenas leitura).
+    """
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        # Tenta via JWT (request.auth)
+        if hasattr(request, 'auth') and request.auth:
+            roles = request.auth.get('roles', [])
+            has_role = any(
+                r['application__code'] == 'ACOES_PNGI' and 
+                r['role__code'] in ['COORDENADOR_PNGI', 'GESTOR_PNGI']
+                for r in roles
+            )
+            return has_role
+        
+        # Fallback: verifica diretamente no banco
+        try:
+            app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+            if not app_acoes:
+                return False
+            
+            has_role = UserRole.objects.filter(
+                user=user,
+                aplicacao=app_acoes,
+                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI']
+            ).exists()
+            
+            return has_role
+            
+        except Exception:
+            return False
+
+
+# ============================================================================
+# PERMISSÕES EXISTENTES (mantidas para compatibilidade)
+# ============================================================================
+
+class CanManageCarga(BasePermission):
+    """Alias para manter compatibilidade com código antigo"""
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
         roles = request.auth.get('roles', []) if hasattr(request, 'auth') else []
         has_role = any(
             r['application__code'] == 'ACOES_PNGI' and r['role__code'] == 'GESTOR_PNGI'
@@ -20,7 +151,6 @@ class CanManageCarga(BasePermission):
         if not has_role:
             return False
 
-        # ABAC simples: atributo 'can_upload' == 'true'
         attrs = request.auth.get('attrs', [])
         for a in attrs:
             if (
@@ -32,39 +162,14 @@ class CanManageCarga(BasePermission):
         return False
 
 
-class IsAcoesPNGIUser(BasePermission):
-    """
-    Permissão para usuários do app Ações PNGI
-    """
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-        
-        # Verifica se o usuário tem role para a aplicação ACOESPNGI
-        from accounts.models import UserRole, Aplicacao
-        
-        try:
-            app = Aplicacao.objects.get(codigointerno='ACOES_PNGI')
-            return UserRole.objects.filter(
-                user=request.user,
-                aplicacao=app
-            ).exists()
-        except Aplicacao.DoesNotExist:
-            return False
-
-
 # ============================================================================
-# NOVAS PERMISSÕES (baseadas no sistema nativo do Django)
+# PERMISSÕES BASEADAS NO SISTEMA NATIVO DO DJANGO
 # ============================================================================
 
 class HasAcoesPermission(BasePermission):
     """
     Verifica permissões usando sistema nativo do Django
     Usa automaticamente o model da ViewSet
-    
-    Uso:
-    class EixoViewSet(viewsets.ModelViewSet):
-        permission_classes = [HasAcoesPermission]
     """
     
     permission_map = {
@@ -84,32 +189,22 @@ class HasAcoesPermission(BasePermission):
         if request.user.is_superuser:
             return True
         
-        # Inferir model da view
         if hasattr(view, 'queryset') and view.queryset is not None:
             model_name = view.queryset.model._meta.model_name
         else:
             return False
         
-        # Construir codename (ex: add_eixo)
         action = self.permission_map.get(request.method, 'view')
         perm_codename = f'{action}_{model_name}'
         
-        # Verificar usando o helper do User
         return request.user.has_app_perm('ACOES_PNGI', perm_codename)
     
     def has_object_permission(self, request, view, obj):
-        # Se tem permissão de model, tem de objeto
         return self.has_permission(request, view)
 
 
 class IsGestorPNGI(BasePermission):
-    """
-    Apenas gestores PNGI têm acesso
-    
-    Uso:
-    class ConfiguracoesViewSet(viewsets.ModelViewSet):
-        permission_classes = [IsGestorPNGI]
-    """
+    """Apenas gestores PNGI têm acesso"""
     
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
@@ -118,7 +213,6 @@ class IsGestorPNGI(BasePermission):
         if request.user.is_superuser:
             return True
         
-        from accounts.models import UserRole
         user_role = UserRole.objects.filter(
             user=request.user,
             aplicacao__codigointerno='ACOES_PNGI'
@@ -128,13 +222,7 @@ class IsGestorPNGI(BasePermission):
 
 
 class IsCoordenadorOrAbove(BasePermission):
-    """
-    Coordenadores e Gestores têm acesso
-    
-    Uso:
-    class RelatoriosViewSet(viewsets.ModelViewSet):
-        permission_classes = [IsCoordenadorOrAbove]
-    """
+    """Coordenadores e Gestores têm acesso"""
     
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
@@ -143,7 +231,6 @@ class IsCoordenadorOrAbove(BasePermission):
         if request.user.is_superuser:
             return True
         
-        from accounts.models import UserRole
         user_role = UserRole.objects.filter(
             user=request.user,
             aplicacao__codigointerno='ACOES_PNGI'
@@ -154,27 +241,14 @@ class IsCoordenadorOrAbove(BasePermission):
 
 
 class ReadOnly(BasePermission):
-    """
-    Permite apenas métodos de leitura (GET, HEAD, OPTIONS)
-    
-    Uso:
-    class PublicDataViewSet(viewsets.ModelViewSet):
-        permission_classes = [IsAuthenticated, ReadOnly]
-    """
+    """Permite apenas métodos de leitura (GET, HEAD, OPTIONS)"""
     
     def has_permission(self, request, view):
         return request.method in ['GET', 'HEAD', 'OPTIONS']
 
 
 class CanAddOnly(BasePermission):
-    """
-    Permite apenas criar novos registros (POST)
-    Útil para operadores que só podem criar ações
-    
-    Uso:
-    class AcaoViewSet(viewsets.ModelViewSet):
-        permission_classes = [CanAddOnly]
-    """
+    """Permite apenas criar novos registros (POST)"""
     
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
@@ -183,7 +257,6 @@ class CanAddOnly(BasePermission):
         if request.user.is_superuser:
             return True
         
-        # Permite GET (listar/detalhe) e POST (criar)
         if request.method in ['GET', 'HEAD', 'OPTIONS', 'POST']:
             if hasattr(view, 'queryset') and view.queryset is not None:
                 model_name = view.queryset.model._meta.model_name
@@ -197,13 +270,7 @@ class CanAddOnly(BasePermission):
 
 
 class HasSpecificPermission(BasePermission):
-    """
-    Classe base para criar permissões específicas rapidamente
-    
-    Uso:
-    class CanDeleteEixo(HasSpecificPermission):
-        required_permission = 'delete_eixo'
-    """
+    """Classe base para criar permissões específicas rapidamente"""
     required_permission = None
     
     def has_permission(self, request, view):
@@ -219,7 +286,6 @@ class HasSpecificPermission(BasePermission):
         return request.user.has_app_perm('ACOES_PNGI', self.required_permission)
 
 
-# Exemplos de permissões específicas usando a classe base
 class CanAddEixo(HasSpecificPermission):
     """Permite apenas adicionar eixos"""
     required_permission = 'add_eixo'
