@@ -9,12 +9,7 @@ from rest_framework.test import APITestCase, APIRequestFactory
 from rest_framework.views import APIView
 from unittest.mock import Mock, patch
 
-from ..permissions import (
-    IsAcoesPNGIUser,
-    CanViewAcoesPngi,
-    CanEditAcoesPngi,
-    CanManageAcoesPngi
-)
+from ..permissions import IsAcoesPNGIUser
 
 User = get_user_model()
 
