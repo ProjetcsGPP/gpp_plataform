@@ -1,415 +1,216 @@
 """
-Testes para o sistema automatizado de permissões do acoes_pngi.
+Testes do Sistema de Permissões - Ações PNGI
+Testa as 4 classes de permissões hierárquicas.
 """
+
 from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import Permission
-from django.core.cache import cache
+from rest_framework.test import APITestCase, APIRequestFactory
+from rest_framework.views import APIView
+from unittest.mock import Mock, patch
 
-from accounts.models import Aplicacao, Role, RolePermission, UserRole
-from acoes_pngi.context_processors import acoes_permissions
-from acoes_pngi.utils.permissions import (
-    get_user_app_permissions,
-    user_can_manage_model,
-    get_model_permissions,
-    clear_user_permissions_cache,
+from ..permissions import (
+    IsAcoesPNGIUser,
+    CanViewAcoesPngi,
+    CanEditAcoesPngi,
+    CanManageAcoesPngi
 )
 
 User = get_user_model()
 
 
-class AcoesPermissionsTestCase(TestCase):
-    """Testes para o sistema de permissões automatizado."""
-
+class BasePermissionTest(TestCase):
+    """Classe base para testes de permissões"""
+    
     def setUp(self):
-        """Configurar ambiente de teste."""
-        print("\n" + "="*80)
-        print("🛠️  Configurando ambiente de teste...")
-        print("="*80)
+        """Setup inicial para testes"""
+        self.factory = APIRequestFactory()
+        self.view = APIView()
         
-        # Limpar cache antes de cada teste
-        cache.clear()
-        print("✅ Cache limpo")
-        
-        # Usar get_or_create para evitar conflitos com dados do __init__.py
-        self.app, created = Aplicacao.objects.get_or_create(
-            codigointerno='ACOES_PNGI',
-            defaults={'nomeaplicacao': 'Ações PNGI'}
+        # Criar usuário de teste
+        self.user = User.objects.create_user(
+            email="teste@seger.es.gov.br",
+            name="Usuário Teste",
+            password="senha123"
         )
-        print(f"✅ Aplicação: {self.app.nomeaplicacao} ({'criada' if created else 'existente'})")
-        
-        # Criar roles com o campo correto: aplicacao (não idaplicacao)
-        self.admin_role, created = Role.objects.get_or_create(
-            nomeperfil='Admin PNGI',
-            codigoperfil='ADMIN_PNGI',
-            defaults={'aplicacao': self.app}
-        )
-        print(f"✅ Role Admin: {self.admin_role.nomeperfil} ({'criada' if created else 'existente'})")
-        
-        self.viewer_role, created = Role.objects.get_or_create(
-            nomeperfil='Viewer PNGI',
-            codigoperfil='VIEWER_PNGI',
-            defaults={'aplicacao': self.app}
-        )
-        print(f"✅ Role Viewer: {self.viewer_role.nomeperfil} ({'criada' if created else 'existente'})")
-        
-        # Criar usuários (sem username, só email)
-        self.admin_user = User.objects.create_user(
-            email='admin@pngi.gov.br',
-            password='admin123',
-            name='Admin PNGI Test'
-        )
-        print(f"✅ Usuário Admin criado: {self.admin_user.email}")
-        
-        self.viewer_user = User.objects.create_user(
-            email='viewer@pngi.gov.br',
-            password='viewer123',
-            name='Viewer PNGI Test'
-        )
-        print(f"✅ Usuário Viewer criado: {self.viewer_user.email}")
-        
-        # Criar UserRole para vincular usuários aos roles
-        UserRole.objects.create(
-            user=self.admin_user,
-            aplicacao=self.app,
-            role=self.admin_role
-        )
-        print(f"   → {self.admin_user.name} vinculado ao role {self.admin_role.nomeperfil}")
-        
-        UserRole.objects.create(
-            user=self.viewer_user,
-            aplicacao=self.app,
-            role=self.viewer_role
-        )
-        print(f"   → {self.viewer_user.name} vinculado ao role {self.viewer_role.nomeperfil}")
-        
-        # Criar permissões para o app acoes_pngi
-        from acoes_pngi.models import Eixo, SituacaoAcao
-        
-        print("\n🔑 Configurando permissões...")
-        
-        # Obter content types
-        eixo_ct = ContentType.objects.get_for_model(Eixo)
-        situacao_ct = ContentType.objects.get_for_model(SituacaoAcao)
-        
-        # Permissões para Eixo
-        self.perm_add_eixo = Permission.objects.get(
-            content_type=eixo_ct,
-            codename='add_eixo'
-        )
-        self.perm_change_eixo = Permission.objects.get(
-            content_type=eixo_ct,
-            codename='change_eixo'
-        )
-        self.perm_delete_eixo = Permission.objects.get(
-            content_type=eixo_ct,
-            codename='delete_eixo'
-        )
-        self.perm_view_eixo = Permission.objects.get(
-            content_type=eixo_ct,
-            codename='view_eixo'
-        )
-        
-        # Permissões para SituacaoAcao
-        self.perm_view_situacao = Permission.objects.get(
-            content_type=situacao_ct,
-            codename='view_situacaoacao'
-        )
-        
-        # Associar todas as permissões ao Admin
-        print(f"\n   Admin Role ({self.admin_role.nomeperfil}):")
-        for perm in [self.perm_add_eixo, self.perm_change_eixo, self.perm_delete_eixo, self.perm_view_eixo]:
-            RolePermission.objects.get_or_create(
-                role=self.admin_role,
-                permission=perm
-            )
-            print(f"      ✅ {perm.codename}")
-        
-        # Associar apenas view ao Viewer
-        print(f"\n   Viewer Role ({self.viewer_role.nomeperfil}):")
-        for perm in [self.perm_view_eixo, self.perm_view_situacao]:
-            RolePermission.objects.get_or_create(
-                role=self.viewer_role,
-                permission=perm
-            )
-            print(f"      ✅ {perm.codename}")
-        
-        # Factory para criar requests
-        self.factory = RequestFactory()
-        print("\n✅ Ambiente configurado com sucesso!")
     
-    def tearDown(self):
-        """Limpar cache após cada teste."""
-        cache.clear()
-        print("🧹 Cache limpo após teste")
-    
-    def test_admin_has_all_permissions(self):
-        """
-        TESTE 1: Admin deve ter todas as permissões.
-        """
-        print("\n" + "="*80)
-        print("🧪 TESTE 1: Verificando permissões do Admin")
-        print("="*80)
-        
+    def create_request_with_role(self, role_code):
+        """Cria request com role específico no token JWT"""
         request = self.factory.get('/')
-        request.user = self.admin_user
-        print(f"👤 Usuário: {self.admin_user.name} ({self.admin_user.email})")
-        print(f"🎭 Role: {self.admin_role.nomeperfil}")
+        request.user = self.user
         
-        print("\n🔍 Executando context processor...")
-        context = acoes_permissions(request)
-        
-        print("\n📊 Permissões retornadas pelo context:")
-        permissions = {
-            'can_add_eixo': context['can_add_eixo'],
-            'can_change_eixo': context['can_change_eixo'],
-            'can_delete_eixo': context['can_delete_eixo'],
-            'can_view_eixo': context['can_view_eixo'],
-            'can_manage_eixo': context['can_manage_eixo'],
+        # Simular token JWT com role
+        request.auth = Mock()
+        request.auth.payload = {
+            'roles': [role_code],
+            'aplicacao': 'ACOES_PNGI'
         }
         
-        for perm, value in permissions.items():
-            icon = "✅" if value else "❌"
-            print(f"   {icon} {perm}: {value}")
-        
-        print("\n✅ Asserting: Admin deve ter TODAS as permissões")
-        self.assertTrue(context['can_add_eixo'])
-        self.assertTrue(context['can_change_eixo'])
-        self.assertTrue(context['can_delete_eixo'])
-        self.assertTrue(context['can_view_eixo'])
-        self.assertTrue(context['can_manage_eixo'])  # Agregada
-        print("✅ TESTE PASSOU!")
+        return request
+
+
+class IsAcoesPNGIUserTest(BasePermissionTest):
+    """Testes da permissão base IsAcoesPNGIUser"""
     
-    def test_viewer_has_limited_permissions(self):
-        """
-        TESTE 2: Viewer deve ter apenas permissão de visualização.
-        """
-        print("\n" + "="*80)
-        print("👁️  TESTE 2: Verificando permissões do Viewer (limitadas)")
-        print("="*80)
+    def test_permission_with_valid_role(self):
+        """Teste com role válido"""
+        permission = IsAcoesPNGIUser()
+        request = self.create_request_with_role('GESTOR_PNGI')
         
+        self.assertTrue(permission.has_permission(request, self.view))
+    
+    def test_permission_coordenador(self):
+        """Teste com role COORDENADOR_PNGI"""
+        permission = IsAcoesPNGIUser()
+        request = self.create_request_with_role('COORDENADOR_PNGI')
+        
+        self.assertTrue(permission.has_permission(request, self.view))
+    
+    def test_permission_consultor(self):
+        """Teste com role CONSULTOR_PNGI"""
+        permission = IsAcoesPNGIUser()
+        request = self.create_request_with_role('CONSULTOR_PNGI')
+        
+        self.assertTrue(permission.has_permission(request, self.view))
+    
+    def test_permission_without_role(self):
+        """Teste sem role válido"""
+        permission = IsAcoesPNGIUser()
         request = self.factory.get('/')
-        request.user = self.viewer_user
-        print(f"👤 Usuário: {self.viewer_user.name} ({self.viewer_user.email})")
-        print(f"🎭 Role: {self.viewer_role.nomeperfil}")
+        request.user = self.user
+        request.auth = Mock()
+        request.auth.payload = {'roles': []}
         
-        print("\n🔍 Executando context processor...")
-        context = acoes_permissions(request)
-        
-        print("\n📊 Permissões retornadas pelo context:")
-        permissions = {
-            'can_add_eixo': context['can_add_eixo'],
-            'can_change_eixo': context['can_change_eixo'],
-            'can_delete_eixo': context['can_delete_eixo'],
-            'can_view_eixo': context['can_view_eixo'],
-            'can_manage_eixo': context['can_manage_eixo'],
-        }
-        
-        for perm, value in permissions.items():
-            icon = "✅" if value else "❌"
-            expected = "(esperado)" if perm == 'can_view_eixo' else "(esperado: False)"
-            print(f"   {icon} {perm}: {value} {expected}")
-        
-        print("\n✅ Asserting: Viewer deve ter APENAS view")
-        self.assertFalse(context['can_add_eixo'])
-        self.assertFalse(context['can_change_eixo'])
-        self.assertFalse(context['can_delete_eixo'])
-        self.assertTrue(context['can_view_eixo'])
-        self.assertFalse(context['can_manage_eixo'])  # Agregada
-        print("✅ TESTE PASSOU!")
+        # Deve tentar fallback no banco (sem mockar, deve falhar)
+        result = permission.has_permission(request, self.view)
+        self.assertFalse(result)
+
+
+class CanViewAcoesPngiTest(BasePermissionTest):
+    """Testes da permissão CanViewAcoesPngi"""
     
-    def test_unauthenticated_user_no_permissions(self):
-        """
-        TESTE 3: Usuário não autenticado não deve ter permissões.
-        """
-        print("\n" + "="*80)
-        print("🚫 TESTE 3: Verificando usuário não autenticado (sem permissões)")
-        print("="*80)
+    def test_view_with_gestor(self):
+        """Gestor pode visualizar"""
+        permission = CanViewAcoesPngi()
+        request = self.create_request_with_role('GESTOR_PNGI')
         
-        from django.contrib.auth.models import AnonymousUser
-        
-        request = self.factory.get('/')
-        request.user = AnonymousUser()
-        print("👤 Usuário: Anônimo (não autenticado)")
-        
-        print("\n🔍 Executando context processor...")
-        context = acoes_permissions(request)
-        
-        print("\n📊 Permissões retornadas pelo context:")
-        permissions = {
-            'can_add_eixo': context['can_add_eixo'],
-            'can_change_eixo': context['can_change_eixo'],
-            'can_delete_eixo': context['can_delete_eixo'],
-            'can_view_eixo': context['can_view_eixo'],
-        }
-        
-        for perm, value in permissions.items():
-            icon = "❌"
-            print(f"   {icon} {perm}: {value} (esperado: False)")
-        
-        print("\n✅ Asserting: Anônimo não deve ter NENHUMA permissão")
-        self.assertFalse(context['can_add_eixo'])
-        self.assertFalse(context['can_change_eixo'])
-        self.assertFalse(context['can_delete_eixo'])
-        self.assertFalse(context['can_view_eixo'])
-        print("✅ TESTE PASSOU!")
+        self.assertTrue(permission.has_permission(request, self.view))
     
-    def test_get_user_app_permissions(self):
-        """
-        TESTE 4: Testar função helper de permissões.
-        """
-        print("\n" + "="*80)
-        print("🛠️  TESTE 4: Testando helper get_user_app_permissions()")
-        print("="*80)
+    def test_view_with_consultor(self):
+        """Consultor pode visualizar"""
+        permission = CanViewAcoesPngi()
+        request = self.create_request_with_role('CONSULTOR_PNGI')
         
-        print(f"👤 Usuário: {self.admin_user.name}")
-        print("\n🔍 Chamando get_user_app_permissions()...")
-        
-        perms = get_user_app_permissions(self.admin_user)
-        
-        print(f"\n📊 Permissões retornadas (total: {len(perms)}):")
-        expected_perms = ['add_eixo', 'change_eixo', 'delete_eixo', 'view_eixo']
-        
-        for perm in expected_perms:
-            has_perm = perm in perms
-            icon = "✅" if has_perm else "❌"
-            print(f"   {icon} {perm}: {'presente' if has_perm else 'ausente'}")
-        
-        print("\n✅ Asserting: Admin deve ter permissões de eixo")
-        self.assertIn('add_eixo', perms)
-        self.assertIn('change_eixo', perms)
-        self.assertIn('delete_eixo', perms)
-        self.assertIn('view_eixo', perms)
-        print("✅ TESTE PASSOU!")
+        self.assertTrue(permission.has_permission(request, self.view))
     
-    def test_user_can_manage_model(self):
-        """
-        TESTE 5: Testar verificação de gerenciamento de modelo.
-        """
-        print("\n" + "="*80)
-        print("📊 TESTE 5: Testando user_can_manage_model()")
-        print("="*80)
+    def test_view_with_operador(self):
+        """Operador pode visualizar"""
+        permission = CanViewAcoesPngi()
+        request = self.create_request_with_role('OPERADOR_ACAO')
         
-        print(f"\n👤 Admin: {self.admin_user.name}")
-        print("🔍 Verificando se pode gerenciar 'eixo'...")
-        admin_can_manage = user_can_manage_model(self.admin_user, 'eixo')
-        icon = "✅" if admin_can_manage else "❌"
-        print(f"   {icon} Admin pode gerenciar: {admin_can_manage}")
-        
-        print(f"\n👤 Viewer: {self.viewer_user.name}")
-        print("🔍 Verificando se pode gerenciar 'eixo'...")
-        viewer_can_manage = user_can_manage_model(self.viewer_user, 'eixo')
-        icon = "❌"
-        print(f"   {icon} Viewer pode gerenciar: {viewer_can_manage} (esperado: False)")
-        
-        print("\n✅ Asserting: Admin SIM, Viewer NÃO")
-        self.assertTrue(admin_can_manage)
-        self.assertFalse(viewer_can_manage)
-        print("✅ TESTE PASSOU!")
+        self.assertTrue(permission.has_permission(request, self.view))
+
+
+class CanEditAcoesPngiTest(BasePermissionTest):
+    """Testes da permissão CanEditAcoesPngi"""
     
-    def test_get_model_permissions(self):
-        """
-        TESTE 6: Testar obtenção de permissões de modelo.
-        """
-        print("\n" + "="*80)
-        print("📊 TESTE 6: Testando get_model_permissions()")
-        print("="*80)
+    def test_edit_with_coordenador(self):
+        """Coordenador pode editar"""
+        permission = CanEditAcoesPngi()
+        request = self.create_request_with_role('COORDENADOR_PNGI')
         
-        print(f"\n👤 Admin: {self.admin_user.name}")
-        print("🔍 Obtendo permissões do modelo 'eixo'...")
-        perms = get_model_permissions(self.admin_user, 'eixo')
-        
-        print("\n📊 Permissões do Admin:")
-        for key, value in perms.items():
-            icon = "✅" if value else "❌"
-            print(f"   {icon} {key}: {value}")
-        
-        print(f"\n👤 Viewer: {self.viewer_user.name}")
-        print("🔍 Obtendo permissões do modelo 'eixo'...")
-        viewer_perms = get_model_permissions(self.viewer_user, 'eixo')
-        
-        print("\n📊 Permissões do Viewer:")
-        for key, value in viewer_perms.items():
-            icon = "✅" if value else "❌"
-            expected = "(esperado)" if key == 'can_view' else "(esperado: False)"
-            print(f"   {icon} {key}: {value} {expected}")
-        
-        print("\n✅ Asserting: Admin tem todas, Viewer só view")
-        self.assertTrue(perms['can_add'])
-        self.assertTrue(perms['can_change'])
-        self.assertTrue(perms['can_delete'])
-        self.assertTrue(perms['can_view'])
-        
-        self.assertFalse(viewer_perms['can_add'])
-        self.assertTrue(viewer_perms['can_view'])
-        print("✅ TESTE PASSOU!")
+        self.assertTrue(permission.has_permission(request, self.view))
     
-    def test_permissions_caching(self):
-        """
-        TESTE 7: Testar cache de permissões.
-        """
-        print("\n" + "="*80)
-        print("🗄️  TESTE 7: Testando cache de permissões")
-        print("="*80)
+    def test_edit_with_gestor(self):
+        """Gestor pode editar"""
+        permission = CanEditAcoesPngi()
+        request = self.create_request_with_role('GESTOR_PNGI')
         
-        print(f"👤 Usuário: {self.admin_user.name}")
-        
-        print("\n1️⃣ Primeira chamada (deve buscar do BD e cachear)...")
-        perms1 = get_user_app_permissions(self.admin_user)
-        print(f"   ✅ Permissões obtidas: {len(perms1)} permissões")
-        
-        print("\n2️⃣ Segunda chamada (deve vir do cache)...")
-        perms2 = get_user_app_permissions(self.admin_user)
-        print(f"   ✅ Permissões obtidas: {len(perms2)} permissões")
-        
-        print("\n🔍 Verificando cache...")
-        cache_key = f'user_permissions_{self.admin_user.id}'
-        cached_perms = cache.get(cache_key)
-        
-        if cached_perms:
-            print(f"   ✅ Cache ATIVO: {len(cached_perms)} permissões em cache")
-        else:
-            print("   ❌ Cache VAZIO (erro!)")
-        
-        print("\n✅ Asserting: Permissões iguais e cache ativo")
-        self.assertEqual(perms1, perms2)
-        self.assertIsNotNone(cached_perms)
-        print("✅ TESTE PASSOU!")
+        self.assertTrue(permission.has_permission(request, self.view))
     
-    def test_clear_permissions_cache(self):
-        """
-        TESTE 8: Testar limpeza de cache.
-        """
-        print("\n" + "="*80)
-        print("🧹 TESTE 8: Testando limpeza de cache")
-        print("="*80)
+    def test_edit_with_operador(self):
+        """Operador pode editar"""
+        permission = CanEditAcoesPngi()
+        request = self.create_request_with_role('OPERADOR_ACAO')
         
-        print(f"👤 Usuário: {self.admin_user.name}")
+        self.assertTrue(permission.has_permission(request, self.view))
+    
+    def test_edit_with_consultor(self):
+        """Consultor NÃO pode editar"""
+        permission = CanEditAcoesPngi()
+        request = self.create_request_with_role('CONSULTOR_PNGI')
         
-        print("\n1️⃣ Cacheando permissões...")
-        get_user_app_permissions(self.admin_user)
+        # Consultor não está em EDIT_ROLES
+        result = permission.has_permission(request, self.view)
+        self.assertFalse(result)
+
+
+class CanManageAcoesPngiTest(BasePermissionTest):
+    """Testes da permissão CanManageAcoesPngi"""
+    
+    def test_manage_with_coordenador(self):
+        """Coordenador pode gerenciar"""
+        permission = CanManageAcoesPngi()
+        request = self.create_request_with_role('COORDENADOR_PNGI')
         
-        cache_key = f'user_permissions_{self.admin_user.id}'
-        cached_before = cache.get(cache_key)
+        self.assertTrue(permission.has_permission(request, self.view))
+    
+    def test_manage_with_gestor(self):
+        """Gestor pode gerenciar"""
+        permission = CanManageAcoesPngi()
+        request = self.create_request_with_role('GESTOR_PNGI')
         
-        if cached_before:
-            print(f"   ✅ Cache ATIVO: {len(cached_before)} permissões")
+        self.assertTrue(permission.has_permission(request, self.view))
+    
+    def test_manage_with_operador(self):
+        """Operador NÃO pode gerenciar"""
+        permission = CanManageAcoesPngi()
+        request = self.create_request_with_role('OPERADOR_ACAO')
         
-        print("\n2️⃣ Limpando cache...")
-        clear_user_permissions_cache(self.admin_user)
-        print("   🧹 clear_user_permissions_cache() executado")
+        # Operador não está em MANAGE_ROLES
+        result = permission.has_permission(request, self.view)
+        self.assertFalse(result)
+    
+    def test_manage_with_consultor(self):
+        """Consultor NÃO pode gerenciar"""
+        permission = CanManageAcoesPngi()
+        request = self.create_request_with_role('CONSULTOR_PNGI')
         
-        print("\n3️⃣ Verificando se cache foi limpo...")
-        cached_after = cache.get(cache_key)
+        result = permission.has_permission(request, self.view)
+        self.assertFalse(result)
+
+
+class PermissionHierarchyTest(BasePermissionTest):
+    """Testes da hierarquia de permissões"""
+    
+    def test_hierarchy_coordenador(self):
+        """Coordenador tem todas as permissões"""
+        request = self.create_request_with_role('COORDENADOR_PNGI')
         
-        if cached_after is None:
-            print("   ✅ Cache LIMPO com sucesso!")
-        else:
-            print(f"   ❌ Cache ainda existe: {cached_after}")
+        self.assertTrue(CanViewAcoesPngi().has_permission(request, self.view))
+        self.assertTrue(CanEditAcoesPngi().has_permission(request, self.view))
+        self.assertTrue(CanManageAcoesPngi().has_permission(request, self.view))
+    
+    def test_hierarchy_gestor(self):
+        """Gestor tem view, edit e manage"""
+        request = self.create_request_with_role('GESTOR_PNGI')
         
-        print("\n✅ Asserting: Cache antes existia, depois não")
-        self.assertIsNotNone(cached_before)
-        self.assertIsNone(cached_after)
-        print("✅ TESTE PASSOU!")
-        print("\n" + "="*80 + "\n")
+        self.assertTrue(CanViewAcoesPngi().has_permission(request, self.view))
+        self.assertTrue(CanEditAcoesPngi().has_permission(request, self.view))
+        self.assertTrue(CanManageAcoesPngi().has_permission(request, self.view))
+    
+    def test_hierarchy_operador(self):
+        """Operador tem view e edit, mas não manage"""
+        request = self.create_request_with_role('OPERADOR_ACAO')
+        
+        self.assertTrue(CanViewAcoesPngi().has_permission(request, self.view))
+        self.assertTrue(CanEditAcoesPngi().has_permission(request, self.view))
+        self.assertFalse(CanManageAcoesPngi().has_permission(request, self.view))
+    
+    def test_hierarchy_consultor(self):
+        """Consultor tem apenas view"""
+        request = self.create_request_with_role('CONSULTOR_PNGI')
+        
+        self.assertTrue(CanViewAcoesPngi().has_permission(request, self.view))
+        self.assertFalse(CanEditAcoesPngi().has_permission(request, self.view))
+        self.assertFalse(CanManageAcoesPngi().has_permission(request, self.view))

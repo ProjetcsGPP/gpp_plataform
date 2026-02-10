@@ -1,21 +1,276 @@
-# acoes_pngi/tests/test_models.py
+"""
+Testes dos Modelos - Ações PNGI
+Testa validações, métodos e relacionamentos dos modelos.
+"""
+
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+from datetime import date, timedelta
+from decimal import Decimal
+
+from ..models import (
+    Eixo, SituacaoAcao, VigenciaPNGI, TipoEntraveAlerta,
+    Acoes, AcaoPrazo, AcaoDestaque,
+    TipoAnotacaoAlinhamento, AcaoAnotacaoAlinhamento,
+    UsuarioResponsavel, RelacaoAcaoUsuarioResponsavel
+)
 
 User = get_user_model()
 
 
-class AcoesPNGIBasicTest(TestCase):
-    """Testes básicos para Acoes PNGI"""
+class EixoModelTest(TestCase):
+    """Testes do modelo Eixo"""
     
-    databases = {'default', 'gpp_plataform_db'}
+    def test_create_eixo(self):
+        """Teste de criação de eixo"""
+        eixo = Eixo.objects.create(
+            strdescricaoeixo="Transformação Digital",
+            stralias="TD"
+        )
+        self.assertEqual(eixo.strdescricaoeixo, "Transformação Digital")
+        self.assertEqual(eixo.stralias, "TD")
+        self.assertIsNotNone(eixo.created_at)
     
-    def test_app_installed(self):
-        """Testa que app acoes_pngi está instalada"""
-        from django.conf import settings
-        self.assertIn('acoes_pngi', settings.INSTALLED_APPS)
+    def test_eixo_str(self):
+        """Teste do método __str__"""
+        eixo = Eixo.objects.create(
+            strdescricaoeixo="Teste",
+            stralias="TST"
+        )
+        self.assertEqual(str(eixo), "TST - Teste")
     
-    def test_database_configured(self):
-        """Testa que database gpp_plataform_db está configurado"""
-        from django.conf import settings
-        self.assertIn('gpp_plataform_db', settings.DATABASES)
+    def test_eixo_alias_max_length(self):
+        """Teste de validação do tamanho máximo do alias"""
+        eixo = Eixo(strdescricaoeixo="Teste", stralias="TOOLONG")
+        with self.assertRaises(ValidationError):
+            eixo.full_clean()
+
+
+class VigenciaPNGIModelTest(TestCase):
+    """Testes do modelo VigenciaPNGI"""
+    
+    def test_create_vigencia(self):
+        """Teste de criação de vigência"""
+        vigencia = VigenciaPNGI.objects.create(
+            strdescricaovigenciapngi="PNGI 2026",
+            datiniciovigencia=date(2026, 1, 1),
+            datfinalvigencia=date(2026, 12, 31),
+            isvigenciaativa=False
+        )
+        self.assertEqual(vigencia.strdescricaovigenciapngi, "PNGI 2026")
+        self.assertFalse(vigencia.isvigenciaativa)
+    
+    def test_vigencia_unica_ativa(self):
+        """Teste de vigência única ativa"""
+        # Criar primeira vigência ativa
+        vig1 = VigenciaPNGI.objects.create(
+            strdescricaovigenciapngi="PNGI 2026",
+            datiniciovigencia=date(2026, 1, 1),
+            datfinalvigencia=date(2026, 12, 31),
+            isvigenciaativa=True
+        )
+        self.assertTrue(vig1.isvigenciaativa)
+        
+        # Criar segunda vigência ativa (deve desativar a primeira)
+        vig2 = VigenciaPNGI.objects.create(
+            strdescricaovigenciapngi="PNGI 2027",
+            datiniciovigencia=date(2027, 1, 1),
+            datfinalvigencia=date(2027, 12, 31),
+            isvigenciaativa=True
+        )
+        
+        # Recarregar vig1 do banco
+        vig1.refresh_from_db()
+        
+        self.assertFalse(vig1.isvigenciaativa)
+        self.assertTrue(vig2.isvigenciaativa)
+    
+    def test_vigencia_esta_vigente(self):
+        """Teste do método esta_vigente"""
+        hoje = date.today()
+        
+        # Vigência futura
+        vig_futura = VigenciaPNGI.objects.create(
+            strdescricaovigenciapngi="Futura",
+            datiniciovigencia=hoje + timedelta(days=30),
+            datfinalvigencia=hoje + timedelta(days=365),
+            isvigenciaativa=False
+        )
+        self.assertFalse(vig_futura.esta_vigente)
+        
+        # Vigência atual
+        vig_atual = VigenciaPNGI.objects.create(
+            strdescricaovigenciapngi="Atual",
+            datiniciovigencia=hoje - timedelta(days=30),
+            datfinalvigencia=hoje + timedelta(days=30),
+            isvigenciaativa=False
+        )
+        self.assertTrue(vig_atual.esta_vigente)
+        
+        # Vigência passada
+        vig_passada = VigenciaPNGI.objects.create(
+            strdescricaovigenciapngi="Passada",
+            datiniciovigencia=hoje - timedelta(days=365),
+            datfinalvigencia=hoje - timedelta(days=30),
+            isvigenciaativa=False
+        )
+        self.assertFalse(vig_passada.esta_vigente)
+
+
+class AcoesModelTest(TestCase):
+    """Testes do modelo Acoes"""
+    
+    def setUp(self):
+        """Setup inicial para testes"""
+        self.vigencia = VigenciaPNGI.objects.create(
+            strdescricaovigenciapngi="PNGI 2026",
+            datiniciovigencia=date(2026, 1, 1),
+            datfinalvigencia=date(2026, 12, 31),
+            isvigenciaativa=True
+        )
+        
+        self.tipo_entrave = TipoEntraveAlerta.objects.create(
+            strdescricaotipoentravealerta="Alerta Teste"
+        )
+    
+    def test_create_acao(self):
+        """Teste de criação de ação"""
+        acao = Acoes.objects.create(
+            strapelido="ACAO-001",
+            strdescricaoacao="Ação de Teste",
+            strdescricaoentrega="Entrega de Teste",
+            idvigenciapngi=self.vigencia,
+            idtipoentravealerta=self.tipo_entrave,
+            datdataentrega=date(2026, 6, 30)
+        )
+        
+        self.assertEqual(acao.strapelido, "ACAO-001")
+        self.assertEqual(acao.idvigenciapngi, self.vigencia)
+    
+    def test_acao_str(self):
+        """Teste do método __str__"""
+        acao = Acoes.objects.create(
+            strapelido="ACAO-TEST",
+            strdescricaoacao="Teste",
+            idvigenciapngi=self.vigencia
+        )
+        self.assertEqual(str(acao), "ACAO-TEST - Teste")
+
+
+class AcaoPrazoModelTest(TestCase):
+    """Testes do modelo AcaoPrazo"""
+    
+    def setUp(self):
+        """Setup inicial"""
+        vigencia = VigenciaPNGI.objects.create(
+            strdescricaovigenciapngi="PNGI 2026",
+            datiniciovigencia=date(2026, 1, 1),
+            datfinalvigencia=date(2026, 12, 31)
+        )
+        
+        self.acao = Acoes.objects.create(
+            strapelido="ACAO-001",
+            strdescricaoacao="Teste",
+            idvigenciapngi=vigencia
+        )
+    
+    def test_create_prazo(self):
+        """Teste de criação de prazo"""
+        prazo = AcaoPrazo.objects.create(
+            idacao=self.acao,
+            strprazo="2026-06-30",
+            isacaoprazoativo=True
+        )
+        
+        self.assertEqual(prazo.idacao, self.acao)
+        self.assertTrue(prazo.isacaoprazoativo)
+    
+    def test_prazo_str(self):
+        """Teste do método __str__"""
+        prazo = AcaoPrazo.objects.create(
+            idacao=self.acao,
+            strprazo="2026-06-30",
+            isacaoprazoativo=True
+        )
+        expected = f"Prazo da Ação {self.acao.strapelido}: 2026-06-30"
+        self.assertEqual(str(prazo), expected)
+
+
+class UsuarioResponsavelModelTest(TestCase):
+    """Testes do modelo UsuarioResponsavel"""
+    
+    def setUp(self):
+        """Setup inicial"""
+        self.user = User.objects.create_user(
+            email="teste@seger.es.gov.br",
+            name="Usuário Teste",
+            password="senha123"
+        )
+    
+    def test_create_usuario_responsavel(self):
+        """Teste de criação de usuário responsável"""
+        responsavel = UsuarioResponsavel.objects.create(
+            idusuario=self.user,
+            strtelefone="27999999999",
+            strorgao="SEGER"
+        )
+        
+        self.assertEqual(responsavel.idusuario, self.user)
+        self.assertEqual(responsavel.strorgao, "SEGER")
+    
+    def test_usuario_responsavel_str(self):
+        """Teste do método __str__"""
+        responsavel = UsuarioResponsavel.objects.create(
+            idusuario=self.user,
+            strorgao="SEGER"
+        )
+        self.assertEqual(str(responsavel), self.user.name)
+
+
+class RelacaoAcaoUsuarioResponsavelModelTest(TestCase):
+    """Testes do modelo RelacaoAcaoUsuarioResponsavel"""
+    
+    def setUp(self):
+        """Setup inicial"""
+        user = User.objects.create_user(
+            email="teste@seger.es.gov.br",
+            name="Teste",
+            password="senha123"
+        )
+        
+        vigencia = VigenciaPNGI.objects.create(
+            strdescricaovigenciapngi="PNGI 2026",
+            datiniciovigencia=date(2026, 1, 1),
+            datfinalvigencia=date(2026, 12, 31)
+        )
+        
+        self.acao = Acoes.objects.create(
+            strapelido="ACAO-001",
+            strdescricaoacao="Teste",
+            idvigenciapngi=vigencia
+        )
+        
+        self.responsavel = UsuarioResponsavel.objects.create(
+            idusuario=user,
+            strorgao="SEGER"
+        )
+    
+    def test_create_relacao(self):
+        """Teste de criação de relação"""
+        relacao = RelacaoAcaoUsuarioResponsavel.objects.create(
+            idacao=self.acao,
+            idusuarioresponsavel=self.responsavel
+        )
+        
+        self.assertEqual(relacao.idacao, self.acao)
+        self.assertEqual(relacao.idusuarioresponsavel, self.responsavel)
+    
+    def test_relacao_str(self):
+        """Teste do método __str__"""
+        relacao = RelacaoAcaoUsuarioResponsavel.objects.create(
+            idacao=self.acao,
+            idusuarioresponsavel=self.responsavel
+        )
+        expected = f"{self.acao.strapelido} - {self.responsavel.idusuario.name}"
+        self.assertEqual(str(relacao), expected)
