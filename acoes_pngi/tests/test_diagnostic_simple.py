@@ -107,59 +107,61 @@ class SimpleDiagnosticTest(TestCase):
         
         print("\n" + "="*70 + "\n")
     
-    def test_api_request_authenticated(self):
-        """Testa requisição com autenticação"""
-        print("\n" + "="*70)
-        print("🔍 TESTE: API Request (Authenticated)")
-        print("="*70)
+def test_api_request_authenticated(self):
+    """Testa requisição com autenticação"""
+    print("\n" + "="*70)
+    print("🔍 TESTE: API Request (Authenticated)")
+    print("="*70)
+    
+    self.client.force_authenticate(user=self.user)
+    response = self.client.get('/api/v1/acoes_pngi/acoes/')
+    
+    print(f"\n👉 Status: {response.status_code}")
+    print(f"   Usuário: {self.user.email}")
+    print(f"   Content-Type: {response.get('Content-Type', 'N/A')}")
+    
+    if response.status_code == 404:
+        print(f"\n   🚨 PROBLEMA CRÍTICO: URL retorna 404 mesmo autenticado!")
+        print(f"   👉 URLconf definitivamente NÃO está carregado!")
         
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get('/api/v1/acoes_pngi/acoes/')
+        # Listar todas as URLs registradas
+        print(f"\n   📍 URLs disponíveis no resolver:")
+        resolver = get_resolver()
         
-        print(f"\n👉 Status: {response.status_code}")
-        print(f"   Usuário: {self.user.email}")
-        print(f"   Content-Type: {response.get('Content-Type', 'N/A')}")
-        
-        if response.status_code == 404:
-            print(f"\n   🚨 PROBLEMA CRÍTICO: URL retorna 404 mesmo autenticado!")
-            print(f"   👉 URLconf definitivamente NÃO está carregado!")
+        def list_patterns(patterns, prefix='', depth=0):
+            indent = '      ' + '  ' * depth  # ✅ DEFINIDO DENTRO DA FUNÇÃO
             
-            # Listar todas as URLs registradas
-            print(f"\n   📍 URLs disponíveis no resolver:")
-            resolver = get_resolver()
+            for pattern in patterns:
+                if hasattr(pattern, 'url_patterns'):
+                    new_prefix = prefix + str(pattern.pattern)
+                    print(f"{indent}{new_prefix}")
+                    list_patterns(pattern.url_patterns, new_prefix, depth + 1)
+                elif 'acoes' in str(pattern.pattern).lower():
+                    full = prefix + str(pattern.pattern)
+                    print(f"{indent}{full}")
             
-            def list_patterns(patterns, prefix='', depth=0):
-                indent = '      ' + '  ' * depth
-                for pattern in patterns:
-                    if hasattr(pattern, 'url_patterns'):
-                        new_prefix = prefix + str(pattern.pattern)
-                        print(f"{indent}{new_prefix}")
-                        list_patterns(pattern.url_patterns, new_prefix, depth + 1)
-                    elif 'acoes' in str(pattern.pattern).lower():
-                        full = prefix + str(pattern.pattern)
-                        print(f"{indent}{full}")
-            
+            # ERRO MOVIDO PARA FORA da função list_patterns
             try:
                 list_patterns(resolver.url_patterns)
             except Exception as e:
-                print(f"{indent}Erro ao listar: {e}")
-            
-            self.fail("URL retorna 404 - URLconf não está carregado")
+                print(f"   Erro ao listar: {e}")
         
-        elif response.status_code == 403:
-            print(f"\n   ⚠️  Permissão negada (403)")
-            print(f"   Pode ser problema de permissões customizadas")
-        
-        elif response.status_code == 200:
-            print(f"\n   ✅ SUCESSO! API está funcionando!")
-            if hasattr(response, 'data'):
-                results = response.data.get('results', [])
-                print(f"   Total de ações: {len(results)}")
-        
-        else:
-            print(f"\n   ⚠️  Status inesperado: {response.status_code}")
-        
-        print("\n" + "="*70 + "\n")
+        list_patterns(resolver.url_patterns)
+        self.fail("URL retorna 404 - URLconf não está carregado")
+    
+    elif response.status_code == 403:
+        print(f"\n   ⚠️  Permissão negada (403)")
+        print(f"   Pode ser problema de permissões customizadas")
+    
+    elif response.status_code == 200:
+        print(f"\n   ✅ SUCESSO! API está funcionando!")
+        results = getattr(response.data, 'results', [])
+        print(f"   Total de ações: {len(results)}")
+    
+    else:
+        print(f"\n   ⚠️  Status inesperado: {response.status_code}")
+    
+    print("\n" + "="*70 + "\n")
     
     def test_installed_apps(self):
         """Verifica se os apps estão instalados"""

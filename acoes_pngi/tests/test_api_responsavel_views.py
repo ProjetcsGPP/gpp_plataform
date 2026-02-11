@@ -92,19 +92,22 @@ class UsuarioResponsavelViewSetTest(TestCase):
         """Lista de responsáveis requer autenticação"""
         self.client.force_authenticate(user=None)
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
     
     def test_list_responsaveis_authenticated(self):
         """Usuário autenticado pode listar responsáveis"""
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(results), 2)
     
     def test_retrieve_responsavel(self):
         """Recuperar detalhes de um responsável específico"""
         response = self.client.get(
             f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel1.idusuario.id}/'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['strorgao'], 'SEGER')
         self.assertEqual(response.data['strtelefone'], '27999999999')
@@ -177,57 +180,64 @@ class UsuarioResponsavelViewSetTest(TestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?strorgao=SEGER'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(response.data['results'][0]['strorgao'], 'SEGER')
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['strorgao'], 'SEGER')
     
     def test_filter_responsaveis_by_orgao_partial_match(self):
         """Filtrar responsáveis por órgão (partial match)"""
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?strorgao=SE'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Deve retornar SEGER e SEDU
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(results), 2)
     
     def test_search_responsaveis_by_name(self):
         """Buscar responsáveis por nome"""
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?search=Responsável 1'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(results), 1)
     
     def test_search_responsaveis_by_email(self):
         """Buscar responsáveis por email"""
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?search=resp1@test.com'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(results), 1)
     
     def test_search_responsaveis_by_orgao(self):
         """Buscar responsáveis por órgão"""
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?search=SEDU'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(results), 1)
     
     def test_search_responsaveis_by_telefone(self):
         """Buscar responsáveis por telefone"""
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?search=999999999'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(results), 1)
     
     def test_ordering_responsaveis_by_name(self):
         """Ordenar responsáveis por nome (padrão)"""
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Deve vir em ordem alfabética por nome
-        names = [r['idusuario']['name'] for r in response.data['results']]
+        names = [r['idusuario']['name'] for r in results]
         self.assertEqual(names, sorted(names))
 
 
@@ -329,14 +339,16 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(TestCase):
     def test_list_relacoes_authenticated(self):
         """Usuário autenticado pode listar relações"""
         response = self.client.get('/api/v1/acoes_pngi/relacoes-acao-responsavel/')
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(results), 2)
     
     def test_retrieve_relacao(self):
         """Recuperar detalhes de uma relação específica"""
         response = self.client.get(
             f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao1.idacaousuarioresponsavel}/'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['idacao'], self.acao1.idacao)
         self.assertEqual(
@@ -410,32 +422,36 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(TestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/relacoes-acao-responsavel/?idacao={self.acao1.idacao}'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)  # Acao1 tem 2 responsáveis
+        self.assertEqual(len(results), 2)  # Acao1 tem 2 responsáveis
     
     def test_filter_relacoes_by_responsavel(self):
         """Filtrar relações por responsável"""
         response = self.client.get(
             f'/api/v1/acoes_pngi/relacoes-acao-responsavel/?idusuarioresponsavel={self.responsavel1.idusuario.id}'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)  # Responsavel1 tem 1 ação
+        self.assertEqual(len(results), 1)  # Responsavel1 tem 1 ação
     
     def test_search_relacoes_by_apelido_acao(self):
         """Buscar relações por apelido da ação"""
         response = self.client.get(
             '/api/v1/acoes_pngi/relacoes-acao-responsavel/?search=ACAO-001'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(results), 2)
     
     def test_search_relacoes_by_nome_responsavel(self):
         """Buscar relações por nome do responsável"""
         response = self.client.get(
             '/api/v1/acoes_pngi/relacoes-acao-responsavel/?search=Responsável 1'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(results), 1)
     
     def test_multiple_responsaveis_for_same_acao(self):
         """Uma ação pode ter múltiplos responsáveis"""

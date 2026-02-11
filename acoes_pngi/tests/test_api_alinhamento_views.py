@@ -74,8 +74,9 @@ class TipoAnotacaoAlinhamentoViewSetTest(TestCase):
     def test_list_tipos_authenticated(self):
         """Usuário autenticado pode listar tipos"""
         response = self.client.get('/api/v1/acoes_pngi/tipos-anotacao-alinhamento/')
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(results), 2)
     
     def test_retrieve_tipo(self):
         """Recuperar detalhes de um tipo específico"""
@@ -153,10 +154,11 @@ class TipoAnotacaoAlinhamentoViewSetTest(TestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/?search=Reunião'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(results), 1)
         self.assertEqual(
-            response.data['results'][0]['strdescricaotipoanotacaoalinhamento'],
+            results[0]['strdescricaotipoanotacaoalinhamento'],
             'Reunião de Alinhamento'
         )
     
@@ -165,10 +167,11 @@ class TipoAnotacaoAlinhamentoViewSetTest(TestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/?ordering=-strdescricaotipoanotacaoalinhamento'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Deve vir em ordem decrescente (Reunião antes de Documento)
         self.assertEqual(
-            response.data['results'][0]['strdescricaotipoanotacaoalinhamento'],
+            results[0]['strdescricaotipoanotacaoalinhamento'],
             'Reunião de Alinhamento'
         )
 
@@ -261,8 +264,9 @@ class AcaoAnotacaoAlinhamentoViewSetTest(TestCase):
     def test_list_anotacoes_authenticated(self):
         """Usuário autenticado pode listar anotações"""
         response = self.client.get('/api/v1/acoes_pngi/anotacoes-alinhamento/')
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(results), 2)
     
     def test_retrieve_anotacao(self):
         """Recuperar detalhes de uma anotação específica"""
@@ -371,42 +375,47 @@ class AcaoAnotacaoAlinhamentoViewSetTest(TestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/anotacoes-alinhamento/?idacao={self.acao1.idacao}'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)  # Ambas são da acao1
+        self.assertEqual(len(results), 2)  # Ambas são da acao1
     
     def test_filter_anotacoes_by_tipo(self):
         """Filtrar anotações por tipo"""
         response = self.client.get(
             f'/api/v1/acoes_pngi/anotacoes-alinhamento/?idtipoanotacaoalinhamento={self.tipo1.idtipoanotacaoalinhamento}'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)  # Apenas anotacao1
+        self.assertEqual(len(results), 1)  # Apenas anotacao1
     
     def test_filter_anotacoes_by_acao_and_tipo(self):
         """Filtrar anotações por ação E tipo"""
         response = self.client.get(
             f'/api/v1/acoes_pngi/anotacoes-alinhamento/?idacao={self.acao1.idacao}&idtipoanotacaoalinhamento={self.tipo2.idtipoanotacaoalinhamento}'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)  # Apenas anotacao2
+        self.assertEqual(len(results), 1)  # Apenas anotacao2
     
     def test_search_anotacoes_by_apelido(self):
         """Buscar anotações por apelido da ação"""
         response = self.client.get(
             '/api/v1/acoes_pngi/anotacoes-alinhamento/?search=ACAO-001'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(results), 2)
     
     def test_search_anotacoes_by_descricao(self):
         """Buscar anotações por descrição"""
         response = self.client.get(
             '/api/v1/acoes_pngi/anotacoes-alinhamento/?search=reunião'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(results), 1)
         self.assertEqual(
-            response.data['results'][0]['strdescricaoanotacaoalinhamento'],
+            results[0]['strdescricaoanotacaoalinhamento'],
             'Anotação da reunião de alinhamento'
         )
     
@@ -415,16 +424,18 @@ class AcaoAnotacaoAlinhamentoViewSetTest(TestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/anotacoes-alinhamento/?search=MON-001'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(results), 1)
     
     def test_ordering_anotacoes(self):
         """Ordenar anotações por data (mais recente primeiro)"""
         response = self.client.get('/api/v1/acoes_pngi/anotacoes-alinhamento/')
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Primeiro resultado deve ser o mais recente (fevereiro)
         first_date = datetime.fromisoformat(
-            response.data['results'][0]['datdataanotacaoalinhamento'].replace('Z', '+00:00')
+            results[0]['datdataanotacaoalinhamento'].replace('Z', '+00:00')
         )
         self.assertEqual(first_date.month, 2)
     
@@ -433,10 +444,11 @@ class AcaoAnotacaoAlinhamentoViewSetTest(TestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/anotacoes-alinhamento/?ordering=datdataanotacaoalinhamento'
         )
+        results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Primeiro resultado deve ser o mais antigo (janeiro)
         first_date = datetime.fromisoformat(
-            response.data['results'][0]['datdataanotacaoalinhamento'].replace('Z', '+00:00')
+            results[0]['datdataanotacaoalinhamento'].replace('Z', '+00:00')
         )
         self.assertEqual(first_date.month, 1)
     
