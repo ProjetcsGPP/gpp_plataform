@@ -3,6 +3,149 @@ from accounts.models import UserRole, Aplicacao
 
 
 # ============================================================================
+# PERMISSÕES PARA TESTES AUTOMATIZADOS (Novo)
+# ============================================================================
+
+class IsCoordernadorOrGestorPNGI(BasePermission):
+    """
+    Permissão para CONFIGURAÇÕES (Eixo, Situação, Vigência, TipoEntrave, TipoAnotação).
+    
+    Regras:
+    - SAFE_METHODS (GET, HEAD, OPTIONS): Todas as 4 roles podem acessar
+    - CREATE/UPDATE/DELETE: Apenas COORDENADOR_PNGI e GESTOR_PNGI
+    - OPERADOR_ACAO: Bloqueado em escrita (só gerencia ações)
+    - CONSULTOR_PNGI: Bloqueado em escrita (apenas leitura)
+    """
+    
+    SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+    
+    def has_permission(self, request, view):
+        # Usuário deve estar autenticado
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        # SAFE_METHODS: qualquer usuário autenticado com role PNGI
+        if request.method in self.SAFE_METHODS:
+            # Verificar se tem alguma role PNGI
+            try:
+                app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+                if not app_acoes:
+                    return False
+                
+                has_any_role = UserRole.objects.filter(
+                    user=request.user,
+                    aplicacao=app_acoes
+                ).exists()
+                
+                return has_any_role
+            except Exception:
+                return False
+        
+        # CREATE/UPDATE/DELETE: apenas COORDENADOR e GESTOR
+        try:
+            app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+            if not app_acoes:
+                return False
+            
+            allowed_roles = UserRole.objects.filter(
+                user=request.user,
+                aplicacao=app_acoes,
+                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI']
+            ).exists()
+            
+            return allowed_roles
+        except Exception:
+            return False
+
+
+class IsCoordernadorGestorOrOperadorPNGI(BasePermission):
+    """
+    Permissão para OPERAÇÕES (Ações, Prazos, Destaques, Anotações, Responsáveis).
+    
+    Regras:
+    - SAFE_METHODS (GET, HEAD, OPTIONS): Todas as 4 roles podem acessar
+    - CREATE/UPDATE/DELETE: COORDENADOR_PNGI, GESTOR_PNGI e OPERADOR_ACAO
+    - CONSULTOR_PNGI: Bloqueado em escrita (apenas leitura)
+    """
+    
+    SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+    
+    def has_permission(self, request, view):
+        # Usuário deve estar autenticado
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        # SAFE_METHODS: qualquer usuário autenticado com role PNGI
+        if request.method in self.SAFE_METHODS:
+            try:
+                app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+                if not app_acoes:
+                    return False
+                
+                has_any_role = UserRole.objects.filter(
+                    user=request.user,
+                    aplicacao=app_acoes
+                ).exists()
+                
+                return has_any_role
+            except Exception:
+                return False
+        
+        # CREATE/UPDATE/DELETE: COORDENADOR, GESTOR e OPERADOR
+        try:
+            app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+            if not app_acoes:
+                return False
+            
+            allowed_roles = UserRole.objects.filter(
+                user=request.user,
+                aplicacao=app_acoes,
+                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO']
+            ).exists()
+            
+            return allowed_roles
+        except Exception:
+            return False
+
+
+class IsAnyPNGIRole(BasePermission):
+    """
+    Permissão UNIVERSAL para qualquer usuário com role PNGI.
+    
+    Regras:
+    - Qualquer uma das 4 roles tem acesso: COORDENADOR_PNGI, GESTOR_PNGI, OPERADOR_ACAO, CONSULTOR_PNGI
+    - Usuário sem role PNGI é negado
+    - Não diferencia entre SAFE_METHODS e escrita (cada ViewSet deve usar outras permissions para isso)
+    """
+    
+    def has_permission(self, request, view):
+        # Usuário deve estar autenticado
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        # Verificar se tem alguma role PNGI
+        try:
+            app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+            if not app_acoes:
+                return False
+            
+            has_pngi_role = UserRole.objects.filter(
+                user=request.user,
+                aplicacao=app_acoes,
+                role__codigoperfil__in=[
+                    'COORDENADOR_PNGI',
+                    'GESTOR_PNGI',
+                    'OPERADOR_ACAO',
+                    'CONSULTOR_PNGI'
+                ]
+            ).exists()
+            
+            return has_pngi_role
+        except Exception:
+            return False
+
+
+# ============================================================================
 # PERMISSÕES HIERÁRQUICAS (para testes)
 # ============================================================================
 
