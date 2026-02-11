@@ -2,13 +2,13 @@
 Testes de permissões de Acoes PNGI.
 """
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
 from django.contrib.auth import get_user_model
-from rest_framework.test import APITestCase, APIRequestFactory
+from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
-from ..permissions import IsAcoesPNGIUser
+from ..permissions import IsAcoesPNGIUser, CanViewAcoesPngi, CanEditAcoesPngi
 
 User = get_user_model()
 
@@ -33,12 +33,23 @@ class BasePermissionTest(TestCase):
         request = self.factory.get('/')
         request.user = self.user
         
-        # Simular token JWT com role
+        # Simular token JWT com role - formato esperado pela permissão
+        roles_list = [{
+            'application__code': 'ACOES_PNGI',
+            'role__code': role_code
+        }]
+        
         request.auth = Mock()
         request.auth.payload = {
-            'roles': [role_code],
+            'roles': roles_list,
             'aplicacao': 'ACOES_PNGI'
         }
+        # Garantir que ao acessar request.auth['roles'] retorne a lista de dicts
+        request.auth.__getitem__ = Mock(return_value=roles_list)
+        request.auth.get = Mock(side_effect=lambda key, default=None: {
+            'roles': roles_list,
+            'aplicacao': 'ACOES_PNGI'
+        }.get(key, default))
         
         return request
 
@@ -72,10 +83,39 @@ class IsAcoesPNGIUserTest(BasePermissionTest):
         permission = IsAcoesPNGIUser()
         request = self.factory.get('/')
         request.user = self.user
+        
+        # Mock sem roles válidas
+        roles_list = []
         request.auth = Mock()
-        request.auth.payload = {'roles': []}
+        request.auth.payload = {'roles': roles_list}
+        request.auth.__getitem__ = Mock(return_value=roles_list)
+        request.auth.get = Mock(side_effect=lambda key, default=None: {
+            'roles': roles_list,
+            'aplicacao': 'ACOES_PNGI'
+        }.get(key, default))
         
         # Deve tentar fallback no banco (sem mockar, deve falhar)
+        result = permission.has_permission(request, self.view)
+        self.assertFalse(result)
+    
+    def test_permission_with_wrong_application(self):
+        """Teste com role de outra aplicação"""
+        permission = IsAcoesPNGIUser()
+        request = self.factory.get('/')
+        request.user = self.user
+        
+        # Role de outra aplicação
+        roles_list = [{
+            'application__code': 'OUTRA_APP',
+            'role__code': 'GESTOR_PNGI'
+        }]
+        request.auth = Mock()
+        request.auth.payload = {'roles': roles_list}
+        request.auth.__getitem__ = Mock(return_value=roles_list)
+        request.auth.get = Mock(side_effect=lambda key, default=None: {
+            'roles': roles_list
+        }.get(key, default))
+        
         result = permission.has_permission(request, self.view)
         self.assertFalse(result)
 
@@ -94,6 +134,13 @@ class CanViewAcoesPngiTest(BasePermissionTest):
         """Consultor pode visualizar"""
         permission = CanViewAcoesPngi()
         request = self.create_request_with_role('CONSULTOR_PNGI')
+        
+        self.assertTrue(permission.has_permission(request, self.view))
+    
+    def test_view_with_coordenador(self):
+        """Coordenador pode visualizar"""
+        permission = CanViewAcoesPngi()
+        request = self.create_request_with_role('COORDENADOR_PNGI')
         
         self.assertTrue(permission.has_permission(request, self.view))
     
@@ -122,29 +169,22 @@ class CanEditAcoesPngiTest(BasePermissionTest):
         
         self.assertTrue(permission.has_permission(request, self.view))
     
-    def setUp(self):
-        """Configura factory"""
-        self.factory = APIRequestFactory()
-        self.permission = IsAcoesPNGIUser()
+    def test_edit_with_operador(self):
+        """Operador pode editar"""
+        permission = CanEditAcoesPngi()
+        request = self.create_request_with_role('OPERADOR_ACAO')
+        
+        self.assertTrue(permission.has_permission(request, self.view))
+    
+    def test_edit_with_consultor_should_fail(self):
+        """Consultor NÃO pode editar"""
+        permission = CanEditAcoesPngi()
+        request = self.create_request_with_role('CONSULTOR_PNGI')
+        
+        self.assertFalse(permission.has_permission(request, self.view))
     
     def test_permission_class_exists(self):
         """Testa que classe de permissão existe"""
-        self.assertIsNotNone(self.permission)
-        self.assertTrue(hasattr(self.permission, 'has_permission'))
-    
-    def test_user_with_role_exists(self):
-        """Testa que usuário com role foi criado corretamente"""
-        user_roles = UserRole.objects.filter(
-            user=self.user_with_permission,
-            aplicacao=self.app
-        )
-        self.assertTrue(user_roles.exists())
-        self.assertEqual(user_roles.first().role.codigoperfil, 'GESTOR_PNGI')
-    
-    def test_user_without_role_has_no_permissions(self):
-        """Testa que usuário sem role não tem UserRole"""
-        user_roles = UserRole.objects.filter(
-            user=self.user_without_permission,
-            aplicacao=self.app
-        )
-        self.assertFalse(user_roles.exists())
+        permission = CanEditAcoesPngi()
+        self.assertIsNotNone(permission)
+        self.assertTrue(hasattr(permission, 'has_permission'))
