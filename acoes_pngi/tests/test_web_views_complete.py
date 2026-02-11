@@ -30,10 +30,10 @@ class LoginWebViewTests(TestCase):
         """Setup inicial"""
         self.client = Client()
         
-        # Criar aplicação
-        self.app = Aplicacao.objects.create(
+        # Criar aplicação (usar get_or_create para evitar IntegrityError)
+        self.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Ações PNGI'
+            defaults={'nomeaplicacao': 'Ações PNGI'}
         )
         
         # Criar role
@@ -187,10 +187,10 @@ class DashboardWebViewTests(TestCase):
         """Setup inicial"""
         self.client = Client()
         
-        # Criar aplicação
-        self.app = Aplicacao.objects.create(
+        # Criar aplicação (usar get_or_create)
+        self.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Ações PNGI'
+            defaults={'nomeaplicacao': 'Ações PNGI'}
         )
         
         # Criar role
@@ -307,9 +307,9 @@ class LogoutWebViewTests(TestCase):
     def setUp(self):
         self.client = Client()
         
-        app = Aplicacao.objects.create(
+        app, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Ações PNGI'
+            defaults={'nomeaplicacao': 'Ações PNGI'}
         )
         
         role = Role.objects.create(
@@ -348,10 +348,10 @@ class EixoCRUDWebViewTests(TestCase):
         """Setup com permissões"""
         self.client = Client()
         
-        # Criar aplicação
-        self.app = Aplicacao.objects.create(
+        # Criar aplicação (usar get_or_create)
+        self.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Ações PNGI'
+            defaults={'nomeaplicacao': 'Ações PNGI'}
         )
         
         # Criar role com todas as permissões
@@ -520,9 +520,9 @@ class VigenciaCRUDWebViewTests(TestCase):
         """Setup com permissões"""
         self.client = Client()
         
-        self.app = Aplicacao.objects.create(
+        self.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Ações PNGI'
+            defaults={'nomeaplicacao': 'Ações PNGI'}
         )
         
         self.role = Role.objects.create(
