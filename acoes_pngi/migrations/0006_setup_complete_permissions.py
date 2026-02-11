@@ -2,8 +2,6 @@
 # Standalone migration - NÃO cria tabelas, apenas configura permissões
 
 from django.db import migrations
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import Permission
 
 
 def create_complete_permissions(apps, schema_editor):
@@ -21,10 +19,12 @@ def create_complete_permissions(apps, schema_editor):
     - OPERADOR_ACAO: view configs/negócio + add/view filhas (15 permissões)
     - CONSULTOR_PNGI: view tudo (11 permissões)
     """
-    # Usar get_model para acessar modelos via migrations API
+    # IMPORTANTE: Usar apps.get_model() para TODOS os modelos em migrations!
     Aplicacao = apps.get_model('accounts', 'Aplicacao')
     Role = apps.get_model('accounts', 'Role')
     RolePermission = apps.get_model('accounts', 'RolePermission')
+    ContentType = apps.get_model('contenttypes', 'ContentType')
+    Permission = apps.get_model('auth', 'Permission')
     
     # Buscar aplicação (se não existir, pula)
     try:
@@ -184,8 +184,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('acoes_pngi', '0005_alter_situacaoacao_created_at_and_more'),
-        # Usa __first__ para evitar problemas de versão
         ('accounts', '__first__'),
+        ('contenttypes', '__first__'),
+        ('auth', '__first__'),
     ]
 
     operations = [
