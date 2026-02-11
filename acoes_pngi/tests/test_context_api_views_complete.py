@@ -14,7 +14,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth import get_user_model
 
-from accounts.models import Aplicacao, Role, UserRole, Permission, RolePermission
+from accounts.models import Aplicacao, Role, UserRole
 from ..models import Eixo, SituacaoAcao, VigenciaPNGI
 
 User = get_user_model()
@@ -35,24 +35,12 @@ class BaseContextAPITestCase(TestCase):
             defaults={'nomeaplicacao': 'Ações PNGI'}
         )
         
-        # Criar role
-        self.role = Role.objects.create(
+        # Criar role (usar get_or_create para evitar IntegrityError)
+        self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
             codigoperfil='GESTOR_PNGI',
-            nomeperfil='Gestor Ações PNGI'
+            defaults={'nomeperfil': 'Gestor Ações PNGI'}
         )
-        
-        # Criar permissões e atribuir ao role
-        self.permissions = []
-        for model_name in ['eixo', 'situacaoacao', 'vigenciapngi']:
-            for action in ['view', 'add', 'change', 'delete']:
-                perm = Permission.objects.create(
-                    aplicacao=self.app,
-                    codigopermissao=f'{action}_{model_name}',
-                    descricaopermissao=f'Pode {action} {model_name}'
-                )
-                RolePermission.objects.create(role=self.role, permission=perm)
-                self.permissions.append(perm)
         
         # Criar usuário com role
         self.user = User.objects.create_user(
@@ -375,7 +363,7 @@ class ContextAPIErrorHandlingTests(BaseContextAPITestCase):
         # Criar usuário sem name (usar first_name)
         user_without_name = User.objects.create_user(
             email='noname@test.com',
-            first_name='Test',
+            name='',  # name vazio
             password='test123'
         )
         
@@ -383,7 +371,7 @@ class ContextAPIErrorHandlingTests(BaseContextAPITestCase):
         
         response = self.client.get('/api/v1/acoes_pngi/context/permissions/')
         
-        # Deve retornar 200 e usar first_name como fallback
+        # Deve retornar 200
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('name', response.data)
     
@@ -434,10 +422,10 @@ class ContextAPIIntegrationTests(BaseContextAPITestCase):
     def test_multiple_users_get_correct_contexts(self):
         """Diferentes usuários recebem contextos corretos"""
         # Criar segundo usuário com role diferente
-        role2 = Role.objects.create(
+        role2, _ = Role.objects.get_or_create(
             aplicacao=self.app,
             codigoperfil='OPERADOR',
-            nomeperfil='Operador'
+            defaults={'nomeperfil': 'Operador'}
         )
         
         user2 = User.objects.create_user(
