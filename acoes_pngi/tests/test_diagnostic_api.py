@@ -19,7 +19,7 @@ from datetime import date
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import Acoes, VigenciaPNGI
-from ..views.api_views import AcoesViewSet
+from ..views.api_views.acoes_views import AcoesViewSet
 
 User = get_user_model()
 
@@ -77,7 +77,7 @@ class DiagnosticAPITest(TestCase):
         # Verificar ROOT_URLCONF
         print(f"\n📋 ROOT_URLCONF: {settings.ROOT_URLCONF}")
         
-        # Listar todas as URLs registradas que contêm 'acoes_pngi'
+        # Listar todas as URLs registradas que contém 'acoes_pngi'
         resolver = get_resolver()
         print("\n📍 URLs registradas contendo 'acoes_pngi':")
         
@@ -98,7 +98,7 @@ class DiagnosticAPITest(TestCase):
         try:
             print_urls(resolver.url_patterns)
         except Exception as e:
-            print(f"   ❌ Erro ao listar URLs: {e}")
+            print(f"   ✖ Erro ao listar URLs: {e}")
         
         # Tentar resolver a URL manualmente
         test_urls = [
@@ -113,7 +113,7 @@ class DiagnosticAPITest(TestCase):
                 match = resolve(url)
                 print(f"   ✓ {url} -> {match.func.__name__} (OK)")
             except Exception as e:
-                print(f"   ❌ {url} -> ERRO: {type(e).__name__}")
+                print(f"   ✖ {url} -> ERRO: {type(e).__name__}")
         
         print("\n" + "="*70 + "\n")
     
@@ -144,7 +144,7 @@ class DiagnosticAPITest(TestCase):
         print(f"\n🔑 Requisição sem autenticação:")
         print(f"   Status Code: {response.status_code}")
         print(f"   Esperado: 401 (Unauthorized) ou 403 (Forbidden)")
-        print(f"   Resultado: {'✅ OK' if response.status_code in [401, 403] else '❌ PROBLEMA - retornou 404'}")
+        print(f"   Resultado: {'✅ OK' if response.status_code in [401, 403] else '✖ PROBLEMA - retornou 404'}")
         
         if response.status_code == 404:
             print(f"\n   ⚠️  PROBLEMA IDENTIFICADO: URL não encontrada!")
@@ -166,7 +166,7 @@ class DiagnosticAPITest(TestCase):
         print(f"   Usuário: {self.user.email}")
         print(f"   Status Code: {response.status_code}")
         print(f"   Esperado: 200 (OK) ou 403 (Forbidden)")
-        print(f"   Resultado: {'✅ OK' if response.status_code in [200, 403] else '❌ PROBLEMA'}")
+        print(f"   Resultado: {'✅ OK' if response.status_code in [200, 403] else '✖ PROBLEMA'}")
         
         if response.status_code == 404:
             print(f"\n   ⚠️  PROBLEMA IDENTIFICADO: URL não encontrada!")
@@ -195,13 +195,13 @@ class DiagnosticAPITest(TestCase):
         try:
             response = view(request)
             print(f"   Status Code: {response.status_code}")
-            print(f"   Resultado: {'✅ View funciona!' if response.status_code == 200 else '❌ View com problema'}")
+            print(f"   Resultado: {'✅ View funciona!' if response.status_code == 200 else '✖ View com problema'}")
             
             if response.status_code == 200:
                 print(f"\n   ✅ CONCLUSÃO: A view está funcionando!")
                 print(f"   O problema é na configuração de URLs.")
         except Exception as e:
-            print(f"   ❌ Erro ao chamar view: {type(e).__name__}: {e}")
+            print(f"   ✖ Erro ao chamar view: {type(e).__name__}: {e}")
         
         print("\n" + "="*70 + "\n")
     
@@ -248,35 +248,35 @@ class DiagnosticAPITest(TestCase):
         if response.status_code == 404:
             print("🚨 PROBLEMA IDENTIFICADO: 404 Not Found\n")
             print("Possíveis causas:")
-            print("  1. ❌ URLconf não incluída no urls.py principal")
-            print("  2. ❌ Padrão de URL incorreto")
-            print("  3. ❌ App não incluído em INSTALLED_APPS")
-            print("  4. ❌ Problema de importação do Router")
+            print("  1. ✖ URLconf não incluída no urls.py principal")
+            print("  2. ✖ Padrão de URL incorreto")
+            print("  3. ✖ App não incluído em INSTALLED_APPS")
+            print("  4. ✖ Problema de importação do Router")
             
             # Verificar INSTALLED_APPS
             print(f"\n📦 INSTALLED_APPS:")
             if 'acoes_pngi' in settings.INSTALLED_APPS:
                 print("  ✅ 'acoes_pngi' está em INSTALLED_APPS")
             else:
-                print("  ❌ 'acoes_pngi' NÃO está em INSTALLED_APPS")
+                print("  ✖ 'acoes_pngi' NÃO está em INSTALLED_APPS")
             
             if 'rest_framework' in settings.INSTALLED_APPS:
                 print("  ✅ 'rest_framework' está em INSTALLED_APPS")
             else:
-                print("  ❌ 'rest_framework' NÃO está em INSTALLED_APPS")
+                print("  ✖ 'rest_framework' NÃO está em INSTALLED_APPS")
         
         elif response.status_code == 403:
             print("⚠️  PROBLEMA: 403 Forbidden\n")
             print("Possíveis causas:")
-            print("  1. ❌ Permissões customizadas bloqueando acesso")
-            print("  2. ❌ Usuário sem role adequada")
-            print("  3. ❌ Problema no sistema de permissões")
+            print("  1. ✖ Permissões customizadas bloqueando acesso")
+            print("  2. ✖ Usuário sem role adequada")
+            print("  3. ✖ Problema no sistema de permissões")
         
         elif response.status_code == 401:
             print("⚠️  PROBLEMA: 401 Unauthorized\n")
             print("Possíveis causas:")
-            print("  1. ❌ Autenticação não funcionando corretamente")
-            print("  2. ❌ Token inválido ou expirado")
+            print("  1. ✖ Autenticação não funcionando corretamente")
+            print("  2. ✖ Token inválido ou expirado")
         
         elif response.status_code == 200:
             print("✅ TUDO FUNCIONANDO PERFEITAMENTE!\n")
