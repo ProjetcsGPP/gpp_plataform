@@ -650,18 +650,12 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_coordenador_can_delete_vigencia(self):
-        """COORDENADOR_PNGI pode deletar vigência"""
-        vigencia_temp = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='Temporária',
-            datiniciovigencia=date(2028, 1, 1),
-            datfinalvigencia=date(2028, 12, 31)
-        )
-        
+        """COORDENADOR_PNGI NÃO pode deletar vigência (apenas view em configs)"""
         self.authenticate_as('coordenador')
         response = self.client.delete(
-            f'/api/v1/acoes_pngi/vigencias/{vigencia_temp.idvigenciapngi}/'
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/'
         )
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_coordenador_can_activate_vigencia(self):
         """COORDENADOR_PNGI pode ativar vigência"""
