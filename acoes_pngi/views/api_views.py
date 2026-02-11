@@ -5,9 +5,10 @@ Usa AppContextMiddleware para detecção automática da aplicação.
 
 import logging
 from django.apps import apps
+from django.db import transaction
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from accounts.models import User, UserRole
 from common.serializers import (
@@ -18,13 +19,24 @@ from common.serializers import (
     PortalAuthSerializer
 )
 from common.services.portal_auth import get_portal_auth_service
-from ..models import Eixo, SituacaoAcao, VigenciaPNGI
+from ..models import (
+    Eixo, SituacaoAcao, VigenciaPNGI, TipoEntraveAlerta,
+    Acoes, AcaoPrazo, AcaoDestaque,
+    TipoAnotacaoAlinhamento, AcaoAnotacaoAlinhamento,
+    UsuarioResponsavel, RelacaoAcaoUsuarioResponsavel
+)
 from ..serializers import (
-    EixoSerializer,
+    EixoSerializer, EixoListSerializer,
     SituacaoAcaoSerializer,
-    VigenciaPNGISerializer,
-    EixoListSerializer,
-    VigenciaPNGIListSerializer
+    VigenciaPNGISerializer, VigenciaPNGIListSerializer,
+    TipoEntraveAlertaSerializer,
+    AcoesSerializer, AcoesListSerializer,
+    AcaoPrazoSerializer,
+    AcaoDestaqueSerializer,
+    TipoAnotacaoAlinhamentoSerializer,
+    AcaoAnotacaoAlinhamentoSerializer,
+    UsuarioResponsavelSerializer,
+    RelacaoAcaoUsuarioResponsavelSerializer
 )
 from ..permissions import HasAcoesPermission, IsCoordenadorOrAbove
 from ..utils.permissions import (
@@ -136,26 +148,6 @@ def user_permissions(request):
     ✨ Usa helpers com cache para otimização de performance.
     
     GET /api/v1/acoes_pngi/permissions/
-    
-    Resposta:
-    {
-        "user_id": 1,
-        "email": "user@example.com",
-        "name": "Nome do Usuário",
-        "role": "GESTOR_PNGI",
-        "permissions": ["add_eixo", "change_eixo", "delete_eixo", "view_eixo", ...],
-        "is_superuser": false,
-        "groups": {
-            "can_manage_config": true,
-            "can_manage_acoes": false,
-            "can_delete": true
-        },
-        "specific": {
-            "eixo": {"can_add": true, "can_change": true, "can_delete": true, "can_view": true},
-            "situacaoacao": {"can_add": true, "can_change": true, "can_delete": true, "can_view": true},
-            "vigenciapngi": {"can_add": true, "can_change": true, "can_delete": true, "can_view": true}
-        }
-    }
     """
     try:
         # ✨ Usa helper com cache (15 minutos)
@@ -224,26 +216,14 @@ class UserManagementViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['post'])
     def sync_user(self, request):
-        """
-        Sincroniza usuário do portal com roles e atributos.
-        
-        POST /api/v1/acoes_pngi/users/sync_user/
-        Body: {
-            "email": "user@example.com",
-            "name": "Nome",
-            "roles": ["GESTOR_PNGI"],
-            "attributes": {"can_upload": "true"}
-        }
-        """
+        """Sincroniza usuário do portal com roles e atributos."""
         try:
-            # ✨ Serializer pega app_code do request.app_context
             serializer = UserCreateSerializer(data=request.data, context={'request': request})
             serializer.is_valid(raise_exception=True)
             
             user = serializer.save()
             created = serializer.validated_data.get('_created', False)
             
-            # Retorna usuário completo
             user_serializer = UserSerializer(user, context={'request': request})
             
             return Response({
@@ -261,13 +241,8 @@ class UserManagementViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['get'])
     def list_users(self, request):
-        """
-        Lista usuários com acesso à aplicação atual.
-        
-        GET /api/v1/acoes_pngi/users/list_users/
-        """
+        """Lista usuários com acesso à aplicação atual."""
         try:
-            # ✨ Filtra pela aplicação do contexto
             app_code = get_app_code(request)
             
             if not app_code:
@@ -276,7 +251,6 @@ class UserManagementViewSet(viewsets.ViewSet):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
             
-            # Usuários com acesso à aplicação
             user_ids = UserRole.objects.filter(
                 aplicacao__codigointerno=app_code
             ).values_list('user_id', flat=True)
@@ -285,10 +259,6 @@ class UserManagementViewSet(viewsets.ViewSet):
                 id__in=user_ids,
                 is_active=True
             )
-            
-            # Filtros opcionais
-            if request.query_params.get('idtipousuario'):
-                users = users.filter(idtipousuario=request.query_params.get('idtipousuario'))
             
             serializer = UserListSerializer(users, many=True)
             
@@ -306,11 +276,7 @@ class UserManagementViewSet(viewsets.ViewSet):
     
     @action(detail=True, methods=['get'])
     def get_user_by_email(self, request, pk=None):
-        """
-        Busca usuário por email.
-        
-        GET /api/v1/acoes_pngi/users/{email}/
-        """
+        """Busca usuário por email."""
         try:
             user = User.objects.get(email=pk)
             serializer = UserSerializer(user, context={'request': request})
@@ -324,12 +290,7 @@ class UserManagementViewSet(viewsets.ViewSet):
     
     @action(detail=True, methods=['patch'])
     def update_user_status(self, request, pk=None):
-        """
-        Atualiza status de usuário.
-        
-        PATCH /api/v1/acoes_pngi/users/{email}/update_user_status/
-        Body: {"is_active": false}
-        """
+        """Atualiza status de usuário."""
         try:
             user = User.objects.get(email=pk)
             
@@ -358,34 +319,20 @@ class UserManagementViewSet(viewsets.ViewSet):
 
 
 # ============================================================================
-# VIEWSETS DE MODELOS ESPECÍFICOS (COM PERMISSÕES)
+# VIEWSETS DE ENTIDADES CORE
 # ============================================================================
 
 class EixoViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para gerenciar Eixos do PNGI.
-    
-    🔒 Permissões verificadas automaticamente:
-    - GET (list/retrieve): requer view_eixo
-    - POST: requer add_eixo
-    - PUT/PATCH: requer change_eixo
-    - DELETE: requer delete_eixo
-    
-    Endpoints:
-    - GET    /api/v1/acoes_pngi/eixos/           - Lista eixos
-    - POST   /api/v1/acoes_pngi/eixos/           - Cria eixo
-    - GET    /api/v1/acoes_pngi/eixos/{id}/      - Detalhe
-    - PUT    /api/v1/acoes_pngi/eixos/{id}/      - Atualiza
-    - PATCH  /api/v1/acoes_pngi/eixos/{id}/      - Atualiza parcial
-    - DELETE /api/v1/acoes_pngi/eixos/{id}/      - Deleta
-    - GET    /api/v1/acoes_pngi/eixos/list_light/ - Listagem otimizada
-    """
+    """ViewSet para gerenciar Eixos do PNGI."""
     queryset = Eixo.objects.all()
     serializer_class = EixoSerializer
-    permission_classes = [HasAcoesPermission]  # ← PERMISSÕES AUTOMÁTICAS
+    permission_classes = [HasAcoesPermission]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strdescricaoeixo', 'stralias']
+    ordering_fields = ['stralias', 'strdescricaoeixo', 'created_at']
+    ordering = ['stralias']
     
     def get_serializer_class(self):
-        """Retorna serializer otimizado para listagem"""
         if self.action == 'list':
             return EixoListSerializer
         return EixoSerializer
@@ -393,12 +340,7 @@ class EixoViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     @require_api_permission('view_eixo')
     def list_light(self, request):
-        """
-        Endpoint otimizado para listagem rápida.
-        ✨ Requer permissão: view_eixo (verificado automaticamente pelo decorator)
-        
-        GET /api/v1/acoes_pngi/eixos/list_light/
-        """
+        """Endpoint otimizado para listagem rápida."""
         eixos = Eixo.objects.all().values('ideixo', 'strdescricaoeixo', 'stralias')
         return Response({
             'count': len(eixos),
@@ -407,54 +349,33 @@ class EixoViewSet(viewsets.ModelViewSet):
 
 
 class SituacaoAcaoViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para gerenciar Situações de Ações do PNGI.
-    
-    🔒 Permissões verificadas automaticamente:
-    - GET: requer view_situacaoacao
-    - POST: requer add_situacaoacao
-    - PUT/PATCH: requer change_situacaoacao
-    - DELETE: requer delete_situacaoacao
-    
-    Endpoints:
-    - GET    /api/v1/acoes_pngi/situacoes/       - Lista situações
-    - POST   /api/v1/acoes_pngi/situacoes/       - Cria situação
-    - GET    /api/v1/acoes_pngi/situacoes/{id}/  - Detalhe
-    - PUT    /api/v1/acoes_pngi/situacoes/{id}/  - Atualiza
-    - PATCH  /api/v1/acoes_pngi/situacoes/{id}/  - Atualiza parcial
-    - DELETE /api/v1/acoes_pngi/situacoes/{id}/  - Deleta
-    """
+    """ViewSet para gerenciar Situações de Ações do PNGI."""
     queryset = SituacaoAcao.objects.all()
     serializer_class = SituacaoAcaoSerializer
-    permission_classes = [HasAcoesPermission]  # ← PERMISSÕES AUTOMÁTICAS
+    permission_classes = [HasAcoesPermission]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strdescricaosituacao']
+    ordering_fields = ['strdescricaosituacao', 'created_at']
+    ordering = ['strdescricaosituacao']
 
 
 class VigenciaPNGIViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para gerenciar Vigências do PNGI.
-    
-    🔒 Permissões verificadas automaticamente:
-    - GET: requer view_vigenciapngi
-    - POST: requer add_vigenciapngi
-    - PUT/PATCH: requer change_vigenciapngi
-    - DELETE: requer delete_vigenciapngi
-    
-    Endpoints:
-    - GET    /api/v1/acoes_pngi/vigencias/                - Lista vigências
-    - POST   /api/v1/acoes_pngi/vigencias/                - Cria vigência
-    - GET    /api/v1/acoes_pngi/vigencias/{id}/           - Detalhe
-    - PUT    /api/v1/acoes_pngi/vigencias/{id}/           - Atualiza
-    - PATCH  /api/v1/acoes_pngi/vigencias/{id}/           - Atualiza parcial
-    - DELETE /api/v1/acoes_pngi/vigencias/{id}/           - Deleta
-    - GET    /api/v1/acoes_pngi/vigencias/vigencia_ativa/ - Vigência ativa
-    - POST   /api/v1/acoes_pngi/vigencias/{id}/ativar/    - Ativa vigência
-    """
+    """ViewSet para gerenciar Vigências do PNGI."""
     queryset = VigenciaPNGI.objects.all()
     serializer_class = VigenciaPNGISerializer
-    permission_classes = [HasAcoesPermission]  # ← PERMISSÕES AUTOMÁTICAS
+    permission_classes = [HasAcoesPermission]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strdescricaovigenciapngi']
+    ordering_fields = ['datiniciovigencia', 'datfinalvigencia', 'created_at']
+    ordering = ['-datiniciovigencia']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.query_params.get('isvigenciaativa'):
+            queryset = queryset.filter(isvigenciaativa=True)
+        return queryset
     
     def get_serializer_class(self):
-        """Retorna serializer otimizado para listagem"""
         if self.action == 'list':
             return VigenciaPNGIListSerializer
         return VigenciaPNGISerializer
@@ -462,12 +383,7 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     @require_api_permission('view_vigenciapngi')
     def vigencia_ativa(self, request):
-        """
-        Retorna a vigência atualmente ativa.
-        ✨ Requer permissão: view_vigenciapngi (verificado automaticamente)
-        
-        GET /api/v1/acoes_pngi/vigencias/vigencia_ativa/
-        """
+        """Retorna a vigência atualmente ativa."""
         try:
             vigencia = VigenciaPNGI.objects.get(isvigenciaativa=True)
             serializer = self.get_serializer(vigencia)
@@ -480,27 +396,15 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'], permission_classes=[IsCoordenadorOrAbove])
     def ativar(self, request, pk=None):
-        """
-        Ativa uma vigência específica.
-        
-        🔒 Apenas Coordenadores e Gestores podem ativar vigências.
-        
-        POST /api/v1/acoes_pngi/vigencias/{id}/ativar/
-        """
+        """Ativa uma vigência específica."""
         try:
-            from django.db import transaction
-            
             with transaction.atomic():
-                # Desativa todas as vigências
                 VigenciaPNGI.objects.update(isvigenciaativa=False)
-                
-                # Ativa a vigência selecionada
                 vigencia = self.get_object()
                 vigencia.isvigenciaativa = True
                 vigencia.save()
                 
                 serializer = self.get_serializer(vigencia)
-                
                 logger.info(f"Vigência {vigencia.idvigenciapngi} ativada por {request.user.email}")
                 
                 return Response({
@@ -514,3 +418,177 @@ class VigenciaPNGIViewSet(viewsets.ModelViewSet):
                 {'detail': f'Erro ao ativar vigência: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class TipoEntraveAlertaViewSet(viewsets.ModelViewSet):
+    """ViewSet para gerenciamento de Tipos de Entrave/Alerta."""
+    queryset = TipoEntraveAlerta.objects.all()
+    serializer_class = TipoEntraveAlertaSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strdescricaotipoentravealerta']
+    ordering_fields = ['strdescricaotipoentravealerta', 'created_at']
+    ordering = ['strdescricaotipoentravealerta']
+
+
+# ============================================================================
+# VIEWSETS DE AÇÕES
+# ============================================================================
+
+class AcoesViewSet(viewsets.ModelViewSet):
+    """ViewSet para gerenciamento de Ações do PNGI."""
+    queryset = Acoes.objects.select_related(
+        'idvigenciapngi', 'idtipoentravealerta'
+    ).prefetch_related(
+        'prazos', 'destaques', 'anotacoes_alinhamento', 'responsaveis'
+    )
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strapelido', 'strdescricaoacao', 'strdescricaoentrega']
+    ordering_fields = ['strapelido', 'datdataentrega', 'created_at']
+    ordering = ['strapelido']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.query_params.get('idvigenciapngi'):
+            queryset = queryset.filter(idvigenciapngi=self.request.query_params.get('idvigenciapngi'))
+        if self.request.query_params.get('idtipoentravealerta'):
+            queryset = queryset.filter(idtipoentravealerta=self.request.query_params.get('idtipoentravealerta'))
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return AcoesListSerializer
+        return AcoesSerializer
+
+    @action(detail=True, methods=['get'])
+    def prazos_ativos(self, request, pk=None):
+        """Retorna prazos ativos da ação"""
+        acao = self.get_object()
+        prazos = acao.prazos.filter(isacaoprazoativo=True)
+        serializer = AcaoPrazoSerializer(prazos, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def responsaveis_list(self, request, pk=None):
+        """Retorna lista de responsáveis da ação"""
+        acao = self.get_object()
+        relacoes = acao.responsaveis.select_related('idusuarioresponsavel__idusuario')
+        serializer = RelacaoAcaoUsuarioResponsavelSerializer(relacoes, many=True)
+        return Response(serializer.data)
+
+
+class AcaoPrazoViewSet(viewsets.ModelViewSet):
+    """ViewSet para gerenciamento de Prazos de Ações."""
+    queryset = AcaoPrazo.objects.select_related('idacao')
+    serializer_class = AcaoPrazoSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strprazo', 'idacao__strapelido']
+    ordering_fields = ['created_at', 'isacaoprazoativo']
+    ordering = ['-isacaoprazoativo', '-created_at']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.query_params.get('idacao'):
+            queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
+        if self.request.query_params.get('isacaoprazoativo'):
+            queryset = queryset.filter(isacaoprazoativo=self.request.query_params.get('isacaoprazoativo'))
+        return queryset
+
+    @action(detail=False, methods=['get'])
+    def ativos(self, request):
+        """Retorna apenas prazos ativos"""
+        prazos = self.get_queryset().filter(isacaoprazoativo=True)
+        serializer = self.get_serializer(prazos, many=True)
+        return Response(serializer.data)
+
+
+class AcaoDestaqueViewSet(viewsets.ModelViewSet):
+    """ViewSet para gerenciamento de Destaques de Ações."""
+    queryset = AcaoDestaque.objects.select_related('idacao')
+    serializer_class = AcaoDestaqueSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['idacao__strapelido']
+    ordering_fields = ['datdatadestaque', 'created_at']
+    ordering = ['-datdatadestaque']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.query_params.get('idacao'):
+            queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
+        return queryset
+
+
+# ============================================================================
+# VIEWSETS DE ALINHAMENTO
+# ============================================================================
+
+class TipoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
+    """ViewSet para Tipos de Anotação de Alinhamento."""
+    queryset = TipoAnotacaoAlinhamento.objects.all()
+    serializer_class = TipoAnotacaoAlinhamentoSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['strdescricaotipoanotacaoalinhamento']
+    ordering = ['strdescricaotipoanotacaoalinhamento']
+
+
+class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
+    """ViewSet para Anotações de Alinhamento de Ações."""
+    queryset = AcaoAnotacaoAlinhamento.objects.select_related(
+        'idacao', 'idtipoanotacaoalinhamento'
+    )
+    serializer_class = AcaoAnotacaoAlinhamentoSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['idacao__strapelido', 'idtipoanotacaoalinhamento__strdescricaotipoanotacaoalinhamento']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.query_params.get('idacao'):
+            queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
+        if self.request.query_params.get('idtipoanotacaoalinhamento'):
+            queryset = queryset.filter(idtipoanotacaoalinhamento=self.request.query_params.get('idtipoanotacaoalinhamento'))
+        return queryset
+
+
+# ============================================================================
+# VIEWSETS DE RESPONSÁVEIS
+# ============================================================================
+
+class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
+    """ViewSet para Usuários Responsáveis."""
+    queryset = UsuarioResponsavel.objects.select_related('idusuario')
+    serializer_class = UsuarioResponsavelSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['idusuario__name', 'idusuario__email', 'strorgao', 'strtelefone']
+    ordering = ['idusuario__name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.query_params.get('strorgao'):
+            queryset = queryset.filter(strorgao__icontains=self.request.query_params.get('strorgao'))
+        return queryset
+
+
+class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
+    """ViewSet para Relações entre Ações e Usuários Responsáveis."""
+    queryset = RelacaoAcaoUsuarioResponsavel.objects.select_related(
+        'idacao', 'idusuarioresponsavel__idusuario'
+    )
+    serializer_class = RelacaoAcaoUsuarioResponsavelSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.OrderingFilter]
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.query_params.get('idacao'):
+            queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
+        if self.request.query_params.get('idusuarioresponsavel'):
+            queryset = queryset.filter(idusuarioresponsavel=self.request.query_params.get('idusuarioresponsavel'))
+        return queryset
