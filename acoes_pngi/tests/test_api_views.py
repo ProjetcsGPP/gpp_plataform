@@ -277,17 +277,15 @@ class EixoAPITests(BaseAPITestCase):
             "Response deve ser lista ou ter 'results'"
         )
     
-    def test_coordenador_can_create_eixo(self):
-        """COORDENADOR_PNGI pode criar eixo"""
+    def test_coordenador_cannot_create_eixo(self):
+        """COORDENADOR_PNGI NÃO pode criar eixo (apenas view em configs)"""
         self.authenticate_as('coordenador')
         data = {
-            'strdescricaoeixo': 'Novo Eixo Coordenador',
+            'strdescricaoeixo': 'Tentativa Coordenador',
             'stralias': 'NCOOR'
         }
         response = self.client.post('/api/v1/acoes_pngi/eixos/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['strdescricaoeixo'], 'Novo Eixo Coordenador')
-        self.assertEqual(response.data['stralias'], 'NCOOR')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_coordenador_can_retrieve_eixo(self):
         """COORDENADOR_PNGI pode buscar eixo por ID"""
@@ -296,32 +294,22 @@ class EixoAPITests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['stralias'], 'TESTE')
     
-    def test_coordenador_can_update_eixo(self):
-        """COORDENADOR_PNGI pode atualizar eixo"""
+    def test_coordenador_cannot_update_eixo(self):
+        """COORDENADOR_PNGI NÃO pode atualizar eixo (apenas view em configs)"""
         self.authenticate_as('coordenador')
-        data = {'strdescricaoeixo': 'Eixo Atualizado pelo Coordenador'}
+        data = {'strdescricaoeixo': 'Tentativa Update'}
         response = self.client.patch(
             f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/',
             data,
             format='json'
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['strdescricaoeixo'], 'Eixo Atualizado pelo Coordenador')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
-    def test_coordenador_can_delete_eixo(self):
-        """COORDENADOR_PNGI pode deletar eixo"""
-        # Criar eixo temporário para deletar
-        eixo_temp = Eixo.objects.create(
-            strdescricaoeixo='Para Deletar',
-            stralias='DEL'
-        )
-        
+    def test_coordenador_cannot_delete_eixo(self):
+        """COORDENADOR_PNGI NÃO pode deletar eixo (apenas view em configs)"""
         self.authenticate_as('coordenador')
-        response = self.client.delete(f'/api/v1/acoes_pngi/eixos/{eixo_temp.ideixo}/')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        
-        # Verificar que foi deletado
-        self.assertFalse(Eixo.objects.filter(ideixo=eixo_temp.ideixo).exists())
+        response = self.client.delete(f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_coordenador_can_access_list_light(self):
         """COORDENADOR_PNGI pode acessar list_light"""
@@ -493,15 +481,15 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
         response = self.client.get('/api/v1/acoes_pngi/situacoes/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
-    def test_coordenador_can_create_situacao(self):
-        """COORDENADOR_PNGI pode criar situação"""
+    def test_coordenador_cannot_create_situacao(self):
+        """COORDENADOR_PNGI NÃO pode criar situação (apenas view em configs)"""
         self.authenticate_as('coordenador')
         data = {'strdescricaosituacao': 'CONCLUIDA'}
         response = self.client.post('/api/v1/acoes_pngi/situacoes/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
-    def test_coordenador_can_update_situacao(self):
-        """COORDENADOR_PNGI pode atualizar situação"""
+    def test_coordenador_cannot_update_situacao(self):
+        """COORDENADOR_PNGI NÃO pode atualizar situação (apenas view em configs)"""
         self.authenticate_as('coordenador')
         data = {'strdescricaosituacao': 'ATUALIZADA'}
         response = self.client.patch(
@@ -509,15 +497,13 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
             data,
             format='json'
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
-    def test_coordenador_can_delete_situacao(self):
-        """COORDENADOR_PNGI pode deletar situação"""
-        situacao_temp = SituacaoAcao.objects.create(strdescricaosituacao='TEMP')
-        
+    def test_coordenador_cannot_delete_situacao(self):
+        """COORDENADOR_PNGI NÃO pode deletar situação (apenas view em configs)"""
         self.authenticate_as('coordenador')
-        response = self.client.delete(f'/api/v1/acoes_pngi/situacoes/{situacao_temp.idsituacaoacao}/')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        response = self.client.delete(f'/api/v1/acoes_pngi/situacoes/{self.situacao.idsituacaoacao}/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     # ------------------------------------------------------------------------
     # GESTOR_PNGI - Acesso Total
@@ -640,8 +626,8 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         response = self.client.get('/api/v1/acoes_pngi/vigencias/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
-    def test_coordenador_can_create_vigencia(self):
-        """COORDENADOR_PNGI pode criar vigência"""
+    def test_coordenador_cannot_create_vigencia(self):
+        """COORDENADOR_PNGI NÃO pode criar vigência (apenas view em configs)"""
         self.authenticate_as('coordenador')
         data = {
             'strdescricaovigenciapngi': 'PNGI 2027',
@@ -650,10 +636,10 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
             'isvigenciaativa': False
         }
         response = self.client.post('/api/v1/acoes_pngi/vigencias/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
-    def test_coordenador_can_update_vigencia(self):
-        """COORDENADOR_PNGI pode atualizar vigência"""
+    def test_coordenador_cannot_update_vigencia(self):
+        """COORDENADOR_PNGI NÃO pode atualizar vigência (apenas view em configs)"""
         self.authenticate_as('coordenador')
         data = {'strdescricaovigenciapngi': 'PNGI 2026 - Atualizado'}
         response = self.client.patch(
@@ -661,7 +647,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
             data,
             format='json'
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_coordenador_can_delete_vigencia(self):
         """COORDENADOR_PNGI pode deletar vigência"""
