@@ -29,10 +29,10 @@ class BaseContextAPITestCase(TestCase):
         """Setup inicial"""
         self.client = APIClient()
         
-        # Criar aplicação
-        self.app = Aplicacao.objects.create(
+        # Criar aplicação (usar get_or_create para evitar IntegrityError)
+        self.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Ações PNGI'
+            defaults={'nomeaplicacao': 'Ações PNGI'}
         )
         
         # Criar role
