@@ -15,12 +15,14 @@ Cobre:
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Permission
 from rest_framework.test import APIClient
 from rest_framework import status
 from datetime import date, timedelta
 from unittest.mock import Mock, patch
 
-from accounts.models import Aplicacao, Role, UserRole
+from accounts.models import Aplicacao, Role, UserRole, RolePermission
 from ..models import (
     Eixo, SituacaoAcao, VigenciaPNGI, TipoEntraveAlerta,
     Acoes, AcaoPrazo, AcaoDestaque,
@@ -39,13 +41,14 @@ class BaseAPITestCase(TestCase):
     - Aplicação ACOES_PNGI
     - 4 roles hierárquicas
     - 4 usuários (um para cada role)
+    - Permissões (RolePermission) vinculando Roles a Permissions
     - Cliente API
     """
     
     databases = {'default', 'gpp_plataform_db'}
     
     def setUp(self):
-        """Setup inicial com aplicação, roles e usuários"""
+        """Setup inicial com aplicação, roles, permissões e usuários"""
         self.client = APIClient()
         
         # Criar aplicação (get_or_create para evitar duplicação)
@@ -79,6 +82,9 @@ class BaseAPITestCase(TestCase):
             defaults={'nomeperfil': 'Consultor - Apenas Leitura'}
         )
         
+        # ✨ NOVO: Criar permissões (RolePermission)
+        self.setup_permissions()
+        
         # Criar usuários para cada role
         self.users = {}
         for role_name, role_obj in [
@@ -101,6 +107,71 @@ class BaseAPITestCase(TestCase):
         
         # Criar dados de teste base
         self.setup_test_data()
+    
+    def setup_permissions(self):
+        """
+        Cria as permissões (RolePermission) vinculando Roles a Permissions.
+        
+        Hierarquia:
+        - COORDENADOR_PNGI: add, change, delete, view (TODAS as permissões)
+        - GESTOR_PNGI: add, change, delete, view (TODAS as permissões)
+        - OPERADOR_ACAO: view apenas (não pode modificar configurações)
+        - CONSULTOR_PNGI: view apenas (apenas leitura)
+        """
+        # Modelos de configuração
+        models = ['eixo', 'situacaoacao', 'vigenciapngi']
+        actions = ['add', 'change', 'delete', 'view']
+        
+        # ContentTypes para os modelos
+        content_types = {
+            'eixo': ContentType.objects.get_for_model(Eixo),
+            'situacaoacao': ContentType.objects.get_for_model(SituacaoAcao),
+            'vigenciapngi': ContentType.objects.get_for_model(VigenciaPNGI),
+        }
+        
+        # COORDENADOR_PNGI e GESTOR_PNGI: TODAS as permissões
+        for role in [self.role_coordenador, self.role_gestor]:
+            for model_name in models:
+                ct = content_types[model_name]
+                for action in actions:
+                    codename = f'{action}_{model_name}'
+                    perm, _ = Permission.objects.get_or_create(
+                        codename=codename,
+                        content_type=ct,
+                        defaults={'name': f'Can {action} {model_name}'}
+                    )
+                    RolePermission.objects.get_or_create(
+                        role=role,
+                        permission=perm
+                    )
+        
+        # OPERADOR_ACAO: apenas view (não pode modificar config)
+        for model_name in models:
+            ct = content_types[model_name]
+            codename = f'view_{model_name}'
+            perm, _ = Permission.objects.get_or_create(
+                codename=codename,
+                content_type=ct,
+                defaults={'name': f'Can view {model_name}'}
+            )
+            RolePermission.objects.get_or_create(
+                role=self.role_operador,
+                permission=perm
+            )
+        
+        # CONSULTOR_PNGI: apenas view (leitura total)
+        for model_name in models:
+            ct = content_types[model_name]
+            codename = f'view_{model_name}'
+            perm, _ = Permission.objects.get_or_create(
+                codename=codename,
+                content_type=ct,
+                defaults={'name': f'Can view {model_name}'}
+            )
+            RolePermission.objects.get_or_create(
+                role=self.role_consultor,
+                permission=perm
+            )
     
     def setup_test_data(self):
         """
@@ -266,12 +337,8 @@ class EixoAPITests(BaseAPITestCase):
         """OPERADOR_ACAO pode visualizar eixos (mas não criar/editar)"""
         self.authenticate_as('operador')
         response = self.client.get('/api/v1/acoes_pngi/eixos/')
-        # Operador pode ver (depende da implementação de permissões)
-        # Se a política é bloquear tudo de config, seria 403
-        self.assertIn(response.status_code, [
-            status.HTTP_200_OK,  # Se tem view_eixo
-            status.HTTP_403_FORBIDDEN  # Se bloqueado totalmente
-        ])
+        # Operador TEM view_eixo agora!
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_operador_cannot_create_eixo(self):
         """OPERADOR_ACAO NÃO pode criar eixo (configuração)"""
