@@ -48,35 +48,35 @@ class BaseAPITestCase(TestCase):
         """Setup inicial com aplicação, roles e usuários"""
         self.client = APIClient()
         
-        # Criar aplicação
-        self.app = Aplicacao.objects.create(
+        # Criar aplicação (get_or_create para evitar duplicação)
+        self.app, _ = Aplicacao.objects.get_or_create(
             codigointerno='ACOES_PNGI',
-            nomeaplicacao='Ações PNGI'
+            defaults={'nomeaplicacao': 'Ações PNGI'}
         )
         
-        # Criar as 4 roles hierárquicas
-        self.role_coordenador = Role.objects.create(
+        # Criar as 4 roles hierárquicas (get_or_create)
+        self.role_coordenador, _ = Role.objects.get_or_create(
             aplicacao=self.app,
             codigoperfil='COORDENADOR_PNGI',
-            nomeperfil='Coordenador - Gerencia Configurações'
+            defaults={'nomeperfil': 'Coordenador - Gerencia Configurações'}
         )
         
-        self.role_gestor = Role.objects.create(
+        self.role_gestor, _ = Role.objects.get_or_create(
             aplicacao=self.app,
             codigoperfil='GESTOR_PNGI',
-            nomeperfil='Gestor Acoes PNGI'
+            defaults={'nomeperfil': 'Gestor Acoes PNGI'}
         )
         
-        self.role_operador = Role.objects.create(
+        self.role_operador, _ = Role.objects.get_or_create(
             aplicacao=self.app,
             codigoperfil='OPERADOR_ACAO',
-            nomeperfil='Operador - Apenas Ações'
+            defaults={'nomeperfil': 'Operador - Apenas Ações'}
         )
         
-        self.role_consultor = Role.objects.create(
+        self.role_consultor, _ = Role.objects.get_or_create(
             aplicacao=self.app,
             codigoperfil='CONSULTOR_PNGI',
-            nomeperfil='Consultor - Apenas Leitura'
+            defaults={'nomeperfil': 'Consultor - Apenas Leitura'}
         )
         
         # Criar usuários para cada role
