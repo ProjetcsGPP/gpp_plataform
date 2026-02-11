@@ -3,8 +3,8 @@ URLs da API REST de Ações PNGI
 Inclui endpoints de dados + novos endpoints de contexto
 
 Exemplos:
-- GET /api/v1/acoes_pngi/eixos/
-- POST /api/v1/acoes_pngi/eixos/
+- GET /api/v1/acoes_pngi/acoes/
+- POST /api/v1/acoes_pngi/acoes/
 - GET /api/v1/acoes_pngi/context/app/
 - GET /api/v1/acoes_pngi/context/permissions/
 - GET /api/v1/acoes_pngi/context/models/
@@ -14,7 +14,7 @@ Exemplos:
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-# Importar views da API (flat file - não modular)
+# Importar views da API (agora com TODOS os ViewSets)
 from ..views.api_views import (
     portal_auth,
     user_permissions,
@@ -22,6 +22,14 @@ from ..views.api_views import (
     EixoViewSet,
     SituacaoAcaoViewSet,
     VigenciaPNGIViewSet,
+    TipoEntraveAlertaViewSet,
+    AcoesViewSet,
+    AcaoPrazoViewSet,
+    AcaoDestaqueViewSet,
+    TipoAnotacaoAlinhamentoViewSet,
+    AcaoAnotacaoAlinhamentoViewSet,
+    UsuarioResponsavelViewSet,
+    RelacaoAcaoUsuarioResponsavelViewSet,
 )
 
 # Importar views de contexto
@@ -44,6 +52,20 @@ router.register(r'users', UserManagementViewSet, basename='user-management')
 router.register(r'eixos', EixoViewSet, basename='eixo')
 router.register(r'situacoes', SituacaoAcaoViewSet, basename='situacaoacao')
 router.register(r'vigencias', VigenciaPNGIViewSet, basename='vigenciapngi')
+router.register(r'tipos-entrave-alerta', TipoEntraveAlertaViewSet, basename='tipoentravealerta')
+
+# Ações PNGI
+router.register(r'acoes', AcoesViewSet, basename='acoes')
+router.register(r'acoes-prazo', AcaoPrazoViewSet, basename='acaoprazo')
+router.register(r'acoes-destaque', AcaoDestaqueViewSet, basename='acaodestaque')
+
+# Alinhamento
+router.register(r'tipos-anotacao-alinhamento', TipoAnotacaoAlinhamentoViewSet, basename='tipoanotacaoalinhamento')
+router.register(r'acoes-anotacao-alinhamento', AcaoAnotacaoAlinhamentoViewSet, basename='acaoanotacaoalinhamento')
+
+# Responsáveis
+router.register(r'usuarios-responsaveis', UsuarioResponsavelViewSet, basename='usuarioresponsavel')
+router.register(r'relacoes-acao-responsavel', RelacaoAcaoUsuarioResponsavelViewSet, basename='relacaoacaousuarioresponsavel')
 
 urlpatterns = [
     # ===== AUTENTICAÇÃO =====
