@@ -1,4 +1,5 @@
 # Generated migration for complete RBAC setup
+# Standalone migration - NÃO cria tabelas, apenas configura permissões
 
 from django.db import migrations
 from django.contrib.contenttypes.models import ContentType
@@ -9,21 +10,28 @@ def create_complete_permissions(apps, schema_editor):
     """
     Cria RolePermissions completas para ACOES_PNGI.
     
+    IMPORTANTE:
+    - NÃO cria tabelas (assumimos que já existem)
+    - Apenas configura permissões (RolePermissions)
+    - Idempotente (pode rodar múltiplas vezes)
+    
     Hierarquia:
     - GESTOR_PNGI: CRUD em tudo (44 permissões)
     - COORDENADOR_PNGI: view configs + CRUD negócio/filhas (29 permissões)
     - OPERADOR_ACAO: view configs/negócio + add/view filhas (15 permissões)
     - CONSULTOR_PNGI: view tudo (11 permissões)
     """
+    # Usar get_model para acessar modelos via migrations API
     Aplicacao = apps.get_model('accounts', 'Aplicacao')
     Role = apps.get_model('accounts', 'Role')
     RolePermission = apps.get_model('accounts', 'RolePermission')
     
-    # Buscar aplicação
+    # Buscar aplicação (se não existir, pula)
     try:
         app_acoes = Aplicacao.objects.get(codigointerno='ACOES_PNGI')
     except Aplicacao.DoesNotExist:
-        print("⚠️  Aplicação ACOES_PNGI não encontrada. Pulando migration...")
+        print("⚠️  Aplicação ACOES_PNGI não encontrada.")
+        print("   Certifique-se de criar a aplicação antes de rodar esta migration.")
         return
     
     # Classificação de modelos
@@ -52,8 +60,9 @@ def create_complete_permissions(apps, schema_editor):
     # Criar/obter todas as permissões
     permissions_by_model = {}
     total_created = 0
+    total_existing = 0
     
-    print("\n🔧 Criando permissões...")
+    print("\n🔧 Verificando permissões...")
     for category, model_list in models_config.items():
         for app_label, model_name in model_list:
             try:
@@ -71,15 +80,18 @@ def create_complete_permissions(apps, schema_editor):
                     if created:
                         total_created += 1
                         print(f"  ✅ Criada: {codename}")
+                    else:
+                        total_existing += 1
                 
             except ContentType.DoesNotExist:
                 print(f"  ⚠️  ContentType para {app_label}.{model_name} não encontrado")
+                print(f"     Certifique-se de que as tabelas existem no banco.")
                 continue
     
     if total_created > 0:
         print(f"\n✅ {total_created} novas permissões criadas")
-    else:
-        print("\n✅ Todas as permissões já existiam")
+    if total_existing > 0:
+        print(f"✅ {total_existing} permissões já existiam")
     
     # Hierarquia de permissões por role
     roles_hierarchy = {
@@ -112,6 +124,7 @@ def create_complete_permissions(apps, schema_editor):
         try:
             role = Role.objects.get(aplicacao=app_acoes, codigoperfil=role_code)
             role_perms_created = 0
+            role_perms_existing = 0
             
             for category, allowed_actions in categories.items():
                 model_list = models_config[category]
@@ -129,14 +142,24 @@ def create_complete_permissions(apps, schema_editor):
                             )
                             if created:
                                 role_perms_created += 1
+                            else:
+                                role_perms_existing += 1
             
-            print(f"  ✅ {role_code}: {role_perms_created} novas RolePermissions")
+            if role_perms_created > 0:
+                print(f"  ✅ {role_code}: {role_perms_created} novas RolePermissions")
+            if role_perms_existing > 0:
+                print(f"  ℹ️  {role_code}: {role_perms_existing} RolePermissions já existiam")
             
         except Role.DoesNotExist:
-            print(f"  ⚠️  Role {role_code} não encontrada. Criá-la primeiro!")
+            print(f"  ⚠️  Role {role_code} não encontrada.")
+            print(f"     Crie a role antes de rodar esta migration.")
             continue
     
     print("\n🎉 Migração concluída com sucesso!")
+    print("\n📝 Próximos passos:")
+    print("   1. Verificar roles em /admin/accounts/role/")
+    print("   2. Testar permissões: python manage.py test acoes_pngi.tests")
+    print("   3. Validar API: /api/v1/accounts/permissions/")
 
 
 def remove_all_permissions(apps, schema_editor):
@@ -161,9 +184,13 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('acoes_pngi', '0005_alter_situacaoacao_created_at_and_more'),
-        ('accounts', '0004_rolepermission'),
+        # Usa __first__ para evitar problemas de versão
+        ('accounts', '__first__'),
     ]
 
     operations = [
-        migrations.RunPython(create_complete_permissions, remove_all_permissions),
+        migrations.RunPython(
+            create_complete_permissions,
+            remove_all_permissions
+        ),
     ]
