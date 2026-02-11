@@ -112,27 +112,58 @@ class BaseAPITestCase(TestCase):
         """
         Cria as permissões (RolePermission) vinculando Roles a Permissions.
         
-        Hierarquia:
-        - COORDENADOR_PNGI: add, change, delete, view (TODAS as permissões)
-        - GESTOR_PNGI: add, change, delete, view (TODAS as permissões)
-        - OPERADOR_ACAO: view apenas (não pode modificar configurações)
-        - CONSULTOR_PNGI: view apenas (apenas leitura)
-        """
-        # Modelos de configuração
-        models = ['eixo', 'situacaoacao', 'vigenciapngi']
-        actions = ['add', 'change', 'delete', 'view']
+        NOVA HIERARQUIA (Pós-inversão Coordenador ↔ Gestor):
         
-        # ContentTypes para os modelos
-        content_types = {
-            'eixo': ContentType.objects.get_for_model(Eixo),
-            'situacaoacao': ContentType.objects.get_for_model(SituacaoAcao),
-            'vigenciapngi': ContentType.objects.get_for_model(VigenciaPNGI),
+        - GESTOR_PNGI: CRUD completo em TUDO (44 permissões)
+          * Configs: add, change, delete, view
+          * Negócio: add, change, delete, view
+          * Filhas: add, change, delete, view
+        
+        - COORDENADOR_PNGI: view configs + CRUD negócio/filhas (29 permissões)
+          * Configs: view apenas
+          * Negócio: add, change, delete, view
+          * Filhas: add, change, delete, view
+        
+        - OPERADOR_ACAO: view configs/negócio + add/view filhas (15 permissões)
+          * Configs: view apenas
+          * Negócio: view apenas
+          * Filhas: add, view
+        
+        - CONSULTOR_PNGI: view em tudo (11 permissões)
+          * Configs: view
+          * Negócio: view
+          * Filhas: view
+        """
+        # Classificação de modelos
+        models_config = {
+            'CONFIGS': [
+                ('eixo', Eixo),
+                ('situacaoacao', SituacaoAcao),
+                ('vigenciapngi', VigenciaPNGI),
+                ('tipoanotacaoalinhamento', TipoAnotacaoAlinhamento),
+                ('tipoentravealerta', TipoEntraveAlerta),
+            ],
+            'NEGOCIO': [
+                ('acoes', Acoes),
+                ('usuarioresponsavel', UsuarioResponsavel),
+            ],
+            'FILHAS': [
+                ('acaoprazo', AcaoPrazo),
+                ('acaodestaque', AcaoDestaque),
+                ('acaoanotacaoalinhamento', AcaoAnotacaoAlinhamento),
+                ('relacaoacaousuarioresponsavel', RelacaoAcaoUsuarioResponsavel),
+            ]
         }
         
-        # COORDENADOR_PNGI e GESTOR_PNGI: TODAS as permissões
-        for role in [self.role_coordenador, self.role_gestor]:
-            for model_name in models:
-                ct = content_types[model_name]
+        actions = ['add', 'change', 'delete', 'view']
+        
+        # Criar todas as permissões
+        permissions_by_model = {}
+        for category, model_list in models_config.items():
+            for model_name, model_class in model_list:
+                ct = ContentType.objects.get_for_model(model_class)
+                permissions_by_model[model_name] = {}
+                
                 for action in actions:
                     codename = f'{action}_{model_name}'
                     perm, _ = Permission.objects.get_or_create(
@@ -140,38 +171,46 @@ class BaseAPITestCase(TestCase):
                         content_type=ct,
                         defaults={'name': f'Can {action} {model_name}'}
                     )
-                    RolePermission.objects.get_or_create(
-                        role=role,
-                        permission=perm
-                    )
+                    permissions_by_model[model_name][action] = perm
         
-        # OPERADOR_ACAO: apenas view (não pode modificar config)
-        for model_name in models:
-            ct = content_types[model_name]
-            codename = f'view_{model_name}'
-            perm, _ = Permission.objects.get_or_create(
-                codename=codename,
-                content_type=ct,
-                defaults={'name': f'Can view {model_name}'}
-            )
-            RolePermission.objects.get_or_create(
-                role=self.role_operador,
-                permission=perm
-            )
+        # Hierarquia de permissões por role
+        roles_hierarchy = {
+            self.role_gestor: {
+                'CONFIGS': ['add', 'change', 'delete', 'view'],
+                'NEGOCIO': ['add', 'change', 'delete', 'view'],
+                'FILHAS': ['add', 'change', 'delete', 'view'],
+            },
+            self.role_coordenador: {
+                'CONFIGS': ['view'],
+                'NEGOCIO': ['add', 'change', 'delete', 'view'],
+                'FILHAS': ['add', 'change', 'delete', 'view'],
+            },
+            self.role_operador: {
+                'CONFIGS': ['view'],
+                'NEGOCIO': ['view'],
+                'FILHAS': ['add', 'view'],
+            },
+            self.role_consultor: {
+                'CONFIGS': ['view'],
+                'NEGOCIO': ['view'],
+                'FILHAS': ['view'],
+            }
+        }
         
-        # CONSULTOR_PNGI: apenas view (leitura total)
-        for model_name in models:
-            ct = content_types[model_name]
-            codename = f'view_{model_name}'
-            perm, _ = Permission.objects.get_or_create(
-                codename=codename,
-                content_type=ct,
-                defaults={'name': f'Can view {model_name}'}
-            )
-            RolePermission.objects.get_or_create(
-                role=self.role_consultor,
-                permission=perm
-            )
+        # Vincular permissões às roles
+        for role, categories in roles_hierarchy.items():
+            for category, allowed_actions in categories.items():
+                model_list = models_config[category]
+                
+                for model_name, model_class in model_list:
+                    for action in allowed_actions:
+                        if action in permissions_by_model[model_name]:
+                            perm = permissions_by_model[model_name][action]
+                            RolePermission.objects.get_or_create(
+                                role=role,
+                                permission=perm
+                            )
+
     
     def setup_test_data(self):
         """
