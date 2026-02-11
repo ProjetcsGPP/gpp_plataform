@@ -14,10 +14,9 @@ Exemplos:
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-# Importar TODAS as views da API
+# Importar views da API
 from ..views.api_views import (
     portal_auth,
-    user_permissions,
     UserManagementViewSet,
     EixoViewSet,
     SituacaoAcaoViewSet,
@@ -70,7 +69,6 @@ router.register(r'relacoes-acao-responsavel', RelacaoAcaoUsuarioResponsavelViewS
 urlpatterns = [
     # ===== AUTENTICAÇÃO =====
     path('auth/portal/', portal_auth, name='portal-auth'),
-    path('permissions/', user_permissions, name='user-permissions'),
     
     # ===== CONTEXTO PARA NEXT.JS =====
     path('context/app/', app_context_api, name='app-context'),
