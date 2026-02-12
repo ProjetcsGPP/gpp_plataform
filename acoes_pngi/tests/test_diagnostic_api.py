@@ -19,7 +19,7 @@ from datetime import date
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import Acoes, VigenciaPNGI
-from ..views.api_views.acoes_views import AcoesViewSet
+from ..views.api_views import AcoesViewSet
 
 User = get_user_model()
 
