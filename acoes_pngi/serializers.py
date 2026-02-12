@@ -8,7 +8,11 @@ Para serializers de User e autenticação, use common.serializers.
 from rest_framework import serializers
 from django.db import transaction
 
-from .models import Eixo, SituacaoAcao, VigenciaPNGI
+from .models import (
+    Eixo, SituacaoAcao, VigenciaPNGI, TipoEntraveAlerta, Acoes,
+    AcaoPrazo, AcaoDestaque, TipoAnotacaoAlinhamento, 
+    AcaoAnotacaoAlinhamento, UsuarioResponsavel, RelacaoAcaoUsuarioResponsavel
+)
 from common.serializers import TimestampedModelSerializer, BaseModelSerializer
 
 
@@ -58,18 +62,17 @@ class SituacaoAcaoSerializer(BaseModelSerializer):
     """
     Serializer para o modelo SituacaoAcao.
     Gerencia as situações possíveis de uma ação PNGI.
-    
-    ⚠️ Tabela estática - raramente modificada, SEM timestamps.
     """
     
     class Meta:
         model = SituacaoAcao
         fields = [
             'idsituacaoacao',
-            'strdescricaosituacao'
-            # ⚠️ SEM created_at/updated_at (tabela estática)
+            'strdescricaosituacao',
+            'created_at',
+            'updated_at'
         ]
-        read_only_fields = ['idsituacaoacao']
+        read_only_fields = ['idsituacaoacao', 'created_at', 'updated_at']
     
     def validate_strdescricaosituacao(self, value):
         """Valida que a descrição está em maiúsculas e não vazia"""
@@ -83,6 +86,8 @@ class VigenciaPNGISerializer(TimestampedModelSerializer):
     Serializer para o modelo VigenciaPNGI.
     Gerencia os períodos de vigência do PNGI.
     """
+    esta_vigente = serializers.ReadOnlyField()
+    duracao_dias = serializers.ReadOnlyField()
     
     class Meta:
         model = VigenciaPNGI
@@ -92,6 +97,8 @@ class VigenciaPNGISerializer(TimestampedModelSerializer):
             'datiniciovigencia',
             'datfinalvigencia',
             'isvigenciaativa',
+            'esta_vigente',
+            'duracao_dias',
             'created_at',
             'updated_at'
         ]
@@ -147,3 +154,142 @@ class VigenciaPNGIListSerializer(BaseModelSerializer):
             'datfinalvigencia',
             'isvigenciaativa'
         ]
+
+
+class TipoEntraveAlertaSerializer(TimestampedModelSerializer):
+    """
+    Serializer para o modelo TipoEntraveAlerta.
+    """
+    
+    class Meta:
+        model = TipoEntraveAlerta
+        fields = '__all__'
+        read_only_fields = ['idtipoentravealerta', 'created_at', 'updated_at']
+
+
+class AcaoPrazoSerializer(TimestampedModelSerializer):
+    """
+    Serializer para o modelo AcaoPrazo.
+    """
+    idacao_display = serializers.CharField(source='idacao.strapelido', read_only=True)
+    
+    class Meta:
+        model = AcaoPrazo
+        fields = '__all__'
+        read_only_fields = ['idacaoprazo', 'created_at', 'updated_at']
+
+
+class AcaoDestaqueSerializer(TimestampedModelSerializer):
+    """
+    Serializer para o modelo AcaoDestaque.
+    """
+    idacao_display = serializers.CharField(source='idacao.strapelido', read_only=True)
+    
+    class Meta:
+        model = AcaoDestaque
+        fields = '__all__'
+        read_only_fields = ['idacaodestaque', 'created_at', 'updated_at']
+
+
+class TipoAnotacaoAlinhamentoSerializer(TimestampedModelSerializer):
+    """
+    Serializer para o modelo TipoAnotacaoAlinhamento.
+    """
+    
+    class Meta:
+        model = TipoAnotacaoAlinhamento
+        fields = '__all__'
+        read_only_fields = ['idtipoanotacaoalinhamento', 'created_at', 'updated_at']
+
+
+class AcaoAnotacaoAlinhamentoSerializer(TimestampedModelSerializer):
+    """
+    Serializer para o modelo AcaoAnotacaoAlinhamento.
+    """
+    idacao_display = serializers.CharField(source='idacao.strapelido', read_only=True)
+    idtipoanotacaoalinhamento_display = serializers.CharField(
+        source='idtipoanotacaoalinhamento.strdescricaotipoanotacaoalinhamento',
+        read_only=True
+    )
+    
+    class Meta:
+        model = AcaoAnotacaoAlinhamento
+        fields = '__all__'
+        read_only_fields = ['idacaoanotacaoalinhamento', 'created_at', 'updated_at']
+
+
+class UsuarioResponsavelSerializer(TimestampedModelSerializer):
+    """
+    Serializer para o modelo UsuarioResponsavel.
+    """
+    idusuario_name = serializers.CharField(source='idusuario.name', read_only=True)
+    idusuario_email = serializers.CharField(source='idusuario.email', read_only=True)
+    
+    class Meta:
+        model = UsuarioResponsavel
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class RelacaoAcaoUsuarioResponsavelSerializer(TimestampedModelSerializer):
+    """
+    Serializer para o modelo RelacaoAcaoUsuarioResponsavel.
+    """
+    idacao_display = serializers.CharField(source='idacao.strapelido', read_only=True)
+    idusuarioresponsavel_display = serializers.CharField(
+        source='idusuarioresponsavel.idusuario.name',
+        read_only=True
+    )
+    
+    class Meta:
+        model = RelacaoAcaoUsuarioResponsavel
+        fields = '__all__'
+        read_only_fields = ['idacaousuarioresponsavel', 'created_at', 'updated_at']
+
+
+class AcoesSerializer(TimestampedModelSerializer):
+    """
+    Serializer completo para o modelo Acoes com relacionamentos.
+    """
+    idvigenciapngi_display = serializers.CharField(
+        source='idvigenciapngi.strdescricaovigenciapngi',
+        read_only=True
+    )
+    idtipoentravealerta_display = serializers.CharField(
+        source='idtipoentravealerta.strdescricaotipoentravealerta',
+        read_only=True,
+        allow_null=True
+    )
+    prazos = AcaoPrazoSerializer(many=True, read_only=True)
+    destaques = AcaoDestaqueSerializer(many=True, read_only=True)
+    anotacoes_alinhamento = AcaoAnotacaoAlinhamentoSerializer(many=True, read_only=True)
+    responsaveis = RelacaoAcaoUsuarioResponsavelSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Acoes
+        fields = '__all__'
+        read_only_fields = ['idacao', 'created_at', 'updated_at']
+
+
+class AcoesListSerializer(BaseModelSerializer):
+    """
+    Serializer simplificado para listagem de ações.
+    """
+    idvigenciapngi_display = serializers.CharField(
+        source='idvigenciapngi.strdescricaovigenciapngi',
+        read_only=True
+    )
+    idtipoentravealerta_display = serializers.CharField(
+        source='idtipoentravealerta.strdescricaotipoentravealerta',
+        read_only=True,
+        allow_null=True
+    )
+    
+    class Meta:
+        model = Acoes
+        fields = [
+            'idacao', 'strapelido', 'strdescricaoacao', 'strdescricaoentrega',
+            'idvigenciapngi', 'idvigenciapngi_display', 'idtipoentravealerta',
+            'idtipoentravealerta_display', 'datdataentrega', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['idacao', 'created_at', 'updated_at']
