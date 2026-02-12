@@ -498,10 +498,23 @@ class AcoesWebViewsTests(BaseWebTestCase):
             datfinalvigencia=date(2026, 12, 31)
         )
         
+        # ✅ Criar Eixo
+        self.eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ Criar Situação
+        self.situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
         self.acao = Acoes.objects.create(
             strapelido='ACAO-WEB-001',
             strdescricaoacao='Ação Teste Web',
-            idvigenciapngi=self.vigencia
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
     
     def test_coordenador_can_list_acoes(self):
