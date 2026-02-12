@@ -162,8 +162,17 @@ class Acoes(models.Model):
         on_delete=models.PROTECT,
         db_column='ideixo',
         related_name='acoes',
-        default=1
+        null=True,  # ← Adicione temporariamente
+        blank=True
     )
+    idsituacaoacao = models.ForeignKey(
+        SituacaoAcao,
+        on_delete=models.PROTECT,
+        db_column='idsituacaoacao',
+        related_name='acoes',
+        null=True,  # ← Adicione temporariamente
+        blank=True
+    )    
     idvigenciapngi = models.ForeignKey(
         VigenciaPNGI,
         on_delete=models.PROTECT,
