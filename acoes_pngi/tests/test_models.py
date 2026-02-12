@@ -164,6 +164,17 @@ class AcoesModelTest(TestCase):
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta="Alerta Teste"
         )
+        
+        # ✅ Criar Eixo
+        self.eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ Criar Situação
+        self.situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
     
     def test_create_acao(self):
         """Teste de criação de ação"""
@@ -172,6 +183,8 @@ class AcoesModelTest(TestCase):
             strdescricaoacao="Ação de Teste",
             strdescricaoentrega="Entrega de Teste",
             idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao,
             idtipoentravealerta=self.tipo_entrave,
             datdataentrega=date(2026, 6, 30)
         )
@@ -184,7 +197,9 @@ class AcoesModelTest(TestCase):
         acao = Acoes.objects.create(
             strapelido="ACAO-TEST",
             strdescricaoacao="Teste",
-            idvigenciapngi=self.vigencia
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
         self.assertEqual(str(acao), "ACAO-TEST - Teste")
 
@@ -201,10 +216,23 @@ class AcaoPrazoModelTest(TestCase):
             datfinalvigencia=date(2026, 12, 31)
         )
         
+        # ✅ Criar Eixo
+        eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ Criar Situação
+        situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
         self.acao = Acoes.objects.create(
             strapelido="ACAO-001",
             strdescricaoacao="Teste",
-            idvigenciapngi=vigencia
+            idvigenciapngi=vigencia,
+            ideixo=eixo,
+            idsituacaoacao=situacao
         )
     
     def test_create_prazo(self):
@@ -302,10 +330,23 @@ class RelacaoAcaoUsuarioResponsavelModelTest(TestCase):
             datfinalvigencia=date(2026, 12, 31)
         )
         
+        # ✅ Criar Eixo
+        eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ Criar Situação
+        situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
         self.acao = Acoes.objects.create(
             strapelido="ACAO-001",
             strdescricaoacao="Teste",
-            idvigenciapngi=vigencia
+            idvigenciapngi=vigencia,
+            ideixo=eixo,
+            idsituacaoacao=situacao
         )
         
         self.responsavel = UsuarioResponsavel.objects.create(
