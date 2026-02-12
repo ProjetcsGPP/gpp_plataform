@@ -2,7 +2,6 @@
 from django.test import TestCase
 from django.utils import timezone
 from .fixtures.test_data_base import create_base_test_data
-from common.models import Aplicacao
 
 
 class BaseTestCase(TestCase):
@@ -27,11 +26,17 @@ class BaseTestCase(TestCase):
         cls.situacao_base = base_data.situacao
         cls.vigencia_base = base_data.vigencia
         
-        # Aplicação PNGI
-        cls.app, _ = Aplicacao.objects.using('gpp_plataform_db').get_or_create(
-            codigointerno='ACOES_PNGI',
-            defaults={'descricao': 'Sistema de Ações PNGI'}
-        )
+        # Aplicacao PNGI - importar de accounts
+        try:
+            from accounts.models import Aplicacao
+            cls.app, _ = Aplicacao.objects.using('gpp_plataform_db').get_or_create(
+                codigointerno='ACOES_PNGI',
+                defaults={'descricao': 'Sistema de Ações PNGI'}
+            )
+        except (ImportError, Exception) as e:
+            # Se não existir o modelo Aplicacao, apenas avisar
+            print(f"Aviso: Não foi possível carregar Aplicacao: {e}")
+            cls.app = None
     
     def create_acao_base(self, **kwargs):
         """
@@ -87,11 +92,16 @@ class BaseAPITestCase(TestCase):
         cls.situacao_base = base_data.situacao
         cls.vigencia_base = base_data.vigencia
         
-        # Aplicação PNGI
-        cls.app, _ = Aplicacao.objects.using('gpp_plataform_db').get_or_create(
-            codigointerno='ACOES_PNGI',
-            defaults={'descricao': 'Sistema de Ações PNGI'}
-        )
+        # Aplicacao PNGI - importar de accounts
+        try:
+            from accounts.models import Aplicacao
+            cls.app, _ = Aplicacao.objects.using('gpp_plataform_db').get_or_create(
+                codigointerno='ACOES_PNGI',
+                defaults={'descricao': 'Sistema de Ações PNGI'}
+            )
+        except (ImportError, Exception) as e:
+            print(f"Aviso: Não foi possível carregar Aplicacao: {e}")
+            cls.app = None
     
     def create_acao_base(self, **kwargs):
         """
