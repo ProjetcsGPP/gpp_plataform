@@ -19,6 +19,7 @@ from accounts.models import Aplicacao, Role, UserRole
 from ..models import (
     Acoes, AcaoPrazo, AcaoDestaque,
     VigenciaPNGI, TipoEntraveAlerta,
+    Eixo, SituacaoAcao,
     UsuarioResponsavel, RelacaoAcaoUsuarioResponsavel
 )
 
@@ -65,6 +66,17 @@ class AcoesViewSetTest(TestCase):
             isvigenciaativa=True
         )
         
+        # ✅ Criar Eixo
+        self.eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ Criar Situação
+        self.situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
         # Criar tipo de entrave
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Crítico'
@@ -76,6 +88,8 @@ class AcoesViewSetTest(TestCase):
             strdescricaoacao='Descrição da Ação 001',
             strdescricaoentrega='Entrega 001',
             idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao,
             idtipoentravealerta=self.tipo_entrave,
             datdataentrega=timezone.now() + timedelta(days=180)
         )
@@ -84,7 +98,9 @@ class AcoesViewSetTest(TestCase):
             strapelido='ACAO-002',
             strdescricaoacao='Descrição da Ação 002',
             strdescricaoentrega='Entrega 002',
-            idvigenciapngi=self.vigencia
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
     
     def test_list_acoes_requires_authentication(self):
@@ -112,7 +128,9 @@ class AcoesViewSetTest(TestCase):
             'strapelido': 'ACAO-003',
             'strdescricaoacao': 'Nova Ação',
             'strdescricaoentrega': 'Nova Entrega',
-            'idvigenciapngi': self.vigencia.idvigenciapngi
+            'idvigenciapngi': self.vigencia.idvigenciapngi,
+            'ideixo': self.eixo.ideixo,
+            'idsituacaoacao': self.situacao.idsituacaoacao
         }
         response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -124,7 +142,9 @@ class AcoesViewSetTest(TestCase):
             'strapelido': 'ACAO-001-UPD',
             'strdescricaoacao': 'Descrição Atualizada',
             'strdescricaoentrega': 'Entrega Atualizada',
-            'idvigenciapngi': self.vigencia.idvigenciapngi
+            'idvigenciapngi': self.vigencia.idvigenciapngi,
+            'ideixo': self.eixo.ideixo,
+            'idsituacaoacao': self.situacao.idsituacaoacao
         }
         response = self.client.put(
             f'/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/',
@@ -168,7 +188,9 @@ class AcoesViewSetTest(TestCase):
             strapelido='ACAO-003',
             strdescricaoacao='Ação 2027',
             strdescricaoentrega='Entrega 2027',
-            idvigenciapngi=vigencia2
+            idvigenciapngi=vigencia2,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
         
         response = self.client.get(
@@ -276,18 +298,32 @@ class AcaoPrazoViewSetTest(TestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência e ação
+        # Criar vigência
         self.vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
             datiniciovigencia=date(2026, 1, 1),
             datfinalvigencia=date(2026, 12, 31)
         )
         
+        # ✅ Criar Eixo
+        self.eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ Criar Situação
+        self.situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
+        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
         
         # Criar prazos
@@ -414,18 +450,32 @@ class AcaoDestaqueViewSetTest(TestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência e ação
+        # Criar vigência
         self.vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
             datiniciovigencia=date(2026, 1, 1),
             datfinalvigencia=date(2026, 12, 31)
         )
         
+        # ✅ Criar Eixo
+        self.eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ Criar Situação
+        self.situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
+        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
         
         # Criar destaques com timezone-aware datetime
