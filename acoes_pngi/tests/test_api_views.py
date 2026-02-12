@@ -215,6 +215,19 @@ class BaseAPITestCase(BaseTestCase):
 
     
     def setup_test_data(self):
+        # Criar Eixo (se não existe)
+        if not hasattr(self, 'eixo') or self.eixo is None:
+            self.eixo = Eixo.objects.create(
+                stralias='E1',
+                strdescricaoeixo='Eixo 1 - Gestão'
+            )
+
+        # Criar SituacaoAcao (se não existe)
+        if not hasattr(self, 'situacao') or self.situacao is None:
+            self.situacao = SituacaoAcao.objects.create(
+                strdescricaosituacao='Em Andamento'
+            )
+
         """
         Override em subclasses para criar dados específicos.
         Ex: vigências, eixos, etc.
@@ -258,6 +271,19 @@ class EixoAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
+        # Criar Eixo (se não existe)
+        if not hasattr(self, 'eixo') or self.eixo is None:
+            self.eixo = Eixo.objects.create(
+                stralias='E1',
+                strdescricaoeixo='Eixo 1 - Gestão'
+            )
+
+        # Criar SituacaoAcao (se não existe)
+        if not hasattr(self, 'situacao') or self.situacao is None:
+            self.situacao = SituacaoAcao.objects.create(
+                strdescricaosituacao='Em Andamento'
+            )
+
         """Cria eixo de teste"""    
     # ------------------------------------------------------------------------
     # COORDENADOR_PNGI - Acesso Total
@@ -463,6 +489,19 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
+        # Criar Eixo (se não existe)
+        if not hasattr(self, 'eixo') or self.eixo is None:
+            self.eixo = Eixo.objects.create(
+                stralias='E1',
+                strdescricaoeixo='Eixo 1 - Gestão'
+            )
+
+        # Criar SituacaoAcao (se não existe)
+        if not hasattr(self, 'situacao') or self.situacao is None:
+            self.situacao = SituacaoAcao.objects.create(
+                strdescricaosituacao='Em Andamento'
+            )
+
         """Cria situação de teste"""    
     # ------------------------------------------------------------------------
     # COORDENADOR_PNGI - Acesso Total
@@ -601,6 +640,19 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
+        # Criar Eixo (se não existe)
+        if not hasattr(self, 'eixo') or self.eixo is None:
+            self.eixo = Eixo.objects.create(
+                stralias='E1',
+                strdescricaoeixo='Eixo 1 - Gestão'
+            )
+
+        # Criar SituacaoAcao (se não existe)
+        if not hasattr(self, 'situacao') or self.situacao is None:
+            self.situacao = SituacaoAcao.objects.create(
+                strdescricaosituacao='Em Andamento'
+            )
+
         """Cria vigência de teste"""        
     
     # ------------------------------------------------------------------------

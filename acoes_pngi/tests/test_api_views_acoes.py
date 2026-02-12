@@ -95,6 +95,19 @@ class BaseAPITestCase(BaseTestCase):
         self.setup_test_data()
     
     def setup_test_data(self):
+        # Criar Eixo (se não existe)
+        if not hasattr(self, 'eixo') or self.eixo is None:
+            self.eixo = Eixo.objects.create(
+                stralias='E1',
+                strdescricaoeixo='Eixo 1 - Gestão'
+            )
+
+        # Criar SituacaoAcao (se não existe)
+        if not hasattr(self, 'situacao') or self.situacao is None:
+            self.situacao = SituacaoAcao.objects.create(
+                strdescricaosituacao='Em Andamento'
+            )
+
         """Override em subclasses"""
         pass
     
@@ -127,6 +140,19 @@ class TipoEntraveAlertaAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
+        # Criar Eixo (se não existe)
+        if not hasattr(self, 'eixo') or self.eixo is None:
+            self.eixo = Eixo.objects.create(
+                stralias='E1',
+                strdescricaoeixo='Eixo 1 - Gestão'
+            )
+
+        # Criar SituacaoAcao (se não existe)
+        if not hasattr(self, 'situacao') or self.situacao is None:
+            self.situacao = SituacaoAcao.objects.create(
+                strdescricaosituacao='Em Andamento'
+            )
+
         """Cria tipo de entrave/alerta de teste"""
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Alerta de Teste'
@@ -549,7 +575,8 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         # ✅ 1. Criar Vigência (necessária para Acao)
         self.vigencia_base = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),        )
+            datiniciovigencia=date(2026, 1, 1,
+            datfinalvigencia=date(2026, 12, 31)),        )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
         eixo = Eixo.objects.create(
@@ -731,7 +758,8 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         # ✅ 1. Criar Vigência (necessária para Acao)
         self.vigencia_base = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),        )
+            datiniciovigencia=date(2026, 1, 1,
+            datfinalvigencia=date(2026, 12, 31)),        )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
         eixo = Eixo.objects.create(

@@ -161,7 +161,8 @@ class AcoesViewSetTest(BaseTestCase):
         # Criar outra vigência e ação
         vigencia2 = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2027',
-            datiniciovigencia=date(2027, 1, 1),
+            datiniciovigencia=date(2027, 1, 1,
+            datfinalvigencia=date(2027, 12, 31)),
             datfinalvigencia=date(2027, 12, 31)
         )
         Acoes.objects.create(

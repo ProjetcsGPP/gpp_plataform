@@ -101,6 +101,19 @@ class BaseAPITestCase(BaseTestCase):
         self.setup_test_data()
     
     def setup_test_data(self):
+        # Criar Eixo (se não existe)
+        if not hasattr(self, 'eixo') or self.eixo is None:
+            self.eixo = Eixo.objects.create(
+                stralias='E1',
+                strdescricaoeixo='Eixo 1 - Gestão'
+            )
+
+        # Criar SituacaoAcao (se não existe)
+        if not hasattr(self, 'situacao') or self.situacao is None:
+            self.situacao = SituacaoAcao.objects.create(
+                strdescricaosituacao='Em Andamento'
+            )
+
         """Override em subclasses"""
         pass
     
@@ -133,6 +146,19 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
+        # Criar Eixo (se não existe)
+        if not hasattr(self, 'eixo') or self.eixo is None:
+            self.eixo = Eixo.objects.create(
+                stralias='E1',
+                strdescricaoeixo='Eixo 1 - Gestão'
+            )
+
+        # Criar SituacaoAcao (se não existe)
+        if not hasattr(self, 'situacao') or self.situacao is None:
+            self.situacao = SituacaoAcao.objects.create(
+                strdescricaosituacao='Em Andamento'
+            )
+
         """Cria tipo de anotação de teste"""
         self.tipo_anotacao = TipoAnotacaoAlinhamento.objects.create(
             strdescricaotipoanotacaoalinhamento='Reunião de Alinhamento'
@@ -511,6 +537,19 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
+        # Criar Eixo (se não existe)
+        if not hasattr(self, 'eixo') or self.eixo is None:
+            self.eixo = Eixo.objects.create(
+                stralias='E1',
+                strdescricaoeixo='Eixo 1 - Gestão'
+            )
+
+        # Criar SituacaoAcao (se não existe)
+        if not hasattr(self, 'situacao') or self.situacao is None:
+            self.situacao = SituacaoAcao.objects.create(
+                strdescricaosituacao='Em Andamento'
+            )
+
         """Cria TODOS relacionamentos necessários - simula ambiente real"""
         
         # ✅ 1. Criar User (OBRIGATÓRIO para UsuarioResponsavel)

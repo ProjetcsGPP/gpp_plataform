@@ -61,7 +61,8 @@ class VigenciaPNGIModelTest(BaseTestCase):
         """Teste de criação de vigência"""
         vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi="PNGI 2027",
-            datiniciovigencia=date(2027, 1, 1),
+            datiniciovigencia=date(2027, 1, 1,
+            datfinalvigencia=date(2027, 12, 31)),
             datfinalvigencia=date(2027, 12, 31),
             isvigenciaativa=False
         )
@@ -73,7 +74,8 @@ class VigenciaPNGIModelTest(BaseTestCase):
         # Criar primeira vigência ativa
         vig1 = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi="PNGI 2027-A",
-            datiniciovigencia=date(2027, 1, 1),
+            datiniciovigencia=date(2027, 1, 1,
+            datfinalvigencia=date(2027, 12, 31)),
             datfinalvigencia=date(2027, 12, 31),
             isvigenciaativa=True
         )
@@ -82,7 +84,8 @@ class VigenciaPNGIModelTest(BaseTestCase):
         # Criar segunda vigência ativa
         vig2 = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi="PNGI 2028",
-            datiniciovigencia=date(2028, 1, 1),
+            datiniciovigencia=date(2028, 1, 1,
+            datfinalvigencia=date(2028, 12, 31)),
             datfinalvigencia=date(2028, 12, 31),
             isvigenciaativa=True
         )
