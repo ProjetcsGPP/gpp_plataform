@@ -487,7 +487,7 @@ class AcoesWebViewsTests(BaseWebTestCase):
             strdescricaoacao='Ação Teste Web',
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao
+            idsituacaoacao=self.situacao_base
         )
     
     def test_coordenador_can_list_acoes(self):
