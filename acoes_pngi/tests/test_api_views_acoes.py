@@ -362,7 +362,10 @@ class AcoesAPITests(BaseAPITestCase):
         acao_temp = Acoes.objects.create(
             strapelido='ACAO-TEMP',
             strdescricaoacao='Temporária',
-            idvigenciapngi=self.vigencia  # OBRIGATÓRIO
+            strdescricaoentrega='Entrega Temp',
+            idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
+            ideixo=self.eixo,              # Adicionar para consistência
+            idsituacaoacao=self.situacao   # Adicionar para consistência
         )
         
         self.authenticate_as('coordenador')
@@ -386,7 +389,10 @@ class AcoesAPITests(BaseAPITestCase):
         data = {
             'strapelido': 'ACAO-GEST-001',
             'strdescricaoacao': 'Ação do Gestor',
-            'idvigenciapngi': self.vigencia.idvigenciapngi
+            'strdescricaoentrega': 'Entrega Gestor',
+            'idvigenciapngi': self.vigencia.idvigenciapngi,
+            'ideixo': self.eixo.ideixo,
+            'idsituacaoacao': self.situacao.idsituacaoacao
         }
         response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -408,7 +414,10 @@ class AcoesAPITests(BaseAPITestCase):
         data = {
             'strapelido': 'ACAO-OPER-001',
             'strdescricaoacao': 'Ação do Operador',
-            'idvigenciapngi': self.vigencia.idvigenciapngi
+            'strdescricaoentrega': 'Entrega Operador',
+            'idvigenciapngi': self.vigencia.idvigenciapngi,
+            'ideixo': self.eixo.ideixo,
+            'idsituacaoacao': self.situacao.idsituacaoacao
         }
         response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -429,7 +438,10 @@ class AcoesAPITests(BaseAPITestCase):
         acao_temp = Acoes.objects.create(
             strapelido='ACAO-DEL-OPER',
             strdescricaoacao='Para Deletar',
-            idvigenciapngi=self.vigencia
+            strdescricaoentrega='Entrega Del',
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,              # Adicionar para consistência
+            idsituacaoacao=self.situacao   # Adicionar para consistência
         )
         
         self.authenticate_as('operador')
@@ -459,7 +471,10 @@ class AcoesAPITests(BaseAPITestCase):
         data = {
             'strapelido': 'ACAO-CONS',
             'strdescricaoacao': 'Tentativa Consultor',
-            'idvigenciapngi': self.vigencia.idvigenciapngi
+            'strdescricaoentrega': 'Entrega Consultor',
+            'idvigenciapngi': self.vigencia.idvigenciapngi,
+            'ideixo': self.eixo.ideixo,
+            'idsituacaoacao': self.situacao.idsituacaoacao
         }
         response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -490,7 +505,8 @@ class AcoesAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         data = {
             'strapelido': 'ACAO-SEM-VIG',
-            'strdescricaoacao': 'Sem Vigência'
+            'strdescricaoacao': 'Sem Vigência',
+            'strdescricaoentrega': 'Sem Vigência'
             # Sem idvigenciapngi - DEVE FALHAR
         }
         response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
@@ -552,14 +568,28 @@ class AcaoPrazoAPITests(BaseAPITestCase):
             datfinalvigencia=date(2026, 12, 31)
         )
         
-        # ✅ 2. Criar Acao COMPLETA (AcaoPrazo.idacao é obrigatório)
+        # ✅ 2. Criar Eixo (opcional mas comum)
+        eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ 3. Criar Situação (opcional mas comum)
+        situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
+        # ✅ 4. Criar Acao COMPLETA (AcaoPrazo.idacao é obrigatório)
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
-            idvigenciapngi=vigencia  # OBRIGATÓRIO
+            strdescricaoentrega='Entrega Teste',
+            idvigenciapngi=vigencia,  # OBRIGATÓRIO
+            ideixo=eixo,              # Adicionar para consistência
+            idsituacaoacao=situacao   # Adicionar para consistência
         )
         
-        # ✅ 3. Criar Prazo vinculado à Acao
+        # ✅ 5. Criar Prazo vinculado à Acao
         self.prazo = AcaoPrazo.objects.create(
             idacao=self.acao,  # OBRIGATÓRIO
             strprazo='2026-06-30',
@@ -722,14 +752,28 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
             datfinalvigencia=date(2026, 12, 31)
         )
         
-        # ✅ 2. Criar Acao COMPLETA (AcaoDestaque.idacao é obrigatório)
+        # ✅ 2. Criar Eixo (opcional mas comum)
+        eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ 3. Criar Situação (opcional mas comum)
+        situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
+        # ✅ 4. Criar Acao COMPLETA (AcaoDestaque.idacao é obrigatório)
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
-            idvigenciapngi=vigencia  # OBRIGATÓRIO
+            strdescricaoentrega='Entrega Teste',
+            idvigenciapngi=vigencia,  # OBRIGATÓRIO
+            ideixo=eixo,              # Adicionar para consistência
+            idsituacaoacao=situacao   # Adicionar para consistência
         )
         
-        # ✅ 3. Criar Destaque vinculado à Acao
+        # ✅ 5. Criar Destaque vinculado à Acao
         self.destaque = AcaoDestaque.objects.create(
             idacao=self.acao,  # OBRIGATÓRIO
             datdatadestaque=timezone.now()
