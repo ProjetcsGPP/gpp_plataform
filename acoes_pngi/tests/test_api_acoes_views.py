@@ -9,6 +9,7 @@ Testa os ViewSets:
 """
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -26,7 +27,7 @@ from ..models import (
 User = get_user_model()
 
 
-class AcoesViewSetTest(TestCase):
+class AcoesViewSetTest(BaseTestCase):
     """Testes para AcoesViewSet"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -59,23 +60,16 @@ class AcoesViewSetTest(TestCase):
         self.client.force_authenticate(user=self.user)
         
         # Criar vigência
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31),
             isvigenciaativa=True
         )
         
         # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # Criar tipo de entrave
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
@@ -267,7 +261,7 @@ class AcoesViewSetTest(TestCase):
         self.assertEqual(len(response.data), 1)
 
 
-class AcaoPrazoViewSetTest(TestCase):
+class AcaoPrazoViewSetTest(BaseTestCase):
     """Testes para AcaoPrazoViewSet"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -299,22 +293,15 @@ class AcaoPrazoViewSetTest(TestCase):
         self.client.force_authenticate(user=self.user)
         
         # Criar vigência
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31)
         )
         
         # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # Criar ação
         self.acao = Acoes.objects.create(
@@ -419,7 +406,7 @@ class AcaoPrazoViewSetTest(TestCase):
         self.assertEqual(response.data[0]['strprazo'], 'Q1 2026')
 
 
-class AcaoDestaqueViewSetTest(TestCase):
+class AcaoDestaqueViewSetTest(BaseTestCase):
     """Testes para AcaoDestaqueViewSet"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -451,22 +438,15 @@ class AcaoDestaqueViewSetTest(TestCase):
         self.client.force_authenticate(user=self.user)
         
         # Criar vigência
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31)
         )
         
         # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # Criar ação
         self.acao = Acoes.objects.create(

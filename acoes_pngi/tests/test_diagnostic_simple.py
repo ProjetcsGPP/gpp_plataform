@@ -4,6 +4,7 @@ Teste diagnóstico simples sem imports complexos.
 """
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from django.urls import resolve, get_resolver
 from django.conf import settings
@@ -17,7 +18,7 @@ from ..models import Acoes, VigenciaPNGI
 User = get_user_model()
 
 
-class SimpleDiagnosticTest(TestCase):
+class SimpleDiagnosticTest(BaseTestCase):
     """Teste diagnóstico ultra simples"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -47,9 +48,7 @@ class SimpleDiagnosticTest(TestCase):
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
         # Criar vigência e ação
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31)
         )
         
@@ -57,8 +56,9 @@ class SimpleDiagnosticTest(TestCase):
             strapelido='ACAO-SIMPLE',
             strdescricaoacao='Ação Simples',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia
-        )
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base)
     
     def test_url_resolution(self):
         """Verifica se as URLs podem ser resolvidas"""

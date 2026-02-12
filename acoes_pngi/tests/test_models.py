@@ -5,6 +5,7 @@ Testa validações, métodos e relacionamentos dos modelos.
 
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from datetime import date, timedelta
@@ -24,7 +25,7 @@ User = get_user_model()
 
 
 
-class EixoModelTest(TestCase):
+class EixoModelTest(BaseTestCase):
     """Testes do modelo Eixo"""
     
     def test_create_eixo(self):
@@ -53,7 +54,7 @@ class EixoModelTest(TestCase):
 
 
 
-class VigenciaPNGIModelTest(TestCase):
+class VigenciaPNGIModelTest(BaseTestCase):
     """Testes do modelo VigenciaPNGI"""
     
     def test_create_vigencia(self):
@@ -149,14 +150,12 @@ class VigenciaPNGIModelTest(TestCase):
 
 
 
-class AcoesModelTest(TestCase):
+class AcoesModelTest(BaseTestCase):
     """Testes do modelo Acoes"""
     
     def setUp(self):
         """Setup inicial para testes"""
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi="PNGI 2026",
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31),
             isvigenciaativa=True
         )
@@ -166,15 +165,10 @@ class AcoesModelTest(TestCase):
         )
         
         # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
     
     def test_create_acao(self):
         """Teste de criação de ação"""
@@ -205,7 +199,7 @@ class AcoesModelTest(TestCase):
 
 
 
-class AcaoPrazoModelTest(TestCase):
+class AcaoPrazoModelTest(BaseTestCase):
     """Testes do modelo AcaoPrazo"""
     
     def setUp(self):
@@ -269,7 +263,7 @@ class AcaoPrazoModelTest(TestCase):
 
 
 
-class UsuarioResponsavelModelTest(TestCase):
+class UsuarioResponsavelModelTest(BaseTestCase):
     """Testes do modelo UsuarioResponsavel"""
     
     def setUp(self):
@@ -313,7 +307,7 @@ class UsuarioResponsavelModelTest(TestCase):
 
 
 
-class RelacaoAcaoUsuarioResponsavelModelTest(TestCase):
+class RelacaoAcaoUsuarioResponsavelModelTest(BaseTestCase):
     """Testes do modelo RelacaoAcaoUsuarioResponsavel"""
     
     def setUp(self):

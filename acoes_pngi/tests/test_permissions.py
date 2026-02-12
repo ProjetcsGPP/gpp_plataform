@@ -23,7 +23,8 @@ Regras de Negócio:
 - Leitura: todas as 4 roles
 """
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase, RequestFactory
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
@@ -41,7 +42,7 @@ from ..permissions import (
 User = get_user_model()
 
 
-class BasePermissionTestCase(TestCase):
+class BasePermissionTestCase(BaseTestCase):
     """Classe base para testes de permissões"""
     
     databases = {'default', 'gpp_plataform_db'}

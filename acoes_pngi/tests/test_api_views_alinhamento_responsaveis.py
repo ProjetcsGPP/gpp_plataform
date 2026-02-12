@@ -20,6 +20,7 @@ Testa relacionamentos complexos:
 """
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -36,7 +37,7 @@ from ..models import (
 User = get_user_model()
 
 
-class BaseAPITestCase(TestCase):
+class BaseAPITestCase(BaseTestCase):
     """Classe base reutilizável para testes de API"""
     
     databases = {'default', 'gpp_plataform_db'}

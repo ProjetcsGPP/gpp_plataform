@@ -15,6 +15,7 @@ Cobre as 4 roles hierárquicas com validações específicas:
 """
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -30,7 +31,7 @@ from ..models import (
 User = get_user_model()
 
 
-class BaseAPITestCase(TestCase):
+class BaseAPITestCase(BaseTestCase):
     """Classe base reutilizável para testes de API"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -282,23 +283,16 @@ class AcoesAPITests(BaseAPITestCase):
         """Cria dados COMPLETOS necessários para ações - simula ambiente real"""
         
         # ✅ 1. Criar Vigência (OBRIGATÓRIO para Acao)
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31),
             isvigenciaativa=True
         )
         
         # ✅ 2. Criar Eixo (OPCIONAL, mas usado na prática)
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # ✅ 3. Criar Situação (OPCIONAL, mas usado na prática)
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # ✅ 4. Criar Tipo Entrave (OPCIONAL)
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
@@ -311,7 +305,8 @@ class AcoesAPITests(BaseAPITestCase):
             strdescricaoacao='Ação de Teste',
             strdescricaoentrega='Entrega de Teste',
             idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
-            ideixo=self.eixo,              # OPCIONAL (mas comum)
+            ideixo=self.eixo,              # OPCIONAL (mas comum,
+            idsituacaoacao=self.situacao_base)
             idsituacaoacao=self.situacao,  # OPCIONAL (mas comum)
             idtipoentravealerta=self.tipo_entrave,  # OPCIONAL
             datdataentrega=date(2026, 6, 30)

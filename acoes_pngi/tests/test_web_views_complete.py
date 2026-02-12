@@ -11,7 +11,8 @@ NOTA: Segue o padrão de test_views.py que funciona.
 Aceita múltiplos status codes porque templates podem não existir.
 """
 
-from django.test import TestCase, Client
+from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase, Client
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from datetime import date
@@ -23,7 +24,7 @@ from ..models import Eixo, SituacaoAcao, VigenciaPNGI
 User = get_user_model()
 
 
-class EixoCRUDWebViewTests(TestCase):
+class EixoCRUDWebViewTests(BaseTestCase):
     """Testes completos de CRUD de Eixos"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -55,10 +56,7 @@ class EixoCRUDWebViewTests(TestCase):
         self.client.login(email='coord@test.com', password='test123')
         
         # Criar eixo para testes
-        self.eixo = Eixo.objects.create(
-            strdescricaoeixo='Eixo Teste',
-            stralias='TESTE'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
     
     def test_eixo_list_requires_login(self):
         """Lista de eixos requer login"""
@@ -191,7 +189,7 @@ class EixoCRUDWebViewTests(TestCase):
             pass
 
 
-class VigenciaCRUDWebViewTests(TestCase):
+class VigenciaCRUDWebViewTests(BaseTestCase):
     """Testes completos de CRUD de Vigências"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -219,9 +217,7 @@ class VigenciaCRUDWebViewTests(TestCase):
         
         self.client.login(email='coord@test.com', password='test123')
         
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31),
             isvigenciaativa=False
         )
@@ -324,7 +320,7 @@ class VigenciaCRUDWebViewTests(TestCase):
             pass
 
 
-class SituacaoAcaoCRUDWebViewTests(TestCase):
+class SituacaoAcaoCRUDWebViewTests(BaseTestCase):
     """Testes completos de CRUD de Situações de Ação"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -352,7 +348,7 @@ class SituacaoAcaoCRUDWebViewTests(TestCase):
         
         self.client.login(email='coord@test.com', password='test123')
         
-        self.situacao = SituacaoAcao.objects.create(strdescricaosituacao='Situação Teste')
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
     
     def test_situacao_list_requires_login(self):
         """Lista de situações requer login"""

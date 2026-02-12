@@ -17,7 +17,8 @@ Cobre:
 - Context data e permissões no template
 """
 
-from django.test import TestCase, Client
+from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from datetime import date
@@ -34,7 +35,7 @@ from ..models import (
 User = get_user_model()
 
 
-class BaseWebTestCase(TestCase):
+class BaseWebTestCase(BaseTestCase):
     """Classe base para testes de views web"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -166,10 +167,7 @@ class EixoWebViewsTests(BaseWebTestCase):
     
     def setup_test_data(self):
         """Cria eixo de teste"""
-        self.eixo = Eixo.objects.create(
-            strdescricaoeixo='Eixo Teste Web',
-            stralias='TWEB'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
     
     # ------------------------------------------------------------------------
     # COORDENADOR - Acesso Total
@@ -392,9 +390,7 @@ class VigenciaWebViewsTests(BaseWebTestCase):
     
     def setup_test_data(self):
         """Cria vigência de teste"""
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026 Web',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31),
             isvigenciaativa=False
         )
@@ -492,22 +488,15 @@ class AcoesWebViewsTests(BaseWebTestCase):
     
     def setup_test_data(self):
         """Cria vigência e ação de teste"""
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31)
         )
         
         # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         self.acao = Acoes.objects.create(
             strapelido='ACAO-WEB-001',

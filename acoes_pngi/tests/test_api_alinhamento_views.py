@@ -8,6 +8,7 @@ Testa os ViewSets:
 """
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -27,7 +28,7 @@ from ..models import (
 User = get_user_model()
 
 
-class TipoAnotacaoAlinhamentoViewSetTest(TestCase):
+class TipoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
     """Testes para TipoAnotacaoAlinhamentoViewSet"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -179,7 +180,7 @@ class TipoAnotacaoAlinhamentoViewSetTest(TestCase):
         )
 
 
-class AcaoAnotacaoAlinhamentoViewSetTest(TestCase):
+class AcaoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
     """Testes para AcaoAnotacaoAlinhamentoViewSet"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -212,22 +213,15 @@ class AcaoAnotacaoAlinhamentoViewSetTest(TestCase):
         self.client.force_authenticate(user=self.user)
         
         # Criar vigência
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31)
         )
         
         # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
         
         # Criar ações
         self.acao1 = Acoes.objects.create(

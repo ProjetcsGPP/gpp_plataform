@@ -3,7 +3,8 @@ Testes para Context Processors de Ações PNGI
 Cobertura: 100%
 """
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase, RequestFactory
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
@@ -19,7 +20,7 @@ from accounts.models import Aplicacao
 User = get_user_model()
 
 
-class AcoesPermissionsContextTest(TestCase):
+class AcoesPermissionsContextTest(BaseTestCase):
     """Testes para a função acoes_permissions()"""
     
     def setUp(self):
@@ -77,7 +78,7 @@ class AcoesPermissionsContextTest(TestCase):
             self.assertIn('delete', model)
 
 
-class AcoesPNGIContextTest(TestCase):
+class AcoesPNGIContextTest(BaseTestCase):
     """Testes para a função acoes_pngi_context()"""
     
     def setUp(self):
@@ -182,7 +183,7 @@ class AcoesPNGIContextTest(TestCase):
             self.assertTrue(roles[0]['is_active'])
 
 
-class AcoesPNGIModelsContextTest(TestCase):
+class AcoesPNGIModelsContextTest(BaseTestCase):
     """Testes para a função acoes_pngi_models_context()"""
     
     def setUp(self):
@@ -239,7 +240,7 @@ class AcoesPNGIModelsContextTest(TestCase):
         self.assertEqual(eixo_info['app_label'], 'acoes_pngi')
 
 
-class IntegrationTest(TestCase):
+class IntegrationTest(BaseTestCase):
     """Testes de integração de todos os context processors"""
     
     def setUp(self):
@@ -297,7 +298,7 @@ class IntegrationTest(TestCase):
             self.fail(f"Context processor lançou exceção: {str(e)}")
 
 
-class EdgeCaseTest(TestCase):
+class EdgeCaseTest(BaseTestCase):
     """Testes de casos extremos"""
     
     def setUp(self):

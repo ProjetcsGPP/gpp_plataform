@@ -10,6 +10,7 @@ Cobre todos os endpoints de contexto:
 """
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.utils import timezone
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -21,7 +22,7 @@ from ..models import Eixo, SituacaoAcao, VigenciaPNGI
 User = get_user_model()
 
 
-class BaseContextAPITestCase(TestCase):
+class BaseContextAPITestCase(BaseTestCase):
     """Classe base para testes de Context API"""
     
     databases = {'default', 'gpp_plataform_db'}

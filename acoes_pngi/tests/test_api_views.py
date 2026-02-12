@@ -14,6 +14,7 @@ Cobre:
 """
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission
@@ -34,7 +35,7 @@ from ..models import (
 User = get_user_model()
 
 
-class BaseAPITestCase(TestCase):
+class BaseAPITestCase(BaseTestCase):
     """
     Classe base para testes de API com setup de roles e autenticação.
     
@@ -258,10 +259,7 @@ class EixoAPITests(BaseAPITestCase):
     
     def setup_test_data(self):
         """Cria eixo de teste"""
-        self.eixo = Eixo.objects.create(
-            strdescricaoeixo='Eixo Teste Base',
-            stralias='TESTE'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
     
     # ------------------------------------------------------------------------
     # COORDENADOR_PNGI - Acesso Total
@@ -468,9 +466,7 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
     
     def setup_test_data(self):
         """Cria situação de teste"""
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='EM_ANDAMENTO'
-        )
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base
     
     # ------------------------------------------------------------------------
     # COORDENADOR_PNGI - Acesso Total
@@ -610,9 +606,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
     
     def setup_test_data(self):
         """Cria vigência de teste"""
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31),
             isvigenciaativa=False
         )

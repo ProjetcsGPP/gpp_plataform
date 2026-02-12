@@ -9,7 +9,8 @@ Verifica:
 4. Acesso direto às views
 """
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase, override_settings
 from django.contrib.auth import get_user_model
 from django.urls import resolve, reverse, get_resolver
 from django.conf import settings
@@ -25,7 +26,7 @@ from ..views.api_views import AcoesViewSet
 User = get_user_model()
 
 
-class DiagnosticAPITest(TestCase):
+class DiagnosticAPITest(BaseTestCase):
     """Teste diagnóstico para identificar problema 404"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -56,9 +57,7 @@ class DiagnosticAPITest(TestCase):
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
         # Criar vigência e ação
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
             datfinalvigencia=date(2026, 12, 31)
         )
         
@@ -66,8 +65,9 @@ class DiagnosticAPITest(TestCase):
             strapelido='ACAO-DIAG',
             strdescricaoacao='Ação Diagnóstica',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia
-        )
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base)
     
     def test_01_urlconf_loaded(self):
         """1. Verificar se URLconf está carregada"""

@@ -3,6 +3,7 @@ Testes dos serializers de Acoes PNGI.
 """
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from acoes_pngi.models import Eixo, SituacaoAcao, VigenciaPNGI
 from acoes_pngi.serializers import (
     EixoSerializer,
@@ -13,7 +14,7 @@ from datetime import date
 from django.utils import timezone
 
 
-class EixoSerializerTest(TestCase):
+class EixoSerializerTest(BaseTestCase):
     """Testes do EixoSerializer"""
     
     # Precisa de ambos databases: default para User e gpp_plataform_db para Eixo
@@ -47,7 +48,7 @@ class EixoSerializerTest(TestCase):
         self.assertEqual(eixo.strdescricaoeixo, 'Transformação Digital')
 
 
-class VigenciaPNGISerializerTest(TestCase):
+class VigenciaPNGISerializerTest(BaseTestCase):
     """Testes do VigenciaPNGISerializer"""
     
     # Precisa de ambos databases
