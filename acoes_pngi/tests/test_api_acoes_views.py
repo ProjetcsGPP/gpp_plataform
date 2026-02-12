@@ -80,7 +80,7 @@ class AcoesViewSetTest(BaseTestCase):
             strdescricaoentrega='Entrega 002',
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao
+            idsituacaoacao=self.situacao_base
         )
     
     def test_list_acoes_requires_authentication(self):
@@ -108,9 +108,9 @@ class AcoesViewSetTest(BaseTestCase):
             'strapelido': 'ACAO-003',
             'strdescricaoacao': 'Nova Ação',
             'strdescricaoentrega': 'Nova Entrega',
-            'idvigenciapngi': self.vigencia.idvigenciapngi,
-            'ideixo': self.eixo.ideixo,
-            'idsituacaoacao': self.situacao.idsituacaoacao
+            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
+            'ideixo': self.eixo_base.ideixo,
+            'idsituacaoacao': self.situacao_base.idsituacaoacao
         }
         response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -122,9 +122,9 @@ class AcoesViewSetTest(BaseTestCase):
             'strapelido': 'ACAO-001-UPD',
             'strdescricaoacao': 'Descrição Atualizada',
             'strdescricaoentrega': 'Entrega Atualizada',
-            'idvigenciapngi': self.vigencia.idvigenciapngi,
-            'ideixo': self.eixo.ideixo,
-            'idsituacaoacao': self.situacao.idsituacaoacao
+            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
+            'ideixo': self.eixo_base.ideixo,
+            'idsituacaoacao': self.situacao_base.idsituacaoacao
         }
         response = self.client.put(
             f'/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/',
@@ -168,11 +168,11 @@ class AcoesViewSetTest(BaseTestCase):
             strdescricaoentrega='Entrega 2027',
             idvigenciapngi=vigencia2,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao
+            idsituacaoacao=self.situacao_base
         )
         
         response = self.client.get(
-            f'/api/v1/acoes_pngi/acoes/?idvigenciapngi={self.vigencia.idvigenciapngi}'
+            f'/api/v1/acoes_pngi/acoes/?idvigenciapngi={self.vigencia_base.idvigenciapngi}'
         )
         results = getattr(response.data, 'results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -283,7 +283,7 @@ class AcaoPrazoViewSetTest(BaseTestCase):
             strdescricaoentrega='Entrega',
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao
+            idsituacaoacao=self.situacao_base
         )
         
         # Criar prazos
@@ -417,7 +417,7 @@ class AcaoDestaqueViewSetTest(BaseTestCase):
             strdescricaoentrega='Entrega',
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao
+            idsituacaoacao=self.situacao_base
         )
         
         # Criar destaques com timezone-aware datetime

@@ -284,7 +284,7 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
             strdescricaoentrega='Entrega 1',
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao
+            idsituacaoacao=self.situacao_base
         )
         
         self.acao2 = Acoes.objects.create(
@@ -293,7 +293,7 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
             strdescricaoentrega='Entrega 2',
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao
+            idsituacaoacao=self.situacao_base
         )
         
         # Criar usuários responsáveis
