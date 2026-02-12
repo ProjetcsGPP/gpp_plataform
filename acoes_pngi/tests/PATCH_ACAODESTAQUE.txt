@@ -1,0 +1,164 @@
+# PATCH PARA CORRIGIR test_api_views_acoes.py
+# AcaoDestaque - Remover campos inexistentes
+
+## 1. ADICIONAR IMPORT (linha ~19)
+
+### ANTES:
+from datetime import date, timedelta
+
+### DEPOIS:
+from datetime import date, timedelta
+from django.utils import timezone
+
+---
+
+## 2. CORRIGIR setup_test_data (linha ~695)
+
+### ANTES:
+        self.destaque = AcaoDestaque.objects.create(
+            idacao=self.acao,
+            strdescricaodestaque='Destaque Importante',
+            ordenacao=1
+        )
+
+### DEPOIS:
+        self.destaque = AcaoDestaque.objects.create(
+            idacao=self.acao,
+            datdatadestaque=timezone.now()
+        )
+
+---
+
+## 3. CORRIGIR test_coordenador_can_create_destaque (linha ~713)
+
+### ANTES:
+        data = {
+            'idacao': self.acao.idacao,
+            'strdescricaodestaque': 'Novo Destaque',
+            'ordenacao': 2
+        }
+
+### DEPOIS:
+        data = {
+            'idacao': self.acao.idacao,
+            'datdatadestaque': timezone.now().isoformat()
+        }
+
+---
+
+## 4. CORRIGIR test_coordenador_can_update_destaque (linha ~721)
+
+### ANTES:
+        data = {'strdescricaodestaque': 'Destaque Atualizado'}
+
+### DEPOIS:
+        data = {'datdatadestaque': timezone.now().isoformat()}
+
+---
+
+## 5. CORRIGIR test_coordenador_can_delete_destaque (linha ~731)
+
+### ANTES:
+        destaque_temp = AcaoDestaque.objects.create(
+            idacao=self.acao,
+            strdescricaodestaque='Temporário',
+            ordenacao=3
+        )
+
+### DEPOIS:
+        destaque_temp = AcaoDestaque.objects.create(
+            idacao=self.acao,
+            datdatadestaque=timezone.now()
+        )
+
+---
+
+## 6. CORRIGIR test_operador_can_manage_destaques (linha ~757)
+
+### ANTES:
+        data = {
+            'idacao': self.acao.idacao,
+            'strdescricaodestaque': 'Destaque Operador',
+            'ordenacao': 4
+        }
+
+### DEPOIS:
+        data = {
+            'idacao': self.acao.idacao,
+            'datdatadestaque': timezone.now().isoformat()
+        }
+
+---
+
+## 7. CORRIGIR test_consultor_cannot_create_destaque (linha ~779)
+
+### ANTES:
+        data = {
+            'idacao': self.acao.idacao,
+            'strdescricaodestaque': 'Tentativa Consultor',
+            'ordenacao': 5
+        }
+
+### DEPOIS:
+        data = {
+            'idacao': self.acao.idacao,
+            'datdatadestaque': timezone.now().isoformat()
+        }
+
+---
+
+## 8. CORRIGIR test_destaques_ordered_by_ordenacao (linha ~798)
+
+### ANTES:
+        # Criar mais destaques com diferentes ordenações
+        AcaoDestaque.objects.create(
+            idacao=self.acao,
+            strdescricaodestaque='Destaque 2',
+            ordenacao=2
+        )
+        AcaoDestaque.objects.create(
+            idacao=self.acao,
+            strdescricaodestaque='Destaque 3',
+            ordenacao=3
+        )
+        
+        self.authenticate_as('consultor')
+        response = self.client.get('/api/v1/acoes_pngi/destaques/?ordering=ordenacao')
+
+### DEPOIS:
+        # Criar mais destaques com datas diferentes para ordenação
+        AcaoDestaque.objects.create(
+            idacao=self.acao,
+            datdatadestaque=timezone.now() + timedelta(days=1)
+        )
+        AcaoDestaque.objects.create(
+            idacao=self.acao,
+            datdatadestaque=timezone.now() + timedelta(days=2)
+        )
+        
+        self.authenticate_as('consultor')
+        response = self.client.get('/api/v1/acoes_pngi/destaques/?ordering=-datdatadestaque')
+
+---
+
+## 9. OPCIONAL: Renomear teste (linha ~797)
+
+### ANTES:
+    def test_destaques_ordered_by_ordenacao(self):
+        """Destaques devem vir ordenados por campo ordenacao"""
+
+### DEPOIS:
+    def test_destaques_ordered_by_data(self):
+        """Destaques devem vir ordenados por data de destaque (mais recente primeiro)"""
+
+---
+
+## RESUMO DAS MUDANÇAS:
+
+1. ✅ Adicionar import: `from django.utils import timezone`
+2. ✅ Remover TODOS os usos de `strdescricaodestaque` (campo não existe)
+3. ✅ Remover TODOS os usos de `ordenacao` (campo não existe)
+4. ✅ Usar `datdatadestaque=timezone.now()` ou `.isoformat()` para API
+5. ✅ Alterar ordenação de `?ordering=ordenacao` para `?ordering=-datdatadestaque`
+
+## TOTAL: 8 correções no arquivo test_api_views_acoes.py
