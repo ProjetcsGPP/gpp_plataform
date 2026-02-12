@@ -265,8 +265,10 @@ class AcoesAPITests(BaseAPITestCase):
     - CONSULTOR: apenas leitura
     
     Testa relacionamentos:
-    - idvigenciapngi (ForeignKey)
-    - idtipoentravealerta (ForeignKey)
+    - idvigenciapngi (ForeignKey) - OBRIGATÓRIO
+    - idtipoentravealerta (ForeignKey) - OPCIONAL
+    - ideixo (ForeignKey) - OPCIONAL
+    - idsituacaoacao (ForeignKey) - OPCIONAL
     
     Endpoints testados:
     - GET    /api/v1/acoes_pngi/acoes/
@@ -277,8 +279,9 @@ class AcoesAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        """Cria dados necessários para ações"""
-        # Vigência
+        """Cria dados COMPLETOS necessários para ações - simula ambiente real"""
+        
+        # ✅ 1. Criar Vigência (OBRIGATÓRIO para Acao)
         self.vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
             datiniciovigencia=date(2026, 1, 1),
@@ -286,18 +289,31 @@ class AcoesAPITests(BaseAPITestCase):
             isvigenciaativa=True
         )
         
-        # Tipo Entrave
+        # ✅ 2. Criar Eixo (OPCIONAL, mas usado na prática)
+        self.eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ 3. Criar Situação (OPCIONAL, mas usado na prática)
+        self.situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
+        # ✅ 4. Criar Tipo Entrave (OPCIONAL)
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Alerta Teste'
         )
         
-        # Ação base
+        # ✅ 5. Criar Ação COMPLETA com TODOS relacionamentos
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação de Teste',
             strdescricaoentrega='Entrega de Teste',
-            idvigenciapngi=self.vigencia,
-            idtipoentravealerta=self.tipo_entrave,
+            idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
+            ideixo=self.eixo,              # OPCIONAL (mas comum)
+            idsituacaoacao=self.situacao,  # OPCIONAL (mas comum)
+            idtipoentravealerta=self.tipo_entrave,  # OPCIONAL
             datdataentrega=date(2026, 6, 30)
         )
     
@@ -310,6 +326,8 @@ class AcoesAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         response = self.client.get('/api/v1/acoes_pngi/acoes/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # ✅ Verifica que retorna dados (não vazio)
+        self.assertGreater(len(response.data['results']), 0)
     
     def test_coordenador_can_create_acao(self):
         """COORDENADOR_PNGI pode criar ação"""
@@ -319,6 +337,8 @@ class AcoesAPITests(BaseAPITestCase):
             'strdescricaoacao': 'Nova Ação do Coordenador',
             'strdescricaoentrega': 'Entrega Coordenador',
             'idvigenciapngi': self.vigencia.idvigenciapngi,
+            'ideixo': self.eixo.ideixo,
+            'idsituacaoacao': self.situacao.idsituacaoacao,
             'idtipoentravealerta': self.tipo_entrave.idtipoentravealerta,
             'datdataentrega': '2026-08-30'
         }
@@ -342,7 +362,7 @@ class AcoesAPITests(BaseAPITestCase):
         acao_temp = Acoes.objects.create(
             strapelido='ACAO-TEMP',
             strdescricaoacao='Temporária',
-            idvigenciapngi=self.vigencia
+            idvigenciapngi=self.vigencia  # OBRIGATÓRIO
         )
         
         self.authenticate_as('coordenador')
@@ -360,6 +380,7 @@ class AcoesAPITests(BaseAPITestCase):
         # LIST
         response = self.client.get('/api/v1/acoes_pngi/acoes/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
         
         # CREATE
         data = {
@@ -379,6 +400,7 @@ class AcoesAPITests(BaseAPITestCase):
         self.authenticate_as('operador')
         response = self.client.get('/api/v1/acoes_pngi/acoes/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
     
     def test_operador_can_create_acao(self):
         """OPERADOR_ACAO PODE criar ação (não é configuração)"""
@@ -423,6 +445,7 @@ class AcoesAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/acoes/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
     
     def test_consultor_can_retrieve_acao(self):
         """CONSULTOR_PNGI pode buscar ação específica"""
@@ -463,18 +486,17 @@ class AcoesAPITests(BaseAPITestCase):
     # ------------------------------------------------------------------------
     
     def test_acao_requires_vigencia(self):
-        """Ação requer vigência (ForeignKey)"""
+        """Ação requer vigência (ForeignKey OBRIGATÓRIO)"""
         self.authenticate_as('coordenador')
         data = {
             'strapelido': 'ACAO-SEM-VIG',
             'strdescricaoacao': 'Sem Vigência'
-            # Sem idvigenciapngi
+            # Sem idvigenciapngi - DEVE FALHAR
         }
         response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
-        # Pode ser 400 (bad request) dependendo da configuração do serializer
+        # Deve retornar erro de validação
         self.assertIn(response.status_code, [
-            status.HTTP_400_BAD_REQUEST,
-            status.HTTP_201_CREATED  # Se vigência é opcional
+            status.HTTP_400_BAD_REQUEST,  # Validação do serializer
         ])
     
     def test_acao_with_filters(self):
@@ -486,10 +508,12 @@ class AcoesAPITests(BaseAPITestCase):
             f'/api/v1/acoes_pngi/acoes/?idvigenciapngi={self.vigencia.idvigenciapngi}'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
         
         # Search
         response = self.client.get('/api/v1/acoes_pngi/acoes/?search=ACAO-001')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
 
 
 # ============================================================================
@@ -504,6 +528,7 @@ class AcaoPrazoAPITests(BaseAPITestCase):
     Mesmas permissões que Acoes: COORDENADOR, GESTOR, OPERADOR podem gerenciar.
     
     Testa:
+    - Relacionamento obrigatório: idacao (ForeignKey)
     - Constraint unique (idacao, strprazo)
     - Flag isacaoprazoativo
     - Custom action: ativos/
@@ -518,21 +543,25 @@ class AcaoPrazoAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        """Cria ação e prazo de teste"""
+        """Cria TODOS relacionamentos necessários - simula ambiente real"""
+        
+        # ✅ 1. Criar Vigência (necessária para Acao)
         vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
             datiniciovigencia=date(2026, 1, 1),
             datfinalvigencia=date(2026, 12, 31)
         )
         
+        # ✅ 2. Criar Acao COMPLETA (AcaoPrazo.idacao é obrigatório)
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
-            idvigenciapngi=vigencia
+            idvigenciapngi=vigencia  # OBRIGATÓRIO
         )
         
+        # ✅ 3. Criar Prazo vinculado à Acao
         self.prazo = AcaoPrazo.objects.create(
-            idacao=self.acao,
+            idacao=self.acao,  # OBRIGATÓRIO
             strprazo='2026-06-30',
             isacaoprazoativo=True
         )
@@ -546,6 +575,7 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         response = self.client.get('/api/v1/acoes_pngi/prazos/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
     
     def test_coordenador_can_create_prazo(self):
         """COORDENADOR_PNGI pode criar prazo"""
@@ -592,6 +622,7 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         # LIST
         response = self.client.get('/api/v1/acoes_pngi/prazos/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
         
         # CREATE
         data = {
@@ -611,6 +642,7 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/prazos/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
     
     def test_consultor_cannot_create_prazo(self):
         """CONSULTOR_PNGI NÃO pode criar prazo"""
@@ -639,15 +671,15 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/prazos/ativos/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
-        # Verificar que retorna apenas ativos
-        # (implementação pode variar)
+        # Verifica que retornou dados
+        self.assertGreater(len(response.data), 0)
     
     def test_filter_prazos_by_acao(self):
         """Filtrar prazos por ação"""
         self.authenticate_as('consultor')
         response = self.client.get(f'/api/v1/acoes_pngi/prazos/?idacao={self.acao.idacao}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
     
     def test_filter_prazos_by_isativo(self):
         """Filtrar prazos por status ativo"""
@@ -668,6 +700,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
     Mesmas permissões que Acoes: COORDENADOR, GESTOR, OPERADOR podem gerenciar.
     
     Testa:
+    - Relacionamento obrigatório: idacao (ForeignKey)
     - Constraint unique (idacao, ordenacao)
     - Campo ordenacao
     
@@ -680,21 +713,25 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        """Cria ação e destaque de teste"""
+        """Cria TODOS relacionamentos necessários - simula ambiente real"""
+        
+        # ✅ 1. Criar Vigência (necessária para Acao)
         vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
             datiniciovigencia=date(2026, 1, 1),
             datfinalvigencia=date(2026, 12, 31)
         )
         
+        # ✅ 2. Criar Acao COMPLETA (AcaoDestaque.idacao é obrigatório)
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
-            idvigenciapngi=vigencia
+            idvigenciapngi=vigencia  # OBRIGATÓRIO
         )
         
+        # ✅ 3. Criar Destaque vinculado à Acao
         self.destaque = AcaoDestaque.objects.create(
-            idacao=self.acao,
+            idacao=self.acao,  # OBRIGATÓRIO
             datdatadestaque=timezone.now()
         )
     
@@ -707,6 +744,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         response = self.client.get('/api/v1/acoes_pngi/destaques/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
     
     def test_coordenador_can_create_destaque(self):
         """COORDENADOR_PNGI pode criar destaque"""
@@ -753,6 +791,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         # LIST
         response = self.client.get('/api/v1/acoes_pngi/destaques/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
         
         # CREATE
         data = {
@@ -771,6 +810,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/destaques/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
     
     def test_consultor_cannot_create_destaque(self):
         """CONSULTOR_PNGI NÃO pode criar destaque"""
@@ -791,6 +831,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get(f'/api/v1/acoes_pngi/destaques/?idacao={self.acao.idacao}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data['results']), 0)
     
     def test_destaques_ordered_by_ordenacao(self):
         """Destaques devem vir ordenados por campo ordenacao"""
@@ -807,4 +848,4 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/destaques/?ordering=-datdatadestaque')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Verificar ordem (implementação pode variar)
+        self.assertGreater(len(response.data['results']), 0)
