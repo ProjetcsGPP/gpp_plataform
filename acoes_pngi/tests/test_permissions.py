@@ -23,8 +23,8 @@ Regras de Negócio:
 - Leitura: todas as 4 roles
 """
 
-from django.test import TestCase
-from .base import BaseTestCase, BaseAPITestCase, RequestFactory
+from django.test import TestCase, RequestFactory
+from .base import BaseTestCase, BaseAPITestCase
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate

@@ -3,8 +3,8 @@ Testes para Context Processors de Ações PNGI
 Cobertura: 100%
 """
 
-from django.test import TestCase
-from .base import BaseTestCase, BaseAPITestCase, RequestFactory
+from django.test import TestCase, RequestFactory
+from .base import BaseTestCase, BaseAPITestCase
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission

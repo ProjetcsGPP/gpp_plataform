@@ -20,7 +20,7 @@ Testa relacionamentos complexos:
 """
 
 from django.test import TestCase
-from .base import BaseTestCase, BaseAPITestCase
+from .base import BaseTestCase, BaseAPITestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -317,23 +317,12 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         """Cria TODOS relacionamentos necessários - simula ambiente real"""
         
         # ✅ 1. Criar Vigência (OBRIGATÓRIO para Acao)
-        vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        ,
             datfinalvigencia=date(2026, 12, 31)
         )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
-        eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
-        
         # ✅ 3. Criar Situação (opcional mas comum)
-        situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
-        
         # ✅ 4. Criar Acao COMPLETA (idvigenciapngi é obrigatório)
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
@@ -703,23 +692,12 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
         """Cria TODOS relacionamentos necessários em CASCATA - simula ambiente real"""
         
         # ✅ 1. Criar Vigência (OBRIGATÓRIO para Acao)
-        vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
+        ,
             datfinalvigencia=date(2026, 12, 31)
         )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
-        eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
-        
         # ✅ 3. Criar Situação (opcional mas comum)
-        situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
-        
         # ✅ 4. Criar Acao COMPLETA (idvigenciapngi é obrigatório)
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
