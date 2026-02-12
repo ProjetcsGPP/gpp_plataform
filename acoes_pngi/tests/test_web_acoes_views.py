@@ -60,11 +60,7 @@ class AcoesWebViewsTest(BaseTestCase):
         # Login
         self.client.force_login(self.user)
         
-        # Criar vigência
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
+        # Criar vigência        
         # Criar tipo de entrave
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Crítico'
@@ -75,7 +71,7 @@ class AcoesWebViewsTest(BaseTestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=self.vigencia,
+            idvigenciapngi=self.vigencia_base,
             idtipoentravealerta=self.tipo_entrave,
             ideixo=self.eixo_base,
             idsituacaoacao=self.situacao_base)
@@ -249,16 +245,12 @@ class AcaoPrazoWebViewsTest(BaseTestCase):
         # Login
         self.client.force_login(self.user)
         
-        # Criar vigência e ação
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
+        # Criar vigência e ação        
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia,
+            idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
             idsituacaoacao=self.situacao_base)
         
@@ -375,16 +367,12 @@ class AcaoDestaqueWebViewsTest(BaseTestCase):
         # Login
         self.client.force_login(self.user)
         
-        # Criar vigência e ação
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
+        # Criar vigência e ação        
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia,
+            idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
             idsituacaoacao=self.situacao_base)
         

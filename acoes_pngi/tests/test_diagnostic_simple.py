@@ -47,16 +47,12 @@ class SimpleDiagnosticTest(BaseTestCase):
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
-        # Criar vigência e ação
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
+        # Criar vigência e ação        
         self.acao = Acoes.objects.create(
             strapelido='ACAO-SIMPLE',
             strdescricaoacao='Ação Simples',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia,
+            idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
             idsituacaoacao=self.situacao_base)
     

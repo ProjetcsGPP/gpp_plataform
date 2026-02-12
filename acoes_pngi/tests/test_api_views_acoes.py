@@ -282,18 +282,9 @@ class AcoesAPITests(BaseAPITestCase):
     def setup_test_data(self):
         """Cria dados COMPLETOS necessários para ações - simula ambiente real"""
         
-        # ✅ 1. Criar Vigência (OBRIGATÓRIO para Acao)
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31),
-            isvigenciaativa=True
-        )
-        
-        # ✅ 2. Criar Eixo (OPCIONAL, mas usado na prática)
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
-        # ✅ 3. Criar Situação (OPCIONAL, mas usado na prática)
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
+        # ✅ 1. Criar Vigência (OBRIGATÓRIO para Acao)        
+        # ✅ 2. Criar Eixo (OPCIONAL, mas usado na prática)        
+        # ✅ 3. Criar Situação (OPCIONAL, mas usado na prática)        
         # ✅ 4. Criar Tipo Entrave (OPCIONAL)
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Alerta Teste'
@@ -304,10 +295,10 @@ class AcoesAPITests(BaseAPITestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Ação de Teste',
             strdescricaoentrega='Entrega de Teste',
-            idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
-            ideixo=self.eixo,              # OPCIONAL (mas comum,
+            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
+            ideixo=self.eixo_base,              # OPCIONAL (mas comum,
             idsituacaoacao=self.situacao_base)
-            idsituacaoacao=self.situacao,  # OPCIONAL (mas comum)
+            idsituacaoacao=self.situacao_base,  # OPCIONAL (mas comum)
             idtipoentravealerta=self.tipo_entrave,  # OPCIONAL
             datdataentrega=date(2026, 6, 30)
         )
@@ -358,8 +349,8 @@ class AcoesAPITests(BaseAPITestCase):
             strapelido='ACAO-TEMP',
             strdescricaoacao='Temporária',
             strdescricaoentrega='Entrega Temp',
-            idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
-            ideixo=self.eixo,              # Adicionar para consistência
+            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
+            ideixo=self.eixo_base,              # Adicionar para consistência
             idsituacaoacao=self.situacao   # Adicionar para consistência
         )
         
@@ -434,8 +425,8 @@ class AcoesAPITests(BaseAPITestCase):
             strapelido='ACAO-DEL-OPER',
             strdescricaoacao='Para Deletar',
             strdescricaoentrega='Entrega Del',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,              # Adicionar para consistência
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,              # Adicionar para consistência
             idsituacaoacao=self.situacao   # Adicionar para consistência
         )
         
@@ -559,9 +550,7 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         # ✅ 1. Criar Vigência (necessária para Acao)
         vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31)
-        )
+            datiniciovigencia=date(2026, 1, 1),        )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
         eixo = Eixo.objects.create(
@@ -743,9 +732,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         # ✅ 1. Criar Vigência (necessária para Acao)
         vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31)
-        )
+            datiniciovigencia=date(2026, 1, 1),        )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
         eixo = Eixo.objects.create(

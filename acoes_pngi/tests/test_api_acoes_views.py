@@ -59,18 +59,8 @@ class AcoesViewSetTest(BaseTestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31),
-            isvigenciaativa=True
-        )
-        
-        # ✅ Criar Eixo
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
-        # ✅ Criar Situação
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
+        # ✅ Criar Eixo        
+        # ✅ Criar Situação        
         # Criar tipo de entrave
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Crítico'
@@ -81,9 +71,9 @@ class AcoesViewSetTest(BaseTestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Descrição da Ação 001',
             strdescricaoentrega='Entrega 001',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
-            idsituacaoacao=self.situacao,
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base,
             idtipoentravealerta=self.tipo_entrave,
             datdataentrega=timezone.now() + timedelta(days=180)
         )
@@ -92,8 +82,8 @@ class AcoesViewSetTest(BaseTestCase):
             strapelido='ACAO-002',
             strdescricaoacao='Descrição da Ação 002',
             strdescricaoentrega='Entrega 002',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
             idsituacaoacao=self.situacao
         )
     
@@ -175,15 +165,13 @@ class AcoesViewSetTest(BaseTestCase):
         # Criar outra vigência e ação
         vigencia2 = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2027',
-            datiniciovigencia=date(2027, 1, 1),
-            datfinalvigencia=date(2027, 12, 31)
-        )
+            datiniciovigencia=date(2027, 1, 1),        )
         Acoes.objects.create(
             strapelido='ACAO-003',
             strdescricaoacao='Ação 2027',
             strdescricaoentrega='Entrega 2027',
             idvigenciapngi=vigencia2,
-            ideixo=self.eixo,
+            ideixo=self.eixo_base,
             idsituacaoacao=self.situacao
         )
         
@@ -292,24 +280,16 @@ class AcaoPrazoViewSetTest(BaseTestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
-        # ✅ Criar Eixo
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
-        # ✅ Criar Situação
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
+        # Criar vigência        
+        # ✅ Criar Eixo        
+        # ✅ Criar Situação        
         # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
             idsituacaoacao=self.situacao
         )
         
@@ -437,24 +417,16 @@ class AcaoDestaqueViewSetTest(BaseTestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
-        # ✅ Criar Eixo
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
-        # ✅ Criar Situação
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
+        # Criar vigência        
+        # ✅ Criar Eixo        
+        # ✅ Criar Situação        
         # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
             idsituacaoacao=self.situacao
         )
         

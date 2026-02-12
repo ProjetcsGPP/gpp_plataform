@@ -258,9 +258,7 @@ class EixoAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        """Cria eixo de teste"""
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-    
+        """Cria eixo de teste"""    
     # ------------------------------------------------------------------------
     # COORDENADOR_PNGI - Acesso Total
     # ------------------------------------------------------------------------
@@ -465,9 +463,7 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        """Cria situação de teste"""
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-    
+        """Cria situação de teste"""    
     # ------------------------------------------------------------------------
     # COORDENADOR_PNGI - Acesso Total
     # ------------------------------------------------------------------------
@@ -605,11 +601,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        """Cria vigência de teste"""
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31),
-            isvigenciaativa=False
-        )
+        """Cria vigência de teste"""        )
     
     # ------------------------------------------------------------------------
     # COORDENADOR_PNGI - Acesso Total

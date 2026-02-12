@@ -55,9 +55,7 @@ class EixoCRUDWebViewTests(BaseTestCase):
         # Login
         self.client.login(email='coord@test.com', password='test123')
         
-        # Criar eixo para testes
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-    
+        # Criar eixo para testes    
     def test_eixo_list_requires_login(self):
         """Lista de eixos requer login"""
         self.client.logout()
@@ -215,12 +213,7 @@ class VigenciaCRUDWebViewTests(BaseTestCase):
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
-        self.client.login(email='coord@test.com', password='test123')
-        
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31),
-            isvigenciaativa=False
-        )
+        self.client.login(email='coord@test.com', password='test123')        )
     
     def test_vigencia_list_requires_login(self):
         """Lista de vigências requer login"""
@@ -346,10 +339,7 @@ class SituacaoAcaoCRUDWebViewTests(BaseTestCase):
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
-        self.client.login(email='coord@test.com', password='test123')
-        
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-    
+        self.client.login(email='coord@test.com', password='test123')    
     def test_situacao_list_requires_login(self):
         """Lista de situações requer login"""
         self.client.logout()

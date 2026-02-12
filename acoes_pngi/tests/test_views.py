@@ -166,9 +166,7 @@ class EixoWebViewsTests(BaseWebTestCase):
     """Testes de views web para Eixo (configuração)"""
     
     def setup_test_data(self):
-        """Cria eixo de teste"""
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-    
+        """Cria eixo de teste"""    
     # ------------------------------------------------------------------------
     # COORDENADOR - Acesso Total
     # ------------------------------------------------------------------------
@@ -389,11 +387,7 @@ class VigenciaWebViewsTests(BaseWebTestCase):
     """Testes de views web para Vigência (configuração)"""
     
     def setup_test_data(self):
-        """Cria vigência de teste"""
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31),
-            isvigenciaativa=False
-        )
+        """Cria vigência de teste"""        )
     
     def test_coordenador_can_list_vigencias(self):
         """COORDENADOR pode listar vigências"""
@@ -487,22 +481,14 @@ class AcoesWebViewsTests(BaseWebTestCase):
     """Testes de views web para Ações (operações)"""
     
     def setup_test_data(self):
-        """Cria vigência e ação de teste"""
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
-        # ✅ Criar Eixo
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
-        # ✅ Criar Situação
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
+        """Cria vigência e ação de teste"""        
+        # ✅ Criar Eixo        
+        # ✅ Criar Situação        
         self.acao = Acoes.objects.create(
             strapelido='ACAO-WEB-001',
             strdescricaoacao='Ação Teste Web',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
             idsituacaoacao=self.situacao
         )
     

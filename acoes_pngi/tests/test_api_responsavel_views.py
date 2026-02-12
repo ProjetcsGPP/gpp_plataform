@@ -277,24 +277,16 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
-        # ✅ Criar Eixo
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
-        # ✅ Criar Situação
-        # Removido: usar self.eixo_base/situacao_base/vigencia_base
-        
+        # Criar vigência        
+        # ✅ Criar Eixo        
+        # ✅ Criar Situação        
         # Criar ações
         self.acao1 = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste 1',
             strdescricaoentrega='Entrega 1',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
             idsituacaoacao=self.situacao
         )
         
@@ -302,8 +294,8 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
             strapelido='ACAO-002',
             strdescricaoacao='Ação Teste 2',
             strdescricaoentrega='Entrega 2',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
             idsituacaoacao=self.situacao
         )
         
