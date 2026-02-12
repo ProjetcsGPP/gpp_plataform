@@ -161,8 +161,9 @@ class Acoes(models.Model):
         Eixo,
         on_delete=models.PROTECT,
         db_column='ideixo',
-        related_name='acoes'
-    ),
+        related_name='acoes',
+        default=1
+    )
     idvigenciapngi = models.ForeignKey(
         VigenciaPNGI,
         on_delete=models.PROTECT,
