@@ -148,7 +148,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         response = self.client.get('/api/v1/acoes_pngi/tipos-anotacao-alinhamento/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # ✅ Verifica que retornou dados (não vazio)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_coordenador_can_create_tipo_anotacao(self):
         """COORDENADOR_PNGI pode criar tipo de anotação"""
@@ -197,7 +197,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         # LIST
         response = self.client.get('/api/v1/acoes_pngi/tipos-anotacao-alinhamento/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
         
         # CREATE
         data = {
@@ -255,7 +255,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/tipos-anotacao-alinhamento/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_consultor_cannot_create_tipo_anotacao(self):
         """CONSULTOR_PNGI NÃO pode criar tipo de anotação"""
@@ -326,8 +326,8 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
             idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
-            ideixo=eixo,              # Adicionar para consistência
-            idsituacaoacao=situacao   # Adicionar para consistência
+            ideixo=self.eixo_base,              # Adicionar para consistência
+            idsituacaoacao=self.situacao_base   # Adicionar para consistência
         )
         
         # ✅ 5. Criar TipoAnotacao (OBRIGATÓRIO para AcaoAnotacaoAlinhamento)
@@ -353,7 +353,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         response = self.client.get('/api/v1/acoes_pngi/anotacoes-alinhamento/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # ✅ Verifica que retornou dados (não vazio)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_coordenador_can_create_anotacao(self):
         """COORDENADOR_PNGI pode criar anotação"""
@@ -411,7 +411,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         # LIST
         response = self.client.get('/api/v1/acoes_pngi/anotacoes-alinhamento/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
         
         # CREATE
         data = {
@@ -439,7 +439,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/anotacoes-alinhamento/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_consultor_cannot_create_anotacao(self):
         """CONSULTOR_PNGI NÃO pode criar anotação"""
@@ -468,7 +468,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
             f'/api/v1/acoes_pngi/anotacoes-alinhamento/?idacao={self.acao.idacao}'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_filter_anotacoes_by_tipo(self):
         """Filtrar anotações por tipo"""
@@ -477,7 +477,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
             f'/api/v1/acoes_pngi/anotacoes-alinhamento/?idtipoanotacaoalinhamento={self.tipo_anotacao.idtipoanotacaoalinhamento}'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_search_anotacoes(self):
         """Buscar anotações por descrição"""
@@ -537,7 +537,7 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # ✅ Verifica que retornou dados (não vazio)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_coordenador_can_create_responsavel(self):
         """COORDENADOR_PNGI pode criar responsável"""
@@ -602,7 +602,7 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
         # LIST
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
         
         # UPDATE
         data = {'strtelefone': '27977777777'}
@@ -622,7 +622,7 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_consultor_cannot_create_responsavel(self):
         """CONSULTOR_PNGI NÃO pode criar responsável"""
@@ -653,7 +653,7 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/?strorgao=SEGER')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_search_responsaveis(self):
         """Buscar responsáveis por nome ou email"""
@@ -697,8 +697,8 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
             idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
-            ideixo=eixo,              # Adicionar para consistência
-            idsituacaoacao=situacao   # Adicionar para consistência
+            ideixo=self.eixo_base,              # Adicionar para consistência
+            idsituacaoacao=self.situacao_base   # Adicionar para consistência
         )
         
         # ✅ 5. Criar User (OBRIGATÓRIO para UsuarioResponsavel)
@@ -730,7 +730,7 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
         response = self.client.get('/api/v1/acoes_pngi/relacoes-acao-responsavel/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # ✅ Verifica que retornou dados (não vazio)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_coordenador_can_create_relacao(self):
         """COORDENADOR_PNGI pode criar relação"""
@@ -776,7 +776,7 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
         # LIST
         response = self.client.get('/api/v1/acoes_pngi/relacoes-acao-responsavel/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     # ------------------------------------------------------------------------
     # CONSULTOR_PNGI - Apenas Leitura
@@ -787,7 +787,7 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/relacoes-acao-responsavel/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)
     
     def test_consultor_cannot_create_relacao(self):
         """CONSULTOR_PNGI NÃO pode criar relação"""
@@ -822,4 +822,4 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
             f'/api/v1/acoes_pngi/relacoes-acao-responsavel/?idacao={self.acao.idacao}'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
+        self.assertGreater(len((response.data if isinstance(response.data, list) else response.data.get('results', []))), 0)

@@ -18,6 +18,7 @@ Cobre:
 """
 
 from django.test import TestCase, Client
+from .base import BaseTestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from datetime import date
