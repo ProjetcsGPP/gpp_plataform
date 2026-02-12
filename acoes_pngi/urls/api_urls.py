@@ -59,9 +59,16 @@ router.register(r'acoes', AcoesViewSet, basename='acoes')
 router.register(r'acoes-prazo', AcaoPrazoViewSet, basename='acaoprazo')
 router.register(r'acoes-destaque', AcaoDestaqueViewSet, basename='acaodestaque')
 
+# ALIASES para retrocompatibilidade com testes antigos
+router.register(r'prazos', AcaoPrazoViewSet, basename='prazo')  # Alias
+router.register(r'destaques', AcaoDestaqueViewSet, basename='destaque')  # Alias
+
 # Alinhamento
 router.register(r'tipos-anotacao-alinhamento', TipoAnotacaoAlinhamentoViewSet, basename='tipoanotacaoalinhamento')
 router.register(r'acoes-anotacao-alinhamento', AcaoAnotacaoAlinhamentoViewSet, basename='acaoanotacaoalinhamento')
+
+# ALIAS para retrocompatibilidade com testes antigos
+router.register(r'anotacoes-alinhamento', AcaoAnotacaoAlinhamentoViewSet, basename='anotacaoalinhamento')  # Alias
 
 # Responsáveis
 router.register(r'usuarios-responsaveis', UsuarioResponsavelViewSet, basename='usuarioresponsavel')
