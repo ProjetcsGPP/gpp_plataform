@@ -317,13 +317,10 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         """Cria TODOS relacionamentos necessários - simula ambiente real"""
         
         # ✅ 1. Criar Vigência (OBRIGATÓRIO para Acao)
-        ,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
         # ✅ 2. Criar Eixo (opcional mas comum)
         # ✅ 3. Criar Situação (opcional mas comum)
         # ✅ 4. Criar Acao COMPLETA (idvigenciapngi é obrigatório)
+      
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
@@ -692,10 +689,6 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
         """Cria TODOS relacionamentos necessários em CASCATA - simula ambiente real"""
         
         # ✅ 1. Criar Vigência (OBRIGATÓRIO para Acao)
-        ,
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
         # ✅ 2. Criar Eixo (opcional mas comum)
         # ✅ 3. Criar Situação (opcional mas comum)
         # ✅ 4. Criar Acao COMPLETA (idvigenciapngi é obrigatório)

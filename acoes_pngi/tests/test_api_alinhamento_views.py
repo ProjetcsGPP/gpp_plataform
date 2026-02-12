@@ -212,10 +212,7 @@ class AcaoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência        
-        # ✅ Criar Eixo        
-        # ✅ Criar Situação        
-        # Criar ações
+        # Criar vigência        # Criar ações
         self.acao1 = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste 1',

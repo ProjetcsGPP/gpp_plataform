@@ -387,7 +387,7 @@ class VigenciaWebViewsTests(BaseWebTestCase):
     """Testes de views web para Vigência (configuração)"""
     
     def setup_test_data(self):
-        """Cria vigência de teste"""        )
+        """Cria vigência de teste"""        
     
     def test_coordenador_can_list_vigencias(self):
         """COORDENADOR pode listar vigências"""
@@ -482,8 +482,6 @@ class AcoesWebViewsTests(BaseWebTestCase):
     
     def setup_test_data(self):
         """Cria vigência e ação de teste"""        
-        # ✅ Criar Eixo        
-        # ✅ Criar Situação        
         self.acao = Acoes.objects.create(
             strapelido='ACAO-WEB-001',
             strdescricaoacao='Ação Teste Web',

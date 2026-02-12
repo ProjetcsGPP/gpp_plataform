@@ -601,7 +601,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        """Cria vigência de teste"""        )
+        """Cria vigência de teste"""        
     
     # ------------------------------------------------------------------------
     # COORDENADOR_PNGI - Acesso Total

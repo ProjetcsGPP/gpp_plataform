@@ -297,7 +297,6 @@ class AcoesAPITests(BaseAPITestCase):
             strdescricaoentrega='Entrega de Teste',
             idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
             ideixo=self.eixo_base,              # OPCIONAL (mas comum,
-            idsituacaoacao=self.situacao_base)
             idsituacaoacao=self.situacao_base,  # OPCIONAL (mas comum)
             idtipoentravealerta=self.tipo_entrave,  # OPCIONAL
             datdataentrega=date(2026, 6, 30)

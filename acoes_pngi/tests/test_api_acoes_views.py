@@ -57,11 +57,7 @@ class AcoesViewSetTest(BaseTestCase):
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
         # Autenticar
-        self.client.force_authenticate(user=self.user)
-        
-        # ✅ Criar Eixo        
-        # ✅ Criar Situação        
-        # Criar tipo de entrave
+        self.client.force_authenticate(user=self.user)        # Criar tipo de entrave
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Crítico'
         )
@@ -280,10 +276,7 @@ class AcaoPrazoViewSetTest(BaseTestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência        
-        # ✅ Criar Eixo        
-        # ✅ Criar Situação        
-        # Criar ação
+        # Criar vigência        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
@@ -417,10 +410,7 @@ class AcaoDestaqueViewSetTest(BaseTestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência        
-        # ✅ Criar Eixo        
-        # ✅ Criar Situação        
-        # Criar ação
+        # Criar vigência        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
