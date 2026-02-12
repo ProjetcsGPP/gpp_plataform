@@ -157,6 +157,12 @@ class Acoes(models.Model):
         db_column='idtipoentravealerta',
         related_name='acoes'
     )
+    ideixo = models.ForeignKey(
+        Eixo,
+        on_delete=models.PROTECT,
+        db_column='ideixo',
+        related_name='acoes'
+    ),
     idvigenciapngi = models.ForeignKey(
         VigenciaPNGI,
         on_delete=models.PROTECT,
