@@ -1,7 +1,6 @@
 """Classe base unificada para todos os testes do módulo acoes_pngi"""
 from django.test import TestCase
 from django.utils import timezone
-from rest_framework.test import APITestCase
 from .fixtures.test_data_base import create_base_test_data
 from common.models import Aplicacao
 
@@ -66,7 +65,7 @@ class BaseTestCase(TestCase):
         return Acoes.objects.create(**defaults)
 
 
-class BaseAPITestCase(APITestCase):
+class BaseAPITestCase(TestCase):
     """
     Classe base para testes de API (DRF) do módulo acoes_pngi.
     
