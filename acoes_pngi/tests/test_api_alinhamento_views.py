@@ -19,7 +19,9 @@ from ..models import (
     TipoAnotacaoAlinhamento,
     AcaoAnotacaoAlinhamento,
     Acoes,
-    VigenciaPNGI
+    VigenciaPNGI,
+    Eixo,
+    SituacaoAcao
 )
 
 User = get_user_model()
@@ -209,25 +211,41 @@ class AcaoAnotacaoAlinhamentoViewSetTest(TestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência e ações
+        # Criar vigência
         self.vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
             datiniciovigencia=date(2026, 1, 1),
             datfinalvigencia=date(2026, 12, 31)
         )
         
+        # ✅ Criar Eixo
+        self.eixo = Eixo.objects.create(
+            stralias='E1',
+            strdescricaoeixo='Eixo 1 - Gestão'
+        )
+        
+        # ✅ Criar Situação
+        self.situacao = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        
+        # Criar ações
         self.acao1 = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste 1',
             strdescricaoentrega='Entrega 1',
-            idvigenciapngi=self.vigencia
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
         
         self.acao2 = Acoes.objects.create(
             strapelido='ACAO-002',
             strdescricaoacao='Ação Teste 2',
             strdescricaoentrega='Entrega 2',
-            idvigenciapngi=self.vigencia
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
         
         # Criar tipos de anotação
