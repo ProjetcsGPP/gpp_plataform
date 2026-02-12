@@ -92,7 +92,7 @@ class AcoesViewSetTest(BaseTestCase):
     def test_list_acoes_authenticated(self):
         """Usuário autenticado pode listar ações"""
         response = self.client.get('/api/v1/acoes_pngi/acoes/')
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
@@ -176,7 +176,7 @@ class AcoesViewSetTest(BaseTestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/acoes/?idvigenciapngi={self.vigencia_base.idvigenciapngi}'
         )
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)  # Apenas ações de 2026
     
@@ -185,14 +185,14 @@ class AcoesViewSetTest(BaseTestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/acoes/?idtipoentravealerta={self.tipo_entrave.idtipoentravealerta}'
         )
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)  # Apenas acao1 tem entrave
     
     def test_search_acoes(self):
         """Buscar ações por apelido/descrição"""
         response = self.client.get('/api/v1/acoes_pngi/acoes/?search=001')
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['strapelido'], 'ACAO-001')
@@ -200,7 +200,7 @@ class AcoesViewSetTest(BaseTestCase):
     def test_ordering_acoes(self):
         """Ordenar ações"""
         response = self.client.get('/api/v1/acoes_pngi/acoes/?ordering=-strapelido')
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Deve vir em ordem decrescente (002, 001)
         self.assertEqual(results[0]['strapelido'], 'ACAO-002')
@@ -310,7 +310,7 @@ class AcaoPrazoViewSetTest(BaseTestCase):
     def test_list_prazos_authenticated(self):
         """Usuário autenticado pode listar prazos"""
         response = self.client.get('/api/v1/acoes_pngi/acoes-prazo/')
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
@@ -361,14 +361,14 @@ class AcaoPrazoViewSetTest(BaseTestCase):
     def test_filter_prazos_by_acao(self):
         """Filtrar prazos por ação"""
         response = self.client.get(f'/api/v1/acoes_pngi/acoes-prazo/?idacao={self.acao.idacao}')
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
     def test_filter_prazos_by_status(self):
         """Filtrar prazos por status ativo/inativo"""
         response = self.client.get('/api/v1/acoes_pngi/acoes-prazo/?isacaoprazoativo=true')
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['strprazo'], 'Q1 2026')
@@ -443,7 +443,7 @@ class AcaoDestaqueViewSetTest(BaseTestCase):
     def test_list_destaques_authenticated(self):
         """Usuário autenticado pode listar destaques"""
         response = self.client.get('/api/v1/acoes_pngi/acoes-destaque/')
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
@@ -491,14 +491,14 @@ class AcaoDestaqueViewSetTest(BaseTestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/acoes-destaque/?idacao={self.acao.idacao}'
         )
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
     def test_ordering_destaques(self):
         """Destaques ordenados por data (mais recente primeiro)"""
         response = self.client.get('/api/v1/acoes_pngi/acoes-destaque/')
-        results = response.data.get('results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Primeiro resultado deve ser o mais recente (futuro)
         first_date = datetime.fromisoformat(
