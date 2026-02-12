@@ -24,6 +24,7 @@ Regras de Negócio:
 """
 
 from django.test import TestCase, RequestFactory
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework import status

@@ -494,7 +494,7 @@ class AcaoPrazoViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
         if self.request.query_params.get('isacaoprazoativo'):
             # Converte string para booleano
-        is_ativo = self.request.query_params.get('isacaoprazoativo')
+            is_ativo = self.request.query_params.get('isacaoprazoativo')
         if is_ativo is not None:
             is_ativo_bool = is_ativo.lower() in ('true', '1', 'yes')
             queryset = queryset.filter(isacaoprazoativo=is_ativo_bool)

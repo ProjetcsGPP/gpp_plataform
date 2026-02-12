@@ -4,6 +4,7 @@ Cobertura: 100%
 """
 
 from django.test import TestCase, RequestFactory
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType

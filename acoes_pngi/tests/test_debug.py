@@ -1,6 +1,7 @@
 # acoes_pngi/tests/test_debug.py
 
 from django.test import TestCase
+from django.utils import timezone
 from accounts.models import User, Aplicacao, Role, UserRole
 
 

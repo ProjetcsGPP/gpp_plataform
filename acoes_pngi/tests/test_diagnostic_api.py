@@ -16,6 +16,7 @@ from django.conf import settings
 from rest_framework.test import APIClient, APIRequestFactory
 from rest_framework import status
 from datetime import date
+from django.utils import timezone
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import Acoes, VigenciaPNGI

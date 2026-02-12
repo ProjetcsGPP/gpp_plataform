@@ -8,6 +8,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from datetime import date, timedelta
+from django.utils import timezone
 from decimal import Decimal
 
 

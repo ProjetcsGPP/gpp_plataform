@@ -20,6 +20,7 @@ from django.contrib.auth.models import Permission
 from rest_framework.test import APIClient
 from rest_framework import status
 from datetime import date, timedelta
+from django.utils import timezone
 from unittest.mock import Mock, patch
 
 from accounts.models import Aplicacao, Role, UserRole, RolePermission

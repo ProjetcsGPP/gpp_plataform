@@ -9,6 +9,7 @@ from django.urls import resolve, get_resolver
 from django.conf import settings
 from rest_framework.test import APIClient
 from datetime import date
+from django.utils import timezone
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import Acoes, VigenciaPNGI

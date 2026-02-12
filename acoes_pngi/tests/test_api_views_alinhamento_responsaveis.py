@@ -24,6 +24,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
 from datetime import date, datetime
+from django.utils import timezone
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import (
@@ -325,7 +326,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         self.anotacao = AcaoAnotacaoAlinhamento.objects.create(
             idacao=self.acao,
             idtipoanotacaoalinhamento=self.tipo_anotacao,
-            datdataanotacaoalinhamento=datetime.now(),
+            datdataanotacaoalinhamento=timezone.now(),
             strdescricaoanotacaoalinhamento='Anotação de Teste'
         )
     
@@ -345,7 +346,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         data = {
             'idacao': self.acao.idacao,
             'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
-            'datdataanotacaoalinhamento': datetime.now().isoformat(),
+            'datdataanotacaoalinhamento': timezone.now().isoformat(),
             'strdescricaoanotacaoalinhamento': 'Nova Anotação Coordenador'
         }
         response = self.client.post(
@@ -374,7 +375,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         anotacao_temp = AcaoAnotacaoAlinhamento.objects.create(
             idacao=self.acao,
             idtipoanotacaoalinhamento=self.tipo_anotacao,
-            datdataanotacaoalinhamento=datetime.now(),
+            datdataanotacaoalinhamento=timezone.now(),
             strdescricaoanotacaoalinhamento='Temporária'
         )
         
@@ -400,7 +401,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         data = {
             'idacao': self.acao.idacao,
             'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
-            'datdataanotacaoalinhamento': (datetime.now()).isoformat(),
+            'datdataanotacaoalinhamento': (timezone.now()).isoformat(),
             'strdescricaoanotacaoalinhamento': 'Anotação Operador'
         }
         response = self.client.post(
@@ -429,7 +430,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         data = {
             'idacao': self.acao.idacao,
             'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
-            'datdataanotacaoalinhamento': datetime.now().isoformat(),
+            'datdataanotacaoalinhamento': timezone.now().isoformat(),
             'strdescricaoanotacaoalinhamento': 'Tentativa Consultor'
         }
         response = self.client.post(

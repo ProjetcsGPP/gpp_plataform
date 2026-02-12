@@ -27,9 +27,22 @@ if is_ativo is not None:
 ## 2. Datetimes Naive nos Testes
 
 ### Problema
-Os testes criavam datetimes sem timezone (naive), mas Django está com `USE_TZ=True`.
+Os testes usavam `datetime.now()` e `datetime(...)` sem timezone, mas Django está com `USE_TZ=True`.
 
-### Correção
+### Correções Aplicadas
+
+#### A. datetime.now()
+```python
+# ANTES:
+from datetime import datetime
+datdataanotacaoalinhamento=datetime.now()
+
+# DEPOIS:
+from django.utils import timezone
+datdataanotacaoalinhamento=timezone.now()
+```
+
+#### B. Datetimes estáticos
 ```python
 # ANTES:
 datetime(2026, 2, 15, 10, 0, 0)
@@ -40,8 +53,7 @@ timezone.make_aware(datetime(2026, 2, 15, 10, 0, 0))
 ```
 
 ### Arquivos Corrigidos
-- `acoes_pngi/tests/test_api_views_alinhamento_responsaveis.py`
-- `acoes_pngi/tests/test_api_views_acoes.py`
+- Todos os arquivos `test_*.py` em `acoes_pngi/tests/`
 
 ---
 
@@ -67,8 +79,9 @@ git commit -m "fix: Corrige filtro booleano e datetimes naive nos testes"
 ## Estatísticas
 
 - **Filtros booleanos corrigidos**: 1
-- **Datetimes corrigidos**: ~20+
-- **Arquivos modificados**: 3
+- **datetime.now() corrigidos**: Varia por arquivo
+- **Datetimes estáticos corrigidos**: Varia por arquivo
+- **Imports timezone adicionados**: Automático
 
 ---
 

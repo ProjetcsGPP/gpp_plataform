@@ -15,6 +15,7 @@ from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from datetime import date
+from django.utils import timezone
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import Eixo, SituacaoAcao, VigenciaPNGI

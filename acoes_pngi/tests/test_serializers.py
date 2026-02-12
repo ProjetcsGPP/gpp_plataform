@@ -10,6 +10,7 @@ from acoes_pngi.serializers import (
     VigenciaPNGISerializer
 )
 from datetime import date
+from django.utils import timezone
 
 
 class EixoSerializerTest(TestCase):

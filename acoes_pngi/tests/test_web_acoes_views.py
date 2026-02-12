@@ -15,6 +15,7 @@ from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from datetime import date, datetime
+from django.utils import timezone
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import (
@@ -392,7 +393,7 @@ class AcaoDestaqueWebViewsTest(TestCase):
         # Criar destaque
         self.destaque = AcaoDestaque.objects.create(
             idacao=self.acao,
-            datdatadestaque=datetime(2026, 2, 15, 10, 0)
+            datdatadestaque=timezone.make_aware(datetime(2026, 2, 15, 10, 0))
         )
     
     def test_destaque_list_requires_login(self):
