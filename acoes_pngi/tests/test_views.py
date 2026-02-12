@@ -17,8 +17,7 @@ Cobre:
 - Context data e permissões no template
 """
 
-from django.test import TestCase
-from .base import BaseTestCase, BaseAPITestCase, Client
+from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from datetime import date

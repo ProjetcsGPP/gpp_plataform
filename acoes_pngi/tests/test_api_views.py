@@ -630,7 +630,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         data = {'strdescricaovigenciapngi': 'PNGI 2026 - Atualizado'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/',
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/',
             data,
             format='json'
         )
@@ -640,7 +640,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         """COORDENADOR_PNGI NÃO pode deletar vigência (apenas view em configs)"""
         self.authenticate_as('coordenador')
         response = self.client.delete(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/'
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
@@ -648,7 +648,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         """COORDENADOR_PNGI pode ativar vigência"""
         self.authenticate_as('coordenador')
         response = self.client.post(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/ativar/'
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/ativar/'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
@@ -688,7 +688,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         """GESTOR_PNGI pode ativar vigência"""
         self.authenticate_as('gestor')
         response = self.client.post(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/ativar/'
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/ativar/'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
@@ -712,7 +712,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         self.authenticate_as('operador')
         data = {'strdescricaovigenciapngi': 'Update Operador'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/',
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/',
             data,
             format='json'
         )
@@ -722,7 +722,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         """OPERADOR_ACAO NÃO pode deletar vigência"""
         self.authenticate_as('operador')
         response = self.client.delete(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/'
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
@@ -730,7 +730,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         """OPERADOR_ACAO NÃO pode ativar vigência"""
         self.authenticate_as('operador')
         response = self.client.post(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/ativar/'
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/ativar/'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
@@ -748,7 +748,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         """CONSULTOR_PNGI pode buscar vigência específica"""
         self.authenticate_as('consultor')
         response = self.client.get(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/'
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
@@ -768,7 +768,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         data = {'strdescricaovigenciapngi': 'Update Consultor'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/',
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/',
             data,
             format='json'
         )
@@ -778,7 +778,7 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         """CONSULTOR_PNGI NÃO pode deletar vigência"""
         self.authenticate_as('consultor')
         response = self.client.delete(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/'
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
@@ -786,6 +786,6 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         """CONSULTOR_PNGI NÃO pode ativar vigência"""
         self.authenticate_as('consultor')
         response = self.client.post(
-            f'/api/v1/acoes_pngi/vigencias/{self.vigencia.idvigenciapngi}/ativar/'
+            f'/api/v1/acoes_pngi/vigencias/{self.vigencia_base.idvigenciapngi}/ativar/'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

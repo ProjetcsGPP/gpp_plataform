@@ -329,7 +329,7 @@ class AcoesAPITests(BaseAPITestCase):
         }
         response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['strapelido'], 'ACAO-COORD-001')
+        self.assertEqual(response.data['results'][0]['strapelido'], 'ACAO-COORD-001')
     
     def test_coordenador_can_update_acao(self):
         """COORDENADOR_PNGI pode atualizar ação"""
@@ -547,7 +547,7 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         """Cria TODOS relacionamentos necessários - simula ambiente real"""
         
         # ✅ 1. Criar Vigência (necessária para Acao)
-        vigencia = VigenciaPNGI.objects.create(
+        self.vigencia_base = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
             datiniciovigencia=date(2026, 1, 1),        )
         
@@ -567,7 +567,7 @@ class AcaoPrazoAPITests(BaseAPITestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=vigencia,  # OBRIGATÓRIO
+            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
             ideixo=eixo,              # Adicionar para consistência
             idsituacaoacao=situacao   # Adicionar para consistência
         )
@@ -729,7 +729,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         """Cria TODOS relacionamentos necessários - simula ambiente real"""
         
         # ✅ 1. Criar Vigência (necessária para Acao)
-        vigencia = VigenciaPNGI.objects.create(
+        self.vigencia_base = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
             datiniciovigencia=date(2026, 1, 1),        )
         
@@ -749,7 +749,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=vigencia,  # OBRIGATÓRIO
+            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
             ideixo=eixo,              # Adicionar para consistência
             idsituacaoacao=situacao   # Adicionar para consistência
         )

@@ -325,7 +325,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=vigencia,  # OBRIGATÓRIO
+            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
             ideixo=eixo,              # Adicionar para consistência
             idsituacaoacao=situacao   # Adicionar para consistência
         )
@@ -696,7 +696,7 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=vigencia,  # OBRIGATÓRIO
+            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
             ideixo=eixo,              # Adicionar para consistência
             idsituacaoacao=situacao   # Adicionar para consistência
         )

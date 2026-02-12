@@ -1,3 +1,4 @@
+from django.test import Client
 """acoes_pngi/tests/test_web_acoes_views.py
 
 Testes completos para Web Views de Ações
@@ -12,7 +13,6 @@ Foco em testar lógica de negócio e operações no banco de dados.
 """
 
 from django.test import TestCase
-from .base import BaseTestCase, BaseAPITestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from datetime import date, datetime

@@ -10,7 +10,6 @@ Verifica:
 """
 
 from django.test import TestCase
-from .base import BaseTestCase, BaseAPITestCase, override_settings
 from django.contrib.auth import get_user_model
 from django.urls import resolve, reverse, get_resolver
 from django.conf import settings
