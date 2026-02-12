@@ -133,9 +133,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
     def setup_test_data(self):
         """Cria tipo de anotação de teste"""
         self.tipo_anotacao = TipoAnotacaoAlinhamento.objects.create(
-            strdescricaotipoanotacao='Reunião de Alinhamento',
-            stralias='REUN'
-        )
+            strdescricaotipoanotacaoalinhamento='Reunião de Alinhamento')
     
     # ------------------------------------------------------------------------
     # COORDENADOR_PNGI - Acesso Total
@@ -151,8 +149,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         """COORDENADOR_PNGI pode criar tipo de anotação"""
         self.authenticate_as('coordenador')
         data = {
-            'strdescricaotipoanotacao': 'Videoconferência',
-            'stralias': 'VIDEO'
+            'strdescricaotipoanotacaoalinhamento': 'Videoconferência'
         }
         response = self.client.post(
             '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/',
@@ -164,7 +161,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
     def test_coordenador_can_update_tipo_anotacao(self):
         """COORDENADOR_PNGI pode atualizar tipo de anotação"""
         self.authenticate_as('coordenador')
-        data = {'strdescricaotipoanotacao': 'Reunião de Alinhamento - Atualizado'}
+        data = {'strdescricaotipoanotacaoalinhamento': 'Reunião de Alinhamento - Atualizado'}
         response = self.client.patch(
             f'/api/v1/acoes_pngi/tipos-anotacao-alinhamento/{self.tipo_anotacao.idtipoanotacaoalinhamento}/',
             data,
@@ -175,9 +172,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
     def test_coordenador_can_delete_tipo_anotacao(self):
         """COORDENADOR_PNGI pode deletar tipo de anotação"""
         tipo_temp = TipoAnotacaoAlinhamento.objects.create(
-            strdescricaotipoanotacao='Temporário',
-            stralias='TEMP'
-        )
+            strdescricaotipoanotacaoalinhamento='Temporário')
         
         self.authenticate_as('coordenador')
         response = self.client.delete(
@@ -199,8 +194,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         
         # CREATE
         data = {
-            'strdescricaotipoanotacao': 'E-mail',
-            'stralias': 'EMAIL'
+            'strdescricaotipoanotacaoalinhamento': 'E-mail'
         }
         response = self.client.post(
             '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/',
@@ -217,8 +211,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         """OPERADOR_ACAO NÃO pode criar tipo de anotação (configuração)"""
         self.authenticate_as('operador')
         data = {
-            'strdescricaotipoanotacao': 'Tentativa Operador',
-            'stralias': 'OPER'
+            'strdescricaotipoanotacaoalinhamento': 'Tentativa Operador'
         }
         response = self.client.post(
             '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/',
@@ -230,7 +223,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
     def test_operador_cannot_update_tipo_anotacao(self):
         """OPERADOR_ACAO NÃO pode atualizar tipo de anotação"""
         self.authenticate_as('operador')
-        data = {'strdescricaotipoanotacao': 'Update Operador'}
+        data = {'strdescricaotipoanotacaoalinhamento': 'Update Operador'}
         response = self.client.patch(
             f'/api/v1/acoes_pngi/tipos-anotacao-alinhamento/{self.tipo_anotacao.idtipoanotacaoalinhamento}/',
             data,
@@ -260,8 +253,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         """CONSULTOR_PNGI NÃO pode criar tipo de anotação"""
         self.authenticate_as('consultor')
         data = {
-            'strdescricaotipoanotacao': 'Tentativa Consultor',
-            'stralias': 'CONS'
+            'strdescricaotipoanotacaoalinhamento': 'Tentativa Consultor'
         }
         response = self.client.post(
             '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/',
@@ -284,7 +276,7 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         """Ordenar tipos de anotação"""
         self.authenticate_as('consultor')
         response = self.client.get(
-            '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/?ordering=strdescricaotipoanotacao'
+            '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/?ordering=strdescricaotipoanotacaoalinhamento'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -328,14 +320,12 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         )
         
         self.tipo_anotacao = TipoAnotacaoAlinhamento.objects.create(
-            strdescricaotipoanotacao='Reunião',
-            stralias='REUN'
-        )
+            strdescricaotipoanotacaoalinhamento='Reunião')
         
         self.anotacao = AcaoAnotacaoAlinhamento.objects.create(
             idacao=self.acao,
             idtipoanotacaoalinhamento=self.tipo_anotacao,
-            dtanotacaoalinhamento=datetime.now(),
+            datdataanotacaoalinhamento=datetime.now(),
             strdescricaoanotacaoalinhamento='Anotação de Teste'
         )
     
@@ -355,7 +345,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         data = {
             'idacao': self.acao.idacao,
             'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
-            'dtanotacaoalinhamento': datetime.now().isoformat(),
+            'datdataanotacaoalinhamento': datetime.now().isoformat(),
             'strdescricaoanotacaoalinhamento': 'Nova Anotação Coordenador'
         }
         response = self.client.post(
@@ -384,7 +374,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         anotacao_temp = AcaoAnotacaoAlinhamento.objects.create(
             idacao=self.acao,
             idtipoanotacaoalinhamento=self.tipo_anotacao,
-            dtanotacaoalinhamento=datetime.now(),
+            datdataanotacaoalinhamento=datetime.now(),
             strdescricaoanotacaoalinhamento='Temporária'
         )
         
@@ -410,7 +400,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         data = {
             'idacao': self.acao.idacao,
             'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
-            'dtanotacaoalinhamento': (datetime.now()).isoformat(),
+            'datdataanotacaoalinhamento': (datetime.now()).isoformat(),
             'strdescricaoanotacaoalinhamento': 'Anotação Operador'
         }
         response = self.client.post(
@@ -439,7 +429,7 @@ class AcaoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
         data = {
             'idacao': self.acao.idacao,
             'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
-            'dtanotacaoalinhamento': datetime.now().isoformat(),
+            'datdataanotacaoalinhamento': datetime.now().isoformat(),
             'strdescricaoanotacaoalinhamento': 'Tentativa Consultor'
         }
         response = self.client.post(
@@ -552,7 +542,7 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         data = {'strorgao': 'SEGER - Atualizado'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel.idusuarioresponsavel}/',
+            f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel.pk}/',
             data,
             format='json'
         )
@@ -573,7 +563,7 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
         
         self.authenticate_as('coordenador')
         response = self.client.delete(
-            f'/api/v1/acoes_pngi/usuarios-responsaveis/{resp_temp.idusuarioresponsavel}/'
+            f'/api/v1/acoes_pngi/usuarios-responsaveis/{resp_temp.pk}/'
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
     
@@ -592,7 +582,7 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
         # UPDATE
         data = {'strtelefone': '27977777777'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel.idusuarioresponsavel}/',
+            f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel.pk}/',
             data,
             format='json'
         )
@@ -724,7 +714,7 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         data = {
             'idacao': self.acao.idacao,
-            'idusuarioresponsavel': novo_resp.idusuarioresponsavel
+            'idusuarioresponsavel': novo_resp.pk
         }
         response = self.client.post(
             '/api/v1/acoes_pngi/relacoes-acao-responsavel/',
@@ -737,7 +727,7 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
         """COORDENADOR_PNGI pode deletar relação"""
         self.authenticate_as('coordenador')
         response = self.client.delete(
-            f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao.idrelacaoacaousuarioresponsavel}/'
+            f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao.idacaousuarioresponsavel}/'
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
     
@@ -781,7 +771,7 @@ class RelacaoAcaoUsuarioResponsavelAPITests(BaseAPITestCase):
         """CONSULTOR_PNGI NÃO pode deletar relação"""
         self.authenticate_as('consultor')
         response = self.client.delete(
-            f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao.idrelacaoacaousuarioresponsavel}/'
+            f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao.idacaousuarioresponsavel}/'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     

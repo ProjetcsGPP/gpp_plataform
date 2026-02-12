@@ -19,6 +19,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
 from datetime import date, timedelta
+from django.utils import timezone
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import (
@@ -694,8 +695,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         
         self.destaque = AcaoDestaque.objects.create(
             idacao=self.acao,
-            strdescricaodestaque='Destaque Importante',
-            ordenacao=1
+            datdatadestaque=timezone.now()
         )
     
     # ------------------------------------------------------------------------
@@ -713,8 +713,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         data = {
             'idacao': self.acao.idacao,
-            'strdescricaodestaque': 'Novo Destaque',
-            'ordenacao': 2
+            'datdatadestaque': timezone.now().isoformat()
         }
         response = self.client.post('/api/v1/acoes_pngi/destaques/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -722,7 +721,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
     def test_coordenador_can_update_destaque(self):
         """COORDENADOR_PNGI pode atualizar destaque"""
         self.authenticate_as('coordenador')
-        data = {'strdescricaodestaque': 'Destaque Atualizado'}
+        data = {'datdatadestaque': timezone.now().isoformat()}
         response = self.client.patch(
             f'/api/v1/acoes_pngi/destaques/{self.destaque.idacaodestaque}/',
             data,
@@ -734,8 +733,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         """COORDENADOR_PNGI pode deletar destaque"""
         destaque_temp = AcaoDestaque.objects.create(
             idacao=self.acao,
-            strdescricaodestaque='Temporário',
-            ordenacao=3
+            datdatadestaque=timezone.now()
         )
         
         self.authenticate_as('coordenador')
@@ -759,8 +757,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         # CREATE
         data = {
             'idacao': self.acao.idacao,
-            'strdescricaodestaque': 'Destaque Operador',
-            'ordenacao': 4
+            'datdatadestaque': timezone.now().isoformat()
         }
         response = self.client.post('/api/v1/acoes_pngi/destaques/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -780,8 +777,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         data = {
             'idacao': self.acao.idacao,
-            'strdescricaodestaque': 'Tentativa Consultor',
-            'ordenacao': 5
+            'datdatadestaque': timezone.now().isoformat()
         }
         response = self.client.post('/api/v1/acoes_pngi/destaques/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -801,16 +797,14 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         # Criar mais destaques com diferentes ordenações
         AcaoDestaque.objects.create(
             idacao=self.acao,
-            strdescricaodestaque='Destaque 2',
-            ordenacao=2
+            datdatadestaque=timezone.now()
         )
         AcaoDestaque.objects.create(
             idacao=self.acao,
-            strdescricaodestaque='Destaque 3',
-            ordenacao=3
+            datdatadestaque=timezone.now()
         )
         
         self.authenticate_as('consultor')
-        response = self.client.get('/api/v1/acoes_pngi/destaques/?ordering=ordenacao')
+        response = self.client.get('/api/v1/acoes_pngi/destaques/?ordering=-datdatadestaque')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Verificar ordem (implementação pode variar)
