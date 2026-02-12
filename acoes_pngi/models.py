@@ -41,6 +41,7 @@ class SituacaoAcao(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
+    
     class Meta:
         db_table = 'tblsituacaoacao'
         managed = True
@@ -141,12 +142,13 @@ class Acoes(models.Model):
     strapelido = models.CharField(max_length=50, db_column='strapelido')
     strdescricaoacao = models.CharField(max_length=350, db_column='strdescricaoacao')
     strdescricaoentrega = models.CharField(max_length=20, db_column='strdescricaoentrega')
-    idvigenciapngi = models.ForeignKey(
-        VigenciaPNGI,
-        on_delete=models.PROTECT,
-        db_column='idvigenciapngi',
-        related_name='acoes'
+    datdataentrega = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_column='datdataentrega'
     )
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     idtipoentravealerta = models.ForeignKey(
         TipoEntraveAlerta,
         on_delete=models.SET_NULL,
@@ -155,13 +157,12 @@ class Acoes(models.Model):
         db_column='idtipoentravealerta',
         related_name='acoes'
     )
-    datdataentrega = models.DateTimeField(
-        null=True,
-        blank=True,
-        db_column='datdataentrega'
+    idvigenciapngi = models.ForeignKey(
+        VigenciaPNGI,
+        on_delete=models.PROTECT,
+        db_column='idvigenciapngi',
+        related_name='acoes'
     )
-    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
-    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
         db_table = 'tblacoes'
@@ -180,16 +181,16 @@ class AcaoPrazo(models.Model):
     Apenas um prazo ativo por ação
     """
     idacaoprazo = models.AutoField(primary_key=True, db_column='idacaoprazo')
+    isacaoprazoativo = models.BooleanField(default=True, db_column='isacaoprazoativo')
+    strprazo = models.CharField(max_length=20, db_column='strprazo')
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     idacao = models.ForeignKey(
         Acoes,
         on_delete=models.CASCADE,
         db_column='idacao',
         related_name='prazos'
     )
-    isacaoprazoativo = models.BooleanField(default=True, db_column='isacaoprazoativo')
-    strprazo = models.CharField(max_length=20, db_column='strprazo')
-    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
-    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
         db_table = 'tblacaoprazo'
@@ -235,15 +236,15 @@ class AcaoDestaque(models.Model):
     Única combinação de ação e data de destaque
     """
     idacaodestaque = models.AutoField(primary_key=True, db_column='idacaodestaque')
+    datdatadestaque = models.DateTimeField(db_column='datdatadestaque')
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     idacao = models.ForeignKey(
         Acoes,
         on_delete=models.CASCADE,
         db_column='idacao',
         related_name='destaques'
     )
-    datdatadestaque = models.DateTimeField(db_column='datdatadestaque')
-    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
-    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
     class Meta:
         db_table = 'tblacaodestaque'
@@ -297,18 +298,6 @@ class AcaoAnotacaoAlinhamento(models.Model):
         primary_key=True,
         db_column='idacaoanotacaoalinhamento'
     )
-    idacao = models.ForeignKey(
-        Acoes,
-        on_delete=models.CASCADE,
-        db_column='idacao',
-        related_name='anotacoes_alinhamento'
-    )
-    idtipoanotacaoalinhamento = models.ForeignKey(
-        TipoAnotacaoAlinhamento,
-        on_delete=models.PROTECT,
-        db_column='idtipoanotacaoalinhamento',
-        related_name='anotacoes'
-    )
     datdataanotacaoalinhamento = models.DateTimeField(
         db_column='datdataanotacaoalinhamento'
     )
@@ -330,6 +319,18 @@ class AcaoAnotacaoAlinhamento(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
+    idacao = models.ForeignKey(
+        Acoes,
+        on_delete=models.CASCADE,
+        db_column='idacao',
+        related_name='anotacoes_alinhamento'
+    )
+    idtipoanotacaoalinhamento = models.ForeignKey(
+        TipoAnotacaoAlinhamento,
+        on_delete=models.PROTECT,
+        db_column='idtipoanotacaoalinhamento',
+        related_name='anotacoes'
+    )
 
     class Meta:
         db_table = 'tblacaoanotacaoalinhamento'
@@ -384,6 +385,8 @@ class RelacaoAcaoUsuarioResponsavel(models.Model):
         primary_key=True,
         db_column='idacaousuarioresponsavel'
     )
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     idacao = models.ForeignKey(
         'Acoes',
         on_delete=models.CASCADE,
@@ -394,10 +397,9 @@ class RelacaoAcaoUsuarioResponsavel(models.Model):
         'UsuarioResponsavel',
         on_delete=models.CASCADE,
         db_column='idusuarioresponsavel',
+        to_field='idusuario',
         related_name='acoes'
     )
-    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
-    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     
     class Meta:
         db_table = 'tblrelacaoacaousuarioresponsavel'
