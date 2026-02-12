@@ -1,0 +1,376 @@
+# PATCH PARA CORRIGIR test_api_views_alinhamento_responsaveis.py
+# Múltiplos modelos com campos incorretos
+
+================================================================================
+PARTE 1: TipoAnotacaoAlinhamento
+================================================================================
+
+## PROBLEMA: Campo 'strdescricaotipoanotacao' está INCOMPLETO
+## CORRETO: 'strdescricaotipoanotacaoalinhamento' (nome completo)
+## PROBLEMA: Campo 'stralias' NÃO EXISTE
+
+---
+
+### CORREÇÃO 1: setup_test_data (linha ~135)
+
+ANTES:
+        self.tipo_anotacao = TipoAnotacaoAlinhamento.objects.create(
+            strdescricaotipoanotacao='Reunião de Alinhamento',
+            stralias='REUN'
+        )
+
+DEPOIS:
+        self.tipo_anotacao = TipoAnotacaoAlinhamento.objects.create(
+            strdescricaotipoanotacaoalinhamento='Reunião de Alinhamento'
+        )
+
+---
+
+### CORREÇÃO 2: test_coordenador_can_create_tipo_anotacao (linha ~151)
+
+ANTES:
+        data = {
+            'strdescricaotipoanotacao': 'Videoconferência',
+            'stralias': 'VIDEO'
+        }
+
+DEPOIS:
+        data = {
+            'strdescricaotipoanotacaoalinhamento': 'Videoconferência'
+        }
+
+---
+
+### CORREÇÃO 3: test_coordenador_can_update_tipo_anotacao (linha ~164)
+
+ANTES:
+        data = {'strdescricaotipoanotacao': 'Reunião de Alinhamento - Atualizado'}
+
+DEPOIS:
+        data = {'strdescricaotipoanotacaoalinhamento': 'Reunião de Alinhamento - Atualizado'}
+
+---
+
+### CORREÇÃO 4: test_coordenador_can_delete_tipo_anotacao (linha ~173)
+
+ANTES:
+        tipo_temp = TipoAnotacaoAlinhamento.objects.create(
+            strdescricaotipoanotacao='Temporário',
+            stralias='TEMP'
+        )
+
+DEPOIS:
+        tipo_temp = TipoAnotacaoAlinhamento.objects.create(
+            strdescricaotipoanotacaoalinhamento='Temporário'
+        )
+
+---
+
+### CORREÇÃO 5: test_gestor_can_manage_tipos_anotacao (linha ~195)
+
+ANTES:
+        data = {
+            'strdescricaotipoanotacao': 'E-mail',
+            'stralias': 'EMAIL'
+        }
+
+DEPOIS:
+        data = {
+            'strdescricaotipoanotacaoalinhamento': 'E-mail'
+        }
+
+---
+
+### CORREÇÃO 6: test_operador_cannot_create_tipo_anotacao (linha ~213)
+
+ANTES:
+        data = {
+            'strdescricaotipoanotacao': 'Tentativa Operador',
+            'stralias': 'OPER'
+        }
+
+DEPOIS:
+        data = {
+            'strdescricaotipoanotacaoalinhamento': 'Tentativa Operador'
+        }
+
+---
+
+### CORREÇÃO 7: test_operador_cannot_update_tipo_anotacao (linha ~225)
+
+ANTES:
+        data = {'strdescricaotipoanotacao': 'Update Operador'}
+
+DEPOIS:
+        data = {'strdescricaotipoanotacaoalinhamento': 'Update Operador'}
+
+---
+
+### CORREÇÃO 8: test_consultor_cannot_create_tipo_anotacao (linha ~251)
+
+ANTES:
+        data = {
+            'strdescricaotipoanotacao': 'Tentativa Consultor',
+            'stralias': 'CONS'
+        }
+
+DEPOIS:
+        data = {
+            'strdescricaotipoanotacaoalinhamento': 'Tentativa Consultor'
+        }
+
+---
+
+### CORREÇÃO 9: test_ordering_tipos_anotacao (linha ~274)
+
+ANTES:
+        response = self.client.get(
+            '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/?ordering=strdescricaotipoanotacao'
+        )
+
+DEPOIS:
+        response = self.client.get(
+            '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/?ordering=strdescricaotipoanotacaoalinhamento'
+        )
+
+================================================================================
+PARTE 2: AcaoAnotacaoAlinhamento
+================================================================================
+
+## PROBLEMA: Campo 'dtanotacaoalinhamento' está INCOMPLETO
+## CORRETO: 'datdataanotacaoalinhamento' (prefixo 'dat' + 'dataanotacaoalinhamento')
+
+---
+
+### CORREÇÃO 10: setup_test_data (linha ~330)
+
+ANTES:
+        self.tipo_anotacao = TipoAnotacaoAlinhamento.objects.create(
+            strdescricaotipoanotacao='Reunião',
+            stralias='REUN'
+        )
+
+DEPOIS:
+        self.tipo_anotacao = TipoAnotacaoAlinhamento.objects.create(
+            strdescricaotipoanotacaoalinhamento='Reunião'
+        )
+
+---
+
+### CORREÇÃO 11: setup_test_data - criar anotação (linha ~336)
+
+ANTES:
+        self.anotacao = AcaoAnotacaoAlinhamento.objects.create(
+            idacao=self.acao,
+            idtipoanotacaoalinhamento=self.tipo_anotacao,
+            dtanotacaoalinhamento=datetime.now(),
+            strdescricaoanotacaoalinhamento='Anotação de Teste'
+        )
+
+DEPOIS:
+        self.anotacao = AcaoAnotacaoAlinhamento.objects.create(
+            idacao=self.acao,
+            idtipoanotacaoalinhamento=self.tipo_anotacao,
+            datdataanotacaoalinhamento=datetime.now(),
+            strdescricaoanotacaoalinhamento='Anotação de Teste'
+        )
+
+---
+
+### CORREÇÃO 12: test_coordenador_can_create_anotacao (linha ~353)
+
+ANTES:
+        data = {
+            'idacao': self.acao.idacao,
+            'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
+            'dtanotacaoalinhamento': datetime.now().isoformat(),
+            'strdescricaoanotacaoalinhamento': 'Nova Anotação Coordenador'
+        }
+
+DEPOIS:
+        data = {
+            'idacao': self.acao.idacao,
+            'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
+            'datdataanotacaoalinhamento': datetime.now().isoformat(),
+            'strdescricaoanotacaoalinhamento': 'Nova Anotação Coordenador'
+        }
+
+---
+
+### CORREÇÃO 13: test_coordenador_can_delete_anotacao (linha ~383)
+
+ANTES:
+        anotacao_temp = AcaoAnotacaoAlinhamento.objects.create(
+            idacao=self.acao,
+            idtipoanotacaoalinhamento=self.tipo_anotacao,
+            dtanotacaoalinhamento=datetime.now(),
+            strdescricaoanotacaoalinhamento='Temporária'
+        )
+
+DEPOIS:
+        anotacao_temp = AcaoAnotacaoAlinhamento.objects.create(
+            idacao=self.acao,
+            idtipoanotacaoalinhamento=self.tipo_anotacao,
+            datdataanotacaoalinhamento=datetime.now(),
+            strdescricaoanotacaoalinhamento='Temporária'
+        )
+
+---
+
+### CORREÇÃO 14: test_operador_can_manage_anotacoes (linha ~405)
+
+ANTES:
+        data = {
+            'idacao': self.acao.idacao,
+            'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
+            'dtanotacaoalinhamento': (datetime.now()).isoformat(),
+            'strdescricaoanotacaoalinhamento': 'Anotação Operador'
+        }
+
+DEPOIS:
+        data = {
+            'idacao': self.acao.idacao,
+            'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
+            'datdataanotacaoalinhamento': datetime.now().isoformat(),
+            'strdescricaoanotacaoalinhamento': 'Anotação Operador'
+        }
+
+---
+
+### CORREÇÃO 15: test_consultor_cannot_create_anotacao (linha ~430)
+
+ANTES:
+        data = {
+            'idacao': self.acao.idacao,
+            'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
+            'dtanotacaoalinhamento': datetime.now().isoformat(),
+            'strdescricaoanotacaoalinhamento': 'Tentativa Consultor'
+        }
+
+DEPOIS:
+        data = {
+            'idacao': self.acao.idacao,
+            'idtipoanotacaoalinhamento': self.tipo_anotacao.idtipoanotacaoalinhamento,
+            'datdataanotacaoalinhamento': datetime.now().isoformat(),
+            'strdescricaoanotacaoalinhamento': 'Tentativa Consultor'
+        }
+
+================================================================================
+PARTE 3: UsuarioResponsavel
+================================================================================
+
+## PROBLEMA: Usando 'idusuarioresponsavel' como PK
+## CORRETO: PK é 'idusuario' (OneToOneField)
+## Para acessar o ID: usar '.idusuario_id' ou '.pk'
+
+---
+
+### CORREÇÃO 16: test_coordenador_can_update_responsavel (linha ~555)
+
+ANTES:
+        response = self.client.patch(
+            f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel.idusuarioresponsavel}/',
+            data,
+            format='json'
+        )
+
+DEPOIS:
+        response = self.client.patch(
+            f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel.pk}/',
+            data,
+            format='json'
+        )
+
+---
+
+### CORREÇÃO 17: test_coordenador_can_delete_responsavel (linha ~576)
+
+ANTES:
+        response = self.client.delete(
+            f'/api/v1/acoes_pngi/usuarios-responsaveis/{resp_temp.idusuarioresponsavel}/'
+        )
+
+DEPOIS:
+        response = self.client.delete(
+            f'/api/v1/acoes_pngi/usuarios-responsaveis/{resp_temp.pk}/'
+        )
+
+---
+
+### CORREÇÃO 18: test_operador_can_manage_responsaveis (linha ~595)
+
+ANTES:
+        response = self.client.patch(
+            f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel.idusuarioresponsavel}/',
+            data,
+            format='json'
+        )
+
+DEPOIS:
+        response = self.client.patch(
+            f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel.pk}/',
+            data,
+            format='json'
+        )
+
+================================================================================
+PARTE 4: RelacaoAcaoUsuarioResponsavel
+================================================================================
+
+## PROBLEMA: PK 'idrelacaoacaousuarioresponsavel' INCORRETA
+## CORRETO: 'idacaousuarioresponsavel' (sem 'relacao' no meio)
+
+---
+
+### CORREÇÃO 19: test_coordenador_can_create_relacao (linha ~731)
+
+ANTES:
+        data = {
+            'idacao': self.acao.idacao,
+            'idusuarioresponsavel': novo_resp.idusuarioresponsavel
+        }
+
+DEPOIS:
+        data = {
+            'idacao': self.acao.idacao,
+            'idusuarioresponsavel': novo_resp.pk
+        }
+
+---
+
+### CORREÇÃO 20: test_coordenador_can_delete_relacao (linha ~740)
+
+ANTES:
+        response = self.client.delete(
+            f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao.idrelacaoacaousuarioresponsavel}/'
+        )
+
+DEPOIS:
+        response = self.client.delete(
+            f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao.idacaousuarioresponsavel}/'
+        )
+
+---
+
+### CORREÇÃO 21: test_consultor_cannot_delete_relacao (linha ~771)
+
+ANTES:
+        response = self.client.delete(
+            f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao.idrelacaoacaousuarioresponsavel}/'
+        )
+
+DEPOIS:
+        response = self.client.delete(
+            f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao.idacaousuarioresponsavel}/'
+        )
+
+================================================================================
+RESUMO TOTAL: 21 correções no arquivo test_api_views_alinhamento_responsaveis.py
+================================================================================
+
+TipoAnotacaoAlinhamento:           9 correções
+AcaoAnotacaoAlinhamento:           6 correções
+UsuarioResponsavel:                3 correções
+RelacaoAcaoUsuarioResponsavel:     3 correções
+
+TOTAL:                            21 correções
