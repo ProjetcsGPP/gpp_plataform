@@ -574,37 +574,30 @@ class AcaoPrazoAPITests(BaseAPITestCase):
     
     def setup_test_data(self):
         """Cria TODOS relacionamentos necessários - simula ambiente real"""
+        super().setup_test_data()
         
-        # ✅ 1. Criar Vigência (necessária para Acao)
-        self.vigencia_base = VigenciaPNGI.objects.create(
+        # Criar Vigência (necessária para Acao)
+        self.vigencia, _ = VigenciaPNGI.objects.get_or_create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31),        )
-        
-        # ✅ 2. Criar Eixo (opcional mas comum)
-        eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
+            defaults={
+                'datiniciovigencia': date(2026, 1, 1),
+                'datfinalvigencia': date(2026, 12, 31)
+            }
         )
         
-        # ✅ 3. Criar Situação (opcional mas comum)
-        situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
-        
-        # ✅ 4. Criar Acao COMPLETA (AcaoPrazo.idacao é obrigatório)
+        # Criar Acao COMPLETA (AcaoPrazo.idacao é obrigatório)
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
-            ideixo=eixo,              # Adicionar para consistência
-            idsituacaoacao=situacao   # Adicionar para consistência
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
         
-        # ✅ 5. Criar Prazo vinculado à Acao
+        # Criar Prazo vinculado à Acao
         self.prazo = AcaoPrazo.objects.create(
-            idacao=self.acao,  # OBRIGATÓRIO
+            idacao=self.acao,
             strprazo='2026-06-30',
             isacaoprazoativo=True
         )
@@ -756,37 +749,30 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
     
     def setup_test_data(self):
         """Cria TODOS relacionamentos necessários - simula ambiente real"""
+        super().setup_test_data()
         
-        # ✅ 1. Criar Vigência (necessária para Acao)
-        self.vigencia_base = VigenciaPNGI.objects.create(
+        # Criar Vigência (necessária para Acao)
+        self.vigencia, _ = VigenciaPNGI.objects.get_or_create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31),        )
-        
-        # ✅ 2. Criar Eixo (opcional mas comum)
-        eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
+            defaults={
+                'datiniciovigencia': date(2026, 1, 1),
+                'datfinalvigencia': date(2026, 12, 31)
+            }
         )
         
-        # ✅ 3. Criar Situação (opcional mas comum)
-        situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
-        
-        # ✅ 4. Criar Acao COMPLETA (AcaoDestaque.idacao é obrigatório)
+        # Criar Acao COMPLETA (AcaoDestaque.idacao é obrigatório)
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
-            ideixo=eixo,              # Adicionar para consistência
-            idsituacaoacao=situacao   # Adicionar para consistência
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao
         )
         
-        # ✅ 5. Criar Destaque vinculado à Acao
+        # Criar Destaque vinculado à Acao
         self.destaque = AcaoDestaque.objects.create(
-            idacao=self.acao,  # OBRIGATÓRIO
+            idacao=self.acao,
             datdatadestaque=timezone.now()
         )
     
