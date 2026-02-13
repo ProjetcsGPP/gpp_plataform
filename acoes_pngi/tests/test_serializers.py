@@ -58,8 +58,7 @@ class VigenciaPNGISerializerTest(BaseTestCase):
         """Testa serialização de vigência"""
         vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2024-2028',
-            datiniciovigencia=date(2024, 1, 1,
-            datfinalvigencia=date(2024, 12, 31)),
+            datiniciovigencia=date(2024, 1, 1),
             datfinalvigencia=date(2028, 12, 31),
             isvigenciaativa=True
         )
