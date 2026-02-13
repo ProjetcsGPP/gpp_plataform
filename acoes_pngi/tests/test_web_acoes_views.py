@@ -61,7 +61,6 @@ class AcoesWebViewsTest(BaseTestCase):
         # Login
         self.client.force_login(self.user)
         
-        # Criar vigência        
         # Criar tipo de entrave
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Crítico'
@@ -149,7 +148,7 @@ class AcoesWebViewsTest(BaseTestCase):
             'strapelido': 'ACAO-002',
             'strdescricaoacao': 'Nova Ação',
             'strdescricaoentrega': 'Nova Entrega',
-            'idvigenciapngi': self.vigencia.idvigenciapngi,
+            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
             'idtipoentravealerta': self.tipo_entrave.idtipoentravealerta
         }
         try:
@@ -177,7 +176,7 @@ class AcoesWebViewsTest(BaseTestCase):
             'strapelido': 'ACAO-001-UPD',
             'strdescricaoacao': 'Ação Atualizada',
             'strdescricaoentrega': 'Entrega Atualizada',
-            'idvigenciapngi': self.vigencia.idvigenciapngi
+            'idvigenciapngi': self.vigencia_base.idvigenciapngi
         }
         try:
             response = self.client.post(
@@ -246,7 +245,7 @@ class AcaoPrazoWebViewsTest(BaseTestCase):
         # Login
         self.client.force_login(self.user)
         
-        # Criar vigência e ação        
+        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
@@ -368,7 +367,7 @@ class AcaoDestaqueWebViewsTest(BaseTestCase):
         # Login
         self.client.force_login(self.user)
         
-        # Criar vigência e ação        
+        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
