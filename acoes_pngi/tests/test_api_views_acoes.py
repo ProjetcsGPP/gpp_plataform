@@ -571,7 +571,7 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         # ✅ 1. Criar Vigência (necessária para Acao)
         self.vigencia_base = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1)
+            datiniciovigencia=date(2026, 1, 1),
             datfinalvigencia=date(2026, 12, 31),        )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
@@ -753,7 +753,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         # ✅ 1. Criar Vigência (necessária para Acao)
         self.vigencia_base = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1)
+            datiniciovigencia=date(2026, 1, 1),
             datfinalvigencia=date(2026, 12, 31),        )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
