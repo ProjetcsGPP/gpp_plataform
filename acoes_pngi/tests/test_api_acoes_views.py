@@ -159,17 +159,23 @@ class AcoesViewSetTest(BaseTestCase):
     def test_filter_acoes_by_vigencia(self):
         """Filtrar ações por vigência"""
         # Criar outra vigência e ação
-        vigencia2 = VigenciaPNGI.objects.create(
+        #vigencia2 = VigenciaPNGI.objects.create(
+        #    strdescricaovigenciapngi='PNGI 2027',
+        #    datiniciovigencia=date(2027, 1, 1,
+        #    datfinalvigencia=date(2027, 12, 31)),
+        #    datfinalvigencia=date(2027, 12, 31)
+        #)
+        vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2027',
-            datiniciovigencia=date(2027, 1, 1,
-            datfinalvigencia=date(2027, 12, 31)),
-            datfinalvigencia=date(2027, 12, 31)
+            dat_inicio_vigencia=date(2027, 1, 1),  # ✅ 3 argumentos
+            dat_final_vigencia=date(2027, 12, 31),  # ✅ 3 argumentos
+            boolativa=False
         )
         Acoes.objects.create(
             strapelido='ACAO-003',
             strdescricaoacao='Ação 2027',
             strdescricaoentrega='Entrega 2027',
-            idvigenciapngi=vigencia2,
+            idvigenciapngi=vigencia,
             ideixo=self.eixo_base,
             idsituacaoacao=self.situacao_base
         )

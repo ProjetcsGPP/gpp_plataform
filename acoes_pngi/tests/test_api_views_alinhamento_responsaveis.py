@@ -103,14 +103,14 @@ class BaseAPITestCase(BaseTestCase):
     def setup_test_data(self):
         # Criar Eixo (se não existe)
         if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.create(
+            self.eixo = Eixo.objects.get_or_create(
                 stralias='E1',
                 strdescricaoeixo='Eixo 1 - Gestão'
             )
 
         # Criar SituacaoAcao (se não existe)
         if not hasattr(self, 'situacao') or self.situacao is None:
-            self.situacao = SituacaoAcao.objects.create(
+            self.situacao = SituacaoAcao.objects.get_or_create(
                 strdescricaosituacao='Em Andamento'
             )
 
@@ -148,14 +148,14 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
     def setup_test_data(self):
         # Criar Eixo (se não existe)
         if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.create(
+            self.eixo = Eixo.objects.get_or_create(
                 stralias='E1',
                 strdescricaoeixo='Eixo 1 - Gestão'
             )
 
         # Criar SituacaoAcao (se não existe)
         if not hasattr(self, 'situacao') or self.situacao is None:
-            self.situacao = SituacaoAcao.objects.create(
+            self.situacao = SituacaoAcao.objects.get_or_create(
                 strdescricaosituacao='Em Andamento'
             )
 
@@ -539,14 +539,14 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
     def setup_test_data(self):
         # Criar Eixo (se não existe)
         if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.create(
+            self.eixo = Eixo.objects.get_or_create(
                 stralias='E1',
                 strdescricaoeixo='Eixo 1 - Gestão'
             )
 
         # Criar SituacaoAcao (se não existe)
         if not hasattr(self, 'situacao') or self.situacao is None:
-            self.situacao = SituacaoAcao.objects.create(
+            self.situacao = SituacaoAcao.objects.get_or_create(
                 strdescricaosituacao='Em Andamento'
             )
 

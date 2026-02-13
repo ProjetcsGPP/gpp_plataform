@@ -17,7 +17,7 @@ Cobre:
 - Context data e permissões no template
 """
 
-from django.test import TestCase, Client
+from django.test import RequestFactory, TestCase, Client
 from .base import BaseTestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -465,7 +465,9 @@ class AcoesWebViewsTests(BaseWebTestCase):
     """Testes de views web para Ações (operações)"""
     
     def setup_test_data(self):
-        """Cria vigência e ação de teste"""        
+        """Cria vigência e ação de teste"""
+        self.factory = RequestFactory()
+        
         self.acao = Acoes.objects.create(
             strapelido='ACAO-WEB-001',
             strdescricaoacao='Ação Teste Web',
