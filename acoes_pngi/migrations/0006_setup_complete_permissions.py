@@ -1,6 +1,7 @@
 # Generated migration for complete RBAC setup
 # Standalone migration - NÃO cria tabelas, apenas configura permissões
 
+import sys
 from django.db import migrations
 
 
@@ -26,12 +27,16 @@ def create_complete_permissions(apps, schema_editor):
     ContentType = apps.get_model('contenttypes', 'ContentType')
     Permission = apps.get_model('auth', 'Permission')
     
+    # ✨ Detecta modo de teste para silenciar avisos
+    is_testing = 'test' in sys.argv
+    
     # Buscar aplicação (se não existir, pula)
     try:
         app_acoes = Aplicacao.objects.get(codigointerno='ACOES_PNGI')
     except Aplicacao.DoesNotExist:
-        print("⚠️  Aplicação ACOES_PNGI não encontrada.")
-        print("   Certifique-se de criar a aplicação antes de rodar esta migration.")
+        if not is_testing:  # ✅ Só mostra aviso se NÃO for teste
+            print("⚠️  Aplicação ACOES_PNGI não encontrada.")
+            print("   Certifique-se de criar a aplicação antes de rodar esta migration.")
         return
     
     # Classificação de modelos
@@ -62,7 +67,9 @@ def create_complete_permissions(apps, schema_editor):
     total_created = 0
     total_existing = 0
     
-    print("\n🔧 Verificando permissões...")
+    if not is_testing:
+        print("\n🔧 Verificando permissões...")
+    
     for category, model_list in models_config.items():
         for app_label, model_name in model_list:
             try:
@@ -79,19 +86,22 @@ def create_complete_permissions(apps, schema_editor):
                     permissions_by_model[model_name][action] = perm
                     if created:
                         total_created += 1
-                        print(f"  ✅ Criada: {codename}")
+                        if not is_testing:
+                            print(f"  ✅ Criada: {codename}")
                     else:
                         total_existing += 1
                 
             except ContentType.DoesNotExist:
-                print(f"  ⚠️  ContentType para {app_label}.{model_name} não encontrado")
-                print(f"     Certifique-se de que as tabelas existem no banco.")
+                if not is_testing:
+                    print(f"  ⚠️  ContentType para {app_label}.{model_name} não encontrado")
+                    print(f"     Certifique-se de que as tabelas existem no banco.")
                 continue
     
-    if total_created > 0:
-        print(f"\n✅ {total_created} novas permissões criadas")
-    if total_existing > 0:
-        print(f"✅ {total_existing} permissões já existiam")
+    if not is_testing:
+        if total_created > 0:
+            print(f"\n✅ {total_created} novas permissões criadas")
+        if total_existing > 0:
+            print(f"✅ {total_existing} permissões já existiam")
     
     # Hierarquia de permissões por role
     roles_hierarchy = {
@@ -118,7 +128,8 @@ def create_complete_permissions(apps, schema_editor):
     }
     
     # Vincular permissões às roles
-    print("\n🔗 Vinculando RolePermissions...")
+    if not is_testing:
+        print("\n🔗 Vinculando RolePermissions...")
     
     for role_code, categories in roles_hierarchy.items():
         try:
@@ -145,21 +156,24 @@ def create_complete_permissions(apps, schema_editor):
                             else:
                                 role_perms_existing += 1
             
-            if role_perms_created > 0:
-                print(f"  ✅ {role_code}: {role_perms_created} novas RolePermissions")
-            if role_perms_existing > 0:
-                print(f"  ℹ️  {role_code}: {role_perms_existing} RolePermissions já existiam")
+            if not is_testing:
+                if role_perms_created > 0:
+                    print(f"  ✅ {role_code}: {role_perms_created} novas RolePermissions")
+                if role_perms_existing > 0:
+                    print(f"  ℹ️  {role_code}: {role_perms_existing} RolePermissions já existiam")
             
         except Role.DoesNotExist:
-            print(f"  ⚠️  Role {role_code} não encontrada.")
-            print(f"     Crie a role antes de rodar esta migration.")
+            if not is_testing:
+                print(f"  ⚠️  Role {role_code} não encontrada.")
+                print(f"     Crie a role antes de rodar esta migration.")
             continue
     
-    print("\n🎉 Migração concluída com sucesso!")
-    print("\n📝 Próximos passos:")
-    print("   1. Verificar roles em /admin/accounts/role/")
-    print("   2. Testar permissões: python manage.py test acoes_pngi.tests")
-    print("   3. Validar API: /api/v1/accounts/permissions/")
+    if not is_testing:
+        print("\n🎉 Migração concluída com sucesso!")
+        print("\n📝 Próximos passos:")
+        print("   1. Verificar roles em /admin/accounts/role/")
+        print("   2. Testar permissões: python manage.py test acoes_pngi.tests")
+        print("   3. Validar API: /api/v1/accounts/permissions/")
 
 
 def remove_all_permissions(apps, schema_editor):
@@ -171,13 +185,18 @@ def remove_all_permissions(apps, schema_editor):
     Role = apps.get_model('accounts', 'Role')
     RolePermission = apps.get_model('accounts', 'RolePermission')
     
+    # ✨ Detecta modo de teste
+    is_testing = 'test' in sys.argv
+    
     try:
         app_acoes = Aplicacao.objects.get(codigointerno='ACOES_PNGI')
         roles = Role.objects.filter(aplicacao=app_acoes)
         deleted_count = RolePermission.objects.filter(role__in=roles).delete()[0]
-        print(f"🗑️  {deleted_count} RolePermissions removidas (rollback)")
+        if not is_testing:
+            print(f"🗑️  {deleted_count} RolePermissions removidas (rollback)")
     except Aplicacao.DoesNotExist:
-        print("⚠️  Aplicação não encontrada, nada a reverter")
+        if not is_testing:
+            print("⚠️  Aplicação não encontrada, nada a reverter")
 
 
 class Migration(migrations.Migration):
