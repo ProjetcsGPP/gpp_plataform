@@ -17,6 +17,7 @@ from rest_framework.test import APIClient, APIRequestFactory
 from rest_framework import status
 from datetime import date
 from django.utils import timezone
+from .base import BaseTestCase
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import Acoes, VigenciaPNGI
@@ -170,7 +171,7 @@ class DiagnosticAPITest(BaseTestCase):
             print(f"\n   ⚠️  Possível problema de permissões")
         elif response.status_code == 200:
             print(f"\n   ✅ Sucesso! A API está acessível.")
-            print(f"   Total de ações retornadas: {len(response.data.get('results', []))}")
+            print(f"   Total de ações retornadas: {len(list(response.data))}")
         
         print("\n" + "="*70 + "\n")
     
@@ -276,7 +277,7 @@ class DiagnosticAPITest(BaseTestCase):
         
         elif response.status_code == 200:
             print("✅ TUDO FUNCIONANDO PERFEITAMENTE!\n")
-            print(f"Total de ações retornadas: {len(response.data.get('results', []))}")
+            print(f"Total de ações retornadas: {len(list(response.data))}")
         
         print("\n" + "="*70 + "\n")
         

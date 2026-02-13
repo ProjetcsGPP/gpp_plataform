@@ -12,7 +12,8 @@ Aceita múltiplos status codes porque templates podem não existir.
 """
 
 from django.test import TestCase
-from .base import BaseTestCase, BaseAPITestCase, Client
+from .base import BaseTestCase, BaseAPITestCase
+from django.test import Client
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from datetime import date
@@ -213,7 +214,7 @@ class VigenciaCRUDWebViewTests(BaseTestCase):
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
-        self.client.login(email='coord@test.com', password='test123')        )
+        self.client.login(email='coord@test.com', password='test123')
     
     def test_vigencia_list_requires_login(self):
         """Lista de vigências requer login"""

@@ -17,6 +17,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from datetime import date, datetime
 from django.utils import timezone
+from .base import BaseTestCase
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import (
