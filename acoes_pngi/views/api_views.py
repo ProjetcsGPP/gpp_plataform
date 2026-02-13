@@ -41,6 +41,7 @@ from ..serializers import (
 from ..permissions import (
     HasAcoesPermission,
     IsCoordenadorOrAbove,
+    IsGestorPNGI,
     IsCoordernadorOrGestorPNGI,
     IsCoordernadorGestorOrOperadorPNGI
 )
@@ -209,8 +210,12 @@ class UserManagementViewSet(viewsets.ViewSet):
     ViewSet para gerenciamento de usuários da aplicação.
     
     ✨ Usa request.app_context automaticamente.
+    
+    Permissões:
+    - Apenas GESTOR_PNGI pode gerenciar usuários
+    - Demais roles podem apenas consultar
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsGestorPNGI]  # ✅ ATUALIZADO: apenas GESTOR
     
     lookup_field = 'pk'
     lookup_value_regex = '.*'
@@ -328,10 +333,16 @@ class UserManagementViewSet(viewsets.ViewSet):
 # ============================================================================
 
 class EixoViewSet(viewsets.ModelViewSet):
-    """ViewSet para gerenciar Eixos do PNGI."""
+    """
+    ViewSet para gerenciar Eixos do PNGI.
+    
+    Permissões:
+    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
+    - Escrita: Apenas COORDENADOR e GESTOR
+    """
     queryset = Eixo.objects.all()
     serializer_class = EixoSerializer
-    permission_classes = [HasAcoesPermission]
+    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ ATUALIZADO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaoeixo', 'stralias']
     ordering_fields = ['stralias', 'strdescricaoeixo', 'created_at']
@@ -354,10 +365,16 @@ class EixoViewSet(viewsets.ModelViewSet):
 
 
 class SituacaoAcaoViewSet(viewsets.ModelViewSet):
-    """ViewSet para gerenciar Situações de Ações do PNGI."""
+    """
+    ViewSet para gerenciar Situações de Ações do PNGI.
+    
+    Permissões:
+    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
+    - Escrita: Apenas GESTOR_PNGI (configuração crítica)
+    """
     queryset = SituacaoAcao.objects.all()
     serializer_class = SituacaoAcaoSerializer
-    permission_classes = [HasAcoesPermission]
+    permission_classes = [IsGestorPNGI]  # ✅ ATUALIZADO: apenas GESTOR
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaosituacao']
     ordering_fields = ['strdescricaosituacao', 'created_at']
@@ -365,10 +382,16 @@ class SituacaoAcaoViewSet(viewsets.ModelViewSet):
 
 
 class VigenciaPNGIViewSet(viewsets.ModelViewSet):
-    """ViewSet para gerenciar Vigências do PNGI."""
+    """
+    ViewSet para gerenciar Vigências do PNGI.
+    
+    Permissões:
+    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
+    - Escrita: Apenas COORDENADOR e GESTOR
+    """
     queryset = VigenciaPNGI.objects.all()
     serializer_class = VigenciaPNGISerializer
-    permission_classes = [HasAcoesPermission]
+    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ ATUALIZADO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaovigenciapngi']
     ordering_fields = ['datiniciovigencia', 'datfinalvigencia', 'created_at']
@@ -431,11 +454,11 @@ class TipoEntraveAlertaViewSet(viewsets.ModelViewSet):
     
     Permissões:
     - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
-    - Escrita: Apenas COORDENADOR e GESTOR
+    - Escrita: Apenas GESTOR_PNGI (configuração crítica)
     """
     queryset = TipoEntraveAlerta.objects.all()
     serializer_class = TipoEntraveAlertaSerializer
-    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ CONSULTOR e OPERADOR bloqueados em escrita
+    permission_classes = [IsGestorPNGI]  # ✅ ATUALIZADO: apenas GESTOR
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaotipoentravealerta']
     ordering_fields = ['strdescricaotipoentravealerta', 'created_at']
@@ -459,7 +482,7 @@ class AcoesViewSet(viewsets.ModelViewSet):
     ).prefetch_related(
         'prazos', 'destaques', 'anotacoes_alinhamento', 'responsaveis'
     )
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strapelido', 'strdescricaoacao', 'strdescricaoentrega']
     ordering_fields = ['strapelido', 'datdataentrega', 'created_at']
@@ -505,7 +528,7 @@ class AcaoPrazoViewSet(viewsets.ModelViewSet):
     """
     queryset = AcaoPrazo.objects.select_related('idacao')
     serializer_class = AcaoPrazoSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strprazo', 'idacao__strapelido']
     ordering_fields = ['created_at', 'isacaoprazoativo']
@@ -541,7 +564,7 @@ class AcaoDestaqueViewSet(viewsets.ModelViewSet):
     """
     queryset = AcaoDestaque.objects.select_related('idacao')
     serializer_class = AcaoDestaqueSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['idacao__strapelido']
     ordering_fields = ['datdatadestaque', 'created_at']
@@ -568,7 +591,7 @@ class TipoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
     """
     queryset = TipoAnotacaoAlinhamento.objects.all()
     serializer_class = TipoAnotacaoAlinhamentoSerializer
-    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ CONSULTOR e OPERADOR bloqueados em escrita
+    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaotipoanotacaoalinhamento']
     ordering = ['strdescricaotipoanotacaoalinhamento']
@@ -586,7 +609,7 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
         'idacao', 'idtipoanotacaoalinhamento'
     )
     serializer_class = AcaoAnotacaoAlinhamentoSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['idacao__strapelido', 'idtipoanotacaoalinhamento__strdescricaotipoanotacaoalinhamento']
     ordering = ['-created_at']
@@ -614,7 +637,7 @@ class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
     """
     queryset = UsuarioResponsavel.objects.select_related('idusuario')
     serializer_class = UsuarioResponsavelSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['idusuario__name', 'idusuario__email', 'strorgao', 'strtelefone']
     ordering = ['idusuario__name']
@@ -638,7 +661,7 @@ class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
         'idacao', 'idusuarioresponsavel__idusuario'
     )
     serializer_class = RelacaoAcaoUsuarioResponsavelSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.OrderingFilter]
     ordering = ['-created_at']
 
