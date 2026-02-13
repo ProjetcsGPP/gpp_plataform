@@ -6,15 +6,21 @@ from accounts.models import UserRole, Aplicacao
 # PERMISSÕES PARA TESTES AUTOMATIZADOS (Novo)
 # ============================================================================
 
-class IsCoordernadorOrGestorPNGI(BasePermission):
+class IsGestorPNGI(BasePermission):
     """
-    Permissão para CONFIGURAÇÕES (Eixo, Situação, Vigência, TipoEntrave, TipoAnotação).
+    Permissão para CONFIGURAÇÕES CRÍTICAS e GESTÃO DE USUÁRIOS.
+    
+    Usada para: SituacaoAcao, TipoEntraveAlerta, UserManagementViewSet
     
     Regras:
     - SAFE_METHODS (GET, HEAD, OPTIONS): Todas as 4 roles podem acessar
-    - CREATE/UPDATE/DELETE: Apenas COORDENADOR_PNGI e GESTOR_PNGI
+    - CREATE/UPDATE/DELETE: Apenas GESTOR_PNGI
+    - COORDENADOR_PNGI: Bloqueado em escrita (não gerencia estas configurações)
     - OPERADOR_ACAO: Bloqueado em escrita (só gerencia ações)
     - CONSULTOR_PNGI: Bloqueado em escrita (apenas leitura)
+    
+    Hierarquia:
+    GESTOR_PNGI (escrita) > COORDENADOR_PNGI (leitura) > OPERADOR_ACAO (leitura) > CONSULTOR_PNGI (leitura)
     """
     
     SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
@@ -26,7 +32,62 @@ class IsCoordernadorOrGestorPNGI(BasePermission):
         
         # SAFE_METHODS: qualquer usuário autenticado com role PNGI
         if request.method in self.SAFE_METHODS:
-            # Verificar se tem alguma role PNGI
+            try:
+                app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+                if not app_acoes:
+                    return False
+                
+                has_any_role = UserRole.objects.filter(
+                    user=request.user,
+                    aplicacao=app_acoes
+                ).exists()
+                
+                return has_any_role
+            except Exception:
+                return False
+        
+        # CREATE/UPDATE/DELETE: apenas GESTOR
+        try:
+            app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+            if not app_acoes:
+                return False
+            
+            allowed_roles = UserRole.objects.filter(
+                user=request.user,
+                aplicacao=app_acoes,
+                role__codigoperfil='GESTOR_PNGI'
+            ).exists()
+            
+            return allowed_roles
+        except Exception:
+            return False
+
+
+class IsCoordernadorOrGestorPNGI(BasePermission):
+    """
+    Permissão para CONFIGURAÇÕES COMPARTILHADAS.
+    
+    Usada para: Eixo, VigenciaPNGI, TipoAnotacaoAlinhamento
+    
+    Regras:
+    - SAFE_METHODS (GET, HEAD, OPTIONS): Todas as 4 roles podem acessar
+    - CREATE/UPDATE/DELETE: GESTOR_PNGI e COORDENADOR_PNGI
+    - OPERADOR_ACAO: Bloqueado em escrita (só gerencia ações)
+    - CONSULTOR_PNGI: Bloqueado em escrita (apenas leitura)
+    
+    Hierarquia:
+    GESTOR_PNGI (escrita) = COORDENADOR_PNGI (escrita) > OPERADOR_ACAO (leitura) > CONSULTOR_PNGI (leitura)
+    """
+    
+    SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+    
+    def has_permission(self, request, view):
+        # Usuário deve estar autenticado
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        # SAFE_METHODS: qualquer usuário autenticado com role PNGI
+        if request.method in self.SAFE_METHODS:
             try:
                 app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
                 if not app_acoes:
@@ -60,12 +121,18 @@ class IsCoordernadorOrGestorPNGI(BasePermission):
 
 class IsCoordernadorGestorOrOperadorPNGI(BasePermission):
     """
-    Permissão para OPERAÇÕES (Ações, Prazos, Destaques, Anotações, Responsáveis).
+    Permissão para OPERAÇÕES.
+    
+    Usada para: Acoes, AcaoPrazo, AcaoDestaque, AcaoAnotacaoAlinhamento,
+                UsuarioResponsavel, RelacaoAcaoUsuarioResponsavel
     
     Regras:
     - SAFE_METHODS (GET, HEAD, OPTIONS): Todas as 4 roles podem acessar
-    - CREATE/UPDATE/DELETE: COORDENADOR_PNGI, GESTOR_PNGI e OPERADOR_ACAO
+    - CREATE/UPDATE/DELETE: GESTOR_PNGI, COORDENADOR_PNGI e OPERADOR_ACAO
     - CONSULTOR_PNGI: Bloqueado em escrita (apenas leitura)
+    
+    Hierarquia:
+    GESTOR_PNGI (escrita) = COORDENADOR_PNGI (escrita) = OPERADOR_ACAO (escrita) > CONSULTOR_PNGI (leitura)
     """
     
     SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
@@ -346,8 +413,8 @@ class HasAcoesPermission(BasePermission):
         return self.has_permission(request, view)
 
 
-class IsGestorPNGI(BasePermission):
-    """Apenas gestores PNGI têm acesso"""
+class IsGestorPNGILegacy(BasePermission):
+    """Apenas gestores PNGI têm acesso (versão antiga sem SAFE_METHODS)"""
     
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
