@@ -11,7 +11,7 @@ NOTA: Segue o padrão de test_views.py que funciona.
 Aceita múltiplos status codes porque templates podem não existir.
 """
 
-from django.test import TestCase
+from django.test import TestCase, Client
 from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
@@ -55,7 +55,12 @@ class EixoCRUDWebViewTests(BaseTestCase):
         # Login
         self.client.login(email='coord@test.com', password='test123')
         
-        # Criar eixo para testes    
+        # Criar eixo para testes
+        self.eixo = Eixo.objects.create(
+            strdescricaoeixo='Eixo Teste',
+            stralias='TESTE'
+        )
+    
     def test_eixo_list_requires_login(self):
         """Lista de eixos requer login"""
         self.client.logout()
@@ -213,7 +218,7 @@ class VigenciaCRUDWebViewTests(BaseTestCase):
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
-        self.client.login(email='coord@test.com', password='test123')        )
+        self.client.login(email='coord@test.com', password='test123')
     
     def test_vigencia_list_requires_login(self):
         """Lista de vigências requer login"""
@@ -339,7 +344,7 @@ class SituacaoAcaoCRUDWebViewTests(BaseTestCase):
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
-        self.client.login(email='coord@test.com', password='test123')    
+        self.client.login(email='coord@test.com', password='test123')
     def test_situacao_list_requires_login(self):
         """Lista de situações requer login"""
         self.client.logout()
