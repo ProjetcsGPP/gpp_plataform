@@ -214,7 +214,6 @@ class BaseAPITestCase(BaseTestCase):
                             )
 
     
-    def setup_test_data(self):
     def authenticate_as(self, role_name):
         """
         Autentica como um usuário específico.
@@ -251,7 +250,6 @@ class EixoAPITests(BaseAPITestCase):
     - GET    /api/v1/acoes_pngi/eixos/list_light/ - Listagem otimizada
     """
     
-    def setup_test_data(self):
     def test_coordenador_can_list_eixos(self):
         """COORDENADOR_PNGI pode listar eixos"""
         self.authenticate_as('coordenador')
@@ -278,7 +276,7 @@ class EixoAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         response = self.client.get(f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['stralias'], 'TESTE')
+        self.assertEqual(response.data['stralias'], 'E1')
     
     def test_coordenador_cannot_update_eixo(self):
         """COORDENADOR_PNGI NÃO pode atualizar eixo (apenas view em configs)"""
@@ -451,7 +449,6 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
     - DELETE /api/v1/acoes_pngi/situacoes/{id}/
     """
     
-    def setup_test_data(self):
     def test_coordenador_can_list_situacoes(self):
         """COORDENADOR_PNGI pode listar situações"""
         self.authenticate_as('coordenador')
@@ -584,7 +581,6 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
     - POST   /api/v1/acoes_pngi/vigencias/{id}/ativar/
     """
     
-    def setup_test_data(self):
     def test_coordenador_can_list_vigencias(self):
         """COORDENADOR_PNGI pode listar vigências"""
         self.authenticate_as('coordenador')
