@@ -41,23 +41,26 @@ class PermissionMatrixTestCase(BaseAPITestCase):
     def setUpClass(cls):
         super().setUpClass()
         
-        # Criar roles COM A ESTRUTURA CORRETA: aplicacao, nomeperfil, codigoperfil
-        cls.role_consultor, _ = Role.objects.using('gpp_plataform_db').get_or_create(
+        # CRÍTICO: Não usar .using() em testes!
+        # Em testes, gpp_plataform_db é MIRROR de default (mesmo banco físico)
+        # Usar .using() quebra as ForeignKeys
+        
+        cls.role_consultor, _ = Role.objects.get_or_create(
             aplicacao=cls.app,
             codigoperfil='CONSULTOR_PNGI',
             defaults={'nomeperfil': 'Consultor PNGI'}
         )
-        cls.role_operador, _ = Role.objects.using('gpp_plataform_db').get_or_create(
+        cls.role_operador, _ = Role.objects.get_or_create(
             aplicacao=cls.app,
             codigoperfil='OPERADOR_PNGI',
             defaults={'nomeperfil': 'Operador PNGI'}
         )
-        cls.role_coordenador, _ = Role.objects.using('gpp_plataform_db').get_or_create(
+        cls.role_coordenador, _ = Role.objects.get_or_create(
             aplicacao=cls.app,
             codigoperfil='COORDENADOR_PNGI',
             defaults={'nomeperfil': 'Coordenador PNGI'}
         )
-        cls.role_gestor, _ = Role.objects.using('gpp_plataform_db').get_or_create(
+        cls.role_gestor, _ = Role.objects.get_or_create(
             aplicacao=cls.app,
             codigoperfil='GESTOR_PNGI',
             defaults={'nomeperfil': 'Gestor PNGI'}
@@ -67,12 +70,13 @@ class PermissionMatrixTestCase(BaseAPITestCase):
         super().setUp()
         
         # Criar usuários com roles diferentes
+        # CRÍTICO: Não usar .using() - deixar Django usar default database
         self.user_consultor = User.objects.create_user(
             email='consultor@test.com',
             password='test123',
             name='Consultor Test'
         )
-        UserRole.objects.using('gpp_plataform_db').create(
+        UserRole.objects.create(
             user=self.user_consultor,
             role=self.role_consultor,
             aplicacao=self.app
@@ -83,7 +87,7 @@ class PermissionMatrixTestCase(BaseAPITestCase):
             password='test123',
             name='Operador Test'
         )
-        UserRole.objects.using('gpp_plataform_db').create(
+        UserRole.objects.create(
             user=self.user_operador,
             role=self.role_operador,
             aplicacao=self.app
@@ -94,7 +98,7 @@ class PermissionMatrixTestCase(BaseAPITestCase):
             password='test123',
             name='Coordenador Test'
         )
-        UserRole.objects.using('gpp_plataform_db').create(
+        UserRole.objects.create(
             user=self.user_coordenador,
             role=self.role_coordenador,
             aplicacao=self.app
@@ -105,7 +109,7 @@ class PermissionMatrixTestCase(BaseAPITestCase):
             password='test123',
             name='Gestor Test'
         )
-        UserRole.objects.using('gpp_plataform_db').create(
+        UserRole.objects.create(
             user=self.user_gestor,
             role=self.role_gestor,
             aplicacao=self.app
