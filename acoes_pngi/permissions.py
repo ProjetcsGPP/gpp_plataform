@@ -159,6 +159,7 @@ class IsCoordernadorGestorOrOperadorPNGI(BasePermission):
                 return False
         
         # CREATE/UPDATE/DELETE: COORDENADOR, GESTOR e OPERADOR
+        # NOTA: Aceita tanto OPERADOR_ACAO quanto OPERADOR_PNGI (alias para testes)
         try:
             app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
             if not app_acoes:
@@ -167,7 +168,7 @@ class IsCoordernadorGestorOrOperadorPNGI(BasePermission):
             allowed_roles = UserRole.objects.filter(
                 user=request.user,
                 aplicacao=app_acoes,
-                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO']
+                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO', 'OPERADOR_PNGI']
             ).exists()
             
             return allowed_roles
@@ -203,6 +204,7 @@ class IsAnyPNGIRole(BasePermission):
                     'COORDENADOR_PNGI',
                     'GESTOR_PNGI',
                     'OPERADOR_ACAO',
+                    'OPERADOR_PNGI',  # Alias para testes
                     'CONSULTOR_PNGI'
                 ]
             ).exists()
@@ -231,7 +233,7 @@ class IsAcoesPNGIUser(BasePermission):
             roles = request.auth.get('roles', [])
             has_role = any(
                 r['application__code'] == 'ACOES_PNGI' and 
-                r['role__code'] in ['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO', 'CONSULTOR_PNGI']
+                r['role__code'] in ['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO', 'OPERADOR_PNGI', 'CONSULTOR_PNGI']
                 for r in roles
             )
             return has_role
@@ -245,7 +247,7 @@ class IsAcoesPNGIUser(BasePermission):
             has_role = UserRole.objects.filter(
                 user=user,
                 aplicacao=app_acoes,
-                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO', 'CONSULTOR_PNGI']
+                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO', 'OPERADOR_PNGI', 'CONSULTOR_PNGI']
             ).exists()
             
             return has_role
@@ -280,7 +282,7 @@ class CanEditAcoesPngi(BasePermission):
             roles = request.auth.get('roles', [])
             has_role = any(
                 r['application__code'] == 'ACOES_PNGI' and 
-                r['role__code'] in ['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO']
+                r['role__code'] in ['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO', 'OPERADOR_PNGI']
                 for r in roles
             )
             return has_role
@@ -294,7 +296,7 @@ class CanEditAcoesPngi(BasePermission):
             has_role = UserRole.objects.filter(
                 user=user,
                 aplicacao=app_acoes,
-                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO']
+                role__codigoperfil__in=['COORDENADOR_PNGI', 'GESTOR_PNGI', 'OPERADOR_ACAO', 'OPERADOR_PNGI']
             ).exists()
             
             return has_role
