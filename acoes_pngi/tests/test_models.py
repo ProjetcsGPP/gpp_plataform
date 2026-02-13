@@ -8,8 +8,9 @@ from django.test import TestCase
 from .base import BaseTestCase, BaseAPITestCase
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from django.utils import timezone
+from django.utils.timezone import make_aware
 from decimal import Decimal
 
 
@@ -150,12 +151,15 @@ class AcoesModelTest(BaseTestCase):
     
     def test_create_acao(self):
         """Teste de criação de ação"""
+        # ✅ Converter date para datetime com timezone
+        data_entrega = make_aware(datetime.combine(date(2026, 6, 30), datetime.min.time()))
+        
         acao = self.create_acao_base(
             strapelido="ACAO-001",
             strdescricaoacao="Ação de Teste",
             strdescricaoentrega="Entrega de Teste",
             idtipoentravealerta=self.tipo_entrave,
-            datdataentrega=date(2026, 6, 30)
+            datdataentrega=data_entrega
         )
         
         self.assertEqual(acao.strapelido, "ACAO-001")
