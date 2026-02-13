@@ -30,7 +30,6 @@ from ..models import (
 
 User = get_user_model()
 
-
 class BaseAPITestCase(BaseTestCase):
     """Classe base reutilizável para testes de API"""
     
@@ -116,7 +115,6 @@ class BaseAPITestCase(BaseTestCase):
         user = self.users[role_name]
         self.client.force_authenticate(user=user)
         return user
-
 
 # ============================================================================
 # TESTES DE TIPO ENTRAVE/ALERTA - ViewSet: TipoEntraveAlertaViewSet
@@ -277,7 +275,6 @@ class TipoEntraveAlertaAPITests(BaseAPITestCase):
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
 
 # ============================================================================
 # TESTES DE AÇÕES - ViewSet: AcoesViewSet
@@ -542,7 +539,6 @@ class AcoesAPITests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreater(len(response.data['results']), 0)
 
-
 # ============================================================================
 # TESTES DE PRAZO - ViewSet: AcaoPrazoViewSet
 # ============================================================================
@@ -575,8 +571,8 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         # ✅ 1. Criar Vigência (necessária para Acao)
         self.vigencia_base = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1,
-            datfinalvigencia=date(2026, 12, 31)),        )
+            datiniciovigencia=date(2026, 1, 1)
+            datfinalvigencia=date(2026, 12, 31),        )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
         eixo = Eixo.objects.create(
@@ -727,7 +723,6 @@ class AcaoPrazoAPITests(BaseAPITestCase):
         response = self.client.get('/api/v1/acoes_pngi/prazos/?isacaoprazoativo=true')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-
 # ============================================================================
 # TESTES DE DESTAQUE - ViewSet: AcaoDestaqueViewSet
 # ============================================================================
@@ -758,8 +753,8 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
         # ✅ 1. Criar Vigência (necessária para Acao)
         self.vigencia_base = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1,
-            datfinalvigencia=date(2026, 12, 31)),        )
+            datiniciovigencia=date(2026, 1, 1)
+            datfinalvigencia=date(2026, 12, 31),        )
         
         # ✅ 2. Criar Eixo (opcional mas comum)
         eixo = Eixo.objects.create(
