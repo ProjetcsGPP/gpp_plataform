@@ -42,6 +42,7 @@ from ..permissions import (
     HasAcoesPermission,
     IsCoordenadorOrAbove,
     IsGestorPNGI,
+    IsGestorPNGIOnly,  # ✨ NOVA: para UserManagementViewSet
     IsCoordernadorOrGestorPNGI,
     IsCoordernadorGestorOrOperadorPNGI
 )
@@ -212,10 +213,10 @@ class UserManagementViewSet(viewsets.ViewSet):
     ✨ Usa request.app_context automaticamente.
     
     Permissões:
-    - Apenas GESTOR_PNGI pode gerenciar usuários
-    - Demais roles podem apenas consultar
+    - TODAS as operações (GET/POST/PATCH): Apenas GESTOR_PNGI
+    - Demais roles (COORDENADOR, OPERADOR, CONSULTOR) são bloqueadas
     """
-    permission_classes = [IsGestorPNGI]  # ✅ ATUALIZADO: apenas GESTOR
+    permission_classes = [IsGestorPNGIOnly]  # ✅ CORRIGIDO: GESTOR para tudo
     
     lookup_field = 'pk'
     lookup_value_regex = '.*'
@@ -374,7 +375,7 @@ class SituacaoAcaoViewSet(viewsets.ModelViewSet):
     """
     queryset = SituacaoAcao.objects.all()
     serializer_class = SituacaoAcaoSerializer
-    permission_classes = [IsGestorPNGI]  # ✅ ATUALIZADO: apenas GESTOR
+    permission_classes = [IsGestorPNGI]  # ✅ CORRETO: todos leem, GESTOR escreve
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaosituacao']
     ordering_fields = ['strdescricaosituacao', 'created_at']
@@ -458,7 +459,7 @@ class TipoEntraveAlertaViewSet(viewsets.ModelViewSet):
     """
     queryset = TipoEntraveAlerta.objects.all()
     serializer_class = TipoEntraveAlertaSerializer
-    permission_classes = [IsGestorPNGI]  # ✅ ATUALIZADO: apenas GESTOR
+    permission_classes = [IsGestorPNGI]  # ✅ CORRETO: todos leem, GESTOR escreve
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaotipoentravealerta']
     ordering_fields = ['strdescricaotipoentravealerta', 'created_at']
