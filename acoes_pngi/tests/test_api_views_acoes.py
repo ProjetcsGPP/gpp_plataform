@@ -155,39 +155,39 @@ class TipoEntraveAlertaAPITests(BaseAPITestCase):
         response = self.client.get('/api/v1/acoes_pngi/tipos-entrave-alerta/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
-    def test_coordenador_can_create_tipo_entrave(self):
-        """COORDENADOR_PNGI pode criar tipo de entrave"""
+    def test_coordenador_cannot_create_tipo_entrave(self):
+        """COORDENADOR_PNGI NÃO pode criar tipo de entrave (configuração crítica)"""
         self.authenticate_as('coordenador')
-        data = {'strdescricaotipoentravealerta': 'Novo Alerta Coordenador'}
+        data = {'strdescricaotipoentravealerta': 'Tentativa Coordenador'}
         response = self.client.post(
             '/api/v1/acoes_pngi/tipos-entrave-alerta/',
             data,
             format='json'
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
-    def test_coordenador_can_update_tipo_entrave(self):
-        """COORDENADOR_PNGI pode atualizar tipo de entrave"""
+    def test_coordenador_cannot_update_tipo_entrave(self):
+        """COORDENADOR_PNGI NÃO pode atualizar tipo de entrave (configuração crítica)"""
         self.authenticate_as('coordenador')
-        data = {'strdescricaotipoentravealerta': 'Alerta Atualizado'}
+        data = {'strdescricaotipoentravealerta': 'Tentativa Update'}
         response = self.client.patch(
             f'/api/v1/acoes_pngi/tipos-entrave-alerta/{self.tipo_entrave.idtipoentravealerta}/',
             data,
             format='json'
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
-    def test_coordenador_can_delete_tipo_entrave(self):
-        """COORDENADOR_PNGI pode deletar tipo de entrave"""
+    def test_coordenador_cannot_delete_tipo_entrave(self):
+        """COORDENADOR_PNGI NÃO pode deletar tipo de entrave (configuração crítica)"""
         tipo_temp = TipoEntraveAlerta.objects.create(
-            strdescricaotipoentravealerta='Para Deletar'
+            strdescricaotipoentravealerta='Tentativa Delete'
         )
-        
+
         self.authenticate_as('coordenador')
         response = self.client.delete(
             f'/api/v1/acoes_pngi/tipos-entrave-alerta/{tipo_temp.idtipoentravealerta}/'
         )
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     # ------------------------------------------------------------------------
     # GESTOR_PNGI - Acesso Total
