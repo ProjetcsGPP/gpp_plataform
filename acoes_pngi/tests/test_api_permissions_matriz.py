@@ -41,22 +41,26 @@ class PermissionMatrixTestCase(BaseAPITestCase):
     def setUpClass(cls):
         super().setUpClass()
         
-        # Criar roles
+        # Criar roles COM A ESTRUTURA CORRETA: aplicacao, nomeperfil, codigoperfil
         cls.role_consultor, _ = Role.objects.using('gpp_plataform_db').get_or_create(
+            aplicacao=cls.app,
             codigoperfil='CONSULTOR_PNGI',
-            defaults={'descricao': 'Consultor PNGI'}
+            defaults={'nomeperfil': 'Consultor PNGI'}
         )
         cls.role_operador, _ = Role.objects.using('gpp_plataform_db').get_or_create(
+            aplicacao=cls.app,
             codigoperfil='OPERADOR_PNGI',
-            defaults={'descricao': 'Operador PNGI'}
+            defaults={'nomeperfil': 'Operador PNGI'}
         )
         cls.role_coordenador, _ = Role.objects.using('gpp_plataform_db').get_or_create(
+            aplicacao=cls.app,
             codigoperfil='COORDENADOR_PNGI',
-            defaults={'descricao': 'Coordenador PNGI'}
+            defaults={'nomeperfil': 'Coordenador PNGI'}
         )
         cls.role_gestor, _ = Role.objects.using('gpp_plataform_db').get_or_create(
+            aplicacao=cls.app,
             codigoperfil='GESTOR_PNGI',
-            defaults={'descricao': 'Gestor PNGI'}
+            defaults={'nomeperfil': 'Gestor PNGI'}
         )
     
     def setUp(self):
