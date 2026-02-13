@@ -76,7 +76,7 @@ class EixoCRUDWebViewTests(BaseTestCase):
             self.assertIn(response.status_code, [200, 302, 404, 500])
             if response.status_code == 200 and 'eixos' in response.context:
                 # Se template existir, verifica dados
-                self.assertIn(self.eixo, response.context['eixos'])
+                self.assertIn(self.eixo_base, response.context['eixos'])
         except Exception:
             pass
     
@@ -97,10 +97,10 @@ class EixoCRUDWebViewTests(BaseTestCase):
     def test_eixo_detail_authenticated(self):
         """Detalhes do eixo para usuário autenticado"""
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo.ideixo}/')
+            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
             if response.status_code == 200 and 'eixo' in response.context:
-                self.assertEqual(response.context['eixo'], self.eixo)
+                self.assertEqual(response.context['eixo'], self.eixo_base)
         except Exception:
             pass
     
@@ -144,7 +144,7 @@ class EixoCRUDWebViewTests(BaseTestCase):
     def test_eixo_update_get(self):
         """GET /eixos/{id}/editar/ renderiza formulário de edição"""
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo.ideixo}/editar/')
+            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/editar/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
@@ -152,15 +152,15 @@ class EixoCRUDWebViewTests(BaseTestCase):
     def test_eixo_update_post_success(self):
         """POST update com dados válidos atualiza eixo"""
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo.ideixo}/editar/', {
+            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/editar/', {
                 'strdescricaoeixo': 'Eixo Atualizado',
                 'stralias': 'ATUAL'
             }, follow=True)
             
             self.assertIn(response.status_code, [200, 302, 404, 500])
             # Verifica se atualizou (independente do template)
-            self.eixo.refresh_from_db()
-            if self.eixo.strdescricaoeixo == 'Eixo Atualizado':
+            self.eixo_base.refresh_from_db()
+            if self.eixo_base.strdescricaoeixo == 'Eixo Atualizado':
                 self.assertTrue(True)  # Atualizou com sucesso
         except Exception:
             pass
@@ -168,14 +168,14 @@ class EixoCRUDWebViewTests(BaseTestCase):
     def test_eixo_delete_get(self):
         """GET /eixos/{id}/excluir/ renderiza confirmação"""
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo.ideixo}/excluir/')
+            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/excluir/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
     
     def test_eixo_delete_post_success(self):
         """POST delete remove eixo do banco"""
-        eixo_id = self.eixo.ideixo
+        eixo_id = self.eixo_base.ideixo
         
         try:
             response = self.client.post(f'/acoes-pngi/eixos/{eixo_id}/excluir/', follow=True)
@@ -231,14 +231,14 @@ class VigenciaCRUDWebViewTests(BaseTestCase):
             response = self.client.get('/acoes-pngi/vigencias-pngi/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
             if response.status_code == 200 and 'vigencias' in response.context:
-                self.assertIn(self.vigencia, response.context['vigencias'])
+                self.assertIn(self.vigencia_base, response.context['vigencias'])
         except Exception:
             pass
     
     def test_vigencia_detail_authenticated(self):
         """Detalhes da vigência para usuário autenticado"""
         try:
-            response = self.client.get(f'/acoes-pngi/vigencias-pngi/{self.vigencia.idvigenciapngi}/')
+            response = self.client.get(f'/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
@@ -270,7 +270,7 @@ class VigenciaCRUDWebViewTests(BaseTestCase):
     def test_vigencia_update_get(self):
         """GET /vigencias-pngi/{id}/editar/ renderiza formulário de edição"""
         try:
-            response = self.client.get(f'/acoes-pngi/vigencias-pngi/{self.vigencia.idvigenciapngi}/editar/')
+            response = self.client.get(f'/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/editar/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
@@ -278,7 +278,7 @@ class VigenciaCRUDWebViewTests(BaseTestCase):
     def test_vigencia_update_post_success(self):
         """POST update com dados válidos atualiza vigência"""
         try:
-            response = self.client.post(f'/acoes-pngi/vigencias-pngi/{self.vigencia.idvigenciapngi}/editar/', {
+            response = self.client.post(f'/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/editar/', {
                 'strdescricaovigenciapngi': 'PNGI 2026 Atualizado',
                 'datiniciovigencia': '2026-01-01',
                 'datfinalvigencia': '2026-12-31',
@@ -286,8 +286,8 @@ class VigenciaCRUDWebViewTests(BaseTestCase):
             }, follow=True)
             
             self.assertIn(response.status_code, [200, 302, 404, 500])
-            self.vigencia.refresh_from_db()
-            if self.vigencia.strdescricaovigenciapngi == 'PNGI 2026 Atualizado':
+            self.vigencia_base.refresh_from_db()
+            if self.vigencia_base.strdescricaovigenciapngi == 'PNGI 2026 Atualizado':
                 self.assertTrue(True)
         except Exception:
             pass
@@ -295,14 +295,14 @@ class VigenciaCRUDWebViewTests(BaseTestCase):
     def test_vigencia_delete_get(self):
         """GET /vigencias-pngi/{id}/excluir/ renderiza confirmação"""
         try:
-            response = self.client.get(f'/acoes-pngi/vigencias-pngi/{self.vigencia.idvigenciapngi}/excluir/')
+            response = self.client.get(f'/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/excluir/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
     
     def test_vigencia_delete_post_success(self):
         """POST delete remove vigência do banco"""
-        vigencia_id = self.vigencia.idvigenciapngi
+        vigencia_id = self.vigencia_base.idvigenciapngi
         
         try:
             response = self.client.post(f'/acoes-pngi/vigencias-pngi/{vigencia_id}/excluir/', follow=True)
@@ -356,14 +356,14 @@ class SituacaoAcaoCRUDWebViewTests(BaseTestCase):
             response = self.client.get('/acoes-pngi/situacoes-acao/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
             if response.status_code == 200 and 'situacoes' in response.context:
-                self.assertIn(self.situacao, response.context['situacoes'])
+                self.assertIn(self.situacao_base, response.context['situacoes'])
         except Exception:
             pass
     
     def test_situacao_detail_authenticated(self):
         """Detalhes da situação para usuário autenticado"""
         try:
-            response = self.client.get(f'/acoes-pngi/situacoes-acao/{self.situacao.idsituacaoacao}/')
+            response = self.client.get(f'/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
@@ -392,7 +392,7 @@ class SituacaoAcaoCRUDWebViewTests(BaseTestCase):
     def test_situacao_update_get(self):
         """GET /situacoes-acao/{id}/editar/ renderiza formulário de edição"""
         try:
-            response = self.client.get(f'/acoes-pngi/situacoes-acao/{self.situacao.idsituacaoacao}/editar/')
+            response = self.client.get(f'/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/editar/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
@@ -400,13 +400,13 @@ class SituacaoAcaoCRUDWebViewTests(BaseTestCase):
     def test_situacao_update_post_success(self):
         """POST update com dados válidos atualiza situação"""
         try:
-            response = self.client.post(f'/acoes-pngi/situacoes-acao/{self.situacao.idsituacaoacao}/editar/', {
+            response = self.client.post(f'/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/editar/', {
                 'strdescricaosituacao': 'Situação Atualizada'
             }, follow=True)
             
             self.assertIn(response.status_code, [200, 302, 404, 500])
-            self.situacao.refresh_from_db()
-            if self.situacao.strdescricaosituacao == 'Situação Atualizada':
+            self.situacao_base.refresh_from_db()
+            if self.situacao_base.strdescricaosituacao == 'Situação Atualizada':
                 self.assertTrue(True)
         except Exception:
             pass
@@ -414,14 +414,14 @@ class SituacaoAcaoCRUDWebViewTests(BaseTestCase):
     def test_situacao_delete_get(self):
         """GET /situacoes-acao/{id}/excluir/ renderiza confirmação"""
         try:
-            response = self.client.get(f'/acoes-pngi/situacoes-acao/{self.situacao.idsituacaoacao}/excluir/')
+            response = self.client.get(f'/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/excluir/')
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
     
     def test_situacao_delete_post_success(self):
         """POST delete remove situação do banco"""
-        situacao_id = self.situacao.idsituacaoacao
+        situacao_id = self.situacao_base.idsituacaoacao
         
         try:
             response = self.client.post(f'/acoes-pngi/situacoes-acao/{situacao_id}/excluir/', follow=True)

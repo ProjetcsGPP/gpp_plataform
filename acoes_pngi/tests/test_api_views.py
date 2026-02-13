@@ -215,25 +215,6 @@ class BaseAPITestCase(BaseTestCase):
 
     
     def setup_test_data(self):
-        # Criar Eixo (se não existe)
-        if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.create(
-                stralias='E1',
-                strdescricaoeixo='Eixo 1 - Gestão'
-            )
-
-        # Criar SituacaoAcao (se não existe)
-        if not hasattr(self, 'situacao') or self.situacao is None:
-            self.situacao = SituacaoAcao.objects.create(
-                strdescricaosituacao='Em Andamento'
-            )
-
-        """
-        Override em subclasses para criar dados específicos.
-        Ex: vigências, eixos, etc.
-        """
-        pass
-    
     def authenticate_as(self, role_name):
         """
         Autentica como um usuário específico.
@@ -271,24 +252,6 @@ class EixoAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        # Criar Eixo (se não existe)
-        if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.create(
-                stralias='E1',
-                strdescricaoeixo='Eixo 1 - Gestão'
-            )
-
-        # Criar SituacaoAcao (se não existe)
-        if not hasattr(self, 'situacao') or self.situacao is None:
-            self.situacao = SituacaoAcao.objects.create(
-                strdescricaosituacao='Em Andamento'
-            )
-
-        """Cria eixo de teste"""    
-    # ------------------------------------------------------------------------
-    # COORDENADOR_PNGI - Acesso Total
-    # ------------------------------------------------------------------------
-    
     def test_coordenador_can_list_eixos(self):
         """COORDENADOR_PNGI pode listar eixos"""
         self.authenticate_as('coordenador')
@@ -313,7 +276,7 @@ class EixoAPITests(BaseAPITestCase):
     def test_coordenador_can_retrieve_eixo(self):
         """COORDENADOR_PNGI pode buscar eixo por ID"""
         self.authenticate_as('coordenador')
-        response = self.client.get(f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/')
+        response = self.client.get(f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['stralias'], 'TESTE')
     
@@ -322,7 +285,7 @@ class EixoAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         data = {'strdescricaoeixo': 'Tentativa Update'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/',
+            f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/',
             data,
             format='json'
         )
@@ -331,7 +294,7 @@ class EixoAPITests(BaseAPITestCase):
     def test_coordenador_cannot_delete_eixo(self):
         """COORDENADOR_PNGI NÃO pode deletar eixo (apenas view em configs)"""
         self.authenticate_as('coordenador')
-        response = self.client.delete(f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/')
+        response = self.client.delete(f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_coordenador_can_access_list_light(self):
@@ -367,7 +330,7 @@ class EixoAPITests(BaseAPITestCase):
         self.authenticate_as('gestor')
         data = {'strdescricaoeixo': 'Atualizado pelo Gestor'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/',
+            f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/',
             data,
             format='json'
         )
@@ -410,7 +373,7 @@ class EixoAPITests(BaseAPITestCase):
         self.authenticate_as('operador')
         data = {'strdescricaoeixo': 'Tentativa Update'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/',
+            f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/',
             data,
             format='json'
         )
@@ -419,7 +382,7 @@ class EixoAPITests(BaseAPITestCase):
     def test_operador_cannot_delete_eixo(self):
         """OPERADOR_ACAO NÃO pode deletar eixo"""
         self.authenticate_as('operador')
-        response = self.client.delete(f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/')
+        response = self.client.delete(f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     # ------------------------------------------------------------------------
@@ -435,7 +398,7 @@ class EixoAPITests(BaseAPITestCase):
     def test_consultor_can_retrieve_eixo(self):
         """CONSULTOR_PNGI pode buscar eixo específico"""
         self.authenticate_as('consultor')
-        response = self.client.get(f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/')
+        response = self.client.get(f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_consultor_cannot_create_eixo(self):
@@ -453,7 +416,7 @@ class EixoAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         data = {'strdescricaoeixo': 'Tentativa Update Consultor'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/',
+            f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/',
             data,
             format='json'
         )
@@ -462,7 +425,7 @@ class EixoAPITests(BaseAPITestCase):
     def test_consultor_cannot_delete_eixo(self):
         """CONSULTOR_PNGI NÃO pode deletar eixo"""
         self.authenticate_as('consultor')
-        response = self.client.delete(f'/api/v1/acoes_pngi/eixos/{self.eixo.ideixo}/')
+        response = self.client.delete(f'/api/v1/acoes_pngi/eixos/{self.eixo_base.ideixo}/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_consultor_can_access_list_light(self):
@@ -489,24 +452,6 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        # Criar Eixo (se não existe)
-        if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.create(
-                stralias='E1',
-                strdescricaoeixo='Eixo 1 - Gestão'
-            )
-
-        # Criar SituacaoAcao (se não existe)
-        if not hasattr(self, 'situacao') or self.situacao is None:
-            self.situacao = SituacaoAcao.objects.create(
-                strdescricaosituacao='Em Andamento'
-            )
-
-        """Cria situação de teste"""    
-    # ------------------------------------------------------------------------
-    # COORDENADOR_PNGI - Acesso Total
-    # ------------------------------------------------------------------------
-    
     def test_coordenador_can_list_situacoes(self):
         """COORDENADOR_PNGI pode listar situações"""
         self.authenticate_as('coordenador')
@@ -525,7 +470,7 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
         self.authenticate_as('coordenador')
         data = {'strdescricaosituacao': 'ATUALIZADA'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/situacoes/{self.situacao.idsituacaoacao}/',
+            f'/api/v1/acoes_pngi/situacoes/{self.situacao_base.idsituacaoacao}/',
             data,
             format='json'
         )
@@ -534,7 +479,7 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
     def test_coordenador_cannot_delete_situacao(self):
         """COORDENADOR_PNGI NÃO pode deletar situação (apenas view em configs)"""
         self.authenticate_as('coordenador')
-        response = self.client.delete(f'/api/v1/acoes_pngi/situacoes/{self.situacao.idsituacaoacao}/')
+        response = self.client.delete(f'/api/v1/acoes_pngi/situacoes/{self.situacao_base.idsituacaoacao}/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     # ------------------------------------------------------------------------
@@ -570,7 +515,7 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
         self.authenticate_as('operador')
         data = {'strdescricaosituacao': 'ATUALIZAR'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/situacoes/{self.situacao.idsituacaoacao}/',
+            f'/api/v1/acoes_pngi/situacoes/{self.situacao_base.idsituacaoacao}/',
             data,
             format='json'
         )
@@ -580,7 +525,7 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
         """OPERADOR_ACAO NÃO pode deletar situação"""
         self.authenticate_as('operador')
         response = self.client.delete(
-            f'/api/v1/acoes_pngi/situacoes/{self.situacao.idsituacaoacao}/'
+            f'/api/v1/acoes_pngi/situacoes/{self.situacao_base.idsituacaoacao}/'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
@@ -606,7 +551,7 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
         self.authenticate_as('consultor')
         data = {'strdescricaosituacao': 'UPDATE'}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/situacoes/{self.situacao.idsituacaoacao}/',
+            f'/api/v1/acoes_pngi/situacoes/{self.situacao_base.idsituacaoacao}/',
             data,
             format='json'
         )
@@ -616,7 +561,7 @@ class SituacaoAcaoAPITests(BaseAPITestCase):
         """CONSULTOR_PNGI NÃO pode deletar situação"""
         self.authenticate_as('consultor')
         response = self.client.delete(
-            f'/api/v1/acoes_pngi/situacoes/{self.situacao.idsituacaoacao}/'
+            f'/api/v1/acoes_pngi/situacoes/{self.situacao_base.idsituacaoacao}/'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -640,25 +585,6 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
     """
     
     def setup_test_data(self):
-        # Criar Eixo (se não existe)
-        if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.create(
-                stralias='E1',
-                strdescricaoeixo='Eixo 1 - Gestão'
-            )
-
-        # Criar SituacaoAcao (se não existe)
-        if not hasattr(self, 'situacao') or self.situacao is None:
-            self.situacao = SituacaoAcao.objects.create(
-                strdescricaosituacao='Em Andamento'
-            )
-
-        """Cria vigência de teste"""        
-    
-    # ------------------------------------------------------------------------
-    # COORDENADOR_PNGI - Acesso Total
-    # ------------------------------------------------------------------------
-    
     def test_coordenador_can_list_vigencias(self):
         """COORDENADOR_PNGI pode listar vigências"""
         self.authenticate_as('coordenador')
@@ -705,8 +631,8 @@ class VigenciaPNGIAPITests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         # Verificar que foi ativada
-        self.vigencia.refresh_from_db()
-        self.assertTrue(self.vigencia.isvigenciaativa)
+        self.vigencia_base.refresh_from_db()
+        self.assertTrue(self.vigencia_base.isvigenciaativa)
     
     def test_vigencia_ativa_returns_404_when_none_active(self):
         """vigencia_ativa/ retorna 404 quando não há vigência ativa"""

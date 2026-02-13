@@ -97,11 +97,6 @@ class BaseWebTestCase(BaseTestCase):
         
         # Criar dados de teste base
         self.setup_test_data()
-    
-    def setup_test_data(self):
-        """Override em subclasses para criar dados específicos"""
-        pass
-    
     def login_as(self, role_name):
         """Faz login como usuário específico"""
         user = self.users[role_name]
@@ -164,13 +159,6 @@ class AuthenticationWebTests(BaseWebTestCase):
 
 class EixoWebViewsTests(BaseWebTestCase):
     """Testes de views web para Eixo (configuração)"""
-    
-    def setup_test_data(self):
-        """Cria eixo de teste"""    
-    # ------------------------------------------------------------------------
-    # COORDENADOR - Acesso Total
-    # ------------------------------------------------------------------------
-    
     def test_coordenador_can_list_eixos(self):
         """COORDENADOR pode listar eixos"""
         self.login_as('coordenador')
@@ -210,7 +198,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('coordenador')
         
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo.ideixo}/update/')
+            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/update/')
             self.assertIn(response.status_code, [200, 302, 404])
         except Exception:
             pass
@@ -291,7 +279,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('operador')
         
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo.ideixo}/update/', {
+            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/update/', {
                 'strdescricaoeixo': 'Tentativa Update'
             })
             self.assertIn(response.status_code, [302, 403, 404])
@@ -303,7 +291,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('operador')
         
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo.ideixo}/delete/')
+            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/delete/')
             self.assertIn(response.status_code, [302, 403, 404])
         except Exception:
             pass
@@ -328,7 +316,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('consultor')
         
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo.ideixo}/')
+            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/')
             self.assertIn(response.status_code, [200, 302, 404])
         except Exception:
             pass
@@ -361,7 +349,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('consultor')
         
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo.ideixo}/update/', {
+            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/update/', {
                 'strdescricaoeixo': 'Update Consultor'
             })
             self.assertIn(response.status_code, [302, 403, 404])
@@ -373,7 +361,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('consultor')
         
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo.ideixo}/delete/')
+            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/delete/')
             self.assertIn(response.status_code, [302, 403, 404])
         except Exception:
             pass
@@ -385,10 +373,6 @@ class EixoWebViewsTests(BaseWebTestCase):
 
 class VigenciaWebViewsTests(BaseWebTestCase):
     """Testes de views web para Vigência (configuração)"""
-    
-    def setup_test_data(self):
-        """Cria vigência de teste"""        
-    
     def test_coordenador_can_list_vigencias(self):
         """COORDENADOR pode listar vigências"""
         self.login_as('coordenador')
@@ -419,7 +403,7 @@ class VigenciaWebViewsTests(BaseWebTestCase):
         self.login_as('coordenador')
         
         try:
-            response = self.client.post(f'/acoes-pngi/vigencias/{self.vigencia.idvigenciapngi}/ativar/')
+            response = self.client.post(f'/acoes-pngi/vigencias/{self.vigencia_base.idvigenciapngi}/ativar/')
             self.assertIn(response.status_code, [200, 302, 404])
         except Exception:
             pass
@@ -443,7 +427,7 @@ class VigenciaWebViewsTests(BaseWebTestCase):
         self.login_as('operador')
         
         try:
-            response = self.client.post(f'/acoes-pngi/vigencias/{self.vigencia.idvigenciapngi}/ativar/')
+            response = self.client.post(f'/acoes-pngi/vigencias/{self.vigencia_base.idvigenciapngi}/ativar/')
             self.assertIn(response.status_code, [302, 403, 404])
         except Exception:
             pass
@@ -518,7 +502,7 @@ class AcoesWebViewsTests(BaseWebTestCase):
             response = self.client.post('/acoes-pngi/acoes/create/', {
                 'strapelido': 'ACAO-OPER',
                 'strdescricaoacao': 'Ação do Operador',
-                'idvigenciapngi': self.vigencia.idvigenciapngi
+                'idvigenciapngi': self.vigencia_base.idvigenciapngi
             })
             # Operador pode criar ações
             self.assertIn(response.status_code, [200, 302, 404])
@@ -555,7 +539,7 @@ class AcoesWebViewsTests(BaseWebTestCase):
             response = self.client.post('/acoes-pngi/acoes/create/', {
                 'strapelido': 'ACAO-CONS',
                 'strdescricaoacao': 'Tentativa Consultor',
-                'idvigenciapngi': self.vigencia.idvigenciapngi
+                'idvigenciapngi': self.vigencia_base.idvigenciapngi
             })
             self.assertIn(response.status_code, [302, 403, 404])
         except Exception:
