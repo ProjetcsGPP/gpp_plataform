@@ -9,7 +9,7 @@ from accounts.models import User, Aplicacao, Role, UserRole
 class DebugDatabaseTest(BaseTestCase):
     """Teste especial para debugar criação de dados"""
     
-    databases = {'default'}
+    databases = {'default', 'gpp_plataform_db'}  # ✅ Ambos bancos de dados disponíveis para este teste
     
     def test_inspect_user_creation(self):
         """Inspeciona criação de usuário passo a passo"""
