@@ -95,15 +95,15 @@ class BaseAPITestCase(BaseTestCase):
     
     def setup_test_data(self):
         # Criar Eixo (se não existe)
-        if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.create(
+        if not hasattr(self, 'eixo'\) or self.eixo is None:
+            self.eixo, _ = Eixo.objects.get_or_create(
                 stralias='E1',
-                strdescricaoeixo='Eixo 1 - Gestão'
+                defaults={'strdescricaoeixo': 'Eixo 1 - Gestão'}
             )
 
         # Criar SituacaoAcao (se não existe)
-        if not hasattr(self, 'situacao') or self.situacao is None:
-            self.situacao = SituacaoAcao.objects.create(
+        if not hasattr(self, 'situacao'\) or self.situacao is None:
+            self.situacao, _ = SituacaoAcao.objects.get_or_create(
                 strdescricaosituacao='Em Andamento'
             )
 
@@ -139,15 +139,15 @@ class TipoEntraveAlertaAPITests(BaseAPITestCase):
     
     def setup_test_data(self):
         # Criar Eixo (se não existe)
-        if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.create(
+        if not hasattr(self, 'eixo'\) or self.eixo is None:
+            self.eixo, _ = Eixo.objects.get_or_create(
                 stralias='E1',
-                strdescricaoeixo='Eixo 1 - Gestão'
+                defaults={'strdescricaoeixo': 'Eixo 1 - Gestão'}
             )
 
         # Criar SituacaoAcao (se não existe)
-        if not hasattr(self, 'situacao') or self.situacao is None:
-            self.situacao = SituacaoAcao.objects.create(
+        if not hasattr(self, 'situacao'\) or self.situacao is None:
+            self.situacao, _ = SituacaoAcao.objects.get_or_create(
                 strdescricaosituacao='Em Andamento'
             )
 
@@ -304,24 +304,31 @@ class AcoesAPITests(BaseAPITestCase):
     
     def setup_test_data(self):
         """Cria dados COMPLETOS necessários para ações - simula ambiente real"""
+        super().setup_test_data()  # Chama setup da base
         
-        # ✅ 1. Criar Vigência (OBRIGATÓRIO para Acao)        
-        # ✅ 2. Criar Eixo (OPCIONAL, mas usado na prática)        
-        # ✅ 3. Criar Situação (OPCIONAL, mas usado na prática)        
-        # ✅ 4. Criar Tipo Entrave (OPCIONAL)
+        # Criar Vigência (OBRIGATÓRIO para Acao)
+        self.vigencia, _ = VigenciaPNGI.objects.get_or_create(
+            strdescricaovigenciapngi='PNGI 2026',
+            defaults={
+                'datiniciovigencia': date(2026, 1, 1),
+                'datfinalvigencia': date(2026, 12, 31)
+            }
+        )
+        
+        # Criar Tipo Entrave (OPCIONAL)
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Alerta Teste'
         )
         
-        # ✅ 5. Criar Ação COMPLETA com TODOS relacionamentos
+        # Criar Ação COMPLETA com TODOS relacionamentos
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação de Teste',
             strdescricaoentrega='Entrega de Teste',
-            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
-            ideixo=self.eixo_base,              # OPCIONAL (mas comum,
-            idsituacaoacao=self.situacao_base,  # OPCIONAL (mas comum)
-            idtipoentravealerta=self.tipo_entrave,  # OPCIONAL
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,
+            idsituacaoacao=self.situacao,
+            idtipoentravealerta=self.tipo_entrave,
             datdataentrega=date(2026, 6, 30)
         )
     
@@ -371,9 +378,9 @@ class AcoesAPITests(BaseAPITestCase):
             strapelido='ACAO-TEMP',
             strdescricaoacao='Temporária',
             strdescricaoentrega='Entrega Temp',
-            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
-            ideixo=self.eixo_base,              # Adicionar para consistência
-            idsituacaoacao=self.situacao   # Adicionar para consistência
+            idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
+            ideixo=self.eixo,              # Adicionar para consistência
+            idsituacaoacao=self.situacao
         )
         
         self.authenticate_as('coordenador')
@@ -447,9 +454,9 @@ class AcoesAPITests(BaseAPITestCase):
             strapelido='ACAO-DEL-OPER',
             strdescricaoacao='Para Deletar',
             strdescricaoentrega='Entrega Del',
-            idvigenciapngi=self.vigencia_base,
-            ideixo=self.eixo_base,              # Adicionar para consistência
-            idsituacaoacao=self.situacao   # Adicionar para consistência
+            idvigenciapngi=self.vigencia,
+            ideixo=self.eixo,              # Adicionar para consistência
+            idsituacaoacao=self.situacao
         )
         
         self.authenticate_as('operador')
@@ -590,7 +597,7 @@ class AcaoPrazoAPITests(BaseAPITestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
+            idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
             ideixo=eixo,              # Adicionar para consistência
             idsituacaoacao=situacao   # Adicionar para consistência
         )
@@ -772,7 +779,7 @@ class AcaoDestaqueAPITests(BaseAPITestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=self.vigencia_base,  # OBRIGATÓRIO
+            idvigenciapngi=self.vigencia,  # OBRIGATÓRIO
             ideixo=eixo,              # Adicionar para consistência
             idsituacaoacao=situacao   # Adicionar para consistência
         )
