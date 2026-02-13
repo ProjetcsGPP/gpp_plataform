@@ -107,8 +107,6 @@ class BaseAPITestCase(BaseTestCase):
             )
             self.users[role_name] = user
         
-        # Criar dados de teste base
-        self.setup_test_data()
     
     def setup_permissions(self):
         """
