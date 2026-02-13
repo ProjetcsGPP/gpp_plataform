@@ -8,9 +8,9 @@ from accounts.models import UserRole, Aplicacao
 
 class IsGestorPNGI(BasePermission):
     """
-    Permissão para CONFIGURAÇÕES CRÍTICAS e GESTÃO DE USUÁRIOS.
+    Permissão para CONFIGURAÇÕES CRÍTICAS.
     
-    Usada para: SituacaoAcao, TipoEntraveAlerta, UserManagementViewSet
+    Usada para: SituacaoAcao, TipoEntraveAlerta
     
     Regras:
     - SAFE_METHODS (GET, HEAD, OPTIONS): Todas as 4 roles podem acessar
@@ -59,6 +59,42 @@ class IsGestorPNGI(BasePermission):
             ).exists()
             
             return allowed_roles
+        except Exception:
+            return False
+
+
+class IsGestorPNGIOnly(BasePermission):
+    """
+    Permissão EXCLUSIVA para GESTOR_PNGI (leitura E escrita).
+    
+    Usada para: UserManagementViewSet
+    
+    Regras:
+    - TODAS as operações (GET/POST/PUT/PATCH/DELETE): Apenas GESTOR_PNGI
+    - COORDENADOR_PNGI: Bloqueado (não gerencia usuários)
+    - OPERADOR_ACAO: Bloqueado (não gerencia usuários)
+    - CONSULTOR_PNGI: Bloqueado (não gerencia usuários)
+    
+    Hierarquia:
+    GESTOR_PNGI (tudo) > Demais roles (nada)
+    """
+    
+    def has_permission(self, request, view):
+        # Usuário deve estar autenticado
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        # TODAS as operações: apenas GESTOR_PNGI
+        try:
+            app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
+            if not app_acoes:
+                return False
+            
+            return UserRole.objects.filter(
+                user=request.user,
+                aplicacao=app_acoes,
+                role__codigoperfil='GESTOR_PNGI'
+            ).exists()
         except Exception:
             return False
 
