@@ -3,6 +3,8 @@ from datetime import date
 from typing import NamedTuple
 from django.utils import timezone
 
+from ...models import Eixo, SituacaoAcao, VigenciaPNGI
+
 
 class BaseTestData(NamedTuple):
     """Estrutura de dados base para testes"""

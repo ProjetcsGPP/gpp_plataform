@@ -10,6 +10,10 @@ from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
 from rest_framework import viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
+
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+
 from accounts.models import User, UserRole
 from common.serializers import (
     UserSerializer,
@@ -610,6 +614,15 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
         'idacao', 'idtipoanotacaoalinhamento'
     )
     serializer_class = AcaoAnotacaoAlinhamentoSerializer
+    
+
+    # ← ADICIONE EXATAMENTE AQUI
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['idacao', 'idtipoanotacaoalinhamento']
+    search_fields = ['idacao__strapelido', 'strdescricaoanotacaoalinhamento', 'strnumeromonitoramento']
+    ordering_fields = ['datdataanotacaoalinhamento']
+    ordering = ['-datdataanotacaoalinhamento']
+        
     permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['idacao__strapelido', 'idtipoanotacaoalinhamento__strdescricaotipoanotacaoalinhamento']

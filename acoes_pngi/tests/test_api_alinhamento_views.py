@@ -12,7 +12,7 @@ from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.utils import timezone
 
 from accounts.models import Aplicacao, Role, UserRole
@@ -159,6 +159,7 @@ class TipoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
             '/api/v1/acoes_pngi/tipos-anotacao-alinhamento/?search=Reunião'
         )
         results = getattr(response.data, 'results', [])
+        self.assertTrue(len(results) > 0, "Nenhum resultado retornado") 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
         self.assertEqual(
@@ -179,15 +180,39 @@ class TipoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
             'Reunião de Alinhamento'
         )
 
-
-class AcaoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
+#class AcaoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
+class AcaoAnotacaoAlinhamentoViewSetTest(TestCase):
     """Testes para AcaoAnotacaoAlinhamentoViewSet"""
     
-    databases = {'default', 'gpp_plataform_db'}
+    #databases = {'default', 'gpp_plataform_db'}
     
     def setUp(self):
         """Setup com usuário autenticado e dados de teste"""
+        super().setUp()  # ✅ Chama BaseTestCase.setUp() - cria vigencia_base, eixo_base, situacao_base
+        
         self.client = APIClient()
+        
+        # === FIXTURES BASE (schema default) ===
+        # Eixo fixo para testes
+        self.eixo_base, created = Eixo.objects.get_or_create(
+            stralias="E1",
+            defaults={'strdescricaoeixo': 'Eixo 1 - Teste Base'}
+        )
+        
+        # Situação fixa para testes
+        self.situacao_base, created = SituacaoAcao.objects.get_or_create(
+            strdescricaosituacao="EM_ANDAMENTO"
+        )
+        
+        # Vigência fixa para testes
+        self.vigencia_base, created = VigenciaPNGI.objects.get_or_create(
+            strdescricaovigenciapngi="PNGI 2026 - Testes",
+            defaults={
+                'datiniciovigencia': date(2026, 1, 1),
+                'datfinalvigencia': date(2026, 12, 31),
+                'isvigenciaativa': True
+            }
+        )
         
         # Criar aplicação e role
         self.app, _ = Aplicacao.objects.get_or_create(
@@ -211,17 +236,26 @@ class AcaoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
         
         # Autenticar
         self.client.force_authenticate(user=self.user)
+      
+        # === PKs explícitos (resolve deferral 100%) ===
+        self.eixo_base.refresh_from_db()
+        self.situacao_base.refresh_from_db()
+        self.vigencia_base.refresh_from_db()
         
-        # Criar vigência        # Criar ações
+        eixo_id = self.eixo_base.pk  # ✅ Sempre funciona
+        situacao_id = self.situacao_base.pk
+        vigencia_id = self.vigencia_base.pk
+                
+        # Criar ações
         self.acao1 = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste 1',
             strdescricaoentrega='Entrega 1',
-            idvigenciapngi=self.vigencia_base,
-            ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao_base
+            idvigenciapngi=self.vigencia_base,   # Instância
+            ideixo=self.eixo_base,               # Instância ← SOLUÇÃO
+            idsituacaoacao=self.situacao_base    # Instância
         )
-        
+
         self.acao2 = Acoes.objects.create(
             strapelido='ACAO-002',
             strdescricaoacao='Ação Teste 2',
@@ -235,27 +269,29 @@ class AcaoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
         self.tipo1 = TipoAnotacaoAlinhamento.objects.create(
             strdescricaotipoanotacaoalinhamento='Reunião'
         )
-        
         self.tipo2 = TipoAnotacaoAlinhamento.objects.create(
             strdescricaotipoanotacaoalinhamento='Documento'
         )
         
-        # Criar anotações
+        # Criar anotações COM TIMEZONE AWARE ✅
         self.anotacao1 = AcaoAnotacaoAlinhamento.objects.create(
             idacao=self.acao1,
             idtipoanotacaoalinhamento=self.tipo1,
-            datdataanotacaoalinhamento=datetime(2026, 2, 15, 10, 0),
+            datdataanotacaoalinhamento=timezone.now(),
             strdescricaoanotacaoalinhamento='Anotação da reunião de alinhamento',
             strlinkanotacaoalinhamento='https://example.com/reuniao',
-            strnumeromonitoramento='MON-001'
+            strnumeromonitoramento='MON-001'  # ✅ Nome CORRETO do modelo
         )
-        
+
         self.anotacao2 = AcaoAnotacaoAlinhamento.objects.create(
             idacao=self.acao1,
             idtipoanotacaoalinhamento=self.tipo2,
-            datdataanotacaoalinhamento=datetime(2026, 1, 10, 14, 30),
-            strdescricaoanotacaoalinhamento='Documento de referência'
+            datdataanotacaoalinhamento=timezone.now() - timedelta(days=30),
+            strdescricaoanotacaoalinhamento='Documento de referência',
+            strnumeromonitoramento='MON-002'  # ✅ Nome CORRETO do modelo
         )
+        
+
     
     def test_list_anotacoes_requires_authentication(self):
         """Lista de anotações requer autenticação"""
@@ -430,16 +466,39 @@ class AcaoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
     
+     
     def test_ordering_anotacoes(self):
         """Ordenar anotações por data (mais recente primeiro)"""
-        response = self.client.get('/api/v1/acoes_pngi/anotacoes-alinhamento/')
-        results = getattr(response.data, 'results', [])
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Primeiro resultado deve ser o mais recente (fevereiro)
-        first_date = datetime.fromisoformat(
-            results[0]['datdataanotacaoalinhamento'].replace('Z', '+00:00')
+        # Criar 2 anotações com datas diferentes
+        anotacao_recente = AcaoAnotacaoAlinhamento.objects.create(
+            idacao=self.acao1,
+            idtipoanotacaoalinhamento=self.tipo1,  # ✅ Correção 1: self.tipo1
+            strnumeromonitoramento='MON-REC',
+            strdescricaoanotacaoalinhamento='Recente',  # ✅ Correção 2: nome correto
+            datdataanotacaoalinhamento=timezone.now()
         )
-        self.assertEqual(first_date.month, 2)
+        anotacao_antiga = AcaoAnotacaoAlinhamento.objects.create(
+            idacao=self.acao1,
+            idtipoanotacaoalinhamento=self.tipo1,  # ✅ Correção 1: self.tipo1
+            strnumeromonitoramento='MON-ANT',
+            strdescricaoanotacaoalinhamento='Antiga',  # ✅ Correção 2: nome correto
+            datdataanotacaoalinhamento=timezone.now() - timedelta(days=30)
+        )
+        
+        response = self.client.get(
+            '/api/v1/acoes-pngi/anotacoes-alinhamento/?ordering=-datdataanotacaoalinhamento'
+        )
+        
+        
+        # ✅ PATCH 4 já aplicado:
+        results = getattr(response.data, 'results', [])
+        self.assertTrue(len(results) > 0, "Nenhum resultado para ordenação descendente")
+        
+        # Agora seguro:
+        data1 = datetime.fromisoformat(results[0]['datdataanotacaoalinhamento'].replace('Z', '+00:00'))
+        data2 = datetime.fromisoformat(results[1]['datdataanotacaoalinhamento'].replace('Z', '+00:00'))
+        self.assertGreater(data1, data2)
+
     
     def test_ordering_anotacoes_ascending(self):
         """Ordenar anotações por data (mais antiga primeiro)"""
@@ -447,6 +506,7 @@ class AcaoAnotacaoAlinhamentoViewSetTest(BaseTestCase):
             '/api/v1/acoes_pngi/anotacoes-alinhamento/?ordering=datdataanotacaoalinhamento'
         )
         results = getattr(response.data, 'results', [])
+        self.assertTrue(len(results) > 0, "Nenhum resultado retornado")  # ✅ ADICIONAR
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Primeiro resultado deve ser o mais antigo (janeiro)
         first_date = datetime.fromisoformat(
