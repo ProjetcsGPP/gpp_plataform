@@ -148,9 +148,9 @@ class TipoAnotacaoAlinhamentoAPITests(BaseAPITestCase):
     def setup_test_data(self):
         # Criar Eixo (se não existe)
         if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.get_or_create(
+            self.eixo, _ = Eixo.objects.get_or_create(
                 stralias='E1',
-                strdescricaoeixo='Eixo 1 - Gestão'
+                defaults={'strdescricaoeixo': 'Eixo 1 - Gestão'}
             )
 
         # Criar SituacaoAcao (se não existe)
@@ -539,9 +539,9 @@ class UsuarioResponsavelAPITests(BaseAPITestCase):
     def setup_test_data(self):
         # Criar Eixo (se não existe)
         if not hasattr(self, 'eixo') or self.eixo is None:
-            self.eixo = Eixo.objects.get_or_create(
+            self.eixo, _ = Eixo.objects.get_or_create(
                 stralias='E1',
-                strdescricaoeixo='Eixo 1 - Gestão'
+                defaults={'strdescricaoeixo': 'Eixo 1 - Gestão'}
             )
 
         # Criar SituacaoAcao (se não existe)

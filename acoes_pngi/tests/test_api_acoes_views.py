@@ -167,9 +167,9 @@ class AcoesViewSetTest(BaseTestCase):
         #)
         vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2027',
-            dat_inicio_vigencia=date(2027, 1, 1),  # ✅ 3 argumentos
-            dat_final_vigencia=date(2027, 12, 31),  # ✅ 3 argumentos
-            boolativa=False
+            datiniciovigencia=date(2027, 1, 1),  # ✅ 3 argumentos
+            datfinalvigencia=date(2027, 12, 31),  # ✅ 3 argumentos
+            isvigenciaativa=False
         )
         Acoes.objects.create(
             strapelido='ACAO-003',

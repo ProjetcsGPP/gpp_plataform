@@ -95,8 +95,19 @@ class BaseWebTestCase(BaseTestCase):
             )
             self.users[role_name] = user
         
-        # Criar dados de teste base
-        self.setup_test_data()
+        self.factory = RequestFactory()
+        self.situacao_base = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        self.vigencia_base = VigenciaPNGI.objects.get_or_create(
+            strdescricaovigenciapngi='2026',
+            defaults={
+                'datiniciovigencia': date(2026, 1, 1),
+                'datfinalvigencia': date(2026, 12, 31),
+                'isvigenciaativa': True
+            }
+        )[0]
+        
     def login_as(self, role_name):
         """Faz login como usuário específico"""
         user = self.users[role_name]
@@ -463,18 +474,6 @@ class VigenciaWebViewsTests(BaseWebTestCase):
 
 class AcoesWebViewsTests(BaseWebTestCase):
     """Testes de views web para Ações (operações)"""
-    
-    def setup_test_data(self):
-        """Cria vigência e ação de teste"""
-        self.factory = RequestFactory()
-        
-        self.acao = Acoes.objects.create(
-            strapelido='ACAO-WEB-001',
-            strdescricaoacao='Ação Teste Web',
-            idvigenciapngi=self.vigencia_base,
-            ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao_base
-        )
     
     def test_coordenador_can_list_acoes(self):
         """COORDENADOR pode listar ações"""
