@@ -127,3 +127,9 @@ class BaseAPITestCase(TestCase):
         defaults.update(kwargs)
         
         return Acoes.objects.create(**defaults)
+
+    def get_api_results(self, response):
+        """Extrai results de response paginada ou lista direta"""
+        if 'results' in response.data:
+            return response.data['results'], response.data['count']
+        return response.data, len(response.data)

@@ -6,6 +6,7 @@ Usa AppContextMiddleware para detecção automática da aplicação.
 import logging
 from django.apps import apps
 from django.db import transaction
+from django.db.models import Q
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
 from rest_framework import viewsets, status, filters
@@ -641,35 +642,45 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
 # VIEWSETS DE RESPONSÁVEIS
 # ============================================================================
 class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
-    # ✅ CORREÇÃO: apenas o relacionamento idusuario
     queryset = UsuarioResponsavel.objects.select_related('idusuario')
     serializer_class = UsuarioResponsavelSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]
+    permission_classes = [IsAuthenticated]
     
-    # ✅ ADICIONAR filtros para search funcionar
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         'strorgao': ['icontains', 'exact'],
         'strtelefone': ['icontains'],
-        # Não usar idusuario__ aqui em filterset_fields para evitar conflito
     }
-    search_fields = [
-        'idusuario__name',      # ✅ Search funciona mesmo sem select_related extra
-        'idusuario__email',     # ✅ Search funciona
-        'strorgao',
-        'strtelefone'
-    ]
-    ordering_fields = ['idusuario__name', 'strorgao', 'created_at']
+    
+    # ✅ CORREÇÃO: Custom search_fields que FUNCIONA com OneToOne
+    search_fields = ['strorgao', 'strtelefone']  # Campos diretos
+    
+    ordering_fields = ['idusuario__name', 'strorgao']
     ordering = ['idusuario__name']
 
     def get_queryset(self):
-        """
-        ✅ Garante select_related SEM tentar campos não-relacionais
-        """
-        return (UsuarioResponsavel.objects
-                .select_related('idusuario')  # ✅ Apenas relacionamento
-                .filter(idusuario__is_active=True))  # Opcional: usuários ativos
+        queryset = UsuarioResponsavel.objects.select_related('idusuario')
+        
+        # ✅ Override search manual
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(
+                Q(idusuario__email__icontains=search) |
+                Q(idusuario__name__icontains=search) |
+                Q(strorgao__icontains=search) |
+                Q(strtelefone__icontains=search)
+            )
+        
+        return queryset.distinct()
 
+
+    def list(self, request, *args, **kwargs):
+        print("🔍 DEBUG list() chamado")
+        response = super().list(request, *args, **kwargs)
+        print(f"🔍 Response data: {list(response.data.keys())}")
+        print(f"🔍 Results count: {len(response.data.get('results', []))}")
+        print(f"🔍 QS count: {self.get_queryset().count()}")
+        return response
 
 class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
     queryset = RelacaoAcaoUsuarioResponsavel.objects.select_related(

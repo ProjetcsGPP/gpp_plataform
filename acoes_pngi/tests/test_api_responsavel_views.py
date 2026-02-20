@@ -11,7 +11,7 @@ from django.test import TestCase
 from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
-from rest_framework import status
+from rest_framework import response, status
 from datetime import date
 from django.utils import timezone
 
@@ -96,22 +96,33 @@ class UsuarioResponsavelViewSetTest(BaseTestCase):
         """Lista de responsáveis requer autenticação"""
         self.client.force_authenticate(user=None)
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
-        results = getattr(response.data, 'results', [])
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
     
     def test_list_responsaveis_authenticated(self):
         """Usuário autenticado pode listar responsáveis"""
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
-        results = getattr(response.data, 'results', [])
+        
+        # ✅ CORREÇÃO: Detecta lista ou paginada
+        if 'results' in response.data:
+            results = response.data['results']
+            total_count = response.data['count']
+        else:
+            results = response.data
+            total_count = len(results)
+        
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
+        self.assertEqual(total_count, 2)
     
     def test_retrieve_responsavel(self):
         """Recuperar detalhes de um responsável específico"""
         response = self.client.get(
             f'/api/v1/acoes_pngi/usuarios-responsaveis/{self.responsavel1.idusuario.id}/'
         )
-        results = getattr(response.data, 'results', [])
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['strorgao'], 'SEGER')
         self.assertEqual(response.data['strtelefone'], '27999999999')
@@ -184,7 +195,9 @@ class UsuarioResponsavelViewSetTest(BaseTestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?strorgao=SEGER'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['strorgao'], 'SEGER')
@@ -194,7 +207,9 @@ class UsuarioResponsavelViewSetTest(BaseTestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?strorgao=SE'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Deve retornar SEGER e SEDU
         self.assertEqual(len(results), 2)
@@ -204,25 +219,62 @@ class UsuarioResponsavelViewSetTest(BaseTestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?search=Responsável 1'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
+
+    def test_list_responsaveis_basic(self):
+        """Teste básico de listagem (sem search)"""
+        response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
+        print(f"BASIC LIST: {len(results)} resultados")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(results), 2)  # 2 responsáveis criados
     
+    #def test_search_responsaveis_by_email(self):
+    #    """Buscar responsáveis por email"""
+    #    response = self.client.get(
+    #        '/api/v1/acoes_pngi/usuarios-responsaveis/?search=resp1@test.com'
+    #    )
+    #    results = getattr(response.data, 'results', [])
+    #    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #    self.assertEqual(len(results), 1)
+
     def test_search_responsaveis_by_email(self):
         """Buscar responsáveis por email"""
+        # ✅ DEBUG: Verificar dados criados
+        print(f"DEBUG: Total Users: {User.objects.count()}")
+        print(f"DEBUG: Total Responsaveis: {UsuarioResponsavel.objects.count()}")
+        print(f"DEBUG: User resp1 existe: {User.objects.filter(email='resp1@test.com').exists()}")
+        print(f"DEBUG: Responsavel resp1 existe: {UsuarioResponsavel.objects.filter(idusuario__email='resp1@test.com').exists()}")
+        
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?search=resp1@test.com'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
+        
+        print(f"DEBUG: Response status: {response.status_code}")
+        print(f"DEBUG: Response data keys: {list(response.data.keys())}")
+        print(f"DEBUG: Results length: {len(getattr(response.data, 'results', []))}")
+        
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
+
     
     def test_search_responsaveis_by_orgao(self):
         """Buscar responsáveis por órgão"""
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?search=SEDU'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
     
@@ -231,14 +283,18 @@ class UsuarioResponsavelViewSetTest(BaseTestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/usuarios-responsaveis/?search=999999999'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
     
     def test_ordering_responsaveis_by_name(self):
         """Ordenar responsáveis por nome (padrão)"""
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Deve vir em ordem alfabética por nome
         names = [r['idusuario']['name'] for r in results]
@@ -341,7 +397,9 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
     def test_list_relacoes_authenticated(self):
         """Usuário autenticado pode listar relações"""
         response = self.client.get('/api/v1/acoes_pngi/relacoes-acao-responsavel/')
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
@@ -350,7 +408,10 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/relacoes-acao-responsavel/{self.relacao1.idacaousuarioresponsavel}/'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
+        
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['idacao'], self.acao1.idacao)
         self.assertEqual(
@@ -424,7 +485,9 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/relacoes-acao-responsavel/?idacao={self.acao1.idacao}'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)  # Acao1 tem 2 responsáveis
     
@@ -433,7 +496,9 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/relacoes-acao-responsavel/?idusuarioresponsavel={self.responsavel1.idusuario.id}'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)  # Responsavel1 tem 1 ação
     
@@ -442,7 +507,9 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/relacoes-acao-responsavel/?search=ACAO-001'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
@@ -451,7 +518,9 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseTestCase):
         response = self.client.get(
             '/api/v1/acoes_pngi/relacoes-acao-responsavel/?search=Responsável 1'
         )
-        results = getattr(response.data, 'results', [])
+        
+        #results = getattr(response.data, 'results', [])
+        results, total = self.get_api_results(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
     
