@@ -681,6 +681,33 @@ class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
         print(f"🔍 Results count: {len(response.data.get('results', []))}")
         print(f"🔍 QS count: {self.get_queryset().count()}")
         return response
+        
+    def debug_serializer_structure(self):
+        """🔍 DEBUG: Ver estrutura real do serializer"""
+        print("=== DEBUG SERIALIZER ===")
+        response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
+        print(f"Status: {response.status_code}")
+        print(f"Response data keys: {list(response.data.keys()) if response.data else 'NO DATA'}")
+        
+        results, total = self.get_api_results(response)
+        print(f"Results count: {len(results)}, Total: {total}")
+        
+        if results:
+            sample = results[0]
+            print("ESTRUTURA COMPLETA DO PRIMEIRO ITEM:")
+            print(sample)
+            print("CHAVES DISPONÍVEIS:", list(sample.keys()))
+            
+            # Verificar campos específicos
+            print(f"idusuario type: {type(sample.get('idusuario'))}")
+            if 'idusuario' in sample:
+                print(f"idusuario value: {sample['idusuario']}")
+            
+            if 'idusuario_name' in sample:
+                print(f"idusuario_name: {sample['idusuario_name']}")
+        
+        print("=== FIM DEBUG ===\n")
+    
 class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
     queryset = RelacaoAcaoUsuarioResponsavel.objects.select_related(
         'idacao', 'idusuarioresponsavel__idusuario'
