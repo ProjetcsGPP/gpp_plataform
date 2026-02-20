@@ -644,7 +644,7 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
 class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
     queryset = UsuarioResponsavel.objects.select_related('idusuario')
     serializer_class = UsuarioResponsavelSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasAcoesPermission]
     
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
@@ -681,16 +681,15 @@ class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
         print(f"🔍 Results count: {len(response.data.get('results', []))}")
         print(f"🔍 QS count: {self.get_queryset().count()}")
         return response
-
 class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
     queryset = RelacaoAcaoUsuarioResponsavel.objects.select_related(
-        'idacao', 'idusuarioresponsavel'
+        'idacao', 'idusuarioresponsavel__idusuario'
     )
     serializer_class = RelacaoAcaoUsuarioResponsavelSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]
-
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['idacao', 'idusuarioresponsavel']
-    search_fields = ['idacao__strapelido']  # ÚNICO que funciona
-    ordering_fields = ['created_at']
-    ordering = ['-created_at']
+    
+    # ✅ ADICIONAR:
+    filter_backends = [filters.SearchFilter]
+    search_fields = [
+        'idacao__strapelido',           # Apelido da ação
+        'idusuarioresponsavel__idusuario__name',  # Nome do responsável
+    ]

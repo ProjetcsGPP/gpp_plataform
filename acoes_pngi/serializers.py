@@ -261,16 +261,8 @@ class UsuarioResponsavelSerializer(TimestampedModelSerializer):
 
     class Meta:
         model = UsuarioResponsavel
-        fields = [
-            "idusuario",
-            "idusuario_name",
-            "idusuario_email",
-            "strtelefone",
-            "strorgao",
-            "created_at",
-            "updated_at"
-        ]
-        read_only_fields = ["created_at", "updated_at"]
+        fields = '__all__'  # Inclui os campos calculados
+        read_only_fields = ['created_at', 'updated_at']
 
     def to_representation(self, instance):
         """

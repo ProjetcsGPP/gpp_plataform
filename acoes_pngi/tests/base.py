@@ -127,9 +127,33 @@ class BaseAPITestCase(TestCase):
         defaults.update(kwargs)
         
         return Acoes.objects.create(**defaults)
-
+        
     def get_api_results(self, response):
-        """Extrai results de response paginada ou lista direta"""
-        if 'results' in response.data:
-            return response.data['results'], response.data['count']
-        return response.data, len(response.data)
+        """
+        Extrai results de response paginada ou lista direta.
+        Args:
+            response: Response object do DRF
+        Returns:
+            tuple: (results, total)
+        Raises:
+            AttributeError: Se response não tiver data ou estrutura inválida
+        """
+        if not hasattr(response, 'data'):
+            return [], 0
+        
+        data = response.data
+        
+        # Se for dict com paginação
+        if isinstance(data, dict) and 'results' in data:
+            return data['results'], data.get('count', len(data['results']))
+        
+        # Se for dict simples (retrieve - objeto único)
+        if isinstance(data, dict):
+            return data, 1
+        
+        # Se for lista direta
+        if isinstance(data, list):
+            return data, len(data)
+        
+        # Fallback
+        return [], 0
