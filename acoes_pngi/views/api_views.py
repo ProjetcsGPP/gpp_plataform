@@ -11,7 +11,6 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from accounts.models import User, UserRole
@@ -615,18 +614,19 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
     )
     serializer_class = AcaoAnotacaoAlinhamentoSerializer
     
-
-    # ← ADICIONE EXATAMENTE AQUI
+    
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['idacao', 'idtipoanotacaoalinhamento']
-    search_fields = ['idacao__strapelido', 'strdescricaoanotacaoalinhamento', 'strnumeromonitoramento']
+    search_fields = [
+        'idacao__strapelido', 
+        'strdescricaoanotacaoalinhamento', 
+        'strnumeromonitoramento',
+        'idtipoanotacaoalinhamento__strdescricaotipoanotacaoalinhamento'  # Mantenha se necessário
+    ]
     ordering_fields = ['datdataanotacaoalinhamento']
     ordering = ['-datdataanotacaoalinhamento']
-        
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['idacao__strapelido', 'idtipoanotacaoalinhamento__strdescricaotipoanotacaoalinhamento']
-    ordering = ['-created_at']
+
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]    
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -640,49 +640,46 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
 # ============================================================================
 # VIEWSETS DE RESPONSÁVEIS
 # ============================================================================
-
 class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para Usuários Responsáveis.
-    
-    Permissões:
-    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
-    - Escrita: OPERADOR, COORDENADOR, GESTOR (CONSULTOR bloqueado)
-    """
+    # ✅ CORREÇÃO: apenas o relacionamento idusuario
     queryset = UsuarioResponsavel.objects.select_related('idusuario')
     serializer_class = UsuarioResponsavelSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['idusuario__name', 'idusuario__email', 'strorgao', 'strtelefone']
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]
+    
+    # ✅ ADICIONAR filtros para search funcionar
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = {
+        'strorgao': ['icontains', 'exact'],
+        'strtelefone': ['icontains'],
+        # Não usar idusuario__ aqui em filterset_fields para evitar conflito
+    }
+    search_fields = [
+        'idusuario__name',      # ✅ Search funciona mesmo sem select_related extra
+        'idusuario__email',     # ✅ Search funciona
+        'strorgao',
+        'strtelefone'
+    ]
+    ordering_fields = ['idusuario__name', 'strorgao', 'created_at']
     ordering = ['idusuario__name']
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        if self.request.query_params.get('strorgao'):
-            queryset = queryset.filter(strorgao__icontains=self.request.query_params.get('strorgao'))
-        return queryset
+        """
+        ✅ Garante select_related SEM tentar campos não-relacionais
+        """
+        return (UsuarioResponsavel.objects
+                .select_related('idusuario')  # ✅ Apenas relacionamento
+                .filter(idusuario__is_active=True))  # Opcional: usuários ativos
 
 
 class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para Relações entre Ações e Usuários Responsáveis.
-    
-    Permissões:
-    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
-    - Escrita: OPERADOR, COORDENADOR, GESTOR (CONSULTOR bloqueado)
-    """
     queryset = RelacaoAcaoUsuarioResponsavel.objects.select_related(
-        'idacao', 'idusuarioresponsavel__idusuario'
+        'idacao', 'idusuarioresponsavel'
     )
     serializer_class = RelacaoAcaoUsuarioResponsavelSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
-    filter_backends = [filters.OrderingFilter]
-    ordering = ['-created_at']
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        if self.request.query_params.get('idacao'):
-            queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
-        if self.request.query_params.get('idusuarioresponsavel'):
-            queryset = queryset.filter(idusuarioresponsavel=self.request.query_params.get('idusuarioresponsavel'))
-        return queryset
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['idacao', 'idusuarioresponsavel']
+    search_fields = ['idacao__strapelido']  # ÚNICO que funciona
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
