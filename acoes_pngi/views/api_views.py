@@ -709,14 +709,58 @@ class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
         print("=== FIM DEBUG ===\n")
     
 class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
-    queryset = RelacaoAcaoUsuarioResponsavel.objects.select_related(
-        'idacao', 'idusuarioresponsavel__idusuario'
-    )
-    serializer_class = RelacaoAcaoUsuarioResponsavelSerializer
+    """
+    ViewSet da relação entre Ação e Usuário Responsável.
     
-    # ✅ ADICIONAR:
-    filter_backends = [filters.SearchFilter]
+    Permite:
+    - CRUD completo
+    - Filtro por ação
+    - Filtro por usuário responsável
+    - Busca por apelido da ação, nome ou email do usuário
+    """
+
+    queryset = RelacaoAcaoUsuarioResponsavel.objects.select_related(
+        'idacao',
+        'idusuarioresponsavel__idusuario'
+    )
+
+    serializer_class = RelacaoAcaoUsuarioResponsavelSerializer
+    permission_classes = [IsAuthenticated, HasAcoesPermission]
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    # 🔎 Filtros exatos
+    filterset_fields = {
+        'idacao': ['exact'],
+        'idusuarioresponsavel': ['exact'],
+    }
+
+    # 🔍 Busca textual
     search_fields = [
-        'idacao__strapelido',           # Apelido da ação
-        'idusuarioresponsavel__idusuario__name',  # Nome do responsável
+        'idacao__strapelido',
+        'idusuarioresponsavel__idusuario__name',
+        'idusuarioresponsavel__idusuario__email',
     ]
+
+    # 🔃 Ordenação
+    ordering_fields = [
+        'created_at',
+        'idacao__strapelido',
+        'idusuarioresponsavel__idusuario__name',
+    ]
+
+    ordering = ['idacao__strapelido']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Filtro manual opcional por query param
+        idacao = self.request.query_params.get('idacao')
+        if idacao:
+            queryset = queryset.filter(idacao=idacao)
+
+        idusuarioresponsavel = self.request.query_params.get('idusuarioresponsavel')
+        if idusuarioresponsavel:
+            queryset = queryset.filter(idusuarioresponsavel=idusuarioresponsavel)
+
+        return queryset.distinct()

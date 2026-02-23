@@ -110,7 +110,7 @@ class UsuarioResponsavelViewSetTest(BaseAPITestCase):
         response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
         
         # 🔍 DEBUG - ADICIONE ESTAS 5 LINHAS:
-        print("=== DEBUG SERIALIZER ===")
+        print("=== DEBUG SERIALIZER test_list_responsaveis_requires_authentication ===")
         print(f"Status: {response.status_code}")
         print(f"Data keys: {list(response.data.keys())}")
         print(f"Results[0] completo: {response.data['results'][0] if 'results' in response.data and response.data['results'] else 'Vazio'}")
@@ -249,6 +249,8 @@ class UsuarioResponsavelViewSetTest(BaseAPITestCase):
         
         #results = getattr(response.data, 'results', [])
         results, total = self.get_api_results(response)
+        
+        print("=== DEBUG SERIALIZER test_list_responsaveis_basic ===")
         print(f"BASIC LIST: {len(results)} resultados")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)  # 2 responsáveis criados
@@ -266,6 +268,7 @@ class UsuarioResponsavelViewSetTest(BaseAPITestCase):
     def test_search_responsaveis_by_email(self):
         """Buscar responsáveis por email"""
         # ✅ DEBUG: Verificar dados criados
+        print("=== DEBUG SERIALIZER test_search_responsaveis_by_email ===")
         print(f"DEBUG: Total Users: {User.objects.count()}")
         print(f"DEBUG: Total Responsaveis: {UsuarioResponsavel.objects.count()}")
         print(f"DEBUG: User resp1 existe: {User.objects.filter(email='resp1@test.com').exists()}")
@@ -308,27 +311,28 @@ class UsuarioResponsavelViewSetTest(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
 
-        def test_ordering_responsaveis_by_name(self):
-            """Ordenar responsáveis por nome (padrão)"""
-            response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
-            results, total = self.get_api_results(response)
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_ordering_responsaveis_by_name(self):
+        """Ordenar responsáveis por nome (padrão)"""
+        response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
+        results, total = self.get_api_results(response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # ✅ Verificar qual estrutura o serializer retorna
+        if results:
+            sample = results[0]
+            print("=== DEBUG SERIALIZER test_ordering_responsaveis_by_name ===")
+            print(f"Estrutura: {sample}")
             
-            # ✅ Verificar qual estrutura o serializer retorna
-            if results:
-                sample = results[0]
-                print(f"Estrutura: {sample}")
-                
-                # Testar diferentes possibilidades
-                if 'idusuario_name' in sample:
-                    names = [r['idusuario_name'] for r in results]
-                elif isinstance(sample.get('idusuario'), dict) and 'name' in sample['idusuario']:
-                    names = [r['idusuario']['name'] for r in results]
-                else:
-                    # Fallback: pular asserção por enquanto
-                    self.skipTest("Estrutura de dados não esperada")
-                
-                self.assertEqual(names, sorted(names))
+            # Testar diferentes possibilidades
+            if 'idusuario_name' in sample:
+                names = [r['idusuario_name'] for r in results]
+            elif isinstance(sample.get('idusuario'), dict) and 'name' in sample['idusuario']:
+                names = [r['idusuario']['name'] for r in results]
+            else:
+                # Fallback: pular asserção por enquanto
+                self.skipTest("Estrutura de dados não esperada")
+            
+            self.assertEqual(names, sorted(names))
 
 class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseAPITestCase):
     """Testes para RelacaoAcaoUsuarioResponsavelViewSet"""
@@ -448,6 +452,13 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseAPITestCase):
             response.data['idusuarioresponsavel'],
             self.responsavel1.idusuario.id
         )
+        
+        # 🔍 DEBUG - ADICIONE ESTAS 5 LINHAS:
+        print("=== DEBUG SERIALIZER test_retrieve_relacao ===")
+        print(f"Status: {response.status_code}")
+        print(f"Data keys: {list(response.data.keys())}")
+        print(f"Results[0] completo: {response.data['results'][0] if 'results' in response.data and response.data['results'] else 'Vazio'}")
+        print("=== FIM DEBUG ===")        
     
     def test_create_relacao(self):
         """Criar nova relação ação-responsável"""
@@ -526,12 +537,29 @@ class RelacaoAcaoUsuarioResponsavelViewSetTest(BaseAPITestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/relacoes-acao-responsavel/?idusuarioresponsavel={self.responsavel1.idusuario.id}'
         )
-        
-        #results = getattr(response.data, 'results', [])
+
         results, total = self.get_api_results(response)
+
+        print("=== DEBUG SERIALIZER test_filter_relacoes_by_responsavel ===")
+        print(f"Responsavel1.Idusuario.ID: {self.responsavel1.idusuario.id}")
+        print(f"Status: {response.status_code}")
+        print(f"Data keys: {list(response.data.keys())}")
+        print(f"Total: {total}")
+
+        if total > 0:
+            resultados = response.data.get('results', response.data)
+
+            print(f"Quantidade de itens retornados: {len(resultados)}")
+            for i, item in enumerate(resultados):
+                print(f"\n--- Item {i} ---")
+                for chave, valor in item.items():
+                    print(f"{chave}: {valor}")
+
+        print("=== FIM DEBUG ===")
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)  # Responsavel1 tem 1 ação
-    
+            
     def test_search_relacoes_by_apelido_acao(self):
         """Buscar relações por apelido da ação"""
         response = self.client.get(
