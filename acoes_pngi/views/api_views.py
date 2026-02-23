@@ -6,10 +6,14 @@ Usa AppContextMiddleware para detecção automática da aplicação.
 import logging
 from django.apps import apps
 from django.db import transaction
+from django.db.models import Q
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
 from rest_framework import viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
+
+from django_filters.rest_framework import DjangoFilterBackend
+
 from accounts.models import User, UserRole
 from common.serializers import (
     UserSerializer,
@@ -41,6 +45,8 @@ from ..serializers import (
 from ..permissions import (
     HasAcoesPermission,
     IsCoordenadorOrAbove,
+    IsGestorPNGI,
+    IsGestorPNGIOnly,  # ✨ NOVA: para UserManagementViewSet
     IsCoordernadorOrGestorPNGI,
     IsCoordernadorGestorOrOperadorPNGI
 )
@@ -209,8 +215,12 @@ class UserManagementViewSet(viewsets.ViewSet):
     ViewSet para gerenciamento de usuários da aplicação.
     
     ✨ Usa request.app_context automaticamente.
+    
+    Permissões:
+    - TODAS as operações (GET/POST/PATCH): Apenas GESTOR_PNGI
+    - Demais roles (COORDENADOR, OPERADOR, CONSULTOR) são bloqueadas
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsGestorPNGIOnly]  # ✅ CORRIGIDO: GESTOR para tudo
     
     lookup_field = 'pk'
     lookup_value_regex = '.*'
@@ -328,10 +338,16 @@ class UserManagementViewSet(viewsets.ViewSet):
 # ============================================================================
 
 class EixoViewSet(viewsets.ModelViewSet):
-    """ViewSet para gerenciar Eixos do PNGI."""
+    """
+    ViewSet para gerenciar Eixos do PNGI.
+    
+    Permissões:
+    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
+    - Escrita: Apenas COORDENADOR e GESTOR
+    """
     queryset = Eixo.objects.all()
     serializer_class = EixoSerializer
-    permission_classes = [HasAcoesPermission]
+    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ ATUALIZADO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaoeixo', 'stralias']
     ordering_fields = ['stralias', 'strdescricaoeixo', 'created_at']
@@ -354,10 +370,16 @@ class EixoViewSet(viewsets.ModelViewSet):
 
 
 class SituacaoAcaoViewSet(viewsets.ModelViewSet):
-    """ViewSet para gerenciar Situações de Ações do PNGI."""
+    """
+    ViewSet para gerenciar Situações de Ações do PNGI.
+    
+    Permissões:
+    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
+    - Escrita: Apenas GESTOR_PNGI (configuração crítica)
+    """
     queryset = SituacaoAcao.objects.all()
     serializer_class = SituacaoAcaoSerializer
-    permission_classes = [HasAcoesPermission]
+    permission_classes = [IsGestorPNGI]  # ✅ CORRETO: todos leem, GESTOR escreve
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaosituacao']
     ordering_fields = ['strdescricaosituacao', 'created_at']
@@ -365,10 +387,16 @@ class SituacaoAcaoViewSet(viewsets.ModelViewSet):
 
 
 class VigenciaPNGIViewSet(viewsets.ModelViewSet):
-    """ViewSet para gerenciar Vigências do PNGI."""
+    """
+    ViewSet para gerenciar Vigências do PNGI.
+    
+    Permissões:
+    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
+    - Escrita: Apenas COORDENADOR e GESTOR
+    """
     queryset = VigenciaPNGI.objects.all()
     serializer_class = VigenciaPNGISerializer
-    permission_classes = [HasAcoesPermission]
+    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ ATUALIZADO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaovigenciapngi']
     ordering_fields = ['datiniciovigencia', 'datfinalvigencia', 'created_at']
@@ -431,11 +459,11 @@ class TipoEntraveAlertaViewSet(viewsets.ModelViewSet):
     
     Permissões:
     - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
-    - Escrita: Apenas COORDENADOR e GESTOR
+    - Escrita: Apenas GESTOR_PNGI (configuração crítica)
     """
     queryset = TipoEntraveAlerta.objects.all()
     serializer_class = TipoEntraveAlertaSerializer
-    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ CONSULTOR e OPERADOR bloqueados em escrita
+    permission_classes = [IsGestorPNGI]  # ✅ CORRETO: todos leem, GESTOR escreve
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaotipoentravealerta']
     ordering_fields = ['strdescricaotipoentravealerta', 'created_at']
@@ -459,7 +487,7 @@ class AcoesViewSet(viewsets.ModelViewSet):
     ).prefetch_related(
         'prazos', 'destaques', 'anotacoes_alinhamento', 'responsaveis'
     )
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strapelido', 'strdescricaoacao', 'strdescricaoentrega']
     ordering_fields = ['strapelido', 'datdataentrega', 'created_at']
@@ -505,7 +533,7 @@ class AcaoPrazoViewSet(viewsets.ModelViewSet):
     """
     queryset = AcaoPrazo.objects.select_related('idacao')
     serializer_class = AcaoPrazoSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strprazo', 'idacao__strapelido']
     ordering_fields = ['created_at', 'isacaoprazoativo']
@@ -541,7 +569,7 @@ class AcaoDestaqueViewSet(viewsets.ModelViewSet):
     """
     queryset = AcaoDestaque.objects.select_related('idacao')
     serializer_class = AcaoDestaqueSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['idacao__strapelido']
     ordering_fields = ['datdatadestaque', 'created_at']
@@ -568,7 +596,7 @@ class TipoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
     """
     queryset = TipoAnotacaoAlinhamento.objects.all()
     serializer_class = TipoAnotacaoAlinhamentoSerializer
-    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ CONSULTOR e OPERADOR bloqueados em escrita
+    permission_classes = [IsCoordernadorOrGestorPNGI]  # ✅ JÁ ESTAVA CORRETO
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['strdescricaotipoanotacaoalinhamento']
     ordering = ['strdescricaotipoanotacaoalinhamento']
@@ -586,10 +614,20 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
         'idacao', 'idtipoanotacaoalinhamento'
     )
     serializer_class = AcaoAnotacaoAlinhamentoSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['idacao__strapelido', 'idtipoanotacaoalinhamento__strdescricaotipoanotacaoalinhamento']
-    ordering = ['-created_at']
+    
+    
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['idacao', 'idtipoanotacaoalinhamento']
+    search_fields = [
+        'idacao__strapelido', 
+        'strdescricaoanotacaoalinhamento', 
+        'strnumeromonitoramento',
+        'idtipoanotacaoalinhamento__strdescricaotipoanotacaoalinhamento'  # Mantenha se necessário
+    ]
+    ordering_fields = ['datdataanotacaoalinhamento']
+    ordering = ['-datdataanotacaoalinhamento']
+
+    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]    
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -603,49 +641,126 @@ class AcaoAnotacaoAlinhamentoViewSet(viewsets.ModelViewSet):
 # ============================================================================
 # VIEWSETS DE RESPONSÁVEIS
 # ============================================================================
-
 class UsuarioResponsavelViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para Usuários Responsáveis.
-    
-    Permissões:
-    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
-    - Escrita: OPERADOR, COORDENADOR, GESTOR (CONSULTOR bloqueado)
-    """
     queryset = UsuarioResponsavel.objects.select_related('idusuario')
     serializer_class = UsuarioResponsavelSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['idusuario__name', 'idusuario__email', 'strorgao', 'strtelefone']
+    permission_classes = [IsAuthenticated, HasAcoesPermission]
+    
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = {
+        'strorgao': ['icontains', 'exact'],
+        'strtelefone': ['icontains'],
+    }
+    
+    # ✅ CORREÇÃO: Custom search_fields que FUNCIONA com OneToOne
+    search_fields = ['strorgao', 'strtelefone']  # Campos diretos
+    
+    ordering_fields = ['idusuario__name', 'strorgao']
     ordering = ['idusuario__name']
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        if self.request.query_params.get('strorgao'):
-            queryset = queryset.filter(strorgao__icontains=self.request.query_params.get('strorgao'))
-        return queryset
+        queryset = UsuarioResponsavel.objects.select_related('idusuario')
+        
+        # ✅ Override search manual
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(
+                Q(idusuario__email__icontains=search) |
+                Q(idusuario__name__icontains=search) |
+                Q(strorgao__icontains=search) |
+                Q(strtelefone__icontains=search)
+            )
+        
+        return queryset.distinct()
 
 
+    def list(self, request, *args, **kwargs):
+        print("🔍 DEBUG list() chamado")
+        response = super().list(request, *args, **kwargs)
+        print(f"🔍 Response data: {list(response.data.keys())}")
+        print(f"🔍 Results count: {len(response.data.get('results', []))}")
+        print(f"🔍 QS count: {self.get_queryset().count()}")
+        return response
+        
+    def debug_serializer_structure(self):
+        """🔍 DEBUG: Ver estrutura real do serializer"""
+        print("=== DEBUG SERIALIZER ===")
+        response = self.client.get('/api/v1/acoes_pngi/usuarios-responsaveis/')
+        print(f"Status: {response.status_code}")
+        print(f"Response data keys: {list(response.data.keys()) if response.data else 'NO DATA'}")
+        
+        results, total = self.get_api_results(response)
+        print(f"Results count: {len(results)}, Total: {total}")
+        
+        if results:
+            sample = results[0]
+            print("ESTRUTURA COMPLETA DO PRIMEIRO ITEM:")
+            print(sample)
+            print("CHAVES DISPONÍVEIS:", list(sample.keys()))
+            
+            # Verificar campos específicos
+            print(f"idusuario type: {type(sample.get('idusuario'))}")
+            if 'idusuario' in sample:
+                print(f"idusuario value: {sample['idusuario']}")
+            
+            if 'idusuario_name' in sample:
+                print(f"idusuario_name: {sample['idusuario_name']}")
+        
+        print("=== FIM DEBUG ===\n")
+    
 class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
     """
-    ViewSet para Relações entre Ações e Usuários Responsáveis.
+    ViewSet da relação entre Ação e Usuário Responsável.
     
-    Permissões:
-    - Leitura: CONSULTOR, OPERADOR, COORDENADOR, GESTOR
-    - Escrita: OPERADOR, COORDENADOR, GESTOR (CONSULTOR bloqueado)
+    Permite:
+    - CRUD completo
+    - Filtro por ação
+    - Filtro por usuário responsável
+    - Busca por apelido da ação, nome ou email do usuário
     """
+
     queryset = RelacaoAcaoUsuarioResponsavel.objects.select_related(
-        'idacao', 'idusuarioresponsavel__idusuario'
+        'idacao',
+        'idusuarioresponsavel__idusuario'
     )
+
     serializer_class = RelacaoAcaoUsuarioResponsavelSerializer
-    permission_classes = [IsCoordernadorGestorOrOperadorPNGI]  # ✅ CONSULTOR bloqueado em escrita
-    filter_backends = [filters.OrderingFilter]
-    ordering = ['-created_at']
+    permission_classes = [IsAuthenticated, HasAcoesPermission]
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    # 🔎 Filtros exatos
+    filterset_fields = {
+        'idacao': ['exact'],
+        'idusuarioresponsavel': ['exact'],
+    }
+
+    # 🔍 Busca textual
+    search_fields = [
+        'idacao__strapelido',
+        'idusuarioresponsavel__idusuario__name',
+        'idusuarioresponsavel__idusuario__email',
+    ]
+
+    # 🔃 Ordenação
+    ordering_fields = [
+        'created_at',
+        'idacao__strapelido',
+        'idusuarioresponsavel__idusuario__name',
+    ]
+
+    ordering = ['idacao__strapelido']
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        if self.request.query_params.get('idacao'):
-            queryset = queryset.filter(idacao=self.request.query_params.get('idacao'))
-        if self.request.query_params.get('idusuarioresponsavel'):
-            queryset = queryset.filter(idusuarioresponsavel=self.request.query_params.get('idusuarioresponsavel'))
-        return queryset
+
+        # Filtro manual opcional por query param
+        idacao = self.request.query_params.get('idacao')
+        if idacao:
+            queryset = queryset.filter(idacao=idacao)
+
+        idusuarioresponsavel = self.request.query_params.get('idusuarioresponsavel')
+        if idusuarioresponsavel:
+            queryset = queryset.filter(idusuarioresponsavel=idusuarioresponsavel)
+
+        return queryset.distinct()

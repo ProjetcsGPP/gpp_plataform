@@ -852,3 +852,39 @@ Este projeto é propriedade do Governo do Estado do Espírito Santo - SEGER.
 ---
 
 **Desenvolvido com ❤️ pela equipe GPP**
+
+📋 MATRIZ DE PERMISSÕES FINAL E CORRETA
+Entidade/Ação	                                  GESTOR  COORDENADOR OPERADOR	CONSULTOR
+CONFIGURAÇÕES - Nível 1 (Apenas GESTOR)				
+SituacaoAcao (R)	                              Sim     Sim	        Sim	        Sim
+SituacaoAcao (W/D)	                            Sim	   	Não	    	Não	    	Não
+TipoEntraveAlerta (R)	                          Sim	   	Sim	    	Sim	        Sim
+TipoEntraveAlerta (W/D)	                        Sim	   	Não	    	Não	        Não
+CONFIGURAÇÕES - Nível 2 (GESTOR e COORDENADOR)				
+Eixo (R)	                                      Sim	   	Sim	    	Sim	        Sim
+Eixo (W/D)	                                    Sim	   	Sim	    	Não	        Não
+VigenciaPNGI (R)	                              Sim	   	Sim	    	Sim	        Sim
+VigenciaPNGI (W/D)	                            Sim	   	Sim	    	Não	        Não
+TipoAnotacaoAlinhamento (R)	                    Sim	   	Sim	    	Sim         Sim
+TipoAnotacaoAlinhamento (W/D)	                  Sim	   	Sim	    	Não	        Não
+OPERAÇÕES (GESTOR, COORDENADOR e OPERADOR)				
+Acoes (R)	                                      Sim	   	Sim	    	Sim	        Sim
+Acoes (W/D)	                                    Sim	   	Sim	    	Sim	        Não
+AcaoPrazo (R)	                                  Sim	   	Sim	    	Sim	        Sim
+AcaoPrazo (W/D)	                                Sim	   	Sim	    	Sim	        Não
+AcaoDestaque (R)	                              Sim	   	Sim	    	Sim	        Sim
+AcaoDestaque (W/D)	                            Sim	   	Sim	    	Sim	        Não
+AcaoAnotacaoAlinhamento (R)	                    Sim	   	Sim	    	Sim	        Sim
+AcaoAnotacaoAlinhamento (W/D)	                  Sim	   	Sim	    	Sim	        Não
+UsuarioResponsavel (R)	                        Sim	   	Sim	    	Sim	        Sim
+UsuarioResponsavel (W/D)	                      Sim	   	Sim     	Sim	        Não
+RelacaoAcaoUsuarioResponsavel (R)	              Sim	   	Sim	    	Sim	        Sim
+RelacaoAcaoUsuarioResponsavel (W/D)	            Sim	   	Sim	    	Sim	        Não
+GESTÃO DE USUÁRIOS				
+Usuários/Roles (R)	                            Sim	   	Sim	    	Sim         Sim
+Usuários/Roles (W/D)	                          Sim	   	Não	    	Não	        Não
+Legenda:
+
+R = Read (GET, HEAD, OPTIONS)
+W = Write (POST, PUT, PATCH)
+D = Delete (DELETE)

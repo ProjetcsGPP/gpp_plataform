@@ -10,6 +10,8 @@ Ran 368 tests in 13.818s
 FAILED (failures=25, errors=51)
 ```
 
+**Branch:** `fix/correcao-massiva-testes-pngi`
+
 **Arquivos principais 100% OK:**
 - ✅ `test_api_views_acoes.py`
 - ✅ `test_api_alinhamento_views.py`
@@ -19,38 +21,7 @@ FAILED (failures=25, errors=51)
 
 ## 🐞 Problemas Identificados
 
-### 1️⃣ Import Errors (3 arquivos)
-
-**Erro:**
-```python
-ModuleNotFoundError: No module named 'acoes_pngi.tests.base'
-```
-
-**Arquivos afetados:**
-- `test_diagnostic_api.py`
-- `test_web_acoes_views.py`
-- `test_web_views_complete.py`
-
-**Problema:**
-Estes arquivos tentam importar `BaseTestCase` que não existe:
-```python
-from .base import BaseTestCase  # ❌ ERRO
-
-class MyTest(BaseTestCase):  # ❌ ERRO
-    pass
-```
-
-**Correção:**
-```python
-# Import removido automaticamente
-
-class MyTest(TestCase):  # ✅ CORRETO
-    pass
-```
-
----
-
-### 2️⃣ ValidationError - datfinalvigencia (múltiplos arquivos)
+### 1️⃣ ValidationError - datfinalvigencia (múltiplos arquivos)
 
 **Erro:**
 ```python
@@ -81,7 +52,7 @@ VigenciaPNGI.objects.create(
 
 ---
 
-### 3️⃣ IndexError - list index out of range
+### 2️⃣ IndexError - list index out of range
 
 **Erro:**
 ```python
@@ -125,7 +96,7 @@ def setup_test_data(self):
 
 ---
 
-### 4️⃣ AssertionError - 0 != 1 ou 0 != 2
+### 3️⃣ AssertionError - 0 != 1 ou 0 != 2
 
 **Erro:**
 ```python
@@ -152,7 +123,7 @@ Garantir que `setup_test_data()` cria **TODAS** as dependências antes dos objet
 
 ---
 
-### 5️⃣ AttributeError - self.eixo, self.vigencia
+### 4️⃣ AttributeError - self.eixo, self.vigencia
 
 **Erro:**
 ```python
@@ -188,6 +159,9 @@ def setup_test_data(self):
 # No diretório raiz do projeto
 cd /caminho/para/gpp_plataform
 
+# IMPORTANTE: Checkout da branch correta
+git checkout fix/correcao-massiva-testes-pngi
+
 # Executar script
 python acoes_pngi/tests/fix_all_test_errors.py
 ```
@@ -207,28 +181,24 @@ python manage.py shell
 
 ## 📊 O Que o Script Faz
 
-### Etapa 1: Remover Imports Inválidos
-✅ Remove `from .base import BaseTestCase`  
-✅ Substitui `class MyTest(BaseTestCase):` por `class MyTest(TestCase):`  
-✅ Arquivos: `test_diagnostic_api.py`, `test_web_acoes_views.py`, `test_web_views_complete.py`
-
-### Etapa 2: Adicionar datfinalvigencia
+### Etapa 1: Adicionar datfinalvigencia
 ✅ Procura todos `VigenciaPNGI.objects.create(...)`  
 ✅ Adiciona `datfinalvigencia=date(YYYY, 12, 31)` automaticamente  
 ✅ Usa ano de `datiniciovigencia` como referência  
 ✅ Arquivos: TODOS os `test_*.py`
 
-### Etapa 3: Corrigir AttributeErrors
+### Etapa 2: Corrigir AttributeErrors
 ✅ Encontra classes com `setup_test_data()`  
 ✅ Transforma `eixo = Eixo.objects.create()` em `self.eixo = ...`  
 ✅ Transforma `vigencia = VigenciaPNGI.objects.create()` em `self.vigencia = ...`  
+✅ Transforma `situacao = SituacaoAcao.objects.create()` em `self.situacao = ...`  
 ✅ Arquivo: `test_api_views.py`
 
-### Etapa 4: Garantir Fixtures Completas
+### Etapa 3: Garantir Fixtures Completas
 ✅ Procura `Acoes.objects.create()` sem `ideixo` ou `idsituacaoacao`  
 ✅ Adiciona FKs faltando usando `self.eixo` e `self.situacao`  
 ✅ Garante que `setup_test_data()` cria `Eixo` e `SituacaoAcao` **antes** de usar  
-✅ Arquivos: `test_api_views.py`, `test_api_acoes_views.py`, etc.
+✅ Arquivos: `test_api_views.py`, `test_api_acoes_views.py`, `test_api_alinhamento_views.py`, `test_api_responsavel_views.py`
 
 ---
 
@@ -240,7 +210,6 @@ Ran 368 tests in 13.818s
 FAILED (failures=25, errors=51)
 
 Problemas:
-❌ 3 arquivos com import ERROR
 ❌ ValidationError datfinalvigencia (20+ arquivos)
 ❌ IndexError list index out of range (15+ testes)
 ❌ AssertionError 0 != 1/2 (20+ testes)
@@ -252,7 +221,6 @@ Problemas:
 Ran 368 tests in ~14s
 OK ou FAILED com MUITO menos erros
 
-✅ Import Errors: 0
 ✅ ValidationError datfinalvigencia: 0
 ✅ AttributeError: 0
 🔄 IndexError e AssertionError: Reduzidos drasticamente
@@ -275,10 +243,10 @@ OK ou FAILED com MUITO menos erros
    ```bash
    git add acoes_pngi/tests/test_*.py
    git commit -m "fix(tests): Corrigir 76 erros nos testes via fix_all_test_errors.py"
-   git push origin main
+   git push origin fix/correcao-massiva-testes-pngi
    ```
 
-4. **Executar novamente para validar CI/CD:**
+4. **Executar novamente para validar:**
    ```bash
    python manage.py test acoes_pngi.tests --verbosity=2
    ```
@@ -322,5 +290,6 @@ Se encontrar bugs ou casos não cobertos:
 
 ---
 
+**Branch:** `fix/correcao-massiva-testes-pngi`  
 **Última atualização:** 12/02/2026  
 **Status:** ✅ Pronto para uso

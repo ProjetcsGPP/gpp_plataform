@@ -9,7 +9,7 @@ Verifica:
 4. Acesso direto às views
 """
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import resolve, reverse, get_resolver
 from django.conf import settings
@@ -17,6 +17,7 @@ from rest_framework.test import APIClient, APIRequestFactory
 from rest_framework import status
 from datetime import date
 from django.utils import timezone
+from .base import BaseTestCase
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import Acoes, VigenciaPNGI
@@ -25,7 +26,7 @@ from ..views.api_views import AcoesViewSet
 User = get_user_model()
 
 
-class DiagnosticAPITest(TestCase):
+class DiagnosticAPITest(BaseTestCase):
     """Teste diagnóstico para identificar problema 404"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -55,19 +56,14 @@ class DiagnosticAPITest(TestCase):
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
-        # Criar vigência e ação
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
+        # Criar vigência e ação        
         self.acao = Acoes.objects.create(
             strapelido='ACAO-DIAG',
             strdescricaoacao='Ação Diagnóstica',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia
-        )
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base)
     
     def test_01_urlconf_loaded(self):
         """1. Verificar se URLconf está carregada"""
@@ -175,7 +171,7 @@ class DiagnosticAPITest(TestCase):
             print(f"\n   ⚠️  Possível problema de permissões")
         elif response.status_code == 200:
             print(f"\n   ✅ Sucesso! A API está acessível.")
-            print(f"   Total de ações retornadas: {len(response.data.get('results', []))}")
+            print(f"   Total de ações retornadas: {len(list(response.data))}")
         
         print("\n" + "="*70 + "\n")
     
@@ -281,7 +277,7 @@ class DiagnosticAPITest(TestCase):
         
         elif response.status_code == 200:
             print("✅ TUDO FUNCIONANDO PERFEITAMENTE!\n")
-            print(f"Total de ações retornadas: {len(response.data.get('results', []))}")
+            print(f"Total de ações retornadas: {len(list(response.data))}")
         
         print("\n" + "="*70 + "\n")
         

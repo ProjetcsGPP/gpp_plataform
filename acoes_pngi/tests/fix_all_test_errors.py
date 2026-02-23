@@ -7,11 +7,10 @@ Execução:
     python acoes_pngi/tests/fix_all_test_errors.py
 
 Problemas corrigidos:
-1. ✅ Import Errors (3 arquivos) - Remove 'from .base import BaseTestCase'
-2. ✅ ValidationError datfinalvigencia - Adiciona campo obrigatório
-3. ✅ IndexError list index out of range - Garante fixtures antes de testes
-4. ✅ AssertionError 0 != 1/2 - Adiciona ideixo e idsituacaoacao nas Acoes
-5. ✅ AttributeError self.eixo/vigencia - Adiciona atributos no setUp()
+1. ✅ ValidationError datfinalvigencia - Adiciona campo obrigatório
+2. ✅ IndexError list index out of range - Garante fixtures antes de testes
+3. ✅ AssertionError 0 != 1/2 - Adiciona ideixo e idsituacaoacao nas Acoes
+4. ✅ AttributeError self.eixo/vigencia - Adiciona atributos no setUp()
 """
 
 import os
@@ -31,16 +30,13 @@ class TestErrorFixer:
         print("🔧 Iniciando correção de TODOS os erros de teste...")
         print("=" * 70)
         
-        # 1. Remover imports de BaseTestCase (Import Errors)
-        self.fix_import_errors()
-        
-        # 2. Adicionar datfinalvigencia em VigenciaPNGI
+        # 1. Adicionar datfinalvigencia em VigenciaPNGI
         self.fix_vigencia_validation_errors()
         
-        # 3. Corrigir AttributeError self.eixo e self.vigencia
+        # 2. Corrigir AttributeError self.eixo e self.vigencia
         self.fix_attribute_errors()
         
-        # 4. Garantir fixtures completas antes de testes de filtros
+        # 3. Garantir fixtures completas antes de testes de filtros
         self.fix_index_errors_and_assertions()
         
         print("\n" + "=" * 70)
@@ -48,57 +44,12 @@ class TestErrorFixer:
         self._print_summary()
     
     # ========================================================================
-    # 1. CORRIGIR IMPORT ERRORS - Remove BaseTestCase
-    # ========================================================================
-    
-    def fix_import_errors(self):
-        """Remove imports de BaseTestCase que não existe"""
-        print("\n1️⃣  Corrigindo Import Errors (BaseTestCase)...")
-        
-        files_to_fix = [
-            'test_diagnostic_api.py',
-            'test_web_acoes_views.py',
-            'test_web_views_complete.py'
-        ]
-        
-        for filename in files_to_fix:
-            filepath = self.tests_dir / filename
-            if not filepath.exists():
-                print(f"   ⚠️  Arquivo não encontrado: {filename}")
-                continue
-            
-            content = filepath.read_text(encoding='utf-8')
-            original_content = content
-            
-            # Remover import de BaseTestCase
-            patterns = [
-                r'from \.base import BaseTestCase\n',
-                r'from acoes_pngi\.tests\.base import BaseTestCase\n',
-                r'from tests\.base import BaseTestCase\n',
-            ]
-            
-            for pattern in patterns:
-                content = re.sub(pattern, '', content)
-            
-            # Substituir herança de BaseTestCase por TestCase
-            content = re.sub(
-                r'class (\w+)\(BaseTestCase\):',
-                r'class \1(TestCase):',
-                content
-            )
-            
-            if content != original_content:
-                filepath.write_text(content, encoding='utf-8')
-                self.changes_made.append(f"✅ {filename}: Removido BaseTestCase")
-                print(f"   ✅ {filename}")
-    
-    # ========================================================================
-    # 2. CORRIGIR VALIDATION ERRORS - Adicionar datfinalvigencia
+    # 1. CORRIGIR VALIDATION ERRORS - Adicionar datfinalvigencia
     # ========================================================================
     
     def fix_vigencia_validation_errors(self):
         """Adiciona datfinalvigencia em todas criações de VigenciaPNGI"""
-        print("\n2️⃣  Corrigindo ValidationError (datfinalvigencia)...")
+        print("\n1️⃣  Corrigindo ValidationError (datfinalvigencia)...")
         
         test_files = list(self.tests_dir.glob('test_*.py'))
         
@@ -106,45 +57,58 @@ class TestErrorFixer:
             content = filepath.read_text(encoding='utf-8')
             original_content = content
             
-            # Padrão: VigenciaPNGI.objects.create SEM datfinalvigencia
-            pattern = r'(VigenciaPNGI\.objects\.create\([^)]*datiniciovigencia=date\((\d{4}),\s*(\d{1,2}),\s*(\d{1,2})\))(?![^)]*datfinalvigencia)'
+            # Padrão 1: VigenciaPNGI.objects.create(...datiniciovigencia=date(...)) SEM datfinalvigencia
+            # Adicionar datfinalvigencia logo após datiniciovigencia
+            pattern = r'(VigenciaPNGI\.objects\.create\([^)]*datiniciovigencia=date\((\d{4}),\s*\d{1,2},\s*\d{1,2}\))(?![^)]*datfinalvigencia)'
             
             def add_datfinalvigencia(match):
-                full_match = match.group(0)
-                year = int(match.group(2))
+                full_text = match.group(0)
+                year = match.group(2)
                 
-                # Se já termina com ), adicionar datfinalvigencia antes do )
-                if full_match.endswith(')'):
-                    return full_match[:-1] + f',\n            datfinalvigencia=date({year}, 12, 31)'
+                # Se termina com vírgula, adicionar após
+                if ',\n' in full_text or ', ' in full_text:
+                    return full_text + f',\n            datfinalvigencia=date({year}, 12, 31)'
+                # Se termina com ), adicionar antes do )
+                elif full_text.endswith(')'):
+                    return full_text[:-1] + f',\n            datfinalvigencia=date({year}, 12, 31))'
                 else:
-                    return full_match + f',\n            datfinalvigencia=date({year}, 12, 31)'
+                    return full_text + f',\n            datfinalvigencia=date({year}, 12, 31)'
             
-            # Primeira passagem: adicionar vírgula se não houver
-            content = re.sub(
-                r'(datiniciovigencia=date\(\d{4},\s*\d{1,2},\s*\d{1,2}\))(\s*\))',
-                r'\1,\n            datfinalvigencia=date(2026, 12, 31)\2',
-                content
-            )
+            # Aplicar correção
+            new_content = content
             
-            # Segunda passagem: casos com outros campos após datiniciovigencia
-            content = re.sub(
-                r'(VigenciaPNGI\.objects\.create\([^)]*datiniciovigencia=date\((\d{4}),\s*\d{1,2},\s*\d{1,2}\),)(\s+is)',
-                r'\1\n            datfinalvigencia=date(\2, 12, 31),\3',
-                content
-            )
+            # Encontrar todos os VigenciaPNGI.objects.create
+            vigencia_pattern = r'VigenciaPNGI\.objects\.create\([^)]+\)'
+            matches = list(re.finditer(vigencia_pattern, content, re.DOTALL))
             
-            if content != original_content:
-                filepath.write_text(content, encoding='utf-8')
+            for match in reversed(matches):  # Reverso para não afetar índices
+                vigencia_create = match.group(0)
+                
+                # Se NÃO tem datfinalvigencia, adicionar
+                if 'datfinalvigencia' not in vigencia_create:
+                    # Extrair ano de datiniciovigencia
+                    year_match = re.search(r'datiniciovigencia=date\((\d{4})', vigencia_create)
+                    if year_match:
+                        year = year_match.group(1)
+                        
+                        # Adicionar antes do último )
+                        fixed_vigencia = vigencia_create[:-1] + f',\n            datfinalvigencia=date({year}, 12, 31))'
+                        
+                        # Substituir no conteúdo
+                        new_content = new_content[:match.start()] + fixed_vigencia + new_content[match.end():]
+            
+            if new_content != original_content:
+                filepath.write_text(new_content, encoding='utf-8')
                 self.changes_made.append(f"✅ {filepath.name}: Adicionado datfinalvigencia")
                 print(f"   ✅ {filepath.name}")
     
     # ========================================================================
-    # 3. CORRIGIR ATTRIBUTE ERRORS - Adicionar self.eixo e self.vigencia
+    # 2. CORRIGIR ATTRIBUTE ERRORS - Adicionar self.eixo e self.vigencia
     # ========================================================================
     
     def fix_attribute_errors(self):
-        """Adiciona self.eixo e self.vigencia no setUp() onde estão faltando"""
-        print("\n3️⃣  Corrigindo AttributeError (self.eixo, self.vigencia)...")
+        """Adiciona self.eixo e self.vigencia no setup_test_data() onde estão faltando"""
+        print("\n2️⃣  Corrigindo AttributeError (self.eixo, self.vigencia)...")
         
         filepath = self.tests_dir / 'test_api_views.py'
         if not filepath.exists():
@@ -154,64 +118,41 @@ class TestErrorFixer:
         content = filepath.read_text(encoding='utf-8')
         original_content = content
         
-        # Encontrar classes que herdam de BaseAPITestCase
-        class_pattern = r'class (\w+APITests)\(BaseAPITestCase\):'
-        classes = re.findall(class_pattern, content)
+        # Substituir variáveis locais por self.
+        replacements = [
+            (r'(\s+)vigencia = VigenciaPNGI', r'\1self.vigencia = VigenciaPNGI'),
+            (r'(\s+)eixo = Eixo\.objects\.create', r'\1self.eixo = Eixo.objects.create'),
+            (r'(\s+)situacao = SituacaoAcao\.objects\.create', r'\1self.situacao = SituacaoAcao.objects.create'),
+        ]
         
-        for class_name in classes:
-            # Verificar se a classe tem setup_test_data
-            setup_pattern = rf'(class {class_name}\(BaseAPITestCase\):.*?def setup_test_data\(self\):.*?)(def |\nclass |\Z)'
-            match = re.search(setup_pattern, content, re.DOTALL)
-            
-            if match:
-                setup_content = match.group(1)
-                
-                # Se não tem self.vigencia, adicionar
-                if 'self.vigencia =' not in setup_content:
-                    # Procurar onde criar VigenciaPNGI e adicionar self.
-                    content = re.sub(
-                        rf'(class {class_name}\(BaseAPITestCase\):.*?def setup_test_data\(self\):.*?)(vigencia = VigenciaPNGI)',
-                        r'\1self.vigencia = VigenciaPNGI',
-                        content,
-                        flags=re.DOTALL
-                    )
-                
-                # Se não tem self.eixo, adicionar
-                if 'self.eixo =' not in setup_content:
-                    content = re.sub(
-                        rf'(class {class_name}\(BaseAPITestCase\):.*?def setup_test_data\(self\):.*?)(eixo = Eixo)',
-                        r'\1self.eixo = Eixo',
-                        content,
-                        flags=re.DOTALL
-                    )
-                
-                # Se não tem self.situacao, adicionar
-                if 'self.situacao =' not in setup_content:
-                    content = re.sub(
-                        rf'(class {class_name}\(BaseAPITestCase\):.*?def setup_test_data\(self\):.*?)(situacao = SituacaoAcao)',
-                        r'\1self.situacao = SituacaoAcao',
-                        content,
-                        flags=re.DOTALL
-                    )
+        for pattern, replacement in replacements:
+            content = re.sub(pattern, replacement, content)
+        
+        # Substituir referências às variáveis locais por self.
+        content = re.sub(r'idvigenciapngi=vigencia', r'idvigenciapngi=self.vigencia', content)
+        content = re.sub(r'ideixo=eixo', r'ideixo=self.eixo', content)
+        content = re.sub(r'idsituacaoacao=situacao', r'idsituacaoacao=self.situacao', content)
         
         if content != original_content:
             filepath.write_text(content, encoding='utf-8')
-            self.changes_made.append(f"✅ test_api_views.py: Adicionado self.eixo e self.vigencia")
+            self.changes_made.append(f"✅ test_api_views.py: Adicionado self.eixo, self.vigencia e self.situacao")
             print(f"   ✅ test_api_views.py")
     
     # ========================================================================
-    # 4. CORRIGIR INDEX ERRORS E ASSERTION ERRORS
+    # 3. CORRIGIR INDEX ERRORS E ASSERTION ERRORS
     # ========================================================================
     
     def fix_index_errors_and_assertions(self):
         """Corrige IndexErrors e AssertionErrors (0 != 1/2) garantindo fixtures"""
-        print("\n4️⃣  Corrigindo IndexError e AssertionError (fixtures incompletas)...")
+        print("\n3️⃣  Corrigindo IndexError e AssertionError (fixtures incompletas)...")
         
         test_files = [
             'test_api_views.py',
             'test_api_acoes_views.py',
             'test_api_alinhamento_views.py',
-            'test_api_responsavel_views.py'
+            'test_api_responsavel_views.py',
+            'test_api_views_acoes.py',
+            'test_api_views_alinhamento_responsaveis.py'
         ]
         
         for filename in test_files:
@@ -222,12 +163,11 @@ class TestErrorFixer:
             content = filepath.read_text(encoding='utf-8')
             original_content = content
             
-            # Padrão: Acoes.objects.create SEM ideixo ou idsituacaoacao
             # Adicionar ideixo quando falta
-            content = self._add_missing_fk_to_acoes(content, 'ideixo', 'self.eixo')
+            content = self._add_missing_fk_to_acoes(content, 'ideixo')
             
             # Adicionar idsituacaoacao quando falta
-            content = self._add_missing_fk_to_acoes(content, 'idsituacaoacao', 'self.situacao')
+            content = self._add_missing_fk_to_acoes(content, 'idsituacaoacao')
             
             # Garantir que setup_test_data cria Eixo e SituacaoAcao
             content = self._ensure_setup_creates_dependencies(content)
@@ -237,40 +177,51 @@ class TestErrorFixer:
                 self.changes_made.append(f"✅ {filename}: Fixtures completas")
                 print(f"   ✅ {filename}")
     
-    def _add_missing_fk_to_acoes(self, content, fk_name, fk_value):
+    def _add_missing_fk_to_acoes(self, content, fk_name):
         """Adiciona FK faltando em Acoes.objects.create()"""
         
-        # Padrão: Acoes.objects.create(...) que não tem o FK
-        pattern = rf'(Acoes\.objects\.create\([^)]*idvigenciapngi=[^)]*?)(\s*\))'
+        # Padrão: Acoes.objects.create(...idvigenciapngi=...) SEM o FK
+        acoes_pattern = r'Acoes\.objects\.create\([^)]+\)'
+        matches = list(re.finditer(acoes_pattern, content, re.DOTALL))
         
-        def add_fk(match):
-            create_call = match.group(1)
-            closing = match.group(2)
+        for match in reversed(matches):
+            acoes_create = match.group(0)
             
-            # Se já tem o FK, não adicionar
-            if fk_name in create_call:
-                return match.group(0)
-            
-            # Adicionar FK antes do )
-            return f"{create_call},\n            {fk_name}={fk_value}{closing}"
+            # Se NÃO tem o FK, adicionar
+            if fk_name not in acoes_create and 'idvigenciapngi' in acoes_create:
+                # Determinar valor do FK
+                if fk_name == 'ideixo':
+                    fk_value = 'self.eixo'
+                elif fk_name == 'idsituacaoacao':
+                    fk_value = 'self.situacao'
+                else:
+                    continue
+                
+                # Adicionar antes do último )
+                fixed_acoes = acoes_create[:-1] + f',\n            {fk_name}={fk_value})'
+                
+                # Substituir no conteúdo
+                content = content[:match.start()] + fixed_acoes + content[match.end():]
         
-        return re.sub(pattern, add_fk, content)
+        return content
     
     def _ensure_setup_creates_dependencies(self, content):
         """Garante que setup_test_data cria Eixo e SituacaoAcao"""
         
-        # Procurar setup_test_data methods
-        setup_pattern = r'(def setup_test_data\(self\):)(.*?)(def |\Z)'
-        
-        def enhance_setup(match):
-            method_def = match.group(1)
-            method_body = match.group(2)
-            next_def = match.group(3)
+        # Se setup_test_data não cria Eixo, adicionar
+        if 'def setup_test_data(self):' in content:
+            # Procurar métodos setup_test_data
+            setup_pattern = r'(def setup_test_data\(self\):)(.*?)(?=\n    def |\nclass |\Z)'
             
-            # Se não tem criação de Eixo, adicionar
-            if 'Eixo.objects.create' not in method_body:
-                eixo_creation = '''
-        
+            def add_dependencies(match):
+                method_def = match.group(1)
+                method_body = match.group(2)
+                
+                additions = ''
+                
+                # Se não cria Eixo, adicionar
+                if 'self.eixo' not in method_body and 'Eixo.objects.create' not in method_body:
+                    additions += '''
         # Criar Eixo (se não existe)
         if not hasattr(self, 'eixo') or self.eixo is None:
             self.eixo = Eixo.objects.create(
@@ -278,23 +229,22 @@ class TestErrorFixer:
                 strdescricaoeixo='Eixo 1 - Gestão'
             )
 '''
-                method_body = eixo_creation + method_body
-            
-            # Se não tem criação de SituacaoAcao, adicionar
-            if 'SituacaoAcao.objects.create' not in method_body:
-                situacao_creation = '''
-        
+                
+                # Se não cria SituacaoAcao, adicionar
+                if 'self.situacao' not in method_body and 'SituacaoAcao.objects.create' not in method_body:
+                    additions += '''
         # Criar SituacaoAcao (se não existe)
         if not hasattr(self, 'situacao') or self.situacao is None:
             self.situacao = SituacaoAcao.objects.create(
                 strdescricaosituacao='Em Andamento'
             )
 '''
-                method_body = situacao_creation + method_body
+                
+                return method_def + additions + method_body
             
-            return method_def + method_body + next_def
+            content = re.sub(setup_pattern, add_dependencies, content, flags=re.DOTALL)
         
-        return re.sub(setup_pattern, enhance_setup, content, flags=re.DOTALL)
+        return content
     
     # ========================================================================
     # RELATÓRIO FINAL
@@ -306,16 +256,13 @@ class TestErrorFixer:
         print("-" * 70)
         
         categories = {
-            'Import Errors': [],
             'ValidationError': [],
             'AttributeError': [],
             'Fixtures': []
         }
         
         for change in self.changes_made:
-            if 'BaseTestCase' in change:
-                categories['Import Errors'].append(change)
-            elif 'datfinalvigencia' in change:
+            if 'datfinalvigencia' in change:
                 categories['ValidationError'].append(change)
             elif 'self.eixo' in change or 'self.vigencia' in change:
                 categories['AttributeError'].append(change)

@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "C:\Projects\gpp_plataform\manage.py", line 22, in <module>
+    main()
+    ~~~~^^
+  File "C:\Projects\gpp_plataform\manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Projects\gpp_plataform\venv\Lib\site-packages\django\core\management\__init__.py", line 443, in execute_from_command_line
+    utility.execute()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Projects\gpp_plataform\venv\Lib\site-packages\django\core\management\__init__.py", line 437, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Projects\gpp_plataform\venv\Lib\site-packages\django\core\management\commands\test.py", line 24, in run_from_argv
+    super().run_from_argv(argv)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Projects\gpp_plataform\venv\Lib\site-packages\django\core\management\base.py", line 420, in run_from_argv
+    self.execute(*args, **cmd_options)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\gpp_plataform\venv\Lib\site-packages\django\core\management\base.py", line 464, in execute
+    output = self.handle(*args, **options)
+  File "C:\Projects\gpp_plataform\venv\Lib\site-packages\django\core\management\commands\test.py", line 63, in handle
+    failures = test_runner.run_tests(test_labels)
+  File "C:\Projects\gpp_plataform\venv\Lib\site-packages\django\test\runner.py", line 1132, in run_tests
+    suite = self.build_suite(test_labels)
+  File "C:\Projects\gpp_plataform\venv\Lib\site-packages\django\test\runner.py", line 988, in build_suite
+    tests = self.load_tests_for_label(label, discover_kwargs)
+  File "C:\Projects\gpp_plataform\venv\Lib\site-packages\django\test\runner.py", line 946, in load_tests_for_label
+    tests = self.test_loader.loadTestsFromName(label)
+  File "C:\Python313\Lib\unittest\loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+  File "C:\Projects\gpp_plataform\acoes_pngi\tests\test_api_views_acoes.py", line 1
+    """\nTestes de API Views - M¾dulo de Aþ§es - Aþ§es PNGI\n\nTesta ViewSets de:\n- TipoEntraveAlerta (configuraþÒo)\n- Acoes (entidade principal)\n- AcaoPrazo (prazos das aþ§es)\n- AcaoDestaque (destaques das aþ§es)\n\nCobre as 4 roles hierßrquicas com validaþ§es especÝficas:\n- COORDENADOR_PNGI: Acesso total\n- GESTOR_PNGI: Acesso total\n- OPERADOR_ACAO: Gerencia aþ§es (MAS bloqueado em TipoEntraveAlerta)\n- CONSULTOR_PNGI: Apenas leitura\n"""\n\nfrom django.test import TestCase\nfrom .base import BaseTestCase, BaseAPITestCase\nfrom django.contrib.auth import get_user_model\nfrom rest_framework.test import APIClient\nfrom rest_framework import status\nfrom datetime import date, timedelta\nfrom django.utils import timezone\n\nfrom accounts.models import Aplicacao, Role, UserRole\nfrom ..models import (\n    Eixo, SituacaoAcao, VigenciaPNGI, TipoEntraveAlerta,\n    Acoes, AcaoPrazo, AcaoDestaque\n)\n\nUser = get_user_model()\n\nclass BaseAPITestCase(BaseTestCase):\n    \
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ^
+SyntaxError: unexpected character after line continuation character

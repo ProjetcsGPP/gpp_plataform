@@ -129,7 +129,7 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'idusuario',
+            'id',  # CORRIGIDO: usar 'id' ao invés de 'idusuario'
             'email',
             'name',
             'is_active',

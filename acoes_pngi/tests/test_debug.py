@@ -1,14 +1,15 @@
 # acoes_pngi/tests/test_debug.py
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.utils import timezone
 from accounts.models import User, Aplicacao, Role, UserRole
 
 
-class DebugDatabaseTest(TestCase):
+class DebugDatabaseTest(BaseTestCase):
     """Teste especial para debugar criação de dados"""
     
-    databases = {'default'}
+    databases = {'default', 'gpp_plataform_db'}  # ✅ Ambos bancos de dados disponíveis para este teste
     
     def test_inspect_user_creation(self):
         """Inspeciona criação de usuário passo a passo"""

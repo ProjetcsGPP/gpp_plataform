@@ -1,3 +1,4 @@
+from django.test import Client
 """acoes_pngi/tests/test_web_acoes_views.py
 
 Testes completos para Web Views de Ações
@@ -11,11 +12,12 @@ Nota: Aceita múltiplos status codes pois templates podem não existir ainda.
 Foco em testar lógica de negócio e operações no banco de dados.
 """
 
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from datetime import date, datetime
 from django.utils import timezone
+from .base import BaseTestCase
 
 from accounts.models import Aplicacao, Role, UserRole
 from ..models import (
@@ -27,7 +29,7 @@ from ..models import (
 User = get_user_model()
 
 
-class AcoesWebViewsTest(TestCase):
+class AcoesWebViewsTest(BaseTestCase):
     """Testes para Web Views de Ações"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -59,13 +61,6 @@ class AcoesWebViewsTest(TestCase):
         # Login
         self.client.force_login(self.user)
         
-        # Criar vigência
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
         # Criar tipo de entrave
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Crítico'
@@ -76,9 +71,10 @@ class AcoesWebViewsTest(TestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega Teste',
-            idvigenciapngi=self.vigencia,
-            idtipoentravealerta=self.tipo_entrave
-        )
+            idvigenciapngi=self.vigencia_base,
+            idtipoentravealerta=self.tipo_entrave,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base)
     
     # ========== LIST VIEW ==========
     def test_acoes_list_requires_login(self):
@@ -152,7 +148,7 @@ class AcoesWebViewsTest(TestCase):
             'strapelido': 'ACAO-002',
             'strdescricaoacao': 'Nova Ação',
             'strdescricaoentrega': 'Nova Entrega',
-            'idvigenciapngi': self.vigencia.idvigenciapngi,
+            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
             'idtipoentravealerta': self.tipo_entrave.idtipoentravealerta
         }
         try:
@@ -180,7 +176,7 @@ class AcoesWebViewsTest(TestCase):
             'strapelido': 'ACAO-001-UPD',
             'strdescricaoacao': 'Ação Atualizada',
             'strdescricaoentrega': 'Entrega Atualizada',
-            'idvigenciapngi': self.vigencia.idvigenciapngi
+            'idvigenciapngi': self.vigencia_base.idvigenciapngi
         }
         try:
             response = self.client.post(
@@ -218,7 +214,7 @@ class AcoesWebViewsTest(TestCase):
             pass
 
 
-class AcaoPrazoWebViewsTest(TestCase):
+class AcaoPrazoWebViewsTest(BaseTestCase):
     """Testes para Web Views de Prazos"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -249,19 +245,14 @@ class AcaoPrazoWebViewsTest(TestCase):
         # Login
         self.client.force_login(self.user)
         
-        # Criar vigência e ação
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
+        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia
-        )
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base)
         
         # Criar prazo
         self.prazo = AcaoPrazo.objects.create(
@@ -345,7 +336,7 @@ class AcaoPrazoWebViewsTest(TestCase):
             pass
 
 
-class AcaoDestaqueWebViewsTest(TestCase):
+class AcaoDestaqueWebViewsTest(BaseTestCase):
     """Testes para Web Views de Destaques"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -376,19 +367,14 @@ class AcaoDestaqueWebViewsTest(TestCase):
         # Login
         self.client.force_login(self.user)
         
-        # Criar vigência e ação
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
+        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia
-        )
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base)
         
         # Criar destaque
         self.destaque = AcaoDestaque.objects.create(

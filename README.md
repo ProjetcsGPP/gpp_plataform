@@ -322,3 +322,65 @@ API Reference
 Guia de Contribuição
 
 Changelog
+
+📋 MATRIZ DE PERMISSÕES FINAL E CORRETA
+Entidade/Ação	                            GESTOR  COORDENADOR OPERADOR	CONSULTOR
+CONFIGURAÇÕES - Nível 1 (Apenas GESTOR)				
+SituacaoAcao (R)	                        ✅      ✅	     ✅	        ✅
+SituacaoAcao (W/D)	                        ✅	   ❌	        ❌	    ❌
+TipoEntraveAlerta (R)	                    ✅	    ✅	    ✅	        ✅
+TipoEntraveAlerta (W/D)	                    ✅	    ❌	    ❌	        ❌
+CONFIGURAÇÕES - Nível 2 (GESTOR e COORDENADOR)				
+Eixo (R)	                                ✅	    ✅	    ✅	        ✅
+Eixo (W/D)	                                ✅	    ✅	    ❌	        ❌
+VigenciaPNGI (R)	                        ✅	    ✅	    ✅	        ✅
+VigenciaPNGI (W/D)	                        ✅	    ✅	    ❌	        ❌
+TipoAnotacaoAlinhamento (R)	                ✅	    ✅	    ✅          	✅
+TipoAnotacaoAlinhamento (W/D)	            ✅	    ✅	    ❌	        ❌
+OPERAÇÕES (GESTOR, COORDENADOR e OPERADOR)				
+Acoes (R)	                                ✅	    ✅	    ✅	        ✅
+Acoes (W/D)	                                ✅	    ✅	    ✅	        ❌
+AcaoPrazo (R)	                            ✅	    ✅	    ✅	        ✅
+AcaoPrazo (W/D)	                            ✅	    ✅	    ✅	        ❌
+AcaoDestaque (R)	                        ✅	    ✅	    ✅	        ✅
+AcaoDestaque (W/D)	                        ✅	    ✅	    ✅	        ❌
+AcaoAnotacaoAlinhamento (R)	                ✅	    ✅	    ✅	        ✅
+AcaoAnotacaoAlinhamento (W/D)	            ✅	    ✅	    ✅	        ❌
+UsuarioResponsavel (R)	                    ✅	    ✅	    ✅	        ✅
+UsuarioResponsavel (W/D)	                ✅	    ✅      	✅	        ❌
+RelacaoAcaoUsuarioResponsavel (R)	        ✅	    ✅	    ✅	        ✅
+RelacaoAcaoUsuarioResponsavel (W/D)	        ✅	    ✅	    ✅	        ❌
+GESTÃO DE USUÁRIOS				
+Usuários/Roles (R)	                        ✅	    ✅	    ✅          	✅
+Usuários/Roles (W/D)	                    ✅	    ❌	    ❌	        ❌
+Legenda:
+
+R = Read (GET, HEAD, OPTIONS)
+W = Write (POST, PUT, PATCH)
+D = Delete (DELETE)
+
+🎯 RESUMO DAS REGRAS POR ENTIDADE
+📌 Apenas GESTOR pode gerenciar:
+SituacaoAcao (escrita)
+TipoEntraveAlerta (escrita)
+Usuários e Roles (escrita)
+
+📌 GESTOR e COORDENADOR podem gerenciar:
+Eixo (escrita)
+VigenciaPNGI (escrita)
+TipoAnotacaoAlinhamento (escrita)
+
+📌 GESTOR, COORDENADOR e OPERADOR podem gerenciar:
+Acoes (escrita)
+AcaoPrazo (escrita)
+AcaoDestaque (escrita)
+AcaoAnotacaoAlinhamento (escrita)
+UsuarioResponsavel (escrita)
+RelacaoAcaoUsuarioResponsavel (escrita)
+
+📌 Todas as roles podem visualizar (leitura):
+Todas as entidades acima
+
+📌 CONSULTOR:
+Apenas leitura em tudo
+Bloqueado em qualquer escrita

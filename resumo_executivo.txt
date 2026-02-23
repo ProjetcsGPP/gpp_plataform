@@ -1,0 +1,159 @@
+
+================================================================================
+RESUMO EXECUTIVO - CORREÇÃO DE 97 ERROS/FALHAS NOS TESTES
+================================================================================
+
+✅ ANÁLISE CONCLUÍDA
+📦 PACOTES DE CORREÇÃO CRIADOS
+📝 DOCUMENTAÇÃO COMPLETA GERADA
+
+================================================================================
+📊 DIAGNÓSTICO FINAL
+================================================================================
+
+TOTAL DE PROBLEMAS: 97
+├── 61 ERRORS (erros de código/sintaxe)
+└── 36 FAILS (expectativas de teste incorretas)
+
+CATEGORIZAÇÃO:
+🔴 CRÍTICO (Bloqueiam execução): 58 erros
+🟡 MÉDIO (Bugs específicos): 8 erros  
+🟢 BAIXO (Design/Negócio): 31 falhas
+
+================================================================================
+📁 ARQUIVOS GERADOS
+================================================================================
+
+1. ✅ guia_correcao_completa.txt
+   - Análise detalhada de todos os 97 problemas
+   - Explicações completas de causa e solução
+   - Comandos de teste para cada correção
+
+2. ✅ patches_codigo.txt
+   - Patches prontos para aplicar (copy/paste)
+   - Código ANTES e DEPOIS de cada correção
+   - 5 patches cobrindo 66 testes
+
+3. ✅ correcao_tipo_entrave.txt (JÁ APLICADO ✅)
+   - Correção dos 3 testes de TipoEntraveAlerta
+   - 10/10 testes passando
+
+================================================================================
+🎯 PLANO DE AÇÃO RECOMENDADO
+================================================================================
+
+FASE 1: CORREÇÕES CRÍTICAS (58 testes) ⏱️ 30min
+────────────────────────────────────────────────
+✓ Patch 1: IntegrityError E1 (28 testes)
+  → Usar get_or_create() para Eixo
+  → Arquivo: test_api_views_alinhamento_responsaveis.py
+
+✓ Patch 2: AttributeError setup_test_data (30 testes)
+  → Corrigir capitalização setUp/setUpTestData
+  → Arquivo: test_views.py (3 classes)
+
+FASE 2: CORREÇÕES DE BUGS (8 testes) ⏱️ 15min
+───────────────────────────────────────────────
+✓ Patch 3: TypeError date() (2 testes)
+  → Remover 4º argumento
+  → Arquivo: test_api_acoes_views.py
+
+✓ Patch 4: IndexError list (4 testes)
+  → Adicionar validação len(results) > 0
+  → Arquivo: test_api_alinhamento_views.py
+
+✓ Patch 5: AttributeError .get() (2 testes)
+  → Corrigir acesso a ReturnList
+  → Arquivo: test_diagnostic_api_fixed.py
+
+FASE 3: DECISÃO DE PERMISSÕES (31 falhas) ⏱️ 1h (discussão)
+─────────────────────────────────────────────────────────────
+⚠️ REQUER DECISÃO DE NEGÓCIO
+
+PERGUNTA: COORDENADOR deve ter permissão para criar/editar/deletar
+configurações (Eixo, Vigência, Situação)?
+
+OPÇÃO A: SIM (Alterar testes - mais rápido)
+  → Mudar test_coordenador_cannot_X para test_coordenador_can_X
+  → Alterar expectativas: 403 → 201/200/204
+  ⏱️ 30min de trabalho
+
+OPÇÃO B: NÃO (Alterar código - mais consistente)
+  → Adicionar IsGestorPNGI nas views
+  → Manter testes como estão (já esperam 403)
+  ⏱️ 15min de trabalho + testes
+
+RECOMENDAÇÃO: OPÇÃO B (consistência com TipoEntraveAlerta)
+
+================================================================================
+⏰ ESTIMATIVA TOTAL DE TEMPO
+================================================================================
+
+Fase 1: 30 minutos (Correções Críticas)
+Fase 2: 15 minutos (Correções de Bugs)
+Fase 3: 1 hora (Decisão + Implementação)
+
+TOTAL: ~2 horas para 100% dos testes passando
+
+================================================================================
+🚀 QUICK START - COMECE AGORA
+================================================================================
+
+1. Abra o arquivo: acoes_pngi/tests/test_api_views_alinhamento_responsaveis.py
+
+2. Encontre (CTRL+F): "self.eixo = Eixo.objects.create"
+
+3. Substitua 2 ocorrências por:
+   self.eixo, _ = Eixo.objects.get_or_create(
+       stralias='E1',
+       defaults={'strdescricaoeixo': 'Eixo 1 - Gestão'}
+   )
+
+4. Teste:
+   python manage.py test acoes_pngi.tests.test_api_views_alinhamento_responsaveis -v 2
+
+5. Resultado esperado: 28 erros eliminados! ✅
+
+================================================================================
+📋 CHECKLIST DE PROGRESSO
+================================================================================
+
+□ Patch 1 aplicado (IntegrityError E1)
+□ Patch 2 aplicado (AttributeError setup_test_data)  
+□ Patch 3 aplicado (TypeError date)
+□ Patch 4 aplicado (IndexError list)
+□ Patch 5 aplicado (AttributeError .get)
+□ Decisão tomada sobre permissões
+□ Patch 6 aplicado (Permissões)
+□ Todos os testes passando (python manage.py test acoes_pngi)
+□ Commit e push para GitHub
+
+================================================================================
+💡 DICAS IMPORTANTES
+================================================================================
+
+1. Aplique os patches EM ORDEM (1 → 2 → 3 → 4 → 5)
+2. Teste CADA patch antes de aplicar o próximo
+3. Faça commit APÓS cada patch funcionar
+4. Use git diff para revisar mudanças antes de commitar
+5. A Correção 6 pode ser adiada se necessário
+
+================================================================================
+📞 PRÓXIMOS PASSOS
+================================================================================
+
+Escolha UMA das opções:
+
+A) APLICAR PATCH 1 AGORA
+   → Vou te guiar passo a passo na primeira correção
+
+B) APLICAR TODOS OS PATCHES DE UMA VEZ
+   → Você aplica sozinho, usando os arquivos gerados
+
+C) FOCAR APENAS EM PERMISSÕES (Patch 6)
+   → Ignora os outros 66 erros, decide sobre matriz de permissões
+
+D) PAUSAR E CONTINUAR DEPOIS
+   → Todos os arquivos estão salvos, pode retomar quando quiser
+
+Qual opção você prefere? 🤔

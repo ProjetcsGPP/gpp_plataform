@@ -9,6 +9,7 @@ Testa os ViewSets:
 """
 
 from django.test import TestCase
+from .base import BaseTestCase, BaseAPITestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -26,7 +27,7 @@ from ..models import (
 User = get_user_model()
 
 
-class AcoesViewSetTest(TestCase):
+class AcoesViewSetTest(BaseTestCase):
     """Testes para AcoesViewSet"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -56,28 +57,7 @@ class AcoesViewSetTest(TestCase):
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
         
         # Autenticar
-        self.client.force_authenticate(user=self.user)
-        
-        # Criar vigência
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31),
-            isvigenciaativa=True
-        )
-        
-        # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
-        
-        # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
-        
-        # Criar tipo de entrave
+        self.client.force_authenticate(user=self.user)        # Criar tipo de entrave
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
             strdescricaotipoentravealerta='Crítico'
         )
@@ -87,9 +67,9 @@ class AcoesViewSetTest(TestCase):
             strapelido='ACAO-001',
             strdescricaoacao='Descrição da Ação 001',
             strdescricaoentrega='Entrega 001',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
-            idsituacaoacao=self.situacao,
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base,
             idtipoentravealerta=self.tipo_entrave,
             datdataentrega=timezone.now() + timedelta(days=180)
         )
@@ -98,9 +78,9 @@ class AcoesViewSetTest(TestCase):
             strapelido='ACAO-002',
             strdescricaoacao='Descrição da Ação 002',
             strdescricaoentrega='Entrega 002',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
-            idsituacaoacao=self.situacao
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base
         )
     
     def test_list_acoes_requires_authentication(self):
@@ -112,7 +92,7 @@ class AcoesViewSetTest(TestCase):
     def test_list_acoes_authenticated(self):
         """Usuário autenticado pode listar ações"""
         response = self.client.get('/api/v1/acoes_pngi/acoes/')
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
@@ -128,9 +108,9 @@ class AcoesViewSetTest(TestCase):
             'strapelido': 'ACAO-003',
             'strdescricaoacao': 'Nova Ação',
             'strdescricaoentrega': 'Nova Entrega',
-            'idvigenciapngi': self.vigencia.idvigenciapngi,
-            'ideixo': self.eixo.ideixo,
-            'idsituacaoacao': self.situacao.idsituacaoacao
+            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
+            'ideixo': self.eixo_base.ideixo,
+            'idsituacaoacao': self.situacao_base.idsituacaoacao
         }
         response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -142,9 +122,9 @@ class AcoesViewSetTest(TestCase):
             'strapelido': 'ACAO-001-UPD',
             'strdescricaoacao': 'Descrição Atualizada',
             'strdescricaoentrega': 'Entrega Atualizada',
-            'idvigenciapngi': self.vigencia.idvigenciapngi,
-            'ideixo': self.eixo.ideixo,
-            'idsituacaoacao': self.situacao.idsituacaoacao
+            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
+            'ideixo': self.eixo_base.ideixo,
+            'idsituacaoacao': self.situacao_base.idsituacaoacao
         }
         response = self.client.put(
             f'/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/',
@@ -179,24 +159,31 @@ class AcoesViewSetTest(TestCase):
     def test_filter_acoes_by_vigencia(self):
         """Filtrar ações por vigência"""
         # Criar outra vigência e ação
-        vigencia2 = VigenciaPNGI.objects.create(
+        #vigencia2 = VigenciaPNGI.objects.create(
+        #    strdescricaovigenciapngi='PNGI 2027',
+        #    datiniciovigencia=date(2027, 1, 1,
+        #    datfinalvigencia=date(2027, 12, 31)),
+        #    datfinalvigencia=date(2027, 12, 31)
+        #)
+        vigencia = VigenciaPNGI.objects.create(
             strdescricaovigenciapngi='PNGI 2027',
-            datiniciovigencia=date(2027, 1, 1),
-            datfinalvigencia=date(2027, 12, 31)
+            datiniciovigencia=date(2027, 1, 1),  # ✅ 3 argumentos
+            datfinalvigencia=date(2027, 12, 31),  # ✅ 3 argumentos
+            isvigenciaativa=False
         )
         Acoes.objects.create(
             strapelido='ACAO-003',
             strdescricaoacao='Ação 2027',
             strdescricaoentrega='Entrega 2027',
-            idvigenciapngi=vigencia2,
-            ideixo=self.eixo,
-            idsituacaoacao=self.situacao
+            idvigenciapngi=vigencia,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base
         )
         
         response = self.client.get(
-            f'/api/v1/acoes_pngi/acoes/?idvigenciapngi={self.vigencia.idvigenciapngi}'
+            f'/api/v1/acoes_pngi/acoes/?idvigenciapngi={self.vigencia_base.idvigenciapngi}'
         )
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)  # Apenas ações de 2026
     
@@ -205,14 +192,14 @@ class AcoesViewSetTest(TestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/acoes/?idtipoentravealerta={self.tipo_entrave.idtipoentravealerta}'
         )
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)  # Apenas acao1 tem entrave
     
     def test_search_acoes(self):
         """Buscar ações por apelido/descrição"""
         response = self.client.get('/api/v1/acoes_pngi/acoes/?search=001')
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['strapelido'], 'ACAO-001')
@@ -220,7 +207,7 @@ class AcoesViewSetTest(TestCase):
     def test_ordering_acoes(self):
         """Ordenar ações"""
         response = self.client.get('/api/v1/acoes_pngi/acoes/?ordering=-strapelido')
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Deve vir em ordem decrescente (002, 001)
         self.assertEqual(results[0]['strapelido'], 'ACAO-002')
@@ -267,7 +254,7 @@ class AcoesViewSetTest(TestCase):
         self.assertEqual(len(response.data), 1)
 
 
-class AcaoPrazoViewSetTest(TestCase):
+class AcaoPrazoViewSetTest(BaseTestCase):
     """Testes para AcaoPrazoViewSet"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -298,32 +285,14 @@ class AcaoPrazoViewSetTest(TestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
-        # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
-        
-        # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
-        
-        # Criar ação
+        # Criar vigência        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
-            idsituacaoacao=self.situacao
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base
         )
         
         # Criar prazos
@@ -348,7 +317,7 @@ class AcaoPrazoViewSetTest(TestCase):
     def test_list_prazos_authenticated(self):
         """Usuário autenticado pode listar prazos"""
         response = self.client.get('/api/v1/acoes_pngi/acoes-prazo/')
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
@@ -399,14 +368,14 @@ class AcaoPrazoViewSetTest(TestCase):
     def test_filter_prazos_by_acao(self):
         """Filtrar prazos por ação"""
         response = self.client.get(f'/api/v1/acoes_pngi/acoes-prazo/?idacao={self.acao.idacao}')
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
     def test_filter_prazos_by_status(self):
         """Filtrar prazos por status ativo/inativo"""
         response = self.client.get('/api/v1/acoes_pngi/acoes-prazo/?isacaoprazoativo=true')
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['strprazo'], 'Q1 2026')
@@ -419,7 +388,7 @@ class AcaoPrazoViewSetTest(TestCase):
         self.assertEqual(response.data[0]['strprazo'], 'Q1 2026')
 
 
-class AcaoDestaqueViewSetTest(TestCase):
+class AcaoDestaqueViewSetTest(BaseTestCase):
     """Testes para AcaoDestaqueViewSet"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -450,32 +419,14 @@ class AcaoDestaqueViewSetTest(TestCase):
         # Autenticar
         self.client.force_authenticate(user=self.user)
         
-        # Criar vigência
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
-        # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
-        
-        # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
-        
-        # Criar ação
+        # Criar vigência        # Criar ação
         self.acao = Acoes.objects.create(
             strapelido='ACAO-001',
             strdescricaoacao='Ação Teste',
             strdescricaoentrega='Entrega',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
-            idsituacaoacao=self.situacao
+            idvigenciapngi=self.vigencia_base,
+            ideixo=self.eixo_base,
+            idsituacaoacao=self.situacao_base
         )
         
         # Criar destaques com timezone-aware datetime
@@ -499,7 +450,7 @@ class AcaoDestaqueViewSetTest(TestCase):
     def test_list_destaques_authenticated(self):
         """Usuário autenticado pode listar destaques"""
         response = self.client.get('/api/v1/acoes_pngi/acoes-destaque/')
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
@@ -547,14 +498,14 @@ class AcaoDestaqueViewSetTest(TestCase):
         response = self.client.get(
             f'/api/v1/acoes_pngi/acoes-destaque/?idacao={self.acao.idacao}'
         )
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
     
     def test_ordering_destaques(self):
         """Destaques ordenados por data (mais recente primeiro)"""
         response = self.client.get('/api/v1/acoes_pngi/acoes-destaque/')
-        results = getattr(response.data, 'results', [])
+        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Primeiro resultado deve ser o mais recente (futuro)
         first_date = datetime.fromisoformat(

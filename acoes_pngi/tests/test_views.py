@@ -17,7 +17,8 @@ Cobre:
 - Context data e permissões no template
 """
 
-from django.test import TestCase, Client
+from django.test import RequestFactory, TestCase, Client
+from .base import BaseTestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from datetime import date
@@ -34,7 +35,7 @@ from ..models import (
 User = get_user_model()
 
 
-class BaseWebTestCase(TestCase):
+class BaseWebTestCase(BaseTestCase):
     """Classe base para testes de views web"""
     
     databases = {'default', 'gpp_plataform_db'}
@@ -94,13 +95,19 @@ class BaseWebTestCase(TestCase):
             )
             self.users[role_name] = user
         
-        # Criar dados de teste base
-        self.setup_test_data()
-    
-    def setup_test_data(self):
-        """Override em subclasses para criar dados específicos"""
-        pass
-    
+        self.factory = RequestFactory()
+        self.situacao_base = SituacaoAcao.objects.create(
+            strdescricaosituacao='Em Andamento'
+        )
+        self.vigencia_base = VigenciaPNGI.objects.get_or_create(
+            strdescricaovigenciapngi='2026',
+            defaults={
+                'datiniciovigencia': date(2026, 1, 1),
+                'datfinalvigencia': date(2026, 12, 31),
+                'isvigenciaativa': True
+            }
+        )[0]
+        
     def login_as(self, role_name):
         """Faz login como usuário específico"""
         user = self.users[role_name]
@@ -163,18 +170,6 @@ class AuthenticationWebTests(BaseWebTestCase):
 
 class EixoWebViewsTests(BaseWebTestCase):
     """Testes de views web para Eixo (configuração)"""
-    
-    def setup_test_data(self):
-        """Cria eixo de teste"""
-        self.eixo = Eixo.objects.create(
-            strdescricaoeixo='Eixo Teste Web',
-            stralias='TWEB'
-        )
-    
-    # ------------------------------------------------------------------------
-    # COORDENADOR - Acesso Total
-    # ------------------------------------------------------------------------
-    
     def test_coordenador_can_list_eixos(self):
         """COORDENADOR pode listar eixos"""
         self.login_as('coordenador')
@@ -214,7 +209,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('coordenador')
         
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo.ideixo}/update/')
+            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/update/')
             self.assertIn(response.status_code, [200, 302, 404])
         except Exception:
             pass
@@ -295,7 +290,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('operador')
         
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo.ideixo}/update/', {
+            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/update/', {
                 'strdescricaoeixo': 'Tentativa Update'
             })
             self.assertIn(response.status_code, [302, 403, 404])
@@ -307,7 +302,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('operador')
         
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo.ideixo}/delete/')
+            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/delete/')
             self.assertIn(response.status_code, [302, 403, 404])
         except Exception:
             pass
@@ -332,7 +327,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('consultor')
         
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo.ideixo}/')
+            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/')
             self.assertIn(response.status_code, [200, 302, 404])
         except Exception:
             pass
@@ -365,7 +360,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('consultor')
         
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo.ideixo}/update/', {
+            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/update/', {
                 'strdescricaoeixo': 'Update Consultor'
             })
             self.assertIn(response.status_code, [302, 403, 404])
@@ -377,7 +372,7 @@ class EixoWebViewsTests(BaseWebTestCase):
         self.login_as('consultor')
         
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo.ideixo}/delete/')
+            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/delete/')
             self.assertIn(response.status_code, [302, 403, 404])
         except Exception:
             pass
@@ -389,16 +384,6 @@ class EixoWebViewsTests(BaseWebTestCase):
 
 class VigenciaWebViewsTests(BaseWebTestCase):
     """Testes de views web para Vigência (configuração)"""
-    
-    def setup_test_data(self):
-        """Cria vigência de teste"""
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026 Web',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31),
-            isvigenciaativa=False
-        )
-    
     def test_coordenador_can_list_vigencias(self):
         """COORDENADOR pode listar vigências"""
         self.login_as('coordenador')
@@ -429,7 +414,7 @@ class VigenciaWebViewsTests(BaseWebTestCase):
         self.login_as('coordenador')
         
         try:
-            response = self.client.post(f'/acoes-pngi/vigencias/{self.vigencia.idvigenciapngi}/ativar/')
+            response = self.client.post(f'/acoes-pngi/vigencias/{self.vigencia_base.idvigenciapngi}/ativar/')
             self.assertIn(response.status_code, [200, 302, 404])
         except Exception:
             pass
@@ -453,7 +438,7 @@ class VigenciaWebViewsTests(BaseWebTestCase):
         self.login_as('operador')
         
         try:
-            response = self.client.post(f'/acoes-pngi/vigencias/{self.vigencia.idvigenciapngi}/ativar/')
+            response = self.client.post(f'/acoes-pngi/vigencias/{self.vigencia_base.idvigenciapngi}/ativar/')
             self.assertIn(response.status_code, [302, 403, 404])
         except Exception:
             pass
@@ -490,33 +475,6 @@ class VigenciaWebViewsTests(BaseWebTestCase):
 class AcoesWebViewsTests(BaseWebTestCase):
     """Testes de views web para Ações (operações)"""
     
-    def setup_test_data(self):
-        """Cria vigência e ação de teste"""
-        self.vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2026',
-            datiniciovigencia=date(2026, 1, 1),
-            datfinalvigencia=date(2026, 12, 31)
-        )
-        
-        # ✅ Criar Eixo
-        self.eixo = Eixo.objects.create(
-            stralias='E1',
-            strdescricaoeixo='Eixo 1 - Gestão'
-        )
-        
-        # ✅ Criar Situação
-        self.situacao = SituacaoAcao.objects.create(
-            strdescricaosituacao='Em Andamento'
-        )
-        
-        self.acao = Acoes.objects.create(
-            strapelido='ACAO-WEB-001',
-            strdescricaoacao='Ação Teste Web',
-            idvigenciapngi=self.vigencia,
-            ideixo=self.eixo,
-            idsituacaoacao=self.situacao
-        )
-    
     def test_coordenador_can_list_acoes(self):
         """COORDENADOR pode listar ações"""
         self.login_as('coordenador')
@@ -545,7 +503,7 @@ class AcoesWebViewsTests(BaseWebTestCase):
             response = self.client.post('/acoes-pngi/acoes/create/', {
                 'strapelido': 'ACAO-OPER',
                 'strdescricaoacao': 'Ação do Operador',
-                'idvigenciapngi': self.vigencia.idvigenciapngi
+                'idvigenciapngi': self.vigencia_base.idvigenciapngi
             })
             # Operador pode criar ações
             self.assertIn(response.status_code, [200, 302, 404])
@@ -582,7 +540,7 @@ class AcoesWebViewsTests(BaseWebTestCase):
             response = self.client.post('/acoes-pngi/acoes/create/', {
                 'strapelido': 'ACAO-CONS',
                 'strdescricaoacao': 'Tentativa Consultor',
-                'idvigenciapngi': self.vigencia.idvigenciapngi
+                'idvigenciapngi': self.vigencia_base.idvigenciapngi
             })
             self.assertIn(response.status_code, [302, 403, 404])
         except Exception:
