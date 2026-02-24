@@ -1,11 +1,30 @@
-# accounts/urls/web_urls.py
-from django.urls import path
-from accounts.views import role_views  # MUDAR ESTA LINHA
+# accounts/views/web_views.py
+from django.http import HttpResponseRedirect
+from django.conf import settings
 
-app_name = 'accounts'
-
-urlpatterns = [
-    path('select-role/<str:app_code>/', role_views.select_role, name='select_role'),
-    path('set-role/<int:role_id>/', role_views.set_active_role, name='set_active_role'),
-    path('switch-role/<str:app_code>/', role_views.switch_role, name='switch_role'),
-]
+def set_jwt_cookies(response, access_token, refresh_token):
+    """
+    Define JWT tokens em cookies HttpOnly/Secure para web tradicional
+    """
+    # Access token (curto)
+    response.set_cookie(
+        'access_token',
+        access_token,
+        max_age=600,  # 10 min
+        httponly=True,
+        secure=settings.DEBUG == False,  # HTTPS em produção
+        samesite='lax',
+        path='/'
+    )
+    
+    # Refresh token (longo)
+    response.set_cookie(
+        'refresh_token',
+        refresh_token,
+        max_age=1800,  # 30 min
+        httponly=True,
+        secure=settings.DEBUG == False,
+        samesite='lax',
+        path='/'
+    )
+    return response

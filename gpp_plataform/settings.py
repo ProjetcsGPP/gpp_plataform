@@ -74,7 +74,13 @@ TEMPLATES = [{
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-zi_0xgun9-=se!8anfq0cian(+e%*%-k(f-6xwxr8qe^85(10p'
+# Secrete como estava antes
+#SECRET_KEY = 'django-insecure-zi_0xgun9-=se!8anfq0cian(+e%*%-k(f-6xwxr8qe^85(10p'
+
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-CHANGE-IN-PRODUCTION-USE-ENV-VAR'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -114,19 +120,26 @@ INSTALLED_APPS = [
     'db_service',
 ]
     
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # Para roles ativas
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    
+    # ✨ SEU MIDDLEWARE JWT (CORRETO!)
+    'accounts.middleware.JWTUniversalAuthenticationMiddleware',
+    
+    # ✅ ActiveRoleMiddleware (MELHORADO)
     'accounts.middleware.ActiveRoleMiddleware', 
+    
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'common.middleware.app_context.AppContextMiddleware',
 ]
+
+
 
 ROOT_URLCONF = 'gpp_plataform.urls'
 
@@ -256,14 +269,27 @@ PORTAL_SERVICE_EMAIL = os.getenv('PORTAL_SERVICE_EMAIL', '')
 PORTAL_SERVICE_PASSWORD = os.getenv('PORTAL_SERVICE_PASSWORD', '')
 
 # Cache para tokens (já existe, mas certifique-se de ter configurado)
-if 'CACHES' not in locals():
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'gpp-plataform-cache',
-            'TIMEOUT': 3600,  # 1 hora
-        }
+#if 'CACHES' not in locals():
+#    CACHES = {
+#        'default': {
+#            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#            'LOCATION': 'gpp-plataform-cache',
+#            'TIMEOUT': 3600,  # 1 hora
+#        }
+#    }
+
+# Configuração de cache para blacklist (Redis recomendado)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'gpp_plataform',
+        'TIMEOUT': 1800,  # 30 minutos (máximo do refresh token)
     }
+}
 
 # Logging
 LOGGING = {
