@@ -97,7 +97,7 @@ class WebLoginView(TemplateView):
             token_payload = token_data['payload']
             
             # Django session login
-            django_login(request, user)
+            django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             
             # Armazena token payload no request (compatibilidade middleware)
             request.token_payload = token_payload
@@ -123,7 +123,7 @@ class WebLoginView(TemplateView):
             'title': 'Login - GPP Plataform',
             'version': '6.0.1',
             'debug': settings.DEBUG,
-            'next': request.GET.get('next', reverse('web:dashboard')),
+            'next': request.GET.get('next', '/'),
         }
         return context
     
@@ -132,7 +132,7 @@ class WebLoginView(TemplateView):
         next_url = request.GET.get('next') or request.POST.get('next')
         if next_url and '?' not in next_url:
             return redirect(next_url)
-        return redirect(reverse('web:dashboard'))
+        return redirect('/'),
 
 
 class WebValidateTokenView(TemplateView):
@@ -237,7 +237,7 @@ class WebUserManagementView(TemplateView):
         """
         if not request.user.is_authenticated:
             messages.warning(request, "Autenticação necessária.")
-            return redirect(reverse('web:login'))
+            return redirect(reverse('accounts:login'))
         
         try:
             context = self._get_users_context(request)
@@ -334,8 +334,8 @@ class WebDashboardRedirectView(View):
     
     def get(self, request: HttpRequest) -> HttpResponse:
         if request.user.is_authenticated:
-            return redirect(reverse('web:dashboard'))
-        return redirect(reverse('web:login'))
+            return redirect('/'),
+        return redirect(reverse('accounts:login'))
 
 
 class WebLogoutView(View):
@@ -351,7 +351,7 @@ class WebLogoutView(View):
         from django.contrib.auth import logout
         logout(request)
         messages.success(request, "Logout realizado com sucesso.")
-        return redirect(reverse('web:login'))
+        return redirect(reverse('accounts:login'))
 
 
 # Configuração de URLs esperada (documentação)
