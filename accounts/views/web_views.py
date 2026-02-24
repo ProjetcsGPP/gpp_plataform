@@ -92,24 +92,20 @@ class WebLoginView(TemplateView):
                 logger.warning(f"Login falhou para usuário: {username}")
                 return self.get(request, *args, **kwargs)
 
-            # ✅ Em seguida, use o TokenService para gerar token JWT/payload
             token_service = TokenService()
-            token_data = token_service.authenticate_user(username, password) 
-            
-            
-            if token_data and token_data.get('user') and token_data['user'].email == username:
+            token_data = token_service.login(username, password)
+
+            if token_data and token_data.get('user'):
                 user = token_data['user']
-                django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                
+                django_login(request, user)
                 request.token_payload = token_data['payload']
-                
                 messages.success(request, "Login realizado com sucesso!")
-                logger.info(f"Login web bem-sucedido: {username}")
                 return self._redirect_after_login(request)
 
             messages.error(request, "Credenciais inválidas.")
-            return self.get(request, *args, **kwargs)
-            
+            logger.warning(f"Login falhou: {username}")
+            return self.get(request, *args, **kwargs)            
+        
         except Exception as e:
             logger.error(f"Erro no login web: {str(e)}", exc_info=True)
             messages.error(request, "Erro interno no sistema. Tente novamente.")

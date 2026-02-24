@@ -4,6 +4,9 @@ TokenService Centralizado para IAM
 Implementa JWT com HS256 para monolito Django com tokens contextuais por aplicação.
 """
 
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.hashers import check_password
+
 import uuid
 import logging
 from datetime import datetime, timedelta
@@ -69,31 +72,52 @@ class TokenService:
                 "para produção. Gere uma com: python -c 'from django.core.management.utils "
                 "import get_random_secret_key; print(get_random_secret_key())'"
             )
-    
-    # Em accounts/services/token_service.py
+        
+        # Em accounts/services/token_service.py
     def login(self, username_or_email: str, password: str):
-        """
-        Autentica usuário e retorna token_data compatível com web/API.
-        Retorna: {'user': user, 'payload': payload, 'token': token} ou None
-        """
-        # Tenta username ou email (comum no seu projeto)
+        """Autentica user e retorna token_data para web/API."""
+        User = get_user_model()
+        
+        # Tenta Django authenticate primeiro (suporta custom backends)
         user = authenticate(username=username_or_email, password=password)
+        
+        # Fallback para email manual (comum em GPP/SEGER)
+        if user is None:
+            try:
+                user = User.objects.get(email__iexact=username_or_email)
+                if check_password(password, user.password) and user.is_active:
+                    logger.info(f"Email login OK: {user.email} (ID: {user.id})")
+                else:
+                    user = None
+            except User.DoesNotExist:
+                user = None
+        
         if not user or not user.is_active:
+            logger.warning(f"Login falhou: {username_or_email}")
             return None
         
-        # Gera payload JWT customizado (roles, etc.)
-        payload = self._generate_payload(user)  # Implemente baseado no seu JWT encoder
-        
-        # Armazena active role se necessário
-        # self.set_active_role(user.id, role_id)  # Opcional
-        
-        logger.info(f"Token gerado para {user.email}")
-        return {
-            'user': user,
-            'payload': payload,
-            'token': self._encode_jwt(payload)  # Seu método de encode JWT
+        # Payload com roles (RBAC GPP)
+        payload = {
+            'user_id': user.id,
+            'email': getattr(user, 'email', user.username),
+            'username': getattr(user, 'username', ''),
+            'roles': self.get_user_roles(user.id) if hasattr(self, 'get_user_roles') else [],  # Use existente
+            'exp': self._get_jwt_expiry(),  # Assuma método ou timedelta(hours=24)
         }
         
+        token = self.encode_token(payload)  # Ajuste para seu método JWT (ex: jwt.encode)
+        
+        logger.info(f"Token gerado para {user.email}")
+        return {'user': user, 'payload': payload, 'token': token}
+
+
+    def _get_jwt_expiry(self):
+        from datetime import datetime, timedelta
+        return datetime.utcnow() + timedelta(hours=24)
+
+    def encode_token(self, payload):
+        import jwt
+        return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')  # Ajuste algo
     
     def _generate_jti(self) -> str:
         """
