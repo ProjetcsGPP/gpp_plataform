@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions', 
 
     # Terceiros
     'rest_framework',
@@ -269,27 +270,15 @@ PORTAL_SERVICE_EMAIL = os.getenv('PORTAL_SERVICE_EMAIL', '')
 PORTAL_SERVICE_PASSWORD = os.getenv('PORTAL_SERVICE_PASSWORD', '')
 
 # Cache para tokens (já existe, mas certifique-se de ter configurado)
-#if 'CACHES' not in locals():
-#    CACHES = {
-#        'default': {
-#            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-#            'LOCATION': 'gpp-plataform-cache',
-#            'TIMEOUT': 3600,  # 1 hora
-#        }
-#    }
-
-# Configuração de cache para blacklist (Redis recomendado)
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
-        'KEY_PREFIX': 'gpp_plataform',
-        'TIMEOUT': 1800,  # 30 minutos (máximo do refresh token)
+if 'CACHES' not in locals():
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'gpp-plataform-cache',
+            'TIMEOUT': 3600,  # 1 hora
+        }
     }
-}
+
 
 # Logging
 LOGGING = {
