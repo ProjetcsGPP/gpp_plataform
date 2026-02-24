@@ -83,34 +83,32 @@ class WebLoginView(TemplateView):
             
             logger.info(f"Tentativa de login web: {username}")
             
-            # TokenService com mesma lógica da API
-            token_service = TokenService()
-            token_data = token_service.authenticate_user(username, password)
-            
-            if not token_data:
+            # ✅ Corrija para (use o método Django padrão primeiro para validar):
+            from django.contrib.auth import authenticate
+
+            user = authenticate(request, username=username, password=password)
+            if user is None:
                 messages.error(request, "Credenciais inválidas.")
                 logger.warning(f"Login falhou para usuário: {username}")
                 return self.get(request, *args, **kwargs)
+
+            # ✅ Em seguida, use o TokenService para gerar token JWT/payload
+            token_service = TokenService()
+            token_data = token_service.authenticate_user(username, password) 
             
-            # Login Django session + JWT payload
-            user = token_data['user']
-            token_payload = token_data['payload']
             
-            # Django session login
-            django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            
-            # Armazena token payload no request (compatibilidade middleware)
-            request.token_payload = token_payload
-            
-            # Role selection (se fornecida)
-            if role_id and str(role_id) in token_payload.get('roles', []):
-                token_service.set_active_role(user.id, int(role_id))
-                messages.success(request, f"Login realizado com sucesso! Role: {role_id}")
-            else:
+            if token_data and token_data.get('user') and token_data['user'].email == username:
+                user = token_data['user']
+                django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                
+                request.token_payload = token_data['payload']
+                
                 messages.success(request, "Login realizado com sucesso!")
-            
-            logger.info(f"Login web bem-sucedido: {username} (ID: {user.id})")
-            return self._redirect_after_login(request)
+                logger.info(f"Login web bem-sucedido: {username}")
+                return self._redirect_after_login(request)
+
+            messages.error(request, "Credenciais inválidas.")
+            return self.get(request, *args, **kwargs)
             
         except Exception as e:
             logger.error(f"Erro no login web: {str(e)}", exc_info=True)

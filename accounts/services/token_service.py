@@ -70,6 +70,31 @@ class TokenService:
                 "import get_random_secret_key; print(get_random_secret_key())'"
             )
     
+    # Em accounts/services/token_service.py
+    def login(self, username_or_email: str, password: str):
+        """
+        Autentica usuário e retorna token_data compatível com web/API.
+        Retorna: {'user': user, 'payload': payload, 'token': token} ou None
+        """
+        # Tenta username ou email (comum no seu projeto)
+        user = authenticate(username=username_or_email, password=password)
+        if not user or not user.is_active:
+            return None
+        
+        # Gera payload JWT customizado (roles, etc.)
+        payload = self._generate_payload(user)  # Implemente baseado no seu JWT encoder
+        
+        # Armazena active role se necessário
+        # self.set_active_role(user.id, role_id)  # Opcional
+        
+        logger.info(f"Token gerado para {user.email}")
+        return {
+            'user': user,
+            'payload': payload,
+            'token': self._encode_jwt(payload)  # Seu método de encode JWT
+        }
+        
+    
     def _generate_jti(self) -> str:
         """
         Gera um JTI (JWT ID) único e seguro.
