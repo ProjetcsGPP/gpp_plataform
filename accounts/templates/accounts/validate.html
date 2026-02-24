@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head><title>{{ title }}</title></head>
+<body>
+    <h1>{{ title }}</h1>
+    
+    <h3>Status Autenticação:</h3>
+    <pre>{{ token_payload_json|safe }}</pre>
+    
+    <h3>User Info:</h3>
+    <p>ID: {{ user_id }} {% if is_alexandre %}⭐ ALEXANDRE (GESTOR_PNGI){% endif %}</p>
+    <p>Autenticado: {{ is_authenticated }}</p>
+    
+    <h3>Active Role: {{ active_role }}</h3>
+    <p>Session: {{ session_key }}</p>
+</body>
+</html>
