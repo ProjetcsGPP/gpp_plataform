@@ -37,21 +37,17 @@ class WebViewsTestCase(TestCase):
     
     @classmethod
     def setUpTestData(cls):
-        """Cria dados de teste fixos - EMAIL REAL SEGER."""
-        cls.alexandre = User.objects.create_user(
+        
+        cls.alexandre = User.objects.create(
             id=5,
-            username='alexandre.wanick',
-            email='alexandre.mohamad@seger.es.gov.br',  # ✅ REAL
-            first_name='Alexandre Wanick',
-            last_name='Mohamad',
+            email='alexandre.mohamad@seger.es.gov.br',
             is_active=True,
             is_staff=True
         )
-        cls.alexandre.set_password('Awm2@11712')  # ✅ REAL
+        cls.alexandre.set_password('Awm2@11712')  # ✅ Senha separada
         cls.alexandre.save()
         
-        cls.user_normal = User.objects.create_user(
-            username='user_normal',
+        cls.user_normal = User.objects.create(
             email='normal@gpp.com',
             is_active=True
         )

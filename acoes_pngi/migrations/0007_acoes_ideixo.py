@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('acoes_pngi', '0006_setup_complete_permissions'),
+        ('acoes_pngi', '0005_alter_situacaoacao_created_at_and_more')
     ]
 
     operations = [
