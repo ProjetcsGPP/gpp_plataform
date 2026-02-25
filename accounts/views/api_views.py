@@ -89,123 +89,41 @@ class UserManagementView(APIView):
 # AUTENTICAÇÃO JWT (NOVAS VIEWS)
 # ============================================================================
 
+
 class LoginView(APIView):
-    """
-    Autenticação de usuário e emissão de tokens JWT.
-    
-    POST /api/auth/login/
-    Body:
-        {
-            "email": "usuario@example.com",
-            "password": "senha123",
-            "app_code": "ACOES_PNGI"  // opcional, default: ACOES_PNGI
-        }
-    
-    Response:
-        {
-            "access_token": "eyJ...",
-            "refresh_token": "eyJ...",
-            "token_type": "Bearer",
-            "expires_in": 600,
-            "user": {
-                "id": 1,
-                "email": "usuario@example.com",
-                "name": "Nome do Usuário",
-                "role": "GESTOR_PNGI"
-            }
-        }
-    """
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-        app_code = request.data.get('app_code', 'ACOES_PNGI')
+        app_code = request.data.get('app_code')  # ✅ NOVO
+        role_id = request.data.get('role_id')    # ✅ NOVO
         
-        # Validações básicas
-        if not email or not password:
+        if not all([email, password, app_code, role_id]):
             return Response(
-                {'detail': 'Email e senha são obrigatórios'},
+                {'error': 'Email, senha, app_code e role_id são obrigatórios'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Autentica usuário
-        try:
-            user = User.objects.get(email=email, is_active=True)
-            
-            # Verifica senha
-            if not user.check_password(password):
-                logger.warning(f"Tentativa de login falhou: {email}")
-                return Response(
-                    {'detail': 'Credenciais inválidas'},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
-        
-        except User.DoesNotExist:
-            logger.warning(f"Tentativa de login com email inexistente: {email}")
-            return Response(
-                {'detail': 'Credenciais inválidas'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        
-        # Busca role padrão do usuário na aplicação
-        user_role = UserRole.objects.filter(
-            user=user,
-            aplicacao__codigointerno=app_code
-        ).select_related('role', 'aplicacao').first()
-        
-        if not user_role:
-            logger.warning(
-                f"Usuário {user.email} tentou acessar {app_code} sem permissão"
-            )
-            return Response(
-                {'detail': f'Usuário sem acesso à aplicação {app_code}'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        # Emite tokens usando TokenService
         token_service = get_token_service()
         
-        try:
-            access_token = token_service.issue_access_token(
-                user, app_code, user_role.role.id
-            )
-            refresh_token = token_service.issue_refresh_token(
-                user, app_code, user_role.role.id
-            )
-            
-            logger.info(
-                f"Login bem-sucedido: {user.email} em {app_code} "
-                f"como {user_role.role.codigoperfil}"
-            )
-            
+        result = token_service.login(email, password, app_code, role_id)
+        
+        if result:
             return Response({
-                'access_token': access_token,
-                'refresh_token': refresh_token,
-                'token_type': 'Bearer',
-                'expires_in': 600,  # 10 minutos em segundos
                 'user': {
-                    'id': user.id,
-                    'email': user.email,
-                    'name': user.name,
-                    'role': user_role.role.codigoperfil,
-                    'app_code': app_code,
-                    'app_name': user_role.aplicacao.nomeaplicacao
-                }
-            }, status=status.HTTP_200_OK)
-        
-        except UserRoleNotFoundException as e:
-            logger.error(f"Erro ao emitir tokens: {str(e)}")
+                    'id': result['user'].id,
+                    'email': result['user'].email,
+                    'name': getattr(result['user'], 'name', ''),
+                },
+                'access_token': result['access_token'],
+                'refresh_token': result['refresh_token'],
+                'expires_in': result['expires_in'],
+            })
+        else:
             return Response(
-                {'detail': str(e)},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        except TokenServiceException as e:
-            logger.error(f"Erro no TokenService: {str(e)}")
-            return Response(
-                {'detail': 'Erro ao gerar tokens de autenticação'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {'error': 'Credenciais inválidas'},
+                status=status.HTTP_401_UNAUTHORIZED
             )
 
 

@@ -75,6 +75,7 @@ class WebLoginView(TemplateView):
         try:
             username = request.POST.get('username', '').strip()
             password = request.POST.get('password', '').strip()
+            app_code = request.POST.get('app_code', 'ACOES_PNGI')  # ✅ Do form ou default
             role_id = request.POST.get('role_id')
             
             if not username or not password:
@@ -93,7 +94,11 @@ class WebLoginView(TemplateView):
                 return self.get(request, *args, **kwargs)
 
             token_service = TokenService()
-            token_data = token_service.login(username, password)
+            token_data = token_service.login(   username, 
+                                                password, 
+                                                app_code,           # ✅ Dinâmico!
+                                                int(role_id or 1)
+                                            )
 
             if token_data and token_data.get('user'):
                 user = token_data['user']

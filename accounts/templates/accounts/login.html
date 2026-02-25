@@ -25,6 +25,16 @@
             <label>Senha: <input type="password" name="password" required></label>
         </p>
         <p>
+            <div class="form-group">
+                <label for="app_code">Aplicação:</label>
+                <select name="app_code" id="app_code" class="form-control" required>
+                    <option value="ACOES_PNGI">Ações PNGI</option>
+                    <option value="CARGA_ORG_LOT">Carga Org. Lotação</option>
+                    <option value="GPP_PORTAL">GPP Portal</option>
+                </select>
+            </div>
+        </p>
+        <p>
             <label>Role ID: <input name="role_id"></label>
         </p>
         <input type="hidden" name="next" value="{{ next }}">

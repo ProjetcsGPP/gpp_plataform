@@ -3,7 +3,7 @@
 Provides cached permission queries to optimize authorization checks.
 """
 
-from typing import List, Set
+from typing import List, Optional, Set
 from django.core.cache import cache
 from django.contrib.auth.models import Permission
 from ..models import UserRole, RolePermission, Aplicacao
