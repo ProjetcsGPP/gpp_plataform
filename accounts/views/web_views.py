@@ -100,6 +100,15 @@ class WebLoginView(TemplateView):
                                                 int(role_id or 1)
                                             )
 
+            if token_data:
+                user = token_data['user']
+                django_login(request, user)
+                # Decodificar o access_token para obter o payload
+                from jwt import decode
+                from django.conf import settings
+                payload = decode(token_data['access_token'], settings.SECRET_KEY, algorithms=['HS256'])
+                request.token_payload = payload
+                
             if token_data and token_data.get('user'):
                 user = token_data['user']
                 django_login(request, user)
