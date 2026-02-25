@@ -32,6 +32,8 @@ from ..views.api_views import (
     AcaoAnotacaoAlinhamentoViewSet,
     UsuarioResponsavelViewSet,
     RelacaoAcaoUsuarioResponsavelViewSet,
+    AcoesCompletasAPIView,
+    UsuariosPorAcaoAPIView,
 )
 
 # Importar views de contexto
@@ -76,9 +78,6 @@ router.register(r'anotacoes-alinhamento', AcaoAnotacaoAlinhamentoViewSet, basena
 router.register(r'usuarios-responsaveis', UsuarioResponsavelViewSet, basename='usuarioresponsavel')
 router.register(r'relacoes-acao-responsavel', RelacaoAcaoUsuarioResponsavelViewSet, basename='relacaoacaousuarioresponsavel')
 
-router.register(r'acoes-completas', AcoesCompletasAPIView, basename='acoes-completas')
-router.register(r'usuarios-acoes-por-acao', UsuariosPorAcaoAPIView, basename='usuarios-por-acao')
-
 urlpatterns = [
     # ===== AUTENTICAÇÃO =====
     path('auth/portal/', portal_auth, name='portal-auth'),
@@ -89,6 +88,9 @@ urlpatterns = [
     path('context/permissions/', user_permissions_api, name='context-permissions'),
     path('context/models/', models_info_api, name='models-info'),
     path('context/full/', full_context_api, name='full-context'),
+    
+    path('acoes-completas/', AcoesCompletasAPIView.as_view(), name='acoes-completas'),
+    path('usuarios-acoes-por-acao/', UsuariosPorAcaoAPIView.as_view(), name='usuarios-por-acao'),
     
     # ===== VIEWSETS (Router) =====
     path('', include(router.urls)),

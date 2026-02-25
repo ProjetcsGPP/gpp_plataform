@@ -248,7 +248,6 @@ def get_authorization_service() -> AuthorizationService:
 # ============================================================================
 
 from rest_framework.permissions import BasePermission
-from accounts.services import get_authorization_service  # ← Novo import
 import logging
 
 logger = logging.getLogger(__name__)

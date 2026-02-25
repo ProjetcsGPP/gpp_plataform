@@ -1295,7 +1295,7 @@ class AcaoDestaqueViewSet(viewsets.ModelViewSet):
     queryset = AcaoDestaque.objects.select_related(
         'idacao__ideixo', 
         'idacao__idsituacaoacao'
-    ).order_by('-datdestaque')
+    ).order_by('-datdatadestaque')
     serializer_class = AcaoDestaqueSerializer
     
     # 🆕 LINHAS NOVAS (OBRIGATÓRIAS)
