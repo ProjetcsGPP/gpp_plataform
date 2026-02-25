@@ -42,17 +42,17 @@ class TokenServiceTest(TestCase):
             password="test123",
             is_active=True,
         )
-        cls.app_acoes = Aplicacao.objects.create(
+        cls.app_acoes = Aplicacao.objects.get_or_create(
             codigointerno="ACOES_PNGI",
             nomeaplicacao="Ações PNGI",
             isshowinportal=True,
         )
-        cls.app_org = Aplicacao.objects.create(
+        cls.app_org = Aplicacao.objects.get_or_create(
             codigointerno="CARGA_ORG_LOT",
             nomeaplicacao="Carga Org. Lotação",
             isshowinportal=True,
         )
-        cls.role_gestor = Role.objects.create(
+        cls.role_gestor = Role.objects.get_or_create(
             aplicacao=cls.app_acoes,
             codigoperfil="GESTOR_PNGI",
             nomeperfil="Gestor PNGI",
@@ -62,7 +62,7 @@ class TokenServiceTest(TestCase):
             codigoperfil="COORDENADOR_PNGI",
             nomeperfil="Coordenador PNGI",
         )
-        cls.user_role_gestor = UserRole.objects.create(
+        cls.user_role_gestor = UserRole.objects.get_or_create(
             user=cls.user,
             aplicacao=cls.app_acoes,
             role=cls.role_gestor,
@@ -408,7 +408,7 @@ class TokenServiceTest(TestCase):
         return jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
 
 
-class TokenServiceIntegrationTest(TestCase):
+class TokenServiceIntegrationTest(TokenServiceTest):
     """Testes de fluxo completo (login → refresh → logout)."""
 
     def setUp(self):
