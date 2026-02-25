@@ -8,11 +8,11 @@ import logging
 from time import timezone
 from django.apps import apps
 from django.db import transaction
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Prefetch
 from django.forms import ValidationError
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
-from rest_framework import viewsets, status, filters
+from rest_framework import generics, viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -34,8 +34,8 @@ from ..models import (
     UsuarioResponsavel, RelacaoAcaoUsuarioResponsavel
 )
 from ..serializers import (
-    EixoSerializer, EixoListSerializer,
-    SituacaoAcaoSerializer,
+    AcoesCompletasSerializer, EixoSerializer, EixoListSerializer,
+    SituacaoAcaoSerializer, UsuarioResponsavelCompletoSerializer,
     VigenciaPNGISerializer, VigenciaPNGIListSerializer,
     TipoEntraveAlertaSerializer,
     AcoesSerializer, AcoesListSerializer,
@@ -2097,3 +2097,97 @@ class RelacaoAcaoUsuarioResponsavelViewSet(viewsets.ModelViewSet):
                 'idusuarioresponsavel'
             ).annotate(count=Count('idacao')).filter(count__gt=5).count()
         })
+
+
+class AcoesCompletasAPIView(generics.ListAPIView):
+    """
+    🔗 API: Lista COMPLETA de ações com todas as relações aninhadas
+    
+    Query otimizada com prefetch_related para evitar N+1
+    
+    ?page=1&limit=20&vigencia=1&eixo=ABC&situacao=Ativa
+    
+    Retorna:
+    {
+        "count": 150,
+        "results": [
+            {
+                "id": 1,
+                "strapelido": "AÇÃ 001",
+                "eixo": {...},
+                "situacao": {...},
+                "vigencia": {...},
+                "responsaveis": [...],
+                "prazo_ativo": {...},
+                "ultimos_destaques": [...],
+                "ultimas_anotacoes": [...]
+            }
+        ]
+    }
+    """
+    serializer_class = AcoesCompletasSerializer
+    permission_classes = [IsAuthenticated, HasModelPermission]
+    permission_model = 'acoes'  # ← AuthorizationService
+    
+    def get_queryset(self):
+        """
+        Query otimizada com filtros dinâmicos e todas as relações
+        """
+        queryset = Acoes.objects.select_related(
+            'ideixo', 'idsituacaoacao', 'idvigenciapngi', 'idtipoentravealerta'
+        ).prefetch_related(
+            Prefetch(
+                'responsaveis',
+                queryset=RelacaoAcaoUsuarioResponsavel.objects.prefetch_related(
+                    Prefetch('idusuarioresponsavel')
+                ),
+                to_attr='responsaveis_completos'
+            ),
+            Prefetch(
+                'prazos',
+                queryset=AcaoPrazo.objects.filter(isacaoprazoativo=True),
+                to_attr='prazo_ativo'
+            ),
+            Prefetch(
+                'destaques',
+                queryset=AcaoDestaque.objects.order_by('-datdatadestaque')[:3],
+                to_attr='ultimos_destaques'
+            ),
+            Prefetch(
+                'anotacoes_alinhamento',
+                queryset=AcaoAnotacaoAlinhamento.objects.select_related(
+                    'idtipoanotacaoalinhamento'
+                ).order_by('-datdataanotacaoalinhamento')[:5],
+                to_attr='ultimas_anotacoes'
+            )
+        ).filter(
+            idvigenciapngi__isvigenciaativa=True
+        )
+        
+        # Filtros dinâmicos via query params
+        eixo_id = self.request.query_params.get('eixo')
+        if eixo_id:
+            queryset = queryset.filter(ideixo_id=eixo_id)
+            
+        situacao_id = self.request.query_params.get('situacao')
+        if situacao_id:
+            queryset = queryset.filter(idsituacaoacao_id=situacao_id)
+            
+        return queryset.order_by('strapelido')
+    
+# API: Usuários por Ação Específica
+class UsuariosPorAcaoAPIView(generics.ListAPIView):
+    """
+    GET /api/acoes-pngi/acoes/<id>/usuarios/
+    
+    Retorna todos os responsáveis de uma ação específica
+    """
+    serializer_class = UsuarioResponsavelCompletoSerializer
+    permission_classes = [IsAuthenticated, HasModelPermission]
+    permission_model = 'relacaoacaousuarioresponsavel'
+    
+    def get_queryset(self):
+        acao_id = self.kwargs['acao_id']
+        return UsuarioResponsavel.objects.filter(
+            relacaoacaousuarioresponsavel__idacao_id=acao_id
+        ).select_related('idusuario')

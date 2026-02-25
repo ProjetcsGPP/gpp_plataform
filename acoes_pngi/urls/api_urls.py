@@ -16,6 +16,8 @@ from rest_framework.routers import DefaultRouter
 
 # Importar views da API (agora com TODOS os ViewSets)
 from ..views.api_views import (
+    AcoesCompletasAPIView,
+    UsuariosPorAcaoAPIView,
     portal_auth,
     user_permissions,
     UserManagementViewSet,
@@ -73,6 +75,9 @@ router.register(r'anotacoes-alinhamento', AcaoAnotacaoAlinhamentoViewSet, basena
 # Responsáveis
 router.register(r'usuarios-responsaveis', UsuarioResponsavelViewSet, basename='usuarioresponsavel')
 router.register(r'relacoes-acao-responsavel', RelacaoAcaoUsuarioResponsavelViewSet, basename='relacaoacaousuarioresponsavel')
+
+router.register(r'acoes-completas', AcoesCompletasAPIView, basename='acoes-completas')
+router.register(r'usuarios-acoes-por-acao', UsuariosPorAcaoAPIView, basename='usuarios-por-acao')
 
 urlpatterns = [
     # ===== AUTENTICAÇÃO =====
