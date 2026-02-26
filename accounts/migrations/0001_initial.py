@@ -5,6 +5,52 @@ from django.conf import settings
 from django.db import migrations, models
 
 
+def popular_aplicacoes(apps, schema_editor):
+    """Popula dados iniciais da tabela tblaplicacao."""
+    Aplicacao = apps.get_model('accounts', 'Aplicacao')
+    
+    aplicacoes = [
+        {
+            'codigointerno': 'PORTAL',
+            'nomeaplicacao': 'Portal GPP',
+            'base_url': 'http://127.0.0.1:8000/portal/',
+            'isshowinportal': False
+        },
+        {
+            'codigointerno': 'CARGA_ORG_LOT',
+            'nomeaplicacao': 'Carga Única de Organograma e Lotação',
+            'base_url': 'http://127.0.0.1:8000/carga_org_lot/',
+            'isshowinportal': True
+        },
+        {
+            'codigointerno': 'ACOES_PNGI',
+            'nomeaplicacao': 'Ações PNGI',
+            'base_url': 'http://127.0.0.1:8000/acoes-pngi/',
+            'isshowinportal': True
+        }
+    ]
+    
+    for app_data in aplicacoes:
+        aplicacao, criada = Aplicacao.objects.get_or_create(
+            codigointerno=app_data['codigointerno'],
+            defaults={
+                'nomeaplicacao': app_data['nomeaplicacao'],
+                'base_url': app_data['base_url'],
+                'isshowinportal': app_data['isshowinportal'],
+            }
+        )
+        status = "✅ CRIADA" if criada else "ℹ️  JÁ EXISTIA"
+        print(f"{status}: {app_data['codigointerno']} - {app_data['nomeaplicacao']}")
+
+
+def reverter_aplicacoes(apps, schema_editor):
+    """Remove aplicações criadas para rollback."""
+    Aplicacao = apps.get_model('accounts', 'Aplicacao')
+    Aplicacao.objects.filter(
+        codigointerno__in=['PORTAL', 'CARGA_ORG_LOT', 'ACOES_PNGI']
+    ).delete()
+    print("🗑️  Aplicações removidas (rollback)")
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -87,5 +133,10 @@ class Migration(migrations.Migration):
             options={
                 'unique_together': {('user', 'aplicacao', 'role')},
             },
+        ),
+        
+        migrations.RunPython(
+            popular_aplicacoes,
+            reverse_code=reverter_aplicacoes
         ),
     ]
