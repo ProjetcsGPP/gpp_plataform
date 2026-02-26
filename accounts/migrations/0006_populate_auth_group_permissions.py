@@ -131,7 +131,7 @@ def popular_permissoes(apps, schema_editor):
     Aplicacao = apps.get_model('accounts', 'Aplicacao')
     
     # Aplicação PNGI (aplicacao_id=3)
-    aplicacao = Aplicacao.objects.get(idaplicacao=3)  # ACOES_PNGI
+    aplicacao = Aplicacao.objects.get(codigointerno='ACOES_PNGI')  # ACOES_PNGI
     app_code = aplicacao.codigointerno
     
     total_permissoes = 0

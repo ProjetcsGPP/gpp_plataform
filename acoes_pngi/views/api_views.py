@@ -10,15 +10,16 @@ from django.apps import apps
 from django.db import transaction
 from django.db.models import Q, Count, Prefetch
 from django.forms import ValidationError
+from requests import auth
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
-from rest_framework import generics, viewsets, status, filters
+from rest_framework import generics, request, viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from django_filters.rest_framework import DjangoFilterBackend
 
 from accounts.models import User, UserRole
-from accounts.services.authorization_service import get_authorization_service, AuthorizationService, HasModelPermission, ReadOnlyOrHasPermission
+from accounts.services.authorization_service import get_authorization_service, HasModelPermission, ReadOnlyOrHasPermission
 from common.serializers import (
     UserSerializer,
     UserCreateSerializer,
@@ -55,10 +56,10 @@ from ..permissions import (
     IsCoordernadorGestorOrOperadorPNGI,
     IsAnyPNGIRole,      
 )
-from ..utils.permissions import (
-    get_user_app_permissions,
-    get_model_permissions,
-    require_api_permission
+from accounts.services.authorization_service import (
+    get_authorization_service,
+    HasModelPermission,
+    ReadOnlyOrHasPermission
 )
 
 
@@ -167,7 +168,8 @@ def user_permissions(request):
     """
     try:
         # ✨ Usa helper com cache (15 minutos)
-        perms = get_user_app_permissions(request.user, 'ACOES_PNGI')
+        auth = get_authorization_service()
+        perms = auth.get_user_permissions(request.user.id, 'ACOES_PNGI')
         
         # Buscar role do usuário
         user_role = UserRole.objects.filter(
@@ -178,10 +180,11 @@ def user_permissions(request):
         role = user_role.role.codigoperfil if user_role else None
         
         # ✨ Usa helper para permissões por modelo (também com cache)
+        auth = get_authorization_service()
         specific = {
-            'eixo': get_model_permissions(request.user, 'eixo', 'ACOES_PNGI'),
-            'situacaoacao': get_model_permissions(request.user, 'situacaoacao', 'ACOES_PNGI'),
-            'vigenciapngi': get_model_permissions(request.user, 'vigenciapngi', 'ACOES_PNGI'),
+            'eixo': auth.get_user_permissions(request.user.id, 'ACOES_PNGI'),
+            'situacaoacao': auth.get_user_permissions(request.user.id, 'ACOES_PNGI'),
+            'vigenciapngi': auth.get_user_permissions(request.user.id, 'ACOES_PNGI'),
         }
         
         return Response({

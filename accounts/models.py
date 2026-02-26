@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, Permission
+from django.contrib.auth.models import BaseUserManager, Group, Permission
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 
@@ -69,34 +69,41 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
     
+
     def get_app_permissions(self, app_codigo):
         """
-        Retorna permissões do usuário em uma aplicação específica
+        ✅ NOVA VERSÃO NATIVA: Usa auth_group_permissions
         
-        Uso: user.get_app_permissions('ACOES_PNGI')
-        Retorna: ['add_eixo', 'change_eixo', 'view_eixo', ...]
+        Retorna: ['add_eixo', 'change_acoes', ...]
         """
         if self.is_superuser:
             return Permission.objects.all().values_list('codename', flat=True)
         
+        # 1. UserRole → Role IDs
         user_roles = UserRole.objects.filter(
             user=self,
             aplicacao__codigointerno=app_codigo
-        ).values_list('role', flat=True)
+        ).values_list('role_id', flat=True)
         
-        permission_ids = RolePermission.objects.filter(
-            role__in=user_roles
-        ).values_list('permission_id', flat=True)
+        # 2. Role → auth_group → auth_group_permissions → codenames
+        perms = set()
+        for role_id in user_roles:
+            try:
+                # auth_group name = "ACOES_PNGI_GESTOR_PNGI"
+                role = Role.objects.get(id=role_id)
+                group_name = f"{app_codigo}_{role.codigoperfil}"
+                group = Group.objects.get(name=group_name)
+                
+                # Extrair codenames NATIVOS
+                perms.update(group.permissions.values_list('codename', flat=True))
+            except (Role.DoesNotExist, Group.DoesNotExist):
+                continue
         
-        return Permission.objects.filter(
-            id__in=permission_ids
-        ).values_list('codename', flat=True)
+        return list(perms)
     
     def has_app_perm(self, app_codigo, perm_codename):
         """
-        Verifica se tem permissão específica
-        
-        Uso: user.has_app_perm('ACOES_PNGI', 'add_eixo')
+        ✅ Verifica permissão específica NATIVA
         """
         if self.is_superuser:
             return True
@@ -149,17 +156,3 @@ class Attribute(models.Model):
     def __str__(self):
         return f'{self.user} / {self.aplicacao.codigointerno} / {self.key}={self.value}'
 
-
-class RolePermission(models.Model):
-    """Vincula Role customizada com Permission nativa do Django"""
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='role_permissions')
-    permission = models.ForeignKey(Permission, on_delete=models.CASCADE)
-    
-    class Meta:
-        db_table = 'accounts_rolepermission'
-        unique_together = ('role', 'permission')
-        verbose_name = 'Permissão de Role'
-        verbose_name_plural = 'Permissões de Roles'
-    
-    def __str__(self):
-        return f'{self.role.codigoperfil} → {self.permission.codename}'

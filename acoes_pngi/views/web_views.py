@@ -3,15 +3,16 @@ Views web (Django templates) para a aplicação Ações PNGI.
 Usa autenticação por sessão e verifica permissões através do sistema RBAC automatizado.
 """
 
+from django.contrib import auth
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from requests import request
 
 from accounts.models import UserRole, Aplicacao, User
 from ..models import Eixo, SituacaoAcao, VigenciaPNGI
-from ..utils.permissions import require_app_permission, get_user_app_permissions
-
+from accounts.services.authorization_service import get_authorization_service, require_app_permission
 
 def require_acoes_access(view_func):
     """
@@ -122,7 +123,8 @@ def acoes_pngi_dashboard(request):
     ).select_related('role').first()
     
     # Busca permissões do usuário de forma eficiente (uma única chamada)
-    permissions = get_user_app_permissions(user, 'ACOES_PNGI')
+    auth = get_authorization_service()
+    permissions = auth.get_user_permissions(request.user.id, 'ACOES_PNGI')
     
     # Busca estatísticas (apenas se tiver permissão de view)
     stats = {}

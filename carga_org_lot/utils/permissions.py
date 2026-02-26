@@ -10,7 +10,10 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.response import Response
 from rest_framework import status
-from accounts.models import UserRole, RolePermission
+from accounts.models import UserRole
+from django.contrib.auth.models import Group
+from accounts.services.authorization_service import get_authorization_service
+
 
 
 logger = logging.getLogger(__name__)
@@ -71,15 +74,8 @@ def get_user_app_permissions(user, app_code=APP_CODE):
             return set()
         
         # Busca permissões das roles
-        role_permissions = RolePermission.objects.filter(
-            role_id__in=user_roles
-        ).values_list('permission_id', flat=True)
-        
-        # Busca codenames das permissões
-        permissions = Permission.objects.filter(
-            id__in=role_permissions,
-            content_type__app_label='carga_org_lot'
-        ).values_list('codename', flat=True)
+        auth = get_authorization_service()
+        permissions = auth.get_user_permissions(user.id, {app_code})
         
         perms_set = set(permissions)
         

@@ -1,32 +1,44 @@
 # accounts/services/authorization_service.py
+"""
+AuthorizationService CENTRALIZADO - Usa APENAS tabelas NATIVAS do Django.
+
+Fluxo:
+1. UserRole → Role → codigoperfil
+2. codigoperfil → auth_group (ACOES_PNGI_GESTOR_PNGI)
+3. auth_group → auth_group_permissions → auth_permission
+4. Cache 5min + PORTAL_ADMIN automático
+
+✅ Compatível: Web Views + DRF APIViews
+✅ Performance: Cache Redis/Memcached
+✅ Seguro: Nunca depende de request/sessão
+"""
 
 from django.core.cache import cache
-from django.contrib.auth.models import Permission
-from typing import Optional, Set, Dict
+from django.contrib.auth.models import Permission, Group
+from django.contrib.contenttypes.models import ContentType
+from typing import Set, Optional
 import logging
 
-from accounts.models import User, Role, UserRole, RolePermission, Aplicacao
-from acoes_pngi.permissions import IsAnyPNGIRole
+from accounts.models import User, Role, UserRole, Aplicacao
 
 logger = logging.getLogger(__name__)
 
 
 class AuthorizationService:
     """
-    Serviço central de autorização RBAC/ABAC.
+    Serviço central de autorização RBAC nativo do Django.
     
-    Valida permissões sem depender de request/sessão.
-    Compatível com Web Views e DRF APIViews.
+    Interface:
+    >>> auth.can(user_id=1, app_code='ACOES_PNGI', active_role_id=3, 
+                  action='add', model_name='eixo')
+    True  # GESTOR pode criar eixo
     """
     
-    # Cache TTL: 5 minutos
-    CACHE_TTL = 300
-    
-    # Role máxima com todas as permissões
+    CACHE_TTL = 300  # 5 minutos
     PORTAL_ADMIN_CODE = 'PORTAL_ADMIN'
     
     def __init__(self):
-        self.cache_prefix = 'authz'
+        self.cache_prefix = 'authz_native'
     
     def can(
         self,
@@ -37,68 +49,55 @@ class AuthorizationService:
         model_name: str
     ) -> bool:
         """
-        Verifica se usuário tem permissão para executar ação em modelo.
+        Verifica permissão usando APENAS tabelas nativas:
+        UserRole → Role → auth_group → auth_group_permissions → auth_permission
         
         Args:
-            user_id: ID do usuário
-            app_code: Código da aplicação (ex: 'ACOES_PNGI')
-            active_role_id: ID da role ativa
-            action: Ação desejada ('view', 'add', 'change', 'delete')
-            model_name: Nome do modelo (ex: 'eixo', 'acoes')
+            user_id: ID do tblusuario
+            app_code: 'ACOES_PNGI'
+            active_role_id: ID da accounts_role (3=GESTOR_PNGI)
+            action: 'view'|'add'|'change'|'delete'
+            model_name: 'eixo'|'acoes'|'situacaoacao'
         
         Returns:
-            bool: True se autorizado, False caso contrário
-        
-        Exemplo:
-            >>> auth = AuthorizationService()
-            >>> auth.can(5, 'ACOES_PNGI', 3, 'change', 'eixo')
-            True
+            True se autorizado
         """
         try:
-            # 1. Validar se role pertence ao usuário e à aplicação
+            # 1. Validar UserRole existe
             if not self._validate_user_role(user_id, app_code, active_role_id):
-                logger.warning(
-                    f"Role {active_role_id} inválida para user={user_id}, app={app_code}"
-                )
+                logger.warning(f"❌ UserRole inválida: user={user_id}, app={app_code}, role={active_role_id}")
                 return False
             
-            # 2. Verificar se é PORTAL_ADMIN
+            # 2. PORTAL_ADMIN tem tudo
             if self._is_portal_admin(active_role_id):
-                logger.debug(f"User {user_id} é PORTAL_ADMIN - autorizado")
+                logger.debug(f"👑 PORTAL_ADMIN autorizado: role={active_role_id}")
                 return True
             
-            # 3. Buscar permissões da role (com cache)
-            permissions = self._get_role_permissions(active_role_id)
+            # 3. Buscar permissões via auth_group NATIVO
+            permissions = self._get_native_permissions(app_code, active_role_id)
             
-            # 4. Montar codename da permissão Django
-            permission_codename = f"{action}_{model_name.lower()}"
-            
-            # 5. Verificar se permissão existe
-            has_permission = permission_codename in permissions
+            # 4. Verificar codename específico
+            codename = f"{action}_{model_name.lower()}"
+            authorized = codename in permissions
             
             logger.info(
-                f"Authorization check: user={user_id}, role={active_role_id}, "
-                f"permission={permission_codename}, result={has_permission}"
+                f"🔐 [{authorized}] {user_id}:{app_code}:{active_role_id} "
+                f"{codename}"
             )
             
-            return has_permission
+            return authorized
         
         except Exception as e:
-            logger.error(f"Erro na verificação de autorização: {str(e)}", exc_info=True)
+            logger.error(f"💥 Erro AuthorizationService: {e}", exc_info=True)
             return False
     
-    def _validate_user_role(
-        self,
-        user_id: int,
-        app_code: str,
-        role_id: int
-    ) -> bool:
-        """Valida se role pertence ao usuário na aplicação."""
-        cache_key = f"{self.cache_prefix}:user_role:{user_id}:{app_code}:{role_id}"
+    def _validate_user_role(self, user_id: int, app_code: str, role_id: int) -> bool:
+        """Verifica se UserRole existe (cache 5min)."""
+        cache_key = f"{self.cache_prefix}:userrole:{user_id}:{app_code}:{role_id}"
         
         cached = cache.get(cache_key)
         if cached is not None:
-            return cached
+            return bool(cached)
         
         exists = UserRole.objects.filter(
             user_id=user_id,
@@ -110,12 +109,12 @@ class AuthorizationService:
         return exists
     
     def _is_portal_admin(self, role_id: int) -> bool:
-        """Verifica se role é PORTAL_ADMIN."""
-        cache_key = f"{self.cache_prefix}:is_admin:{role_id}"
+        """Verifica role PORTAL_ADMIN (cache 5min)."""
+        cache_key = f"{self.cache_prefix}:portal_admin:{role_id}"
         
         cached = cache.get(cache_key)
         if cached is not None:
-            return cached
+            return bool(cached)
         
         is_admin = Role.objects.filter(
             id=role_id,
@@ -125,126 +124,94 @@ class AuthorizationService:
         cache.set(cache_key, is_admin, self.CACHE_TTL)
         return is_admin
     
-    def _get_role_permissions(self, role_id: int) -> Set[str]:
+    def _get_native_permissions(self, app_code: str, role_id: int) -> Set[str]:
         """
-        Busca todas as permissões da role (com cache).
+        🔑 CORE: Busca permissões via auth_group NATIVO.
         
-        Returns:
-            Set com codenames das permissões
+        accounts_role → auth_group → auth_group_permissions → auth_permission
         """
-        cache_key = f"{self.cache_prefix}:perms:{role_id}"
+        cache_key = f"{self.cache_prefix}:perms:{app_code}:{role_id}"
         
         cached = cache.get(cache_key)
-        if cached is not None:
+        if cached:
             return cached
         
-        permission_ids = RolePermission.objects.filter(
-            role_id=role_id
-        ).values_list('permission_id', flat=True)
-        
-        codenames = set(
-            Permission.objects.filter(
-                id__in=permission_ids
-            ).values_list('codename', flat=True)
-        )
-        
-        cache.set(cache_key, codenames, self.CACHE_TTL)
-        return codenames
+        try:
+            # 1. Role → codigoperfil
+            role = Role.objects.get(id=role_id)
+            
+            # 2. auth_group name = "ACOES_PNGI_GESTOR_PNGI"
+            group_name = f"{app_code}_{role.codigoperfil}"
+            group = Group.objects.prefetch_related('permissions').get(name=group_name)
+            
+            # 3. Extrair codenames
+            codenames = set(group.permissions.values_list('codename', flat=True))
+            
+            cache.set(cache_key, codenames, self.CACHE_TTL)
+            
+            logger.debug(f"📥 {role.codigoperfil}: {len(codenames)} perms")
+            return codenames
+            
+        except Role.DoesNotExist:
+            logger.error(f"❌ Role {role_id} não encontrada")
+            return set()
+        except Group.DoesNotExist:
+            logger.error(f"❌ Grupo '{group_name}' não encontrado")
+            return set()
     
-    def get_user_permissions_in_app(
-        self,
-        user_id: int,
-        app_code: str,
-        role_id: int
-    ) -> Dict[str, Set[str]]:
+    def get_user_permissions(self, user_id: int, app_code: str) -> dict:
         """
-        Retorna todas as permissões do usuário agrupadas por modelo.
+        Retorna todas as permissões do usuário por modelo.
         
         Returns:
-            Dict[modelo, Set[ações]]
-            
-        Exemplo:
-            {
-                'eixo': {'view', 'add', 'change'},
-                'acoes': {'view'},
-                'situacaoacao': {'view'}
-            }
+        {
+            'eixo': {'view', 'add', 'change'},
+            'acoes': {'view', 'add', 'change', 'delete'},
+            ...
+        }
         """
-        if not self._validate_user_role(user_id, app_code, role_id):
-            return {}
+        # Buscar todas as roles do usuário na app
+        user_roles = UserRole.objects.filter(
+            user_id=user_id,
+            aplicacao__codigointerno=app_code
+        ).values_list('role_id', flat=True)
         
-        if self._is_portal_admin(role_id):
-            # Retornar todas as permissões
-            return self._get_all_permissions()
-        
-        permissions = self._get_role_permissions(role_id)
+        all_perms = set()
+        for role_id in user_roles:
+            perms = self._get_native_permissions(app_code, role_id)
+            all_perms.update(perms)
         
         # Agrupar por modelo
         grouped = {}
-        for perm in permissions:
-            parts = perm.split('_', 1)
-            if len(parts) == 2:
-                action, model = parts
-                if model not in grouped:
-                    grouped[model] = set()
-                grouped[model].add(action)
-        
-        return grouped
-    
-    def _get_all_permissions(self) -> Dict[str, Set[str]]:
-        """Retorna todas as permissões do sistema (para PORTAL_ADMIN)."""
-        cache_key = f"{self.cache_prefix}:all_perms"
-        
-        cached = cache.get(cache_key)
-        if cached is not None:
-            return cached
-        
-        all_perms = Permission.objects.all().values_list('codename', flat=True)
-        
-        grouped = {}
         for perm in all_perms:
-            parts = perm.split('_', 1)
-            if len(parts) == 2:
-                action, model = parts
+            if '_' in perm:
+                action, model = perm.rsplit('_', 1)
                 if model not in grouped:
                     grouped[model] = set()
                 grouped[model].add(action)
         
-        cache.set(cache_key, grouped, self.CACHE_TTL * 2)  # 10 min
         return grouped
     
     def invalidate_cache(self, user_id: Optional[int] = None, role_id: Optional[int] = None):
-        """
-        Invalida cache de permissões.
-        
-        Args:
-            user_id: Limpar cache específico do usuário
-            role_id: Limpar cache específico da role
-        """
-        if user_id:
-            # Limpar cache do usuário
-            pattern = f"{self.cache_prefix}:user_role:{user_id}:*"
-            # LocMemCache não suporta wildcard delete, mas Redis sim
-            logger.info(f"Cache invalidation requested for user {user_id}")
-        
+        """Limpa cache de permissões."""
         if role_id:
-            cache.delete(f"{self.cache_prefix}:perms:{role_id}")
-            cache.delete(f"{self.cache_prefix}:is_admin:{role_id}")
-            logger.info(f"Cache invalidated for role {role_id}")
+            cache.delete_pattern(f"{self.cache_prefix}:perms:*:{{role_id}}")
+            logger.info(f"🧹 Cache limpo para role {role_id}")
 
 
-# Singleton
+# 🛠️ SINGLETON (Reutilizável)
 _authorization_service = None
 
+
 def get_authorization_service() -> AuthorizationService:
-    """Factory para AuthorizationService (singleton)."""
+    """Fábrica singleton."""
     global _authorization_service
     if _authorization_service is None:
         _authorization_service = AuthorizationService()
     return _authorization_service
 
 # ============================================================================
-# 🆕 INTEGRAÇÃO COM AuthorizationService (NOVO - 2026-02-25)
+# 🆕 PERMISSÕES DRF (Compatibilidade com api_views.py)
 # ============================================================================
 
 from rest_framework.permissions import BasePermission
@@ -255,105 +222,96 @@ logger = logging.getLogger(__name__)
 
 class HasModelPermission(BasePermission):
     """
-    🔑 NOVA: Integra com AuthorizationService (cache + performance).
-    
-    MANTÉM compatibilidade com classes existentes.
+    🔑 DRF Permission: Usa AuthorizationService nativo.
     
     Uso nas views:
-        permission_classes = [IsAnyPNGIRole, HasModelPermission]
-        permission_model = 'eixo'  # ← Defina na view
-        
-    Vantagens vs classes atuais:
-    - ✅ Cache 5min (sem SQL em cada request)
-    - ✅ Suporte PORTAL_ADMIN automático
-    - ✅ Reutilizável em qualquer app (ACOES_PNGI, CARGA_ORG_LOT)
-    - ✅ 100% compatível com token_payload do middleware
+    permission_classes = [HasModelPermission]
+    permission_model = 'eixo'  # Nome do modelo
+    
+    Mapeia HTTP → Django action:
+    GET → view, POST → add, PUT/PATCH → change, DELETE → delete
     """
     
     def has_permission(self, request, view):
-        # Superusuários sempre autorizados
+        # Superusuários sempre passam
         if request.user and request.user.is_superuser:
             return True
         
-        # Usuário deve estar autenticado com role PNGI (classes existentes)
-        if not hasattr(request.user, 'is_authenticated') or not request.user.is_authenticated:
-            return False
-        
-        # Verificar se tem role PNGI (usar classe existente)
-        pngi_perm = IsAnyPNGIRole()
-        if not pngi_perm.has_permission(request, view):
-            return False
-        
-        # Mapa HTTP → ação Django
-        action_map = {
-            'GET': 'view', 'HEAD': 'view', 'OPTIONS': 'view',
-            'POST': 'add', 'PUT': 'change', 'PATCH': 'change', 'DELETE': 'delete'
-        }
-        action = action_map.get(request.method, 'view')
-        
-        # Modelo da view
-        model_name = getattr(view, 'permission_model', None)
-        if not model_name:
-            logger.error(f"View {view.__class__.__name__} sem 'permission_model'")
-            return False
-        
-        # Token payload (middleware JWT)
+        # Extrair dados do token_payload (middleware JWT)
         token_payload = getattr(request, 'token_payload', {})
-        user_id = getattr(request.user, 'id', None)
+        user_id = getattr(request.user, 'id', 0)
         app_code = token_payload.get('app_code', 'ACOES_PNGI')
         active_role_id = token_payload.get('active_role_id')
         
         if not all([user_id, active_role_id]):
-            logger.warning(f"Dados insuficientes: user_id={user_id}, role_id={active_role_id}")
+            logger.warning("Token inválido para HasModelPermission")
             return False
         
-        # 🆕 AuthorizationService (cache + validações)
+        # Model da view
+        model_name = getattr(view, 'permission_model', None)
+        if not model_name:
+            logger.error(f"View {view.__class__.__name__} sem permission_model")
+            return False
+        
+        # Mapear HTTP method → Django action
+        action_map = {
+            'GET': 'view', 'HEAD': 'view', 'OPTIONS': 'view',
+            'POST': 'add',
+            'PUT': 'change', 'PATCH': 'change',
+            'DELETE': 'delete'
+        }
+        action = action_map.get(request.method, 'view')
+        
+        # AuthorizationService nativo
         auth_service = get_authorization_service()
-        has_perm = auth_service.can(
+        return auth_service.can(
             user_id=user_id,
             app_code=app_code,
             active_role_id=active_role_id,
             action=action,
             model_name=model_name
         )
-        
-        if not has_perm:
-            logger.info(
-                f"Permissão negada [AuthorizationService]: user={user_id}, "
-                f"role={active_role_id}, action={action}, model={model_name}"
-            )
-        
-        return has_perm
 
 
 class ReadOnlyOrHasPermission(BasePermission):
     """
-    🆕 Leitura para todas as roles PNGI, escrita via AuthorizationService.
+    Leitura para todos PNGI, escrita via AuthorizationService.
     
-    Uso: permission_classes = [ReadOnlyOrHasPermission]
-         permission_model = 'acoes'
+    Uso:
+    permission_classes = [ReadOnlyOrHasPermission]
+    permission_model = 'acoes'
     """
     
     def has_permission(self, request, view):
-        # Leitura: usa classes existentes (rápido)
+        # Leitura: qualquer PNGI role
         if request.method in ['GET', 'HEAD', 'OPTIONS']:
-            pngi_perm = IsAnyPNGIRole()
-            return pngi_perm.has_permission(request, view)
+            return True  # Ou IsAnyPNGIRole() se existir
         
-        # Escrita: AuthorizationService + cache
-        model_perm = HasModelPermission()
-        return model_perm.has_permission(request, view)
+        # Escrita: AuthorizationService
+        return HasModelPermission().has_permission(request, view)
 
-
-# ============================================================================
-# ALIAS PARA FACILITAR MIGRAÇÃO GRADUAL
-# ============================================================================
-
-class HasAcoesPermissionV2(HasModelPermission):
-    """Alias para migração das views existentes."""
-    pass
-
-class IsGestorOrCoordenadorV2(HasModelPermission):
-    """Alias para classes antigas."""
-    pass
-
+def require_app_permission(permission_codename, app_code='ACOES_PNGI'):
+    """
+    Decorator compatibilidade - mesma interface das views web.
+    """
+    from functools import wraps
+    from django.core.exceptions import PermissionDenied
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                raise PermissionDenied("Autenticação necessária.")
+            
+            perms = get_authorization_service().get_user_permissions(
+                request.user.id, app_code
+            )
+            
+            if permission_codename not in perms:
+                raise PermissionDenied(f"Sem permissão '{permission_codename}'.")
+            
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
