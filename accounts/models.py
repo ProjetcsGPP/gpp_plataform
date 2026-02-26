@@ -19,6 +19,51 @@ class Aplicacao(models.Model):
         return f'{self.codigointerno} - {self.nomeaplicacao}'
 
 
+class TblStatusUsuario(models.Model):
+    """Status do usuário (Ativo, Inativo, etc.)"""
+    idstatususuario = models.SmallIntegerField(primary_key=True, db_column='idstatususuario')
+    strdescricao = models.CharField(max_length=100, db_column='strdescricao')
+
+    class Meta:
+        db_table = 'tblstatususuario'
+        managed = True
+        verbose_name = 'Status de Usuário'
+        verbose_name_plural = 'Status de Usuários'
+
+    def __str__(self):
+        return self.strdescricao
+
+
+class TblTipoUsuario(models.Model):
+    """Tipo de usuário (Gestor, Técnico, etc.)"""
+    idtipousuario = models.SmallIntegerField(primary_key=True, db_column='idtipousuario')
+    strdescricao = models.CharField(max_length=100, db_column='strdescricao')
+
+    class Meta:
+        db_table = 'tbltipousuario'
+        managed = True
+        verbose_name = 'Tipo de Usuário'
+        verbose_name_plural = 'Tipos de Usuários'
+
+    def __str__(self):
+        return self.strdescricao
+
+
+class TblClassificacaoUsuario(models.Model):
+    """Classificação do usuário"""
+    idclassificacaousuario = models.SmallIntegerField(primary_key=True, db_column='idclassificacaousuario')
+    strdescricao = models.CharField(max_length=100, db_column='strdescricao')
+
+    class Meta:
+        db_table = 'tblclassificacaousuario'
+        managed = True
+        verbose_name = 'Classificação de Usuário'
+        verbose_name_plural = 'Classificações de Usuários'
+
+    def __str__(self):
+        return self.strdescricao
+
+
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -155,4 +200,3 @@ class Attribute(models.Model):
 
     def __str__(self):
         return f'{self.user} / {self.aplicacao.codigointerno} / {self.key}={self.value}'
-
