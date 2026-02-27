@@ -81,26 +81,128 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
         if not password:
             raise ValueError("Superuser precisa de senha")
+
         return self.create_user(email, password, **extra_fields)
 
-
 class User(AbstractBaseUser, PermissionsMixin):
-    id = models.BigAutoField(primary_key=True, db_column="idusuario")
-    name = models.CharField(max_length=200, db_column="strnome")
-    email = models.EmailField(max_length=200, unique=True, db_column="stremail")
-    password = models.CharField(max_length=200, db_column="strsenha")
-    
-    is_active = models.BooleanField(default=True, db_column="is_active")
-    is_staff = models.BooleanField(default=False, db_column="is_staff")
-    is_superuser = models.BooleanField(default=False, db_column="is_superuser")
-    last_login = models.DateTimeField(null=True, blank=True, db_column="last_login")
-    date_joined = models.DateTimeField(null=True, blank=True, db_column="date_joined")
-    
-    idstatususuario = models.SmallIntegerField(default=1, db_column="idstatususuario")
-    idtipousuario = models.SmallIntegerField(default=1, db_column="idtipousuario")
-    idclassificacaousuario = models.SmallIntegerField(default=1, db_column="idclassificacaousuario")
+
+    id = models.BigAutoField(
+        primary_key=True,
+        db_column="idusuario"
+    )
+
+    name = models.CharField(
+        max_length=200,
+        db_column="strnome"
+    )
+
+    email = models.EmailField(
+        max_length=200,
+        unique=True,
+        db_column="stremail"
+    )
+
+    password = models.CharField(
+        max_length=200,
+        db_column="strsenha"
+    )
+
+    # =====================
+    # CAMPOS DJANGO AUTH
+    # =====================
+
+    is_active = models.BooleanField(
+        default=True,
+        db_column="is_active"
+    )
+
+    is_staff = models.BooleanField(
+        default=False,
+        db_column="is_staff"
+    )
+
+    is_superuser = models.BooleanField(
+        default=False,
+        db_column="is_superuser"
+    )
+
+    last_login = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_column="last_login"
+    )
+
+    date_joined = models.DateTimeField(
+        auto_now_add=True,
+        db_column="date_joined"
+    )
+
+    # =====================
+    # FK LEGADO (CORRIGIDO)
+    # =====================
+
+    idstatususuario = models.ForeignKey(
+        TblStatusUsuario,
+        on_delete=models.PROTECT,
+        db_column="idstatususuario",
+        default=1
+    )
+
+    idtipousuario = models.ForeignKey(
+        TblTipoUsuario,
+        on_delete=models.PROTECT,
+        db_column="idtipousuario",
+        default=1
+    )
+
+    idclassificacaousuario = models.ForeignKey(
+        TblClassificacaoUsuario,
+        on_delete=models.PROTECT,
+        db_column="idclassificacaousuario",
+        default=1
+    )
+
+    # =====================
+    # AUDITORIA (dump)
+    # =====================
+
+    idusuariocriacao = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        db_column="idusuariocriacao",
+        related_name="usuarios_criados"
+    )
+
+    idusuarioalteracao = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        db_column="idusuarioalteracao",
+        related_name="usuarios_alterados"
+    )
+
+    datacriacao = models.DateTimeField(
+        auto_now_add=True,
+        db_column="datacriacao"
+    )
+
+    data_alteracao = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_column="data_alteracao"
+    )
 
     objects = UserManager()
 
@@ -113,49 +215,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-    
-
-    def get_app_permissions(self, app_codigo):
-        """
-        ✅ NOVA VERSÃO NATIVA: Usa auth_group_permissions
-        
-        Retorna: ['add_eixo', 'change_acoes', ...]
-        """
-        if self.is_superuser:
-            return Permission.objects.all().values_list('codename', flat=True)
-        
-        # 1. UserRole → Role IDs
-        user_roles = UserRole.objects.filter(
-            user=self,
-            aplicacao__codigointerno=app_codigo
-        ).values_list('role_id', flat=True)
-        
-        # 2. Role → auth_group → auth_group_permissions → codenames
-        perms = set()
-        for role_id in user_roles:
-            try:
-                # auth_group name = "ACOES_PNGI_GESTOR_PNGI"
-                role = Role.objects.get(id=role_id)
-                group_name = f"{app_codigo}_{role.codigoperfil}"
-                group = Group.objects.get(name=group_name)
-                
-                # Extrair codenames NATIVOS
-                perms.update(group.permissions.values_list('codename', flat=True))
-            except (Role.DoesNotExist, Group.DoesNotExist):
-                continue
-        
-        return list(perms)
-    
-    def has_app_perm(self, app_codigo, perm_codename):
-        """
-        ✅ Verifica permissão específica NATIVA
-        """
-        if self.is_superuser:
-            return True
-        
-        return perm_codename in self.get_app_permissions(app_codigo)
-
-
 class Role(models.Model):
     """RBAC por aplicação"""
     aplicacao = models.ForeignKey(Aplicacao, on_delete=models.CASCADE,
@@ -165,22 +224,30 @@ class Role(models.Model):
 
     class Meta:
         db_table = 'accounts_role'
-        unique_together = ('aplicacao', 'codigoperfil')
+        constraints = [
+            models.UniqueConstraint(
+                fields=["aplicacao", "codigoperfil"],  # ✅ Único por app + código
+                name="uq_role_aplicacao_codigoperfil"
+            )
+        ]
 
     def __str__(self):
         return f'{self.aplicacao} / {self.codigoperfil}'
 
 
 class UserRole(models.Model):
-    """User 1 → N Aplicacao via roles"""
     user = models.ForeignKey('User', on_delete=models.CASCADE)
-    aplicacao = models.ForeignKey(Aplicacao, on_delete=models.CASCADE,
-        null=True, db_column='aplicacao_id')
+    aplicacao = models.ForeignKey(Aplicacao, on_delete=models.CASCADE, null=True, db_column='aplicacao_id')
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'accounts_userrole'
-        unique_together = ('user', 'aplicacao', 'role')
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "aplicacao", "role"],  # ✅ CORRETO
+                name="uq_userrole_user_aplicacao_role"
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} → {self.aplicacao} ({self.role})'
@@ -196,7 +263,12 @@ class Attribute(models.Model):
 
     class Meta:
         db_table = 'accounts_attribute'
-        unique_together = ('user', 'aplicacao', 'key')
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "aplicacao", "key"],
+                name="uq_userrole_aplicacao_key"
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} / {self.aplicacao.codigointerno} / {self.key}={self.value}'
