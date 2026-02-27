@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Eixo',
                 'verbose_name_plural': 'Eixos',
-                'db_table': 'tbleixos',
+                'db_table': '"acoes_pngi"."tbleixos"',
                 'ordering': ['stralias'],
                 'managed': True,
             },
@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Situação de Ação',
                 'verbose_name_plural': 'Situações de Ações',
-                'db_table': 'tblsituacaoacao',
+                'db_table': '"acoes_pngi"."tblsituacaoacao"',
                 'ordering': ['strdescricaosituacao'],
                 'managed': True,
             },
@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Tipo de Anotação de Alinhamento',
                 'verbose_name_plural': 'Tipos de Anotações de Alinhamento',
-                'db_table': 'tbltipoanotacaoalinhamento',
+                'db_table': '"acoes_pngi"."tbltipoanotacaoalinhamento"',
                 'ordering': ['strdescricaotipoanotacaoalinhamento'],
                 'managed': True,
             },
@@ -78,7 +78,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Tipo de Entrave/Alerta',
                 'verbose_name_plural': 'Tipos de Entraves/Alertas',
-                'db_table': 'tbltipoentravealerta',
+                'db_table': '"acoes_pngi"."tbltipoentravealerta"',
                 'ordering': ['strdescricaotipoentravealerta'],
                 'managed': True,
             },
@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Usuário Responsável',
                 'verbose_name_plural': 'Usuários Responsáveis',
-                'db_table': 'tblusuarioresponsavel',
+                'db_table': '"acoes_pngi"."tblusuarioresponsavel"',
                 'managed': True,
             },
         ),
@@ -113,7 +113,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Vigência PNGI',
                 'verbose_name_plural': 'Vigências PNGI',
-                'db_table': 'tblvigenciapngi',
+                'db_table': '"acoes_pngi"."tblvigenciapngi"',
                 'ordering': ['-datiniciovigencia'],
                 'managed': True,
             },
@@ -136,7 +136,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Ação',
                 'verbose_name_plural': 'Ações',
-                'db_table': 'tblacoes',
+                'db_table': '"acoes_pngi"."tblacoes"',
                 'ordering': ['strapelido'],
                 'managed': True,
             },
@@ -154,7 +154,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Prazo de Ação',
                 'verbose_name_plural': 'Prazos de Ações',
-                'db_table': 'tblacaoprazo',
+                'db_table': '"acoes_pngi"."tblacaoprazo"',
                 'ordering': ['-isacaoprazoativo', '-created_at'],
                 'managed': True,
                 'constraints': [models.UniqueConstraint(condition=models.Q(('isacaoprazoativo', True)), fields=('idacao', 'isacaoprazoativo'), name='idxacaoprazoativo')],
@@ -172,7 +172,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Destaque de Ação',
                 'verbose_name_plural': 'Destaques de Ações',
-                'db_table': 'tblacaodestaque',
+                'db_table': '"acoes_pngi"."tblacaodestaque"',
                 'ordering': ['-datdatadestaque'],
                 'managed': True,
                 'constraints': [models.UniqueConstraint(fields=('idacao', 'datdatadestaque'), name='idxacaodestaque')],
@@ -194,7 +194,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Anotação de Alinhamento',
                 'verbose_name_plural': 'Anotações de Alinhamento',
-                'db_table': 'tblacaoanotacaoalinhamento',
+                'db_table': '"acoes_pngi"."tblacaoanotacaoalinhamento"',
                 'ordering': ['-datdataanotacaoalinhamento'],
                 'managed': True,
                 'constraints': [models.UniqueConstraint(fields=('idacao', 'idtipoanotacaoalinhamento', 'datdataanotacaoalinhamento'), name='idxacaoanotacaoalinhamento')],
@@ -212,7 +212,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Relação Ação X Usuário Responsável',
                 'verbose_name_plural': 'Relações Ação X Usuários Responsáveis',
-                'db_table': 'tblrelacaoacaousuarioresponsavel',
+                'db_table': '"acoes_pngi"."tblrelacaoacaousuarioresponsavel"',
                 'ordering': ['idacaousuarioresponsavel'],
                 'managed': True,
                 'constraints': [models.UniqueConstraint(fields=('idacao', 'idusuarioresponsavel'), name='idxrelacaoacaousuarioresponsavel')],
