@@ -232,11 +232,19 @@ SIMPLE_JWT = {
 }
 
 
-AUTHENTICATION_BACKENDS = [
-    'accounts.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
-
+# Configuração de autenticação - CORRIGIDA
+if DEBUG:
+    # DEV: Django padrão PRIMEIRO (admin funciona)
+    AUTHENTICATION_BACKENDS = [
+        'django.contrib.auth.backends.ModelBackend',
+        'accounts.backends.EmailBackend',
+    ]
+else:
+    # PROD: Backend customizado primeiro
+    AUTHENTICATION_BACKENDS = [
+        'accounts.backends.EmailBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    ]
 
 # Configurações de Login
 LOGIN_URL = '/login/'
