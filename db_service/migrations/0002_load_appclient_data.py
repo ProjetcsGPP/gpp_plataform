@@ -32,7 +32,7 @@ def load_appclients(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ('db_service', '0001_initial'),
-        ('accounts', '0003_load_aplicacoes_roles'),  # Aguarda aplicações
+        ('accounts', '0002_insert_registers'),  # Aguarda aplicações
     ]
 
     operations = [
