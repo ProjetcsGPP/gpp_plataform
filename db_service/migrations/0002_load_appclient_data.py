@@ -32,7 +32,6 @@ def load_appclients(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ('db_service', '0001_initial'),
-        ('accounts', '0002_load_all_domain_data.py'),  # Aguarda aplicações
     ]
 
     operations = [

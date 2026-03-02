@@ -1,0 +1,2734 @@
+[
+{
+  "model": "auth.permission",
+  "pk": 1,
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 2,
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 3,
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 4,
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 5,
+  "fields": {
+    "name": "Can add permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 6,
+  "fields": {
+    "name": "Can change permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 7,
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 8,
+  "fields": {
+    "name": "Can view permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 9,
+  "fields": {
+    "name": "Can add group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 10,
+  "fields": {
+    "name": "Can change group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 11,
+  "fields": {
+    "name": "Can delete group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 12,
+  "fields": {
+    "name": "Can view group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 13,
+  "fields": {
+    "name": "Can add content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 14,
+  "fields": {
+    "name": "Can change content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 15,
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 16,
+  "fields": {
+    "name": "Can view content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 17,
+  "fields": {
+    "name": "Can add session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 18,
+  "fields": {
+    "name": "Can change session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 19,
+  "fields": {
+    "name": "Can delete session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 20,
+  "fields": {
+    "name": "Can view session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 21,
+  "fields": {
+    "name": "Can add Token",
+    "content_type": [
+      "authtoken",
+      "token"
+    ],
+    "codename": "add_token"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 22,
+  "fields": {
+    "name": "Can change Token",
+    "content_type": [
+      "authtoken",
+      "token"
+    ],
+    "codename": "change_token"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 23,
+  "fields": {
+    "name": "Can delete Token",
+    "content_type": [
+      "authtoken",
+      "token"
+    ],
+    "codename": "delete_token"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 24,
+  "fields": {
+    "name": "Can view Token",
+    "content_type": [
+      "authtoken",
+      "token"
+    ],
+    "codename": "view_token"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 25,
+  "fields": {
+    "name": "Can add Token",
+    "content_type": [
+      "authtoken",
+      "tokenproxy"
+    ],
+    "codename": "add_tokenproxy"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 26,
+  "fields": {
+    "name": "Can change Token",
+    "content_type": [
+      "authtoken",
+      "tokenproxy"
+    ],
+    "codename": "change_tokenproxy"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 27,
+  "fields": {
+    "name": "Can delete Token",
+    "content_type": [
+      "authtoken",
+      "tokenproxy"
+    ],
+    "codename": "delete_tokenproxy"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 28,
+  "fields": {
+    "name": "Can view Token",
+    "content_type": [
+      "authtoken",
+      "tokenproxy"
+    ],
+    "codename": "view_tokenproxy"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 29,
+  "fields": {
+    "name": "Can add aplicacao",
+    "content_type": [
+      "accounts",
+      "aplicacao"
+    ],
+    "codename": "add_aplicacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 30,
+  "fields": {
+    "name": "Can change aplicacao",
+    "content_type": [
+      "accounts",
+      "aplicacao"
+    ],
+    "codename": "change_aplicacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 31,
+  "fields": {
+    "name": "Can delete aplicacao",
+    "content_type": [
+      "accounts",
+      "aplicacao"
+    ],
+    "codename": "delete_aplicacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 32,
+  "fields": {
+    "name": "Can view aplicacao",
+    "content_type": [
+      "accounts",
+      "aplicacao"
+    ],
+    "codename": "view_aplicacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 33,
+  "fields": {
+    "name": "Can add Classificação de Usuário",
+    "content_type": [
+      "accounts",
+      "tblclassificacaousuario"
+    ],
+    "codename": "add_tblclassificacaousuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 34,
+  "fields": {
+    "name": "Can change Classificação de Usuário",
+    "content_type": [
+      "accounts",
+      "tblclassificacaousuario"
+    ],
+    "codename": "change_tblclassificacaousuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 35,
+  "fields": {
+    "name": "Can delete Classificação de Usuário",
+    "content_type": [
+      "accounts",
+      "tblclassificacaousuario"
+    ],
+    "codename": "delete_tblclassificacaousuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 36,
+  "fields": {
+    "name": "Can view Classificação de Usuário",
+    "content_type": [
+      "accounts",
+      "tblclassificacaousuario"
+    ],
+    "codename": "view_tblclassificacaousuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 37,
+  "fields": {
+    "name": "Can add Status de Usuário",
+    "content_type": [
+      "accounts",
+      "tblstatususuario"
+    ],
+    "codename": "add_tblstatususuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 38,
+  "fields": {
+    "name": "Can change Status de Usuário",
+    "content_type": [
+      "accounts",
+      "tblstatususuario"
+    ],
+    "codename": "change_tblstatususuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 39,
+  "fields": {
+    "name": "Can delete Status de Usuário",
+    "content_type": [
+      "accounts",
+      "tblstatususuario"
+    ],
+    "codename": "delete_tblstatususuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 40,
+  "fields": {
+    "name": "Can view Status de Usuário",
+    "content_type": [
+      "accounts",
+      "tblstatususuario"
+    ],
+    "codename": "view_tblstatususuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 41,
+  "fields": {
+    "name": "Can add Tipo de Usuário",
+    "content_type": [
+      "accounts",
+      "tbltipousuario"
+    ],
+    "codename": "add_tbltipousuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 42,
+  "fields": {
+    "name": "Can change Tipo de Usuário",
+    "content_type": [
+      "accounts",
+      "tbltipousuario"
+    ],
+    "codename": "change_tbltipousuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 43,
+  "fields": {
+    "name": "Can delete Tipo de Usuário",
+    "content_type": [
+      "accounts",
+      "tbltipousuario"
+    ],
+    "codename": "delete_tbltipousuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 44,
+  "fields": {
+    "name": "Can view Tipo de Usuário",
+    "content_type": [
+      "accounts",
+      "tbltipousuario"
+    ],
+    "codename": "view_tbltipousuario"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 45,
+  "fields": {
+    "name": "Can add user",
+    "content_type": [
+      "accounts",
+      "user"
+    ],
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 46,
+  "fields": {
+    "name": "Can change user",
+    "content_type": [
+      "accounts",
+      "user"
+    ],
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 47,
+  "fields": {
+    "name": "Can delete user",
+    "content_type": [
+      "accounts",
+      "user"
+    ],
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 48,
+  "fields": {
+    "name": "Can view user",
+    "content_type": [
+      "accounts",
+      "user"
+    ],
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 49,
+  "fields": {
+    "name": "Can add role",
+    "content_type": [
+      "accounts",
+      "role"
+    ],
+    "codename": "add_role"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 50,
+  "fields": {
+    "name": "Can change role",
+    "content_type": [
+      "accounts",
+      "role"
+    ],
+    "codename": "change_role"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 51,
+  "fields": {
+    "name": "Can delete role",
+    "content_type": [
+      "accounts",
+      "role"
+    ],
+    "codename": "delete_role"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 52,
+  "fields": {
+    "name": "Can view role",
+    "content_type": [
+      "accounts",
+      "role"
+    ],
+    "codename": "view_role"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 53,
+  "fields": {
+    "name": "Can add user role",
+    "content_type": [
+      "accounts",
+      "userrole"
+    ],
+    "codename": "add_userrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 54,
+  "fields": {
+    "name": "Can change user role",
+    "content_type": [
+      "accounts",
+      "userrole"
+    ],
+    "codename": "change_userrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 55,
+  "fields": {
+    "name": "Can delete user role",
+    "content_type": [
+      "accounts",
+      "userrole"
+    ],
+    "codename": "delete_userrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 56,
+  "fields": {
+    "name": "Can view user role",
+    "content_type": [
+      "accounts",
+      "userrole"
+    ],
+    "codename": "view_userrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 57,
+  "fields": {
+    "name": "Can add attribute",
+    "content_type": [
+      "accounts",
+      "attribute"
+    ],
+    "codename": "add_attribute"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 58,
+  "fields": {
+    "name": "Can change attribute",
+    "content_type": [
+      "accounts",
+      "attribute"
+    ],
+    "codename": "change_attribute"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 59,
+  "fields": {
+    "name": "Can delete attribute",
+    "content_type": [
+      "accounts",
+      "attribute"
+    ],
+    "codename": "delete_attribute"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 60,
+  "fields": {
+    "name": "Can view attribute",
+    "content_type": [
+      "accounts",
+      "attribute"
+    ],
+    "codename": "view_attribute"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 61,
+  "fields": {
+    "name": "Can add Versão de Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaoversao"
+    ],
+    "codename": "add_tbllotacaoversao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 62,
+  "fields": {
+    "name": "Can change Versão de Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaoversao"
+    ],
+    "codename": "change_tbllotacaoversao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 63,
+  "fields": {
+    "name": "Can delete Versão de Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaoversao"
+    ],
+    "codename": "delete_tbllotacaoversao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 64,
+  "fields": {
+    "name": "Can view Versão de Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaoversao"
+    ],
+    "codename": "view_tbllotacaoversao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 65,
+  "fields": {
+    "name": "Can add Versão de Organograma",
+    "content_type": [
+      "carga_org_lot",
+      "tblorganogramaversao"
+    ],
+    "codename": "add_tblorganogramaversao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 66,
+  "fields": {
+    "name": "Can change Versão de Organograma",
+    "content_type": [
+      "carga_org_lot",
+      "tblorganogramaversao"
+    ],
+    "codename": "change_tblorganogramaversao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 67,
+  "fields": {
+    "name": "Can delete Versão de Organograma",
+    "content_type": [
+      "carga_org_lot",
+      "tblorganogramaversao"
+    ],
+    "codename": "delete_tblorganogramaversao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 68,
+  "fields": {
+    "name": "Can view Versão de Organograma",
+    "content_type": [
+      "carga_org_lot",
+      "tblorganogramaversao"
+    ],
+    "codename": "view_tblorganogramaversao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 69,
+  "fields": {
+    "name": "Can add Status Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatuscarga"
+    ],
+    "codename": "add_tblstatuscarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 70,
+  "fields": {
+    "name": "Can change Status Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatuscarga"
+    ],
+    "codename": "change_tblstatuscarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 71,
+  "fields": {
+    "name": "Can delete Status Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatuscarga"
+    ],
+    "codename": "delete_tblstatuscarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 72,
+  "fields": {
+    "name": "Can view Status Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatuscarga"
+    ],
+    "codename": "view_tblstatuscarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 73,
+  "fields": {
+    "name": "Can add Status Progresso",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatusprogresso"
+    ],
+    "codename": "add_tblstatusprogresso"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 74,
+  "fields": {
+    "name": "Can change Status Progresso",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatusprogresso"
+    ],
+    "codename": "change_tblstatusprogresso"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 75,
+  "fields": {
+    "name": "Can delete Status Progresso",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatusprogresso"
+    ],
+    "codename": "delete_tblstatusprogresso"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 76,
+  "fields": {
+    "name": "Can view Status Progresso",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatusprogresso"
+    ],
+    "codename": "view_tblstatusprogresso"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 77,
+  "fields": {
+    "name": "Can add Status Token Envio Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatustokenenviocarga"
+    ],
+    "codename": "add_tblstatustokenenviocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 78,
+  "fields": {
+    "name": "Can change Status Token Envio Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatustokenenviocarga"
+    ],
+    "codename": "change_tblstatustokenenviocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 79,
+  "fields": {
+    "name": "Can delete Status Token Envio Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatustokenenviocarga"
+    ],
+    "codename": "delete_tblstatustokenenviocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 80,
+  "fields": {
+    "name": "Can view Status Token Envio Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tblstatustokenenviocarga"
+    ],
+    "codename": "view_tblstatustokenenviocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 81,
+  "fields": {
+    "name": "Can add Tipo Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbltipocarga"
+    ],
+    "codename": "add_tbltipocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 82,
+  "fields": {
+    "name": "Can change Tipo Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbltipocarga"
+    ],
+    "codename": "change_tbltipocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 83,
+  "fields": {
+    "name": "Can delete Tipo Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbltipocarga"
+    ],
+    "codename": "delete_tbltipocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 84,
+  "fields": {
+    "name": "Can view Tipo Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbltipocarga"
+    ],
+    "codename": "view_tbltipocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 85,
+  "fields": {
+    "name": "Can add Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacao"
+    ],
+    "codename": "add_tbllotacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 86,
+  "fields": {
+    "name": "Can change Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacao"
+    ],
+    "codename": "change_tbllotacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 87,
+  "fields": {
+    "name": "Can delete Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacao"
+    ],
+    "codename": "delete_tbllotacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 88,
+  "fields": {
+    "name": "Can view Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacao"
+    ],
+    "codename": "view_tbllotacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 89,
+  "fields": {
+    "name": "Can add Inconsistência de Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaoinconsistencia"
+    ],
+    "codename": "add_tbllotacaoinconsistencia"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 90,
+  "fields": {
+    "name": "Can change Inconsistência de Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaoinconsistencia"
+    ],
+    "codename": "change_tbllotacaoinconsistencia"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 91,
+  "fields": {
+    "name": "Can delete Inconsistência de Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaoinconsistencia"
+    ],
+    "codename": "delete_tbllotacaoinconsistencia"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 92,
+  "fields": {
+    "name": "Can view Inconsistência de Lotação",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaoinconsistencia"
+    ],
+    "codename": "view_tbllotacaoinconsistencia"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 93,
+  "fields": {
+    "name": "Can add JSON Organograma",
+    "content_type": [
+      "carga_org_lot",
+      "tblorganogramajson"
+    ],
+    "codename": "add_tblorganogramajson"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 94,
+  "fields": {
+    "name": "Can change JSON Organograma",
+    "content_type": [
+      "carga_org_lot",
+      "tblorganogramajson"
+    ],
+    "codename": "change_tblorganogramajson"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 95,
+  "fields": {
+    "name": "Can delete JSON Organograma",
+    "content_type": [
+      "carga_org_lot",
+      "tblorganogramajson"
+    ],
+    "codename": "delete_tblorganogramajson"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 96,
+  "fields": {
+    "name": "Can view JSON Organograma",
+    "content_type": [
+      "carga_org_lot",
+      "tblorganogramajson"
+    ],
+    "codename": "view_tblorganogramajson"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 97,
+  "fields": {
+    "name": "Can add Órgão/Unidade",
+    "content_type": [
+      "carga_org_lot",
+      "tblorgaounidade"
+    ],
+    "codename": "add_tblorgaounidade"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 98,
+  "fields": {
+    "name": "Can change Órgão/Unidade",
+    "content_type": [
+      "carga_org_lot",
+      "tblorgaounidade"
+    ],
+    "codename": "change_tblorgaounidade"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 99,
+  "fields": {
+    "name": "Can delete Órgão/Unidade",
+    "content_type": [
+      "carga_org_lot",
+      "tblorgaounidade"
+    ],
+    "codename": "delete_tblorgaounidade"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 100,
+  "fields": {
+    "name": "Can view Órgão/Unidade",
+    "content_type": [
+      "carga_org_lot",
+      "tblorgaounidade"
+    ],
+    "codename": "view_tblorgaounidade"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 101,
+  "fields": {
+    "name": "Can add Patriarca",
+    "content_type": [
+      "carga_org_lot",
+      "tblpatriarca"
+    ],
+    "codename": "add_tblpatriarca"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 102,
+  "fields": {
+    "name": "Can change Patriarca",
+    "content_type": [
+      "carga_org_lot",
+      "tblpatriarca"
+    ],
+    "codename": "change_tblpatriarca"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 103,
+  "fields": {
+    "name": "Can delete Patriarca",
+    "content_type": [
+      "carga_org_lot",
+      "tblpatriarca"
+    ],
+    "codename": "delete_tblpatriarca"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 104,
+  "fields": {
+    "name": "Can view Patriarca",
+    "content_type": [
+      "carga_org_lot",
+      "tblpatriarca"
+    ],
+    "codename": "view_tblpatriarca"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 105,
+  "fields": {
+    "name": "Can add JSON Lotação por Órgão",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaojsonorgao"
+    ],
+    "codename": "add_tbllotacaojsonorgao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 106,
+  "fields": {
+    "name": "Can change JSON Lotação por Órgão",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaojsonorgao"
+    ],
+    "codename": "change_tbllotacaojsonorgao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 107,
+  "fields": {
+    "name": "Can delete JSON Lotação por Órgão",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaojsonorgao"
+    ],
+    "codename": "delete_tbllotacaojsonorgao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 108,
+  "fields": {
+    "name": "Can view JSON Lotação por Órgão",
+    "content_type": [
+      "carga_org_lot",
+      "tbllotacaojsonorgao"
+    ],
+    "codename": "view_tbllotacaojsonorgao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 109,
+  "fields": {
+    "name": "Can add Carga Patriarca",
+    "content_type": [
+      "carga_org_lot",
+      "tblcargapatriarca"
+    ],
+    "codename": "add_tblcargapatriarca"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 110,
+  "fields": {
+    "name": "Can change Carga Patriarca",
+    "content_type": [
+      "carga_org_lot",
+      "tblcargapatriarca"
+    ],
+    "codename": "change_tblcargapatriarca"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 111,
+  "fields": {
+    "name": "Can delete Carga Patriarca",
+    "content_type": [
+      "carga_org_lot",
+      "tblcargapatriarca"
+    ],
+    "codename": "delete_tblcargapatriarca"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 112,
+  "fields": {
+    "name": "Can view Carga Patriarca",
+    "content_type": [
+      "carga_org_lot",
+      "tblcargapatriarca"
+    ],
+    "codename": "view_tblcargapatriarca"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 113,
+  "fields": {
+    "name": "Can add Detalhe Status Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbldetalhestatuscarga"
+    ],
+    "codename": "add_tbldetalhestatuscarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 114,
+  "fields": {
+    "name": "Can change Detalhe Status Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbldetalhestatuscarga"
+    ],
+    "codename": "change_tbldetalhestatuscarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 115,
+  "fields": {
+    "name": "Can delete Detalhe Status Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbldetalhestatuscarga"
+    ],
+    "codename": "delete_tbldetalhestatuscarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 116,
+  "fields": {
+    "name": "Can view Detalhe Status Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbldetalhestatuscarga"
+    ],
+    "codename": "view_tbldetalhestatuscarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 117,
+  "fields": {
+    "name": "Can add Token Envio Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbltokenenviocarga"
+    ],
+    "codename": "add_tbltokenenviocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 118,
+  "fields": {
+    "name": "Can change Token Envio Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbltokenenviocarga"
+    ],
+    "codename": "change_tbltokenenviocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 119,
+  "fields": {
+    "name": "Can delete Token Envio Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbltokenenviocarga"
+    ],
+    "codename": "delete_tbltokenenviocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 120,
+  "fields": {
+    "name": "Can view Token Envio Carga",
+    "content_type": [
+      "carga_org_lot",
+      "tbltokenenviocarga"
+    ],
+    "codename": "view_tbltokenenviocarga"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 121,
+  "fields": {
+    "name": "Can add Eixo",
+    "content_type": [
+      "acoes_pngi",
+      "eixo"
+    ],
+    "codename": "add_eixo"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 122,
+  "fields": {
+    "name": "Can change Eixo",
+    "content_type": [
+      "acoes_pngi",
+      "eixo"
+    ],
+    "codename": "change_eixo"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 123,
+  "fields": {
+    "name": "Can delete Eixo",
+    "content_type": [
+      "acoes_pngi",
+      "eixo"
+    ],
+    "codename": "delete_eixo"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 124,
+  "fields": {
+    "name": "Can view Eixo",
+    "content_type": [
+      "acoes_pngi",
+      "eixo"
+    ],
+    "codename": "view_eixo"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 125,
+  "fields": {
+    "name": "Can add Situação de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "situacaoacao"
+    ],
+    "codename": "add_situacaoacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 126,
+  "fields": {
+    "name": "Can change Situação de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "situacaoacao"
+    ],
+    "codename": "change_situacaoacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 127,
+  "fields": {
+    "name": "Can delete Situação de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "situacaoacao"
+    ],
+    "codename": "delete_situacaoacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 128,
+  "fields": {
+    "name": "Can view Situação de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "situacaoacao"
+    ],
+    "codename": "view_situacaoacao"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 129,
+  "fields": {
+    "name": "Can add Tipo de Anotação de Alinhamento",
+    "content_type": [
+      "acoes_pngi",
+      "tipoanotacaoalinhamento"
+    ],
+    "codename": "add_tipoanotacaoalinhamento"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 130,
+  "fields": {
+    "name": "Can change Tipo de Anotação de Alinhamento",
+    "content_type": [
+      "acoes_pngi",
+      "tipoanotacaoalinhamento"
+    ],
+    "codename": "change_tipoanotacaoalinhamento"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 131,
+  "fields": {
+    "name": "Can delete Tipo de Anotação de Alinhamento",
+    "content_type": [
+      "acoes_pngi",
+      "tipoanotacaoalinhamento"
+    ],
+    "codename": "delete_tipoanotacaoalinhamento"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 132,
+  "fields": {
+    "name": "Can view Tipo de Anotação de Alinhamento",
+    "content_type": [
+      "acoes_pngi",
+      "tipoanotacaoalinhamento"
+    ],
+    "codename": "view_tipoanotacaoalinhamento"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 133,
+  "fields": {
+    "name": "Can add Tipo de Entrave/Alerta",
+    "content_type": [
+      "acoes_pngi",
+      "tipoentravealerta"
+    ],
+    "codename": "add_tipoentravealerta"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 134,
+  "fields": {
+    "name": "Can change Tipo de Entrave/Alerta",
+    "content_type": [
+      "acoes_pngi",
+      "tipoentravealerta"
+    ],
+    "codename": "change_tipoentravealerta"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 135,
+  "fields": {
+    "name": "Can delete Tipo de Entrave/Alerta",
+    "content_type": [
+      "acoes_pngi",
+      "tipoentravealerta"
+    ],
+    "codename": "delete_tipoentravealerta"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 136,
+  "fields": {
+    "name": "Can view Tipo de Entrave/Alerta",
+    "content_type": [
+      "acoes_pngi",
+      "tipoentravealerta"
+    ],
+    "codename": "view_tipoentravealerta"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 137,
+  "fields": {
+    "name": "Can add Usuário Responsável",
+    "content_type": [
+      "acoes_pngi",
+      "usuarioresponsavel"
+    ],
+    "codename": "add_usuarioresponsavel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 138,
+  "fields": {
+    "name": "Can change Usuário Responsável",
+    "content_type": [
+      "acoes_pngi",
+      "usuarioresponsavel"
+    ],
+    "codename": "change_usuarioresponsavel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 139,
+  "fields": {
+    "name": "Can delete Usuário Responsável",
+    "content_type": [
+      "acoes_pngi",
+      "usuarioresponsavel"
+    ],
+    "codename": "delete_usuarioresponsavel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 140,
+  "fields": {
+    "name": "Can view Usuário Responsável",
+    "content_type": [
+      "acoes_pngi",
+      "usuarioresponsavel"
+    ],
+    "codename": "view_usuarioresponsavel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 141,
+  "fields": {
+    "name": "Can add Vigência PNGI",
+    "content_type": [
+      "acoes_pngi",
+      "vigenciapngi"
+    ],
+    "codename": "add_vigenciapngi"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 142,
+  "fields": {
+    "name": "Can change Vigência PNGI",
+    "content_type": [
+      "acoes_pngi",
+      "vigenciapngi"
+    ],
+    "codename": "change_vigenciapngi"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 143,
+  "fields": {
+    "name": "Can delete Vigência PNGI",
+    "content_type": [
+      "acoes_pngi",
+      "vigenciapngi"
+    ],
+    "codename": "delete_vigenciapngi"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 144,
+  "fields": {
+    "name": "Can view Vigência PNGI",
+    "content_type": [
+      "acoes_pngi",
+      "vigenciapngi"
+    ],
+    "codename": "view_vigenciapngi"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 145,
+  "fields": {
+    "name": "Can add Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acoes"
+    ],
+    "codename": "add_acoes"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 146,
+  "fields": {
+    "name": "Can change Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acoes"
+    ],
+    "codename": "change_acoes"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 147,
+  "fields": {
+    "name": "Can delete Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acoes"
+    ],
+    "codename": "delete_acoes"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 148,
+  "fields": {
+    "name": "Can view Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acoes"
+    ],
+    "codename": "view_acoes"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 149,
+  "fields": {
+    "name": "Can add Prazo de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acaoprazo"
+    ],
+    "codename": "add_acaoprazo"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 150,
+  "fields": {
+    "name": "Can change Prazo de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acaoprazo"
+    ],
+    "codename": "change_acaoprazo"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 151,
+  "fields": {
+    "name": "Can delete Prazo de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acaoprazo"
+    ],
+    "codename": "delete_acaoprazo"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 152,
+  "fields": {
+    "name": "Can view Prazo de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acaoprazo"
+    ],
+    "codename": "view_acaoprazo"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 153,
+  "fields": {
+    "name": "Can add Destaque de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acaodestaque"
+    ],
+    "codename": "add_acaodestaque"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 154,
+  "fields": {
+    "name": "Can change Destaque de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acaodestaque"
+    ],
+    "codename": "change_acaodestaque"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 155,
+  "fields": {
+    "name": "Can delete Destaque de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acaodestaque"
+    ],
+    "codename": "delete_acaodestaque"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 156,
+  "fields": {
+    "name": "Can view Destaque de Ação",
+    "content_type": [
+      "acoes_pngi",
+      "acaodestaque"
+    ],
+    "codename": "view_acaodestaque"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 157,
+  "fields": {
+    "name": "Can add Anotação de Alinhamento",
+    "content_type": [
+      "acoes_pngi",
+      "acaoanotacaoalinhamento"
+    ],
+    "codename": "add_acaoanotacaoalinhamento"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 158,
+  "fields": {
+    "name": "Can change Anotação de Alinhamento",
+    "content_type": [
+      "acoes_pngi",
+      "acaoanotacaoalinhamento"
+    ],
+    "codename": "change_acaoanotacaoalinhamento"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 159,
+  "fields": {
+    "name": "Can delete Anotação de Alinhamento",
+    "content_type": [
+      "acoes_pngi",
+      "acaoanotacaoalinhamento"
+    ],
+    "codename": "delete_acaoanotacaoalinhamento"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 160,
+  "fields": {
+    "name": "Can view Anotação de Alinhamento",
+    "content_type": [
+      "acoes_pngi",
+      "acaoanotacaoalinhamento"
+    ],
+    "codename": "view_acaoanotacaoalinhamento"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 161,
+  "fields": {
+    "name": "Can add Relação Ação X Usuário Responsável",
+    "content_type": [
+      "acoes_pngi",
+      "relacaoacaousuarioresponsavel"
+    ],
+    "codename": "add_relacaoacaousuarioresponsavel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 162,
+  "fields": {
+    "name": "Can change Relação Ação X Usuário Responsável",
+    "content_type": [
+      "acoes_pngi",
+      "relacaoacaousuarioresponsavel"
+    ],
+    "codename": "change_relacaoacaousuarioresponsavel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 163,
+  "fields": {
+    "name": "Can delete Relação Ação X Usuário Responsável",
+    "content_type": [
+      "acoes_pngi",
+      "relacaoacaousuarioresponsavel"
+    ],
+    "codename": "delete_relacaoacaousuarioresponsavel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 164,
+  "fields": {
+    "name": "Can view Relação Ação X Usuário Responsável",
+    "content_type": [
+      "acoes_pngi",
+      "relacaoacaousuarioresponsavel"
+    ],
+    "codename": "view_relacaoacaousuarioresponsavel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 165,
+  "fields": {
+    "name": "Can add app client",
+    "content_type": [
+      "db_service",
+      "appclient"
+    ],
+    "codename": "add_appclient"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 166,
+  "fields": {
+    "name": "Can change app client",
+    "content_type": [
+      "db_service",
+      "appclient"
+    ],
+    "codename": "change_appclient"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 167,
+  "fields": {
+    "name": "Can delete app client",
+    "content_type": [
+      "db_service",
+      "appclient"
+    ],
+    "codename": "delete_appclient"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 168,
+  "fields": {
+    "name": "Can view app client",
+    "content_type": [
+      "db_service",
+      "appclient"
+    ],
+    "codename": "view_appclient"
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 8,
+  "fields": {
+    "name": "GESTOR_PNGI",
+    "permissions": [
+      [
+        "add_user",
+        "accounts",
+        "user"
+      ],
+      [
+        "change_user",
+        "accounts",
+        "user"
+      ],
+      [
+        "delete_user",
+        "accounts",
+        "user"
+      ],
+      [
+        "view_user",
+        "accounts",
+        "user"
+      ],
+      [
+        "add_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "change_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "delete_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "view_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "add_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "change_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "delete_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "view_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "add_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "change_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "delete_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "view_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "add_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "change_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "delete_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "view_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "add_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "change_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "delete_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "view_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "add_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "change_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "delete_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "view_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "add_situacaoacao",
+        "acoes_pngi",
+        "situacaoacao"
+      ],
+      [
+        "change_situacaoacao",
+        "acoes_pngi",
+        "situacaoacao"
+      ],
+      [
+        "delete_situacaoacao",
+        "acoes_pngi",
+        "situacaoacao"
+      ],
+      [
+        "view_situacaoacao",
+        "acoes_pngi",
+        "situacaoacao"
+      ],
+      [
+        "add_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "change_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "delete_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "view_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "add_tipoentravealerta",
+        "acoes_pngi",
+        "tipoentravealerta"
+      ],
+      [
+        "change_tipoentravealerta",
+        "acoes_pngi",
+        "tipoentravealerta"
+      ],
+      [
+        "delete_tipoentravealerta",
+        "acoes_pngi",
+        "tipoentravealerta"
+      ],
+      [
+        "view_tipoentravealerta",
+        "acoes_pngi",
+        "tipoentravealerta"
+      ],
+      [
+        "add_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "change_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "delete_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "view_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "add_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "change_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "delete_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "view_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "add_group",
+        "auth",
+        "group"
+      ],
+      [
+        "change_group",
+        "auth",
+        "group"
+      ],
+      [
+        "delete_group",
+        "auth",
+        "group"
+      ],
+      [
+        "view_group",
+        "auth",
+        "group"
+      ]
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 9,
+  "fields": {
+    "name": "COORDENADOR_PNGI",
+    "permissions": [
+      [
+        "view_user",
+        "accounts",
+        "user"
+      ],
+      [
+        "add_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "change_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "delete_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "view_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "add_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "change_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "delete_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "view_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "add_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "change_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "delete_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "view_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "add_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "change_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "delete_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "view_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "add_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "change_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "delete_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "view_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "add_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "change_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "delete_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "view_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "view_situacaoacao",
+        "acoes_pngi",
+        "situacaoacao"
+      ],
+      [
+        "add_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "change_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "delete_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "view_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "view_tipoentravealerta",
+        "acoes_pngi",
+        "tipoentravealerta"
+      ],
+      [
+        "add_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "change_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "delete_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "view_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "add_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "change_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "delete_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "view_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "view_group",
+        "auth",
+        "group"
+      ]
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 10,
+  "fields": {
+    "name": "OPERADOR_ACAO",
+    "permissions": [
+      [
+        "view_user",
+        "accounts",
+        "user"
+      ],
+      [
+        "add_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "change_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "delete_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "view_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "add_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "change_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "delete_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "view_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "add_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "change_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "delete_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "view_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "add_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "change_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "delete_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "view_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "view_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "add_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "change_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "delete_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "view_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "view_situacaoacao",
+        "acoes_pngi",
+        "situacaoacao"
+      ],
+      [
+        "view_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "view_tipoentravealerta",
+        "acoes_pngi",
+        "tipoentravealerta"
+      ],
+      [
+        "add_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "change_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "delete_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "view_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "view_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "view_group",
+        "auth",
+        "group"
+      ]
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 11,
+  "fields": {
+    "name": "CONSULTOR_PNGI",
+    "permissions": [
+      [
+        "view_user",
+        "accounts",
+        "user"
+      ],
+      [
+        "view_acaoanotacaoalinhamento",
+        "acoes_pngi",
+        "acaoanotacaoalinhamento"
+      ],
+      [
+        "view_acaodestaque",
+        "acoes_pngi",
+        "acaodestaque"
+      ],
+      [
+        "view_acaoprazo",
+        "acoes_pngi",
+        "acaoprazo"
+      ],
+      [
+        "view_acoes",
+        "acoes_pngi",
+        "acoes"
+      ],
+      [
+        "view_eixo",
+        "acoes_pngi",
+        "eixo"
+      ],
+      [
+        "view_relacaoacaousuarioresponsavel",
+        "acoes_pngi",
+        "relacaoacaousuarioresponsavel"
+      ],
+      [
+        "view_situacaoacao",
+        "acoes_pngi",
+        "situacaoacao"
+      ],
+      [
+        "view_tipoanotacaoalinhamento",
+        "acoes_pngi",
+        "tipoanotacaoalinhamento"
+      ],
+      [
+        "view_tipoentravealerta",
+        "acoes_pngi",
+        "tipoentravealerta"
+      ],
+      [
+        "view_usuarioresponsavel",
+        "acoes_pngi",
+        "usuarioresponsavel"
+      ],
+      [
+        "view_vigenciapngi",
+        "acoes_pngi",
+        "vigenciapngi"
+      ],
+      [
+        "view_group",
+        "auth",
+        "group"
+      ]
+    ]
+  }
+}
+]

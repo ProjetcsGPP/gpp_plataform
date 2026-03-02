@@ -102,9 +102,8 @@ def load_all_domain_data(apps, schema_editor):
     # 6. DJANGO GROUPS + PERMISSÕES acoes_pngi
     create_pngi_groups_and_permissions(apps, schema_editor)
 
-
 def create_pngi_groups_and_permissions(apps, schema_editor):
-    """Cria Groups Django + permissões específicas acoes_pngi"""
+    """Matriz PNGI CORRETA - COORD tem N2+OPERAÇÕES write"""
     from django.contrib.contenttypes.models import ContentType
     from django.contrib.auth.models import Permission, Group
     
@@ -112,24 +111,28 @@ def create_pngi_groups_and_permissions(apps, schema_editor):
     Permission = apps.get_model('auth', 'Permission')
     Group = apps.get_model('auth', 'Group')
     
-    # Limpar groups antigas PNGI
+    # DELETE groups existentes PNGI
     pngi_groups = ['GESTOR_PNGI', 'COORDENADOR_PNGI', 'OPERADOR_ACAO', 'CONSULTOR_PNGI']
     Group.objects.filter(name__in=pngi_groups).delete()
     
-    # Verificar content_type acoes_pngi
     try:
         acoes_ct = ContentType.objects.get(app_label='acoes_pngi', model='acoes')
     except ContentType.DoesNotExist:
-        print("⚠️ ContentType acoes_pngi.Acoes não encontrado - pulando permissões")
+        print("⚠️ ContentType acoes_pngi.Acoes não encontrado - pulando")
         return
     
-    # Mapeamento modelos → permissões
+    # MAPA EXATO MATRIZ (N1, N2, OPERAÇÕES)
     models_permissions = {
+        # NÍVEL 1 (GESTOR write)
         'situacaoacao': {'read': ['view_situacaoacao'], 'write': ['add_situacaoacao', 'change_situacaoacao', 'delete_situacaoacao']},
         'tipoentraveralerta': {'read': ['view_tipoentraveralerta'], 'write': ['add_tipoentraveralerta', 'change_tipoentraveralerta', 'delete_tipoentraveralerta']},
+        
+        # NÍVEL 2 (GESTOR+COORD write)
         'eixo': {'read': ['view_eixo'], 'write': ['add_eixo', 'change_eixo', 'delete_eixo']},
         'vigenciapngi': {'read': ['view_vigenciapngi'], 'write': ['add_vigenciapngi', 'change_vigenciapngi', 'delete_vigenciapngi']},
         'tipoanotacaoalinhamento': {'read': ['view_tipoanotacaoalinhamento'], 'write': ['add_tipoanotacaoalinhamento', 'change_tipoanotacaoalinhamento', 'delete_tipoanotacaoalinhamento']},
+        
+        # OPERAÇÕES (GESTOR+COORD+OPERADOR write)
         'acoes': {'read': ['view_acoes'], 'write': ['add_acoes', 'change_acoes', 'delete_acoes']},
         'acaoprazo': {'read': ['view_acaoprazo'], 'write': ['add_acaoprazo', 'change_acaoprazo', 'delete_acaoprazo']},
         'acaodestaque': {'read': ['view_acaodestaque'], 'write': ['add_acaodestaque', 'change_acaodestaque', 'delete_acaodestaque']},
@@ -138,92 +141,57 @@ def create_pngi_groups_and_permissions(apps, schema_editor):
         'relacaoacaousuarioresponsavel': {'read': ['view_relacaoacaousuarioresponsavel'], 'write': ['add_relacaoacaousuarioresponsavel', 'change_relacaoacaousuarioresponsavel', 'delete_relacaoacaousuarioresponsavel']},
     }
     
-    # GESTOR_PNGI - Total
-    gestor = Group.objects.create(name='GESTOR_PNGI')
-    for model_perms in models_permissions.values():
-        for perm in model_perms['read'] + model_perms['write']:
+    # FUNÇÕES HELPER
+    def add_model_perms(group, model_names, read=True, write=False):
+        for model_name in model_names:
+            if model_name in models_permissions:
+                perms_list = []
+                if read: perms_list.extend(models_permissions[model_name]['read'])
+                if write: perms_list.extend(models_permissions[model_name]['write'])
+                for codename in perms_list:
+                    try:
+                        perm = Permission.objects.get(codename=codename, content_type=acoes_ct)
+                        group.permissions.add(perm)
+                    except Permission.DoesNotExist:
+                        pass
+    
+    def add_auth_perms(group, codenames):
+        for codename in codenames:
             try:
-                p = Permission.objects.get(codename=perm, content_type=acoes_ct)
-                gestor.permissions.add(p)
+                perm = Permission.objects.get(codename=codename)
+                group.permissions.add(perm)
             except Permission.DoesNotExist:
                 pass
-    # + User/Group management
-    for perm in ['view_user', 'add_user', 'change_user', 'delete_user', 'view_group', 'add_group', 'change_group', 'delete_group']:
-        try:
-            p = Permission.objects.get(codename=perm)
-            gestor.permissions.add(p)
-        except:
-            pass
     
-    # COORDENADOR_PNGI - Config N2 + Operações
-    coordenador = Group.objects.create(name='COORDENADOR_PNGI')
-    for model_perms in models_permissions.values():
-        for perm in model_perms['read']:
-            try:
-                p = Permission.objects.get(codename=perm, content_type=acoes_ct)
-                coordenador.permissions.add(p)
-            except:
-                pass
-    nivel2_models = ['eixo', 'vigenciapngi', 'tipoanotacaoalinhamento', 'acoes', 'acaoprazo', 'acaodestaque', 
-                     'acaoanotacaoalinhamento', 'usuarioresponsavel', 'relacaoacaousuarioresponsavel']
-    for model in nivel2_models:
-        if model in models_permissions:
-            for perm in models_permissions[model]['write']:
-                try:
-                    p = Permission.objects.get(codename=perm, content_type=acoes_ct)
-                    coordenador.permissions.add(p)
-                except:
-                    pass
-    for perm in ['view_user', 'view_group']:
-        try:
-            p = Permission.objects.get(codename=perm)
-            coordenador.permissions.add(p)
-        except:
-            pass
+    all_models = list(models_permissions.keys())
     
-    # OPERADOR_ACAO - Apenas operações
+    # 1. GESTOR_PNGI: TOTAL + auth full
+    gestor = Group.objects.create(name='GESTOR_PNGI')
+    add_model_perms(gestor, all_models, read=True, write=True)
+    add_auth_perms(gestor, ['add_user', 'change_user', 'delete_user', 'view_user', 
+                           'add_group', 'change_group', 'delete_group', 'view_group'])
+    
+    # 2. COORDENADOR_PNGI: read ALL + write (N2 + OPERAÇÕES)
+    coord = Group.objects.create(name='COORDENADOR_PNGI')
+    add_model_perms(coord, all_models, read=True, write=False)  # Read todos
+    coord_write = ['eixo', 'vigenciapngi', 'tipoanotacaoalinhamento'] + ['acoes', 'acaoprazo', 'acaodestaque', 'acaoanotacaoalinhamento', 'usuarioresponsavel', 'relacaoacaousuarioresponsavel']
+    add_model_perms(coord, coord_write, read=False, write=True)
+    add_auth_perms(coord, ['view_user', 'view_group'])
+    
+    # 3. OPERADOR_ACAO: read ALL + write OPERAÇÕES apenas
     operador = Group.objects.create(name='OPERADOR_ACAO')
-    for model_perms in models_permissions.values():
-        for perm in model_perms['read']:
-            try:
-                p = Permission.objects.get(codename=perm, content_type=acoes_ct)
-                operador.permissions.add(p)
-            except:
-                pass
-    operacoes_models = ['acoes', 'acaoprazo', 'acaodestaque', 'acaoanotacaoalinhamento', 
-                       'usuarioresponsavel', 'relacaoacaousuarioresponsavel']
-    for model in operacoes_models:
-        if model in models_permissions:
-            for perm in models_permissions[model]['write']:
-                try:
-                    p = Permission.objects.get(codename=perm, content_type=acoes_ct)
-                    operador.permissions.add(p)
-                except:
-                    pass
-    for perm in ['view_user', 'view_group']:
-        try:
-            p = Permission.objects.get(codename=perm)
-            operador.permissions.add(p)
-        except:
-            pass
+    add_model_perms(operador, all_models, read=True, write=False)
+    op_write = ['acoes', 'acaoprazo', 'acaodestaque', 'acaoanotacaoalinhamento', 'usuarioresponsavel', 'relacaoacaousuarioresponsavel']
+    add_model_perms(operador, op_write, read=False, write=True)
+    add_auth_perms(operador, ['view_user', 'view_group'])
     
-    # CONSULTOR_PNGI - Apenas leitura
+    # 4. CONSULTOR_PNGI: read ALL apenas
     consultor = Group.objects.create(name='CONSULTOR_PNGI')
-    for model_perms in models_permissions.values():
-        for perm in model_perms['read']:
-            try:
-                p = Permission.objects.get(codename=perm, content_type=acoes_ct)
-                consultor.permissions.add(p)
-            except:
-                pass
-    for perm in ['view_user', 'view_group']:
-        try:
-            p = Permission.objects.get(codename=perm)
-            consultor.permissions.add(p)
-        except:
-            pass
+    add_model_perms(consultor, all_models, read=True, write=False)
+    add_auth_perms(consultor, ['view_user', 'view_group'])
     
-    print("✅ Groups Django + Permissões PNGI criadas!")
+    print("✅ Matriz PNGI 100% OK: GESTOR(total), COORD(N2+ops), OPERADOR(ops), CONSULTOR(read)")
+
 
 
 def reverse_migration(apps, schema_editor):
