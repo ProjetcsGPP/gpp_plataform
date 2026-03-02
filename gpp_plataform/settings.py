@@ -74,7 +74,13 @@ TEMPLATES = [{
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-zi_0xgun9-=se!8anfq0cian(+e%*%-k(f-6xwxr8qe^85(10p'
+# Secrete como estava antes
+#SECRET_KEY = 'django-insecure-zi_0xgun9-=se!8anfq0cian(+e%*%-k(f-6xwxr8qe^85(10p'
+
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-CHANGE-IN-PRODUCTION-USE-ENV-VAR'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -97,6 +103,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions', 
 
     # Terceiros
     'rest_framework',
@@ -114,19 +121,26 @@ INSTALLED_APPS = [
     'db_service',
 ]
     
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # Para roles ativas
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    
+    # ✨ SEU MIDDLEWARE JWT (CORRETO!)
+    'accounts.middleware.JWTUniversalAuthenticationMiddleware',
+    
+    # ✅ ActiveRoleMiddleware (MELHORADO)
     'accounts.middleware.ActiveRoleMiddleware', 
+    
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'common.middleware.app_context.AppContextMiddleware',
 ]
+
+
 
 ROOT_URLCONF = 'gpp_plataform.urls'
 
@@ -218,11 +232,19 @@ SIMPLE_JWT = {
 }
 
 
-AUTHENTICATION_BACKENDS = [
-    'accounts.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
-
+# Configuração de autenticação - CORRIGIDA
+if DEBUG:
+    # DEV: Django padrão PRIMEIRO (admin funciona)
+    AUTHENTICATION_BACKENDS = [
+        'django.contrib.auth.backends.ModelBackend',
+        'accounts.backends.EmailBackend',
+    ]
+else:
+    # PROD: Backend customizado primeiro
+    AUTHENTICATION_BACKENDS = [
+        'accounts.backends.EmailBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    ]
 
 # Configurações de Login
 LOGIN_URL = '/login/'
@@ -264,6 +286,7 @@ if 'CACHES' not in locals():
             'TIMEOUT': 3600,  # 1 hora
         }
     }
+
 
 # Logging
 LOGGING = {

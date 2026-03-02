@@ -1,0 +1,213 @@
+{% extends 'acoes_pngi/base.html' %}
+{% load static %}
+
+{% block title %}Lista Completa de Ações PNGI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header com Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-3">
+                📊 Ações PNGI - {{ stats.total_acoes }} Total
+                <small class="text-muted">
+                    ({{ stats.acoes_com_prazo_ativo }} com prazo ativo)
+                </small>
+            </h1>
+            
+            <!-- Cards de Estatísticas -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.total_acoes }}</h5>
+                            <small>Ações Totais</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.acoes_com_responsavel }}</h5>
+                            <small>Com Responsável</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.acoes_com_prazo_ativo }}</h5>
+                            <small>Prazos Ativos</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.acoes_com_destaque }}</h5>
+                            <small>Destaques</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela Responsiva -->
+    <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Lista Completa de Ações</h5>
+            {% if can_edit_acoes %}
+            <a href="{% url 'acoes_pngi_web:acao_create' %}" class="btn btn-primary">
+                ➕ Nova Ação
+            </a>
+            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Ação</th>
+                            <th>Eixo</th>
+                            <th>Situação</th>
+                            <th>Vigência</th>
+                            <th>Prazo Ativo</th>
+                            <th>Responsáveis</th>
+                            <th>Destaques</th>
+                            <th>Anotações</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for acao in acoes %}
+                        <tr>
+                            <td>
+                                <strong>{{ acao.strapelido }}</strong><br>
+                                <small class="text-muted">{{ acao.strdescricaoacao|truncatewords:10 }}</small>
+                                {% if acao.idtipoentravealerta %}
+                                <span class="badge bg-danger ms-2">{{ acao.idtipoentravealerta }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if acao.ideixo %}
+                                    <span class="badge bg-info">{{ acao.ideixo.stralias }}</span>
+                                    {{ acao.ideixo.strdescricaoeixo }}
+                                {% else %}
+                                    <span class="text-muted">Sem eixo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if acao.idsituacaoacao.strdescricaosituacao == 'Concluída' %}success{% else %}warning{% endif %}">
+                                    {{ acao.idsituacaoacao }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if acao.idvigenciapngi.esta_vigente %}
+                                    <span class="badge bg-success">✅ Vigente</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ acao.idvigenciapngi.strdescricaovigenciapngi }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if acao.prazo_ativo %}
+                                    <span class="badge bg-warning">{{ acao.prazo_ativo.strprazo }}</span>
+                                {% else %}
+                                    <span class="text-muted">Sem prazo</span>
+                                {% endif %}
+                            </td>
+                            <!-- acoes_pngi/templates/acoes_pngi/acoes/completa_list.html -->
+                            <!-- Coluna RESPONSÁVEIS - Completamente carregada -->
+                            <td>
+                                {% if acao.responsaveis_completos %}
+                                    {% for relacao in acao.responsaveis_completos %}
+                                        <div class="responsavel-item mb-1 p-2 border rounded bg-light">
+                                            <div class="fw-bold small">{{ relacao.idusuarioresponsavel.idusuario.name }}</div>
+                                            <div class="text-muted small">
+                                                📧 {{ relacao.idusuarioresponsavel.idusuario.email }}<br>
+                                                📞 {{ relacao.idusuarioresponsavel.strtelefone }}<br>
+                                                🏢 {{ relacao.idusuarioresponsavel.strorgao }}
+                                            </div>
+                                            <div class="mt-1">
+                                                <small class="text-success">
+                                                    Vinculado em {{ relacao.created_at|date:"d/m/Y H:i" }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        {% if not forloop.last %}<hr class="my-1">{% endif %}
+                                    {% endfor %}
+                                    <div class="mt-2">
+                                        <small class="badge bg-success">
+                                            {{ acao.responsaveis_completos|length }} responsável(is)
+                                        </small>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center text-muted py-3">
+                                        <i class="fas fa-users-slash fa-2x opacity-50 mb-2"></i><br>
+                                        <small>Sem responsáveis atribuídos</small>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if acao.ultimos_destaques %}
+                                    {% for destaque in acao.ultimos_destaques %}
+                                        <small class="d-block">{{ destaque.datdatadestaque|date:"d/m/Y" }}</small>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if acao.ultimas_anotacoes %}
+                                    {% for anotacao in acao.ultimas_anotacoes %}
+                                        <small class="d-block">
+                                            {{ anotacao.idtipoanotacaoalinhamento }} - 
+                                            {{ anotacao.datdataanotacaoalinhamento|date:"d/m/Y" }}
+                                        </small>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if can_edit_acoes %}
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'acoes_pngi_web:acao_update' acao.pk %}" 
+                                       class="btn btn-outline-primary" title="Editar">
+                                        ✏️
+                                    </a>
+                                    {% if acao.responsaveis_completos %}
+                                    <a href="{% url 'acoes_pngi_web:acao_prazos_list' acao.pk %}" 
+                                       class="btn btn-outline-info" title="Prazos">
+                                        ⏰
+                                    </a>
+                                    {% endif %}
+                                    <a href="{% url 'acoes_pngi_web:responsaveis_list' %}" 
+                                       class="btn btn-outline-success" title="Responsáveis">
+                                        👥
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                Nenhuma ação encontrada na vigência atual.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginação -->
+            {% if is_paginated %}
+            <nav class="d-flex justify-content-center mt-4">
+                {% include 'acoes_pngi/partials/pagination.html' with page_obj=page_obj %}
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

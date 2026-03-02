@@ -17,6 +17,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     
+    path('accounts/', include('accounts.urls')),           # Gestão de contas
+    
     # =========================================================================
     # APIs REST - Autenticação (para Next.js)
     # Prefixo: /api/v1/auth/
@@ -40,7 +42,6 @@ urlpatterns = [
     # Prefixo: /<app>/
     # =========================================================================
     path('', include('portal.urls.web_urls')),                      # Portal (index, etc)
-    path('accounts/', include('accounts.urls.web_urls')),           # Gestão de contas
     path('acoes-pngi/', include('acoes_pngi.urls.web_urls')),      # Ações PNGI
     path('carga_org_lot/', include('carga_org_lot.urls.web_urls')),  # ✅ Carga de Organogramas (web views)
     # path('db/', include('db_service.urls')),                      # TODO: criar

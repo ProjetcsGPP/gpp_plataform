@@ -348,3 +348,124 @@ class AcoesListSerializer(BaseModelSerializer):
             'idtipoentravealerta_display', 'datdataentrega', 'created_at', 'updated_at'
         ]
         read_only_fields = ['idacao', 'created_at', 'updated_at']
+
+
+class UsuarioResponsavelCompletoSerializer(serializers.ModelSerializer):
+    """
+    UsuarioResponsavel com User completo (schema public)
+    """
+    usuario_completo = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = UsuarioResponsavel
+        fields = ['idusuario', 'strtelefone', 'strorgao', 'usuario_completo']
+    
+    def get_usuario_completo(self, obj):
+        """User completo do schema public"""
+        return {
+            'id': obj.idusuario.id,
+            'name': obj.idusuario.name,
+            'email': obj.idusuario.email,
+            'is_active': obj.idusuario.is_active,
+            'is_staff': obj.idusuario.is_staff,
+        }
+
+class AcoesCompletasSerializer(serializers.ModelSerializer):
+    """
+    Serializer otimizado para lista completa de ações
+    """
+    eixo = serializers.SerializerMethodField()
+    situacao = serializers.SerializerMethodField()
+    vigencia = serializers.SerializerMethodField()
+    responsaveis = serializers.SerializerMethodField()
+    prazo_ativo = serializers.SerializerMethodField()
+    ultimos_destaques = serializers.SerializerMethodField()
+    ultimas_anotacoes = serializers.SerializerMethodField()
+    responsaveis_completos = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Acoes
+        fields = [
+            'idacao', 'strapelido', 'strdescricaoacao', 'strdescricaoentrega',
+            'datdataentrega', 'eixo', 'situacao', 'vigencia', 'idtipoentravealerta',
+            'responsaveis', 'prazo_ativo', 'ultimos_destaques', 'ultimas_anotacoes',
+            'created_at', 'updated_at'
+        ]
+    
+    def get_eixo(self, obj):
+        return {
+            'id': obj.ideixo.id if obj.ideixo else None,
+            'stralias': obj.ideixo.stralias if obj.ideixo else None,
+            'strdescricaoeixo': obj.ideixo.strdescricaoeixo if obj.ideixo else None
+        } if obj.ideixo else None
+    
+    def get_situacao(self, obj):
+        return {
+            'id': obj.idsituacaoacao.id if obj.idsituacaoacao else None,
+            'strdescricaosituacao': obj.idsituacaoacao.strdescricaosituacao if obj.idsituacaoacao else None
+        } if obj.idsituacaoacao else None
+    
+    def get_vigencia(self, obj):
+        if obj.idvigenciapngi:
+            return {
+                'id': obj.idvigenciapngi.id,
+                'strdescricaovigenciapngi': obj.idvigenciapngi.strdescricaovigenciapngi,
+                'datiniciovigencia': obj.idvigenciapngi.datiniciovigencia,
+                'datfinalvigencia': obj.idvigenciapngi.datfinalvigencia,
+                'esta_vigente': obj.idvigenciapngi.esta_vigente
+            }
+        return None
+    
+    def get_responsaveis(self, obj):
+        if hasattr(obj, 'responsaveis_completos'):
+            return UsuarioResponsavelCompletoSerializer(
+                obj.responsaveis_completos, many=True
+            ).data
+        return []
+    
+    def get_prazo_ativo(self, obj):
+        if hasattr(obj, 'prazo_ativo') and obj.prazo_ativo:
+            return {
+                'idacaoprazo': obj.prazo_ativo[0].idacaoprazo,
+                'strprazo': obj.prazo_ativo[0].strprazo
+            }
+        return None
+    
+    def get_ultimos_destaques(self, obj):
+        if hasattr(obj, 'ultimos_destaques'):
+            return [
+                {
+                    'idacaodestaque': destaque.idacaodestaque,
+                    'datdatadestaque': destaque.datdatadestaque
+                }
+                for destaque in obj.ultimos_destaques
+            ]
+        return []
+    
+    def get_ultimas_anotacoes(self, obj):
+        if hasattr(obj, 'ultimas_anotacoes'):
+            return [
+                {
+                    'idacaoanotacaoalinhamento': anotacao.idacaoanotacaoalinhamento,
+                    'idtipoanotacaoalinhamento': {
+                        'id': anotacao.idtipoanotacaoalinhamento.id,
+                        'strdescricaotipoanotacaoalinhamento': anotacao.idtipoanotacaoalinhamento.strdescricaotipoanotacaoalinhamento
+                    },
+                    'datdataanotacaoalinhamento': anotacao.datdataanotacaoalinhamento,
+                    'strnumeromonitoramento': anotacao.strnumeromonitoramento
+                }
+                for anotacao in obj.ultimas_anotacoes
+            ]
+        return []
+    
+    def get_responsaveis_completos(self, obj):
+        """
+        Retorna responsáveis COM USUÁRIOS COMPLETOS
+        """
+        if hasattr(obj, 'responsaveis_completos'):
+            return UsuarioResponsavelCompletoSerializer(
+                obj.responsaveis_completos, 
+                many=True, 
+                context=self.context
+            ).data
+        return []

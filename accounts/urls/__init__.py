@@ -1,12 +1,23 @@
-# accounts/urls/__init__.py
 from django.urls import path
-from accounts.views import role_views
+
+from accounts.views.web_views import (
+    WebLoginView, WebValidateTokenView, WebUserManagementView
+)
+
+from accounts.views.api_views import (  # ✅ IMPORTS DIRETOS
+    LoginView, ValidateTokenView, UserManagementView
+)
 
 app_name = 'accounts'
 
 urlpatterns = [
-    # ... URLs existentes de login/logout
-    path('select-role/<str:app_code>/', role_views.select_role, name='select_role'),
-    path('set-role/<int:role_id>/', role_views.set_active_role, name='set_active_role'),
-    path('switch-role/<str:app_code>/', role_views.switch_role, name='switch_role'),
+    path('login/', WebLoginView.as_view(), name='login'),
+    path('validate/', WebValidateTokenView.as_view(), name='validate'),
+    path('gestao/usuarios/', WebUserManagementView.as_view(), name='usuarios'),
+]
+
+api_urlpatterns = [
+    path('api/auth/login/', LoginView.as_view()),           # ✅ .as_view()
+    path('api/auth/validate/', ValidateTokenView.as_view()),
+    path('api/gestao/usuarios/', UserManagementView.as_view()),
 ]

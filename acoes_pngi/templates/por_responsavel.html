@@ -1,0 +1,31 @@
+<h2>Ações por Responsável ({{ total_relacoes }} relações)</h2>
+
+{% for responsavel in responsaveis %}
+<div class="responsavel-card card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5>{{ responsavel.idusuario.name }}</h5>
+        <small>{{ responsavel.idusuario.email }}</small>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for acao_relacao in responsavel.acoes_relacionadas %}
+            <div class="col-md-6 mb-3">
+                <div class="acao-mini-card card h-100">
+                    <div class="card-body">
+                        <h6>{{ acao_relacao.idacao.strapelido }}</h6>
+                        <small>
+                            {{ acao_relacao.idacao.ideixo }} - 
+                            {{ acao_relacao.idacao.idsituacaoacao }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <small class="text-muted">Sem ações atribuídas</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endfor %}

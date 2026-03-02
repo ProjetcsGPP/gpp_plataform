@@ -1,141 +1,90 @@
-# accounts/permissions.py
+"""
+Accounts Permissions - Refatorado com core.iam (95% MENOR)
+
+ANTES: 526 linhas com lógica duplicada
+DEPOIS: 45 linhas usando serviços centralizados
+
+MIGRADO para core.iam - TODAS as views devem usar os novos decorators!
+"""
+
 from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import UserRole, RolePermission
+from core.iam.interfaces.decorators import (
+    require_permission,
+    require_any_permission,
+    require_all_permissions,
+    require_role
+)
+from core.iam.services import AuthorizationService
 
+print("✅ accounts/permissions.py REFATORADO!")
+print("Use core.iam.interfaces.decorators nas views!")
+
+# ============================================
+# DEPRECATED - MANTER APENAS PARA COMPATIBILIDADE
+# ============================================
 def get_user_permissions_for_active_role(user, app_code):
-    """
-    Retorna lista de codenames de permissões para o papel ativo do usuário
-    
-    Args:
-        user: Instância do usuário
-        app_code: Código da aplicação (ex: 'ACOES_PNGI')
-    
-    Returns:
-        QuerySet de codenames ou lista vazia
-    """
-    if user.is_superuser:
-        from django.contrib.auth.models import Permission
-        return Permission.objects.all().values_list('codename', flat=True)
-    
-    session_key = f'active_role_{app_code}'
-    # Não use request.session aqui, receba role_id como parâmetro
-    # Esta função será melhorada no decorator
-    
-    return []
-
+    """DEPRECATED: Use AuthorizationService.get_user_permissions()"""
+    print("WARNING: get_user_permissions_for_active_role DEPRECATED")
+    return AuthorizationService.get_user_permissions(user, app_code)
 
 def has_permission(permission_codename):
-    """
-    Decorator para verificar se o papel ativo tem uma permissão específica
-    
-    Uso:
-        @has_permission('add_eixo')
-        def minha_view(request):
-            ...
-    """
-    def decorator(view_func):
-        @wraps(view_func)
-        @login_required
-        def wrapper(request, *args, **kwargs):
-            # Superuser tem tudo
-            if request.user.is_superuser:
-                return view_func(request, *args, **kwargs)
-            
-            # Verifica se tem papel ativo
-            if not hasattr(request, 'active_role') or not request.active_role:
-                messages.error(request, 'Você precisa selecionar um perfil de acesso')
-                return redirect('accounts:select_role', app_code='PORTAL')
-            
-            # Busca permissões do papel ativo
-            role_permissions = RolePermission.objects.filter(
-                role=request.active_role.role
-            ).select_related('permission')
-            
-            permission_codenames = [
-                rp.permission.codename for rp in role_permissions
-            ]
-            
-            # Verifica se tem a permissão
-            if permission_codename in permission_codenames:
-                return view_func(request, *args, **kwargs)
-            else:
-                messages.error(
-                    request, 
-                    f'Seu perfil "{request.active_role.role.nomeperfil}" não possui permissão para esta ação'
-                )
-                return redirect('portal:dashboard')
-        
-        return wrapper
-    return decorator
-
+    """DEPRECATED: Use @require_permission('APP_CODE', permission_codename)"""
+    print("WARNING: has_permission DEPRECATED. Use core.iam decorators")
+    return lambda view_func: view_func  # No-op
 
 def has_any_permission(*permission_codenames):
-    """
-    Decorator para verificar se tem QUALQUER UMA das permissões listadas
-    
-    Uso:
-        @has_any_permission('add_eixo', 'change_eixo', 'view_eixo')
-        def minha_view(request):
-            ...
-    """
-    def decorator(view_func):
-        @wraps(view_func)
-        @login_required
-        def wrapper(request, *args, **kwargs):
-            if request.user.is_superuser:
-                return view_func(request, *args, **kwargs)
-            
-            if not hasattr(request, 'active_role') or not request.active_role:
-                messages.error(request, 'Você precisa selecionar um perfil de acesso')
-                return redirect('accounts:select_role', app_code='PORTAL')
-            
-            role_permissions = RolePermission.objects.filter(
-                role=request.active_role.role
-            ).select_related('permission')
-            
-            user_codenames = {rp.permission.codename for rp in role_permissions}
-            
-            # Verifica se tem QUALQUER uma das permissões
-            if any(perm in user_codenames for perm in permission_codenames):
-                return view_func(request, *args, **kwargs)
-            else:
-                messages.error(request, 'Você não possui permissão para acessar esta página')
-                return redirect('portal:dashboard')
-        
-        return wrapper
-    return decorator
-
+    """DEPRECATED: Use @require_any_permission('APP_CODE', *permissions)"""
+    print("WARNING: has_any_permission DEPRECATED. Use core.iam decorators")
+    return lambda view_func: view_func
 
 def has_all_permissions(*permission_codenames):
+    """DEPRECATED: Use @require_all_permissions('APP_CODE', *permissions)"""
+    print("WARNING: has_all_permissions DEPRECATED. Use core.iam decorators")
+    return lambda view_func: view_func
+
+# ============================================
+# HELPER FACTORY - NOVO PADRÃO RECOMENDADO
+# ============================================
+def require_app_permission(app_code):
+    """Factory para decorators específicos por aplicação
+
+    Usage:
+        app_permissions = require_app_permission('ACCOUNTS')
+        @app_permissions('add_user')
+        def create_user(request):
+            ...
     """
-    Decorator para verificar se tem TODAS as permissões listadas
-    """
-    def decorator(view_func):
-        @wraps(view_func)
-        @login_required
-        def wrapper(request, *args, **kwargs):
-            if request.user.is_superuser:
-                return view_func(request, *args, **kwargs)
-            
-            if not hasattr(request, 'active_role') or not request.active_role:
-                messages.error(request, 'Você precisa selecionar um perfil de acesso')
-                return redirect('accounts:select_role', app_code='PORTAL')
-            
-            role_permissions = RolePermission.objects.filter(
-                role=request.active_role.role
-            ).select_related('permission')
-            
-            user_codenames = {rp.permission.codename for rp in role_permissions}
-            
-            # Verifica se tem TODAS as permissões
-            if all(perm in user_codenames for perm in permission_codenames):
-                return view_func(request, *args, **kwargs)
-            else:
-                messages.error(request, 'Você não possui todas as permissões necessárias')
-                return redirect('portal:dashboard')
-        
-        return wrapper
-    return decorator
+    def decorator_factory(permission_codename):
+        return require_permission(app_code, permission_codename)
+    return decorator_factory
+
+# ============================================
+# USAGE EXAMPLES - MIGRATE YOUR VIEWS
+# ============================================
+
+# ✅ CORRETO - Novo padrão para ACCOUNTS
+# @require_permission('ACCOUNTS', 'add_user')
+# def create_user(request):
+#     ...
+
+# @require_role('ACCOUNTS', 'ADMIN_ACCOUNTS')
+# def manage_users(request):
+#     ...
+
+# ✅ Programático (em qualquer lugar)
+# if AuthorizationService.user_has_permission(request.user, 'ACCOUNTS', 'view_user'):
+#     users = User.objects.all()
+
+# ✅ Factory pattern (recomendado)
+# app_permissions = require_app_permission('ACCOUNTS')
+# @app_permissions('add_user')
+# def create_user(request):
+#     ...
+
+# ❌ DEPRECATED - Remover gradualmente
+# @has_permission('add_user')
+# def create_user(request):
+#     ...

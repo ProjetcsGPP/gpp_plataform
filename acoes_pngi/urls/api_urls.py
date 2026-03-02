@@ -16,6 +16,8 @@ from rest_framework.routers import DefaultRouter
 
 # Importar views da API (agora com TODOS os ViewSets)
 from ..views.api_views import (
+    AcoesCompletasAPIView,
+    UsuariosPorAcaoAPIView,
     portal_auth,
     user_permissions,
     UserManagementViewSet,
@@ -30,6 +32,8 @@ from ..views.api_views import (
     AcaoAnotacaoAlinhamentoViewSet,
     UsuarioResponsavelViewSet,
     RelacaoAcaoUsuarioResponsavelViewSet,
+    AcoesCompletasAPIView,
+    UsuariosPorAcaoAPIView,
 )
 
 # Importar views de contexto
@@ -84,6 +88,9 @@ urlpatterns = [
     path('context/permissions/', user_permissions_api, name='context-permissions'),
     path('context/models/', models_info_api, name='models-info'),
     path('context/full/', full_context_api, name='full-context'),
+    
+    path('acoes-completas/', AcoesCompletasAPIView.as_view(), name='acoes-completas'),
+    path('usuarios-acoes-por-acao/', UsuariosPorAcaoAPIView.as_view(), name='usuarios-por-acao'),
     
     # ===== VIEWSETS (Router) =====
     path('', include(router.urls)),
