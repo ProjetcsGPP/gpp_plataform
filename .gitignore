@@ -1,34 +1,53 @@
+# =========================
 # Python
+# =========================
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 .Python
 
-# Ambiente Virtual
+# =========================
+# Virtual Environment
+# =========================
 venv/
 .venv/
 env/
 
+# =========================
 # Django
+# =========================
 db.sqlite3
 *.log
 media/
 staticfiles/
 
-# Variáveis de ambiente
+# =========================
+# Environment variables
+# =========================
 .env
 .env.*
 
+# =========================
 # IDEs
-.vscode/
+# =========================
 .idea/
 *.sublime-workspace
 
-# Arquivos temporários
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# =========================
+# Temporary files
+# =========================
 *.tmp
 *.bak
 
+# =========================
 # OS
+# =========================
 .DS_Store
 Thumbs.db
