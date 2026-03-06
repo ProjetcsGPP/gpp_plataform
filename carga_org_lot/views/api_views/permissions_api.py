@@ -1,12 +1,15 @@
 """
 Permissions API - Endpoint de Permissões do Usuário
+
+REFATORADO: Adiciona validação de acesso à aplicação
 """
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
+from accounts.services.authorization_service import require_api_permission
+from accounts.models import UserRole
 from ...utils.permissions import (
     get_user_app_permissions,
     get_user_role,
@@ -20,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@require_api_permission('view_tblpatriarca', 'CARGA_ORG_LOT')
 def user_permissions(request):
     """
     Retorna as permissões do usuário logado para o app CARGA_ORG_LOT.
@@ -31,6 +34,8 @@ def user_permissions(request):
     - Role do usuário
     
     **URL:** `GET /api/v1/carga/permissions/`
+    
+    ✅ PERMISSÃO: view_tblpatriarca (valida acesso básico ao app)
     
     **Response:**
     ```json
