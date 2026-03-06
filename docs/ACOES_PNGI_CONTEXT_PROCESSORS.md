@@ -1,8 +1,8 @@
 # Context Processors - Ações PNGI
 
-**Data**: 2026-02-05  
-**Versão**: 1.0  
-**Status**: ✅ Pronto para Produção  
+**Data**: 2026-02-05
+**Versão**: 1.0
+**Status**: ✅ Pronto para Produção
 
 ## 📋 Sumário
 
@@ -156,7 +156,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                
+
                 # ===== ACOES_PNGI CONTEXT PROCESSORS =====
                 'acoes_pngi.context_processors.acoes_permissions',
                 'acoes_pngi.context_processors.acoes_pngi_context',
@@ -204,16 +204,16 @@ coverage report --include=acoes_pngi/context_processors.py
         <i class="{{ app_context.icon }}"></i>
         {{ app_context.name }}
     </a>
-    
+
     <ul class="navbar-nav">
         {% if acoes_models_perms.eixo.view %}
             <li><a href="{% url 'acoes_pngi:eixo-list' %}">Eixos</a></li>
         {% endif %}
-        
+
         {% if acoes_models_perms.situacaoacao.view %}
             <li><a href="{% url 'acoes_pngi:situacaoacao-list' %}">Situações</a></li>
         {% endif %}
-        
+
         {% if acoes_models_perms.vigenciapngi.view %}
             <li><a href="{% url 'acoes_pngi:vigenciapngi-list' %}">Vigências</a></li>
         {% endif %}
@@ -228,7 +228,7 @@ coverage report --include=acoes_pngi/context_processors.py
     {% if acoes_models_perms.eixo.view %}
         <a href="{% url 'acoes_pngi:eixo-list' %}" class="btn btn-secondary">Ver Eixos</a>
     {% endif %}
-    
+
     {% if acoes_models_perms.eixo.add %}
         <a href="{% url 'acoes_pngi:eixo-create' %}" class="btn btn-primary">+ Novo Eixo</a>
     {% endif %}

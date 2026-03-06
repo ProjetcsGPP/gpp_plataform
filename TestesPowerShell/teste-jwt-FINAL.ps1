@@ -17,7 +17,7 @@ try {
     $loginResponse = Invoke-RestMethod -Uri $LOGIN_URL -Method POST -ContentType "application/json" -Body $loginBody -TimeoutSec 10
     $ACCESS_TOKEN = $loginResponse.access_token
     $REFRESH_TOKEN = $loginResponse.refresh_token
-    
+
     Write-Host "✅ LOGIN OK!" -ForegroundColor Green
     Write-Host "👤 $($loginResponse.user.name) ($($loginResponse.user.role))" -ForegroundColor Green
 } catch {

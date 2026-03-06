@@ -2,8 +2,8 @@
 
 ## 🔴 Problema Identificado
 
-**Data**: 02/02/2026 - Segunda-feira  
-**Hora**: 10:14 AM  
+**Data**: 02/02/2026 - Segunda-feira
+**Hora**: 10:14 AM
 **Arquivo**: `carga_org_lot/tests/test_web_views.py`
 
 ### Erro Principal
@@ -154,8 +154,8 @@ from carga_org_lot.models import (
 
 ## 🔗 Commit Relacionado
 
-**SHA**: `912bdfbb29a8ad3d202e3e91210e6fc221b964f6`  
-**Mensagem**: "fix: corrige nomes de campos no test_web_views.py"  
+**SHA**: `912bdfbb29a8ad3d202e3e91210e6fc221b964f6`
+**Mensagem**: "fix: corrige nomes de campos no test_web_views.py"
 **Data**: 02/02/2026 10:16:31 -03:00
 
 ---
@@ -180,6 +180,6 @@ from carga_org_lot.models import (
 
 ---
 
-**✅ STATUS**: Problema resolvido e documentado  
-**👤 Responsável**: GPP Platform Team  
+**✅ STATUS**: Problema resolvido e documentado
+**👤 Responsável**: GPP Platform Team
 **📅 Última Atualização**: 02/02/2026 10:16 AM -03:00

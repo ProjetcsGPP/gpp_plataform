@@ -2,37 +2,30 @@
 Serializers genéricos compartilhados entre aplicações.
 """
 
-from .user_serializers import (
-    UserSerializer,
-    UserListSerializer,
-    UserCreateSerializer,
-    UserUpdateSerializer,
-)
-
 from .auth_serializers import (
-    PortalAuthSerializer,
     LoginSerializer,
     PasswordChangeSerializer,
+    PortalAuthSerializer,
 )
-
-from .base_serializers import (
-    BaseModelSerializer,
-    TimestampedModelSerializer,
+from .base_serializers import BaseModelSerializer, TimestampedModelSerializer
+from .user_serializers import (
+    UserCreateSerializer,
+    UserListSerializer,
+    UserSerializer,
+    UserUpdateSerializer,
 )
 
 __all__ = [
     # User serializers
-    'UserSerializer',
-    'UserListSerializer',
-    'UserCreateSerializer',
-    'UserUpdateSerializer',
-    
+    "UserSerializer",
+    "UserListSerializer",
+    "UserCreateSerializer",
+    "UserUpdateSerializer",
     # Auth serializers
-    'PortalAuthSerializer',
-    'LoginSerializer',
-    'PasswordChangeSerializer',
-    
+    "PortalAuthSerializer",
+    "LoginSerializer",
+    "PasswordChangeSerializer",
     # Base serializers
-    'BaseModelSerializer',
-    'TimestampedModelSerializer',
+    "BaseModelSerializer",
+    "TimestampedModelSerializer",
 ]

@@ -41,10 +41,10 @@ Já configurado previamente:
 ```python
 urlpatterns = [
     # ...
-    
+
     # APIs REST para Next.js
     path('api/v1/carga/', include('carga_org_lot.urls.api_urls')),
-    
+
     # Views Django tradicionais
     path('carga_org_lot/', include('carga_org_lot.urls.web_urls')),
 ]
@@ -64,7 +64,7 @@ from ..views import (
     user_permissions,
     dashboard_stats,
     search_orgao,
-    
+
     # ViewSets
     UserManagementViewSet,
     PatriarcaViewSet,
@@ -84,7 +84,7 @@ urlpatterns = [
     path('permissions/', user_permissions, name='user-permissions'),
     path('dashboard/', dashboard_stats, name='dashboard-stats'),
     path('search/orgao/', search_orgao, name='search-orgao'),
-    
+
     # ViewSets (router)
     path('', include(router.urls)),
 ]

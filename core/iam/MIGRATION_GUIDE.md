@@ -34,11 +34,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     # Third party
     'rest_framework',
     'corsheaders',
-    
+
     # GPP apps
     'core.iam',  # <- ADICIONAR AQUI
     'accounts',
@@ -107,38 +107,38 @@ python manage.py shell
 ```python
 class IsGestorPNGI(BasePermission):
     SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
-    
+
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
             return False
-        
+
         if request.method in self.SAFE_METHODS:
             try:
                 app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
                 if not app_acoes:
                     return False
-                
+
                 has_any_role = UserRole.objects.filter(
                     user=request.user,
                     aplicacao=app_acoes
                 ).exists()
-                
+
                 return has_any_role
             except Exception:
                 return False
-        
+
         # CREATE/UPDATE/DELETE: apenas GESTOR
         try:
             app_acoes = Aplicacao.objects.filter(codigointerno='ACOES_PNGI').first()
             if not app_acoes:
                 return False
-            
+
             allowed_roles = UserRole.objects.filter(
                 user=request.user,
                 aplicacao=app_acoes,
                 role__codigoperfil='GESTOR_PNGI'
             ).exists()
-            
+
             return allowed_roles
         except Exception:
             return False
@@ -154,7 +154,7 @@ class IsGestorPNGI(RequireRole):
     app_code = 'ACOES_PNGI'
     required_roles_read = ['GESTOR_PNGI', 'COORDENADOR_PNGI', 'OPERADOR_ACAO', 'CONSULTOR_PNGI']
     required_roles_write = ['GESTOR_PNGI']
-    
+
     def has_permission(self, request, view):
         # Inject app_code and required_roles into view
         view.app_code = self.app_code
@@ -283,7 +283,7 @@ from core.iam.models import User, UserRole, Aplicacao, Role
 
 class AcoesPNGIIAMIntegrationTest(TestCase):
     """Testa integração com IAM services"""
-    
+
     def setUp(self):
         # Setup app, roles e usuários
         self.app = Aplicacao.objects.get(codigointerno='ACOES_PNGI')
@@ -295,7 +295,7 @@ class AcoesPNGIIAMIntegrationTest(TestCase):
             aplicacao=self.app,
             codigoperfil='CONSULTOR_PNGI'
         )
-        
+
         self.gestor = User.objects.create_user(
             email='gestor@test.com',
             password='test123',
@@ -306,7 +306,7 @@ class AcoesPNGIIAMIntegrationTest(TestCase):
             aplicacao=self.app,
             role=self.gestor_role
         )
-        
+
         self.consultor = User.objects.create_user(
             email='consultor@test.com',
             password='test123',
@@ -317,7 +317,7 @@ class AcoesPNGIIAMIntegrationTest(TestCase):
             aplicacao=self.app,
             role=self.consultor_role
         )
-    
+
     def test_gestor_has_write_permissions(self):
         """Gestor deve ter permissões de escrita"""
         self.assertTrue(
@@ -330,7 +330,7 @@ class AcoesPNGIIAMIntegrationTest(TestCase):
                 self.gestor, 'ACOES_PNGI', 'change_eixo'
             )
         )
-    
+
     def test_consultor_has_only_read_permissions(self):
         """Consultor deve ter apenas leitura"""
         self.assertTrue(
@@ -429,7 +429,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
     initial = True
     dependencies = []
-    
+
     operations = [
         # Apenas registra que os modelos existem
         # NÃO cria tabelas (já existem)
@@ -501,23 +501,23 @@ from ..serializers import TokenResponseSerializer
 class TokenObtainAPIView(APIView):
     """POST /api/iam/token/"""
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
         app_code = request.data.get('app_code')
-        
+
         from django.contrib.auth import authenticate
         user = authenticate(email=email, password=password)
-        
+
         if not user:
             return Response(
                 {'error': 'Invalid credentials'},
                 status=401
             )
-        
+
         token = TokenService.generate_token(user, app_code)
-        
+
         return Response({
             'token': token,
             'token_type': 'Bearer',
@@ -532,15 +532,15 @@ class TokenObtainAPIView(APIView):
 class PermissionCheckAPIView(APIView):
     """POST /api/iam/check-permission/"""
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request):
         app_code = request.data.get('app_code')
         permission = request.data.get('permission')
-        
+
         allowed = AuthorizationService.user_has_permission(
             request.user, app_code, permission
         )
-        
+
         return Response({'allowed': allowed})
 ```
 

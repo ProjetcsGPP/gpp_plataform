@@ -19,16 +19,11 @@ Valida a seguinte matriz:
 | RelacaoAcaoUsuarioResponsavelVS  | IsCoordernadorGestorOrOperadorPNGI    | Todos              | OPERADOR, COORDENADOR, GESTOR   |
 """
 
-from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-from accounts.models import User, Role, UserRole, Aplicacao
-from ..models import (
-    Eixo, SituacaoAcao, VigenciaPNGI, TipoEntraveAlerta,
-    Acoes, AcaoPrazo, AcaoDestaque,
-    TipoAnotacaoAlinhamento, AcaoAnotacaoAlinhamento,
-    UsuarioResponsavel, RelacaoAcaoUsuarioResponsavel
-)
+
+from accounts.models import Role, User, UserRole
+
 from .base import BaseAPITestCase
 
 
@@ -36,85 +31,69 @@ class PermissionMatrixTestCase(BaseAPITestCase):
     """
     Classe base para testes de permissões com fixtures de usuários.
     """
-    
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        
+
         # CRÍTICO: Não usar .using() em testes!
         # Em testes, gpp_plataform_db é MIRROR de default (mesmo banco físico)
         # Usar .using() quebra as ForeignKeys
-        
+
         cls.role_consultor, _ = Role.objects.get_or_create(
             aplicacao=cls.app,
-            codigoperfil='CONSULTOR_PNGI',
-            defaults={'nomeperfil': 'Consultor PNGI'}
+            codigoperfil="CONSULTOR_PNGI",
+            defaults={"nomeperfil": "Consultor PNGI"},
         )
         cls.role_operador, _ = Role.objects.get_or_create(
             aplicacao=cls.app,
-            codigoperfil='OPERADOR_PNGI',
-            defaults={'nomeperfil': 'Operador PNGI'}
+            codigoperfil="OPERADOR_PNGI",
+            defaults={"nomeperfil": "Operador PNGI"},
         )
         cls.role_coordenador, _ = Role.objects.get_or_create(
             aplicacao=cls.app,
-            codigoperfil='COORDENADOR_PNGI',
-            defaults={'nomeperfil': 'Coordenador PNGI'}
+            codigoperfil="COORDENADOR_PNGI",
+            defaults={"nomeperfil": "Coordenador PNGI"},
         )
         cls.role_gestor, _ = Role.objects.get_or_create(
             aplicacao=cls.app,
-            codigoperfil='GESTOR_PNGI',
-            defaults={'nomeperfil': 'Gestor PNGI'}
+            codigoperfil="GESTOR_PNGI",
+            defaults={"nomeperfil": "Gestor PNGI"},
         )
-    
+
     def setUp(self):
         super().setUp()
-        
+
         # Criar usuários com roles diferentes
         # CRÍTICO: Não usar .using() - deixar Django usar default database
         self.user_consultor = User.objects.create_user(
-            email='consultor@test.com',
-            password='test123',
-            name='Consultor Test'
+            email="consultor@test.com", password="test123", name="Consultor Test"
         )
         UserRole.objects.create(
-            user=self.user_consultor,
-            role=self.role_consultor,
-            aplicacao=self.app
+            user=self.user_consultor, role=self.role_consultor, aplicacao=self.app
         )
-        
+
         self.user_operador = User.objects.create_user(
-            email='operador@test.com',
-            password='test123',
-            name='Operador Test'
+            email="operador@test.com", password="test123", name="Operador Test"
         )
         UserRole.objects.create(
-            user=self.user_operador,
-            role=self.role_operador,
-            aplicacao=self.app
+            user=self.user_operador, role=self.role_operador, aplicacao=self.app
         )
-        
+
         self.user_coordenador = User.objects.create_user(
-            email='coordenador@test.com',
-            password='test123',
-            name='Coordenador Test'
+            email="coordenador@test.com", password="test123", name="Coordenador Test"
         )
         UserRole.objects.create(
-            user=self.user_coordenador,
-            role=self.role_coordenador,
-            aplicacao=self.app
+            user=self.user_coordenador, role=self.role_coordenador, aplicacao=self.app
         )
-        
+
         self.user_gestor = User.objects.create_user(
-            email='gestor@test.com',
-            password='test123',
-            name='Gestor Test'
+            email="gestor@test.com", password="test123", name="Gestor Test"
         )
         UserRole.objects.create(
-            user=self.user_gestor,
-            role=self.role_gestor,
-            aplicacao=self.app
+            user=self.user_gestor, role=self.role_gestor, aplicacao=self.app
         )
-        
+
         # Cliente API
         self.client = APIClient()
 
@@ -126,46 +105,50 @@ class EixoViewSetPermissionTest(PermissionMatrixTestCase):
     - Leitura: TODOS
     - Escrita: COORDENADOR, GESTOR
     """
-    
+
     def test_consultor_pode_listar_eixos(self):
         """CONSULTOR pode listar eixos (GET)"""
         self.client.force_authenticate(user=self.user_consultor)
-        response = self.client.get('/api/v1/acoes_pngi/eixos/')
+        response = self.client.get("/api/v1/acoes_pngi/eixos/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_consultor_nao_pode_criar_eixo(self):
         """CONSULTOR não pode criar eixo (POST)"""
         self.client.force_authenticate(user=self.user_consultor)
-        data = {'strdescricaoeixo': 'Novo Eixo', 'stralias': 'NE'}
-        response = self.client.post('/api/v1/acoes_pngi/eixos/', data)
+        data = {"strdescricaoeixo": "Novo Eixo", "stralias": "NE"}
+        response = self.client.post("/api/v1/acoes_pngi/eixos/", data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_operador_pode_listar_eixos(self):
         """OPERADOR pode listar eixos (GET)"""
         self.client.force_authenticate(user=self.user_operador)
-        response = self.client.get('/api/v1/acoes_pngi/eixos/')
+        response = self.client.get("/api/v1/acoes_pngi/eixos/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_operador_nao_pode_criar_eixo(self):
         """OPERADOR não pode criar eixo (POST)"""
         self.client.force_authenticate(user=self.user_operador)
-        data = {'strdescricaoeixo': 'Novo Eixo', 'stralias': 'NE'}
-        response = self.client.post('/api/v1/acoes_pngi/eixos/', data)
+        data = {"strdescricaoeixo": "Novo Eixo", "stralias": "NE"}
+        response = self.client.post("/api/v1/acoes_pngi/eixos/", data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_coordenador_pode_criar_eixo(self):
         """COORDENADOR pode criar eixo (POST)"""
         self.client.force_authenticate(user=self.user_coordenador)
-        data = {'strdescricaoeixo': 'Novo Eixo', 'stralias': 'NE'}
-        response = self.client.post('/api/v1/acoes_pngi/eixos/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
-    
+        data = {"strdescricaoeixo": "Novo Eixo", "stralias": "NE"}
+        response = self.client.post("/api/v1/acoes_pngi/eixos/", data)
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
+
     def test_gestor_pode_criar_eixo(self):
         """GESTOR pode criar eixo (POST)"""
         self.client.force_authenticate(user=self.user_gestor)
-        data = {'strdescricaoeixo': 'Novo Eixo', 'stralias': 'NE'}
-        response = self.client.post('/api/v1/acoes_pngi/eixos/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
+        data = {"strdescricaoeixo": "Novo Eixo", "stralias": "NE"}
+        response = self.client.post("/api/v1/acoes_pngi/eixos/", data)
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
 
 
 class SituacaoAcaoViewSetPermissionTest(PermissionMatrixTestCase):
@@ -175,40 +158,42 @@ class SituacaoAcaoViewSetPermissionTest(PermissionMatrixTestCase):
     - Leitura: TODOS
     - Escrita: GESTOR
     """
-    
+
     def test_consultor_pode_listar_situacoes(self):
         """CONSULTOR pode listar situações (GET)"""
         self.client.force_authenticate(user=self.user_consultor)
-        response = self.client.get('/api/v1/acoes_pngi/situacoes/')
+        response = self.client.get("/api/v1/acoes_pngi/situacoes/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_consultor_nao_pode_criar_situacao(self):
         """CONSULTOR não pode criar situação (POST)"""
         self.client.force_authenticate(user=self.user_consultor)
-        data = {'strdescricaosituacao': 'Nova Situação'}
-        response = self.client.post('/api/v1/acoes_pngi/situacoes/', data)
+        data = {"strdescricaosituacao": "Nova Situação"}
+        response = self.client.post("/api/v1/acoes_pngi/situacoes/", data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_operador_nao_pode_criar_situacao(self):
         """OPERADOR não pode criar situação (POST)"""
         self.client.force_authenticate(user=self.user_operador)
-        data = {'strdescricaosituacao': 'Nova Situação'}
-        response = self.client.post('/api/v1/acoes_pngi/situacoes/', data)
+        data = {"strdescricaosituacao": "Nova Situação"}
+        response = self.client.post("/api/v1/acoes_pngi/situacoes/", data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_coordenador_nao_pode_criar_situacao(self):
         """COORDENADOR não pode criar situação (POST)"""
         self.client.force_authenticate(user=self.user_coordenador)
-        data = {'strdescricaosituacao': 'Nova Situação'}
-        response = self.client.post('/api/v1/acoes_pngi/situacoes/', data)
+        data = {"strdescricaosituacao": "Nova Situação"}
+        response = self.client.post("/api/v1/acoes_pngi/situacoes/", data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_gestor_pode_criar_situacao(self):
         """GESTOR pode criar situação (POST)"""
         self.client.force_authenticate(user=self.user_gestor)
-        data = {'strdescricaosituacao': 'Nova Situação'}
-        response = self.client.post('/api/v1/acoes_pngi/situacoes/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
+        data = {"strdescricaosituacao": "Nova Situação"}
+        response = self.client.post("/api/v1/acoes_pngi/situacoes/", data)
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
 
 
 class VigenciaPNGIViewSetPermissionTest(PermissionMatrixTestCase):
@@ -218,45 +203,49 @@ class VigenciaPNGIViewSetPermissionTest(PermissionMatrixTestCase):
     - Leitura: TODOS
     - Escrita: COORDENADOR, GESTOR
     """
-    
+
     def test_consultor_pode_listar_vigencias(self):
         """CONSULTOR pode listar vigências (GET)"""
         self.client.force_authenticate(user=self.user_consultor)
-        response = self.client.get('/api/v1/acoes_pngi/vigencias/')
+        response = self.client.get("/api/v1/acoes_pngi/vigencias/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_operador_nao_pode_criar_vigencia(self):
         """OPERADOR não pode criar vigência (POST)"""
         self.client.force_authenticate(user=self.user_operador)
         data = {
-            'strdescricaovigenciapngi': 'Nova Vigência',
-            'datiniciovigencia': '2026-01-01',
-            'datfinalvigencia': '2026-12-31'
+            "strdescricaovigenciapngi": "Nova Vigência",
+            "datiniciovigencia": "2026-01-01",
+            "datfinalvigencia": "2026-12-31",
         }
-        response = self.client.post('/api/v1/acoes_pngi/vigencias/', data)
+        response = self.client.post("/api/v1/acoes_pngi/vigencias/", data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_coordenador_pode_criar_vigencia(self):
         """COORDENADOR pode criar vigência (POST)"""
         self.client.force_authenticate(user=self.user_coordenador)
         data = {
-            'strdescricaovigenciapngi': 'Nova Vigência',
-            'datiniciovigencia': '2026-01-01',
-            'datfinalvigencia': '2026-12-31'
+            "strdescricaovigenciapngi": "Nova Vigência",
+            "datiniciovigencia": "2026-01-01",
+            "datfinalvigencia": "2026-12-31",
         }
-        response = self.client.post('/api/v1/acoes_pngi/vigencias/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
-    
+        response = self.client.post("/api/v1/acoes_pngi/vigencias/", data)
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
+
     def test_gestor_pode_criar_vigencia(self):
         """GESTOR pode criar vigência (POST)"""
         self.client.force_authenticate(user=self.user_gestor)
         data = {
-            'strdescricaovigenciapngi': 'Nova Vigência',
-            'datiniciovigencia': '2026-01-01',
-            'datfinalvigencia': '2026-12-31'
+            "strdescricaovigenciapngi": "Nova Vigência",
+            "datiniciovigencia": "2026-01-01",
+            "datfinalvigencia": "2026-12-31",
         }
-        response = self.client.post('/api/v1/acoes_pngi/vigencias/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
+        response = self.client.post("/api/v1/acoes_pngi/vigencias/", data)
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
 
 
 class TipoEntraveAlertaViewSetPermissionTest(PermissionMatrixTestCase):
@@ -266,26 +255,28 @@ class TipoEntraveAlertaViewSetPermissionTest(PermissionMatrixTestCase):
     - Leitura: TODOS
     - Escrita: GESTOR
     """
-    
+
     def test_consultor_pode_listar_tipos(self):
         """CONSULTOR pode listar tipos de entrave (GET)"""
         self.client.force_authenticate(user=self.user_consultor)
-        response = self.client.get('/api/v1/acoes_pngi/tipos-entrave-alerta/')
+        response = self.client.get("/api/v1/acoes_pngi/tipos-entrave-alerta/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_coordenador_nao_pode_criar_tipo(self):
         """COORDENADOR não pode criar tipo de entrave (POST)"""
         self.client.force_authenticate(user=self.user_coordenador)
-        data = {'strdescricaotipoentravealerta': 'Novo Tipo'}
-        response = self.client.post('/api/v1/acoes_pngi/tipos-entrave-alerta/', data)
+        data = {"strdescricaotipoentravealerta": "Novo Tipo"}
+        response = self.client.post("/api/v1/acoes_pngi/tipos-entrave-alerta/", data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_gestor_pode_criar_tipo(self):
         """GESTOR pode criar tipo de entrave (POST)"""
         self.client.force_authenticate(user=self.user_gestor)
-        data = {'strdescricaotipoentravealerta': 'Novo Tipo'}
-        response = self.client.post('/api/v1/acoes_pngi/tipos-entrave-alerta/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
+        data = {"strdescricaotipoentravealerta": "Novo Tipo"}
+        response = self.client.post("/api/v1/acoes_pngi/tipos-entrave-alerta/", data)
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
 
 
 class AcoesViewSetPermissionTest(PermissionMatrixTestCase):
@@ -295,68 +286,74 @@ class AcoesViewSetPermissionTest(PermissionMatrixTestCase):
     - Leitura: TODOS
     - Escrita: OPERADOR, COORDENADOR, GESTOR
     """
-    
+
     def test_consultor_pode_listar_acoes(self):
         """CONSULTOR pode listar ações (GET)"""
         self.client.force_authenticate(user=self.user_consultor)
-        response = self.client.get('/api/v1/acoes_pngi/acoes/')
+        response = self.client.get("/api/v1/acoes_pngi/acoes/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_consultor_nao_pode_criar_acao(self):
         """CONSULTOR não pode criar ação (POST)"""
         self.client.force_authenticate(user=self.user_consultor)
         data = {
-            'strapelido': 'ACAO-TEST',
-            'strdescricaoacao': 'Teste',
-            'strdescricaoentrega': 'Entrega',
-            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
-            'ideixo': self.eixo_base.ideixo,
-            'idsituacaoacao': self.situacao_base.idsituacaoacao
+            "strapelido": "ACAO-TEST",
+            "strdescricaoacao": "Teste",
+            "strdescricaoentrega": "Entrega",
+            "idvigenciapngi": self.vigencia_base.idvigenciapngi,
+            "ideixo": self.eixo_base.ideixo,
+            "idsituacaoacao": self.situacao_base.idsituacaoacao,
         }
-        response = self.client.post('/api/v1/acoes_pngi/acoes/', data)
+        response = self.client.post("/api/v1/acoes_pngi/acoes/", data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_operador_pode_criar_acao(self):
         """OPERADOR pode criar ação (POST)"""
         self.client.force_authenticate(user=self.user_operador)
         data = {
-            'strapelido': 'ACAO-TEST',
-            'strdescricaoacao': 'Teste',
-            'strdescricaoentrega': 'Entrega',
-            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
-            'ideixo': self.eixo_base.ideixo,
-            'idsituacaoacao': self.situacao_base.idsituacaoacao
+            "strapelido": "ACAO-TEST",
+            "strdescricaoacao": "Teste",
+            "strdescricaoentrega": "Entrega",
+            "idvigenciapngi": self.vigencia_base.idvigenciapngi,
+            "ideixo": self.eixo_base.ideixo,
+            "idsituacaoacao": self.situacao_base.idsituacaoacao,
         }
-        response = self.client.post('/api/v1/acoes_pngi/acoes/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
-    
+        response = self.client.post("/api/v1/acoes_pngi/acoes/", data)
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
+
     def test_coordenador_pode_criar_acao(self):
         """COORDENADOR pode criar ação (POST)"""
         self.client.force_authenticate(user=self.user_coordenador)
         data = {
-            'strapelido': 'ACAO-TEST2',
-            'strdescricaoacao': 'Teste',
-            'strdescricaoentrega': 'Entrega',
-            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
-            'ideixo': self.eixo_base.ideixo,
-            'idsituacaoacao': self.situacao_base.idsituacaoacao
+            "strapelido": "ACAO-TEST2",
+            "strdescricaoacao": "Teste",
+            "strdescricaoentrega": "Entrega",
+            "idvigenciapngi": self.vigencia_base.idvigenciapngi,
+            "ideixo": self.eixo_base.ideixo,
+            "idsituacaoacao": self.situacao_base.idsituacaoacao,
         }
-        response = self.client.post('/api/v1/acoes_pngi/acoes/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
-    
+        response = self.client.post("/api/v1/acoes_pngi/acoes/", data)
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
+
     def test_gestor_pode_criar_acao(self):
         """GESTOR pode criar ação (POST)"""
         self.client.force_authenticate(user=self.user_gestor)
         data = {
-            'strapelido': 'ACAO-TEST3',
-            'strdescricaoacao': 'Teste',
-            'strdescricaoentrega': 'Entrega',
-            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
-            'ideixo': self.eixo_base.ideixo,
-            'idsituacaoacao': self.situacao_base.idsituacaoacao
+            "strapelido": "ACAO-TEST3",
+            "strdescricaoacao": "Teste",
+            "strdescricaoentrega": "Entrega",
+            "idvigenciapngi": self.vigencia_base.idvigenciapngi,
+            "ideixo": self.eixo_base.ideixo,
+            "idsituacaoacao": self.situacao_base.idsituacaoacao,
         }
-        response = self.client.post('/api/v1/acoes_pngi/acoes/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
+        response = self.client.post("/api/v1/acoes_pngi/acoes/", data)
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
 
 
 class TipoAnotacaoAlinhamentoViewSetPermissionTest(PermissionMatrixTestCase):
@@ -366,33 +363,43 @@ class TipoAnotacaoAlinhamentoViewSetPermissionTest(PermissionMatrixTestCase):
     - Leitura: TODOS
     - Escrita: COORDENADOR, GESTOR
     """
-    
+
     def test_consultor_pode_listar_tipos_anotacao(self):
         """CONSULTOR pode listar tipos de anotação (GET)"""
         self.client.force_authenticate(user=self.user_consultor)
-        response = self.client.get('/api/v1/acoes_pngi/tipos-anotacao-alinhamento/')
+        response = self.client.get("/api/v1/acoes_pngi/tipos-anotacao-alinhamento/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_operador_nao_pode_criar_tipo_anotacao(self):
         """OPERADOR não pode criar tipo de anotação (POST)"""
         self.client.force_authenticate(user=self.user_operador)
-        data = {'strdescricaotipoanotacaoalinhamento': 'Novo Tipo'}
-        response = self.client.post('/api/v1/acoes_pngi/tipos-anotacao-alinhamento/', data)
+        data = {"strdescricaotipoanotacaoalinhamento": "Novo Tipo"}
+        response = self.client.post(
+            "/api/v1/acoes_pngi/tipos-anotacao-alinhamento/", data
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_coordenador_pode_criar_tipo_anotacao(self):
         """COORDENADOR pode criar tipo de anotação (POST)"""
         self.client.force_authenticate(user=self.user_coordenador)
-        data = {'strdescricaotipoanotacaoalinhamento': 'Novo Tipo'}
-        response = self.client.post('/api/v1/acoes_pngi/tipos-anotacao-alinhamento/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
-    
+        data = {"strdescricaotipoanotacaoalinhamento": "Novo Tipo"}
+        response = self.client.post(
+            "/api/v1/acoes_pngi/tipos-anotacao-alinhamento/", data
+        )
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
+
     def test_gestor_pode_criar_tipo_anotacao(self):
         """GESTOR pode criar tipo de anotação (POST)"""
         self.client.force_authenticate(user=self.user_gestor)
-        data = {'strdescricaotipoanotacaoalinhamento': 'Novo Tipo'}
-        response = self.client.post('/api/v1/acoes_pngi/tipos-anotacao-alinhamento/', data)
-        self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
+        data = {"strdescricaotipoanotacaoalinhamento": "Novo Tipo"}
+        response = self.client.post(
+            "/api/v1/acoes_pngi/tipos-anotacao-alinhamento/", data
+        )
+        self.assertIn(
+            response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        )
 
 
 class UserManagementViewSetPermissionTest(PermissionMatrixTestCase):
@@ -402,38 +409,41 @@ class UserManagementViewSetPermissionTest(PermissionMatrixTestCase):
     - Leitura: GESTOR
     - Escrita: GESTOR
     """
-    
+
     def test_consultor_nao_pode_listar_usuarios(self):
         """CONSULTOR não pode listar usuários"""
         self.client.force_authenticate(user=self.user_consultor)
-        response = self.client.get('/api/v1/acoes_pngi/users/list_users/')
+        response = self.client.get("/api/v1/acoes_pngi/users/list_users/")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_operador_nao_pode_listar_usuarios(self):
         """OPERADOR não pode listar usuários"""
         self.client.force_authenticate(user=self.user_operador)
-        response = self.client.get('/api/v1/acoes_pngi/users/list_users/')
+        response = self.client.get("/api/v1/acoes_pngi/users/list_users/")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_coordenador_nao_pode_listar_usuarios(self):
         """COORDENADOR não pode listar usuários"""
         self.client.force_authenticate(user=self.user_coordenador)
-        response = self.client.get('/api/v1/acoes_pngi/users/list_users/')
+        response = self.client.get("/api/v1/acoes_pngi/users/list_users/")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
+
     def test_gestor_pode_listar_usuarios(self):
         """GESTOR pode listar usuários"""
         self.client.force_authenticate(user=self.user_gestor)
-        response = self.client.get('/api/v1/acoes_pngi/users/list_users/')
+        response = self.client.get("/api/v1/acoes_pngi/users/list_users/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_gestor_pode_sincronizar_usuario(self):
         """GESTOR pode sincronizar usuário"""
         self.client.force_authenticate(user=self.user_gestor)
         data = {
-            'email': 'novo@test.com',
-            'name': 'Novo Usuario',
-            'role': 'CONSULTOR_PNGI'
+            "email": "novo@test.com",
+            "name": "Novo Usuario",
+            "role": "CONSULTOR_PNGI",
         }
-        response = self.client.post('/api/v1/acoes_pngi/users/sync_user/', data)
-        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
+        response = self.client.post("/api/v1/acoes_pngi/users/sync_user/", data)
+        self.assertIn(
+            response.status_code,
+            [status.HTTP_200_OK, status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST],
+        )

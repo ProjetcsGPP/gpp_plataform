@@ -59,7 +59,7 @@ django.urls.exceptions.NoReverseMatch: 'carga_org_lot' is not a registered names
 ## ✅ Correções Implementadas
 
 ### Commit 1: fix(carga_org_lot): corrige IntegrityError em test_web_views
-**Data:** 02/02/2026 11:59 AM  
+**Data:** 02/02/2026 11:59 AM
 **SHA:** `e68ca7e`
 
 **Mudanças:**
@@ -71,7 +71,7 @@ django.urls.exceptions.NoReverseMatch: 'carga_org_lot' is not a registered names
 ---
 
 ### Commit 2: fix(carga_org_lot): corrige namespace de URL no template login.html
-**Data:** 02/02/2026 10:07 AM  
+**Data:** 02/02/2026 10:07 AM
 **SHA:** `1d48008`
 
 **Mudanças:**
@@ -81,7 +81,7 @@ django.urls.exceptions.NoReverseMatch: 'carga_org_lot' is not a registered names
 ---
 
 ### Commit 3: test(carga_org_lot): cria testes com tratamento explícito de erros
-**Data:** 02/02/2026 10:09 AM  
+**Data:** 02/02/2026 10:09 AM
 **SHA:** `ae125e0`
 
 **Mudanças:**
@@ -225,7 +225,7 @@ INFO: Template renderizado: login.html
 
 1. **Implementar endpoints AJAX faltantes:**
    - `/carga_org_lot/ajax/search-orgao/`
-   
+
 2. **Implementar views web faltantes:**
    - `/carga_org_lot/patriarcas/` (listagem)
    - `/carga_org_lot/patriarcas/<id>/` (detalhe)

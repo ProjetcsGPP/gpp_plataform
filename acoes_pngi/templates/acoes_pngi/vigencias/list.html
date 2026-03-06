@@ -132,14 +132,14 @@
                                     {% if can_edit or can_delete %}
                                     <td class="text-end">
                                         {% if can_edit %}
-                                        <a href="{% url 'acoes_pngi_web:vigencia_update' vigencia.pk %}" 
-                                           class="btn btn-sm btn-outline-warning" 
+                                        <a href="{% url 'acoes_pngi_web:vigencia_update' vigencia.pk %}"
+                                           class="btn btn-sm btn-outline-warning"
                                            title="Editar">
                                             <i class="fas fa-pencil"></i> Editar
                                         </a>
                                         {% endif %}
                                         {% if can_delete %}
-                                        <a href="{% url 'acoes_pngi_web:vigencia_delete' vigencia.pk %}" 
+                                        <a href="{% url 'acoes_pngi_web:vigencia_delete' vigencia.pk %}"
                                            class="btn btn-sm btn-outline-danger"
                                            title="Deletar"
                                            onclick="return confirm('Tem certeza que deseja deletar a vigência {{ vigencia.anovigencia }}?')">
@@ -153,7 +153,7 @@
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Informações de total -->
                     <div class="mt-3">
                         <small class="text-muted">

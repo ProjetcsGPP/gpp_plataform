@@ -75,16 +75,16 @@
                         <div class="card-body p-4">
                             <form method="post" novalidate>
                                 {% csrf_token %}
-                                
+
                                 <div class="mb-3">
                                     <label for="stralias" class="form-label">
                                         <i class="fas fa-tag me-1"></i> Alias *
                                     </label>
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        id="stralias" 
-                                        name="stralias" 
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="stralias"
+                                        name="stralias"
                                         value="{{ eixo.stralias|default:'' }}"
                                         maxlength="5"
                                         placeholder="Ex: E1, E2, E3..."
@@ -99,10 +99,10 @@
                                     <label for="strdescricaoeixo" class="form-label">
                                         <i class="fas fa-align-left me-1"></i> Descrição *
                                     </label>
-                                    <textarea 
-                                        class="form-control" 
-                                        id="strdescricaoeixo" 
-                                        name="strdescricaoeixo" 
+                                    <textarea
+                                        class="form-control"
+                                        id="strdescricaoeixo"
+                                        name="strdescricaoeixo"
                                         rows="4"
                                         placeholder="Digite a descrição completa do eixo estratégico..."
                                         required>{{ eixo.strdescricaoeixo|default:'' }}</textarea>

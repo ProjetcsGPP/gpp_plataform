@@ -42,20 +42,20 @@
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data" action="{% url 'carga_org_lot_web:lotacao_processar' %}">
                     {% csrf_token %}
-                    
+
                     <div class="mb-3">
                         <label for="arquivo" class="form-label">Selecione o arquivo:</label>
-                        <input type="file" 
-                               class="form-control" 
-                               id="arquivo" 
-                               name="arquivo" 
+                        <input type="file"
+                               class="form-control"
+                               id="arquivo"
+                               name="arquivo"
                                accept=".xlsx,.xls"
                                required>
                         <small class="form-text text-muted">
                             Formatos aceitos: Excel (.xlsx, .xls) com múltiplas abas
                         </small>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-carga-primary w-100">
                         <i class="fas fa-upload me-2"></i>
                         Fazer Upload e Processar
@@ -64,7 +64,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-lg-6 mb-4">
         <div class="card shadow-sm">
             <div class="card-header bg-info text-white">
@@ -75,7 +75,7 @@
             </div>
             <div class="card-body">
                 <p class="text-muted">Selecione um arquivo do seu Google Drive:</p>
-                
+
                 <button type="button" class="btn btn-info w-100" id="btnGoogleDrive">
                     <i class="fab fa-google-drive me-2"></i>
                     Abrir Seletor do Google Drive

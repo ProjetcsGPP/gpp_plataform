@@ -325,19 +325,19 @@ Changelog
 
 📋 MATRIZ DE PERMISSÕES FINAL E CORRETA
 Entidade/Ação	                            GESTOR  COORDENADOR OPERADOR	CONSULTOR
-CONFIGURAÇÕES - Nível 1 (Apenas GESTOR)				
+CONFIGURAÇÕES - Nível 1 (Apenas GESTOR)
 SituacaoAcao (R)	                        ✅      ✅	     ✅	        ✅
 SituacaoAcao (W/D)	                        ✅	   ❌	        ❌	    ❌
 TipoEntraveAlerta (R)	                    ✅	    ✅	    ✅	        ✅
 TipoEntraveAlerta (W/D)	                    ✅	    ❌	    ❌	        ❌
-CONFIGURAÇÕES - Nível 2 (GESTOR e COORDENADOR)				
+CONFIGURAÇÕES - Nível 2 (GESTOR e COORDENADOR)
 Eixo (R)	                                ✅	    ✅	    ✅	        ✅
 Eixo (W/D)	                                ✅	    ✅	    ❌	        ❌
 VigenciaPNGI (R)	                        ✅	    ✅	    ✅	        ✅
 VigenciaPNGI (W/D)	                        ✅	    ✅	    ❌	        ❌
 TipoAnotacaoAlinhamento (R)	                ✅	    ✅	    ✅          	✅
 TipoAnotacaoAlinhamento (W/D)	            ✅	    ✅	    ❌	        ❌
-OPERAÇÕES (GESTOR, COORDENADOR e OPERADOR)				
+OPERAÇÕES (GESTOR, COORDENADOR e OPERADOR)
 Acoes (R)	                                ✅	    ✅	    ✅	        ✅
 Acoes (W/D)	                                ✅	    ✅	    ✅	        ❌
 AcaoPrazo (R)	                            ✅	    ✅	    ✅	        ✅
@@ -350,7 +350,7 @@ UsuarioResponsavel (R)	                    ✅	    ✅	    ✅	        ✅
 UsuarioResponsavel (W/D)	                ✅	    ✅      	✅	        ❌
 RelacaoAcaoUsuarioResponsavel (R)	        ✅	    ✅	    ✅	        ✅
 RelacaoAcaoUsuarioResponsavel (W/D)	        ✅	    ✅	    ✅	        ❌
-GESTÃO DE USUÁRIOS				
+GESTÃO DE USUÁRIOS
 Usuários/Roles (R)	                        ✅	    ✅	    ✅          	✅
 Usuários/Roles (W/D)	                    ✅	    ❌	    ❌	        ❌
 Legenda:

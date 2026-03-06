@@ -4,7 +4,7 @@
 <body>
     <h1>{{ title }}</h1>
     <p>Total: {{ total_users }} | Ativos: {{ stats.active }}</p>
-    
+
     <form method="get">
         <input name="search" value="{{ search|default:'' }}" placeholder="Buscar...">
         <select name="active">
@@ -14,7 +14,7 @@
         </select>
         <button>Filtrar</button>
     </form>
-    
+
     <table border="1">
         <tr><th>ID</th><th>Usuário</th><th>Email</th><th>Status</th><th>Ações</th></tr>
         {% for user in users %}

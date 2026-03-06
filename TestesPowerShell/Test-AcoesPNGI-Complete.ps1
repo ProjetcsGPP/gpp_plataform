@@ -124,14 +124,14 @@ function Write-SectionHeader([string]$title) {
 
 function Test-AppUnit([string]$appName) {
     Write-ColorOutput "[Unit Tests] Executando testes Django..." 'INFO'
-    
+
     $appTestPath = "${appName}.tests.test_context_processors"
     Write-ColorOutput "Comando: python manage.py test $appTestPath -v 2" 'INFO'
     Write-ColorOutput "Diretório: $(Get-Location)" 'INFO'
-    
+
     try {
         $testOutput = python manage.py test $appTestPath -v 2 2>&1
-        
+
         if ($LASTEXITCODE -eq 0) {
             Write-ColorOutput "✓ Testes unitários executados com sucesso!" 'SUCCESS'
             return @{
@@ -165,17 +165,17 @@ function Test-AppUnit([string]$appName) {
 
 function Test-WebViews([string[]]$paths) {
     Write-ColorOutput "[Web Views] Testando renderização de templates..." 'INFO'
-    
+
     $passed = 0
     $failed = 0
-    
+
     foreach ($path in $paths) {
         $url = "$BaseURL$path"
         Write-ColorOutput "  Acessando: $path" 'INFO'
-        
+
         try {
             $response = Invoke-WebRequest -Uri $url -Method GET -SkipHttpErrorCheck -TimeoutSec 10
-            
+
             if ($response.StatusCode -in @(200, 301, 302, 403)) {
                 Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
                 $passed++
@@ -188,7 +188,7 @@ function Test-WebViews([string[]]$paths) {
             $failed++
         }
     }
-    
+
     return @{
         'passed' = $passed
         'failed' = $failed
@@ -197,21 +197,21 @@ function Test-WebViews([string[]]$paths) {
 
 function Test-APIEndpoints([string[]]$endpoints) {
     Write-ColorOutput "[API REST] Testando endpoints da API..." 'INFO'
-    
+
     $passed = 0
     $failed = 0
-    
+
     foreach ($endpoint in $endpoints) {
         $url = "$BaseURL$endpoint"
         Write-ColorOutput "  Acessando: $endpoint" 'INFO'
-        
+
         try {
             $headers = @{
                 'Content-Type' = 'application/json'
             }
-            
+
             $response = Invoke-WebRequest -Uri $url -Method GET -Headers $headers -SkipHttpErrorCheck -TimeoutSec 10
-            
+
             if ($response.StatusCode -in @(200, 403, 401)) {
                 Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
                 $passed++
@@ -229,7 +229,7 @@ function Test-APIEndpoints([string[]]$endpoints) {
             }
         }
     }
-    
+
     return @{
         'passed' = $passed
         'failed' = $failed

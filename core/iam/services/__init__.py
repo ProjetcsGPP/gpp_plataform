@@ -11,14 +11,14 @@ Services:
     - PermissionRepository: Cached permission queries
 """
 
-from .token_service import TokenService
 from .authorization_service import AuthorizationService
-from .role_resolver import RoleResolver
 from .permission_repository import PermissionRepository
+from .role_resolver import RoleResolver
+from .token_service import TokenService
 
 __all__ = [
-    'TokenService',
-    'AuthorizationService',
-    'RoleResolver',
-    'PermissionRepository',
+    "TokenService",
+    "AuthorizationService",
+    "RoleResolver",
+    "PermissionRepository",
 ]

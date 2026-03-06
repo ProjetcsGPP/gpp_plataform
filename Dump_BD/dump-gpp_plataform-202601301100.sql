@@ -412,7 +412,7 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM TBLStatusProgresso WHERE idStatusProgresso = p_idStatusProgresso) THEN
 	    RETURN -1;
 	END IF;
-	
+
 	IF NOT EXISTS (SELECT 1 FROM TBLUsuario WHERE idUsuario = p_idUsuarioCriacao) THEN
 	    RETURN -2;
 	END IF;
@@ -5011,4 +5011,3 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT ON TABL
 --
 
 \unrestrict 3hnj753vFqsx3AJikubXIr9D9e77XKYgaVbCH2uthjhYqYRPPxgA2WuQp7Eb2SH
-

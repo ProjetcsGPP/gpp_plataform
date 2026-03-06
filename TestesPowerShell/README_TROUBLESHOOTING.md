@@ -2,7 +2,7 @@
 
 ## Problemas Encontrados e Soluções
 
-**Data:** 30/01/2026  
+**Data:** 30/01/2026
 **Versão do Script:** 2.2
 
 ---
@@ -81,7 +81,7 @@ POST http://localhost:8000/api/v1/acoes_pngi/situacoes/
 class SituacaoAcao(models.Model):
     strdescricaosituacao = models.CharField(
         max_length=15,  # ⚠️ LIMITE DE 15 CARACTERES
-        unique=True, 
+        unique=True,
         db_column='strdescricaosituacao'
     )
 ```
@@ -301,5 +301,5 @@ Se encontrar novos problemas:
 
 ---
 
-**Versão do documento:** 1.0  
+**Versão do documento:** 1.0
 **Última atualização:** 30/01/2026

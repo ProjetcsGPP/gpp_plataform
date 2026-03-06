@@ -2,29 +2,32 @@
 """
 Cria Alexandre com perfis GESTOR - Robusto e idempotente
 """
+
 import os
+
 import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gpp_plataform.settings')
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gpp_plataform.settings")
 django.setup()
 
 from django.contrib.auth import get_user_model
-from accounts.models import UserRole, Role, Aplicacao
-from django.core.exceptions import ObjectDoesNotExist
+
+from accounts.models import Aplicacao, Role, UserRole
 
 User = get_user_model()
 
 # 1. Superusuário Alexandre
 alexandre, created = User.objects.get_or_create(
-    email='alexandre.mohamad@seger.es.gov.br',
+    email="alexandre.mohamad@seger.es.gov.br",
     defaults={
-        'name': 'Alexandre Wanick Mohamad',
-        'is_staff': True,
-        'is_active': True,
-    }
+        "name": "Alexandre Wanick Mohamad",
+        "is_staff": True,
+        "is_active": True,
+    },
 )
 
 if created:
-    alexandre.set_password('seger2026')
+    alexandre.set_password("seger2026")
     alexandre.save()
     print("✅ Usuário Alexandre CRIADO")
 else:
@@ -32,9 +35,9 @@ else:
 
 # 2. Perfis GESTOR específicos
 perfis_desejados = {
-    'GESTOR_PORTAL': 'PORTAL',
-    'GESTOR_PNGI': 'ACOES_PNGI',
-    'GESTOR_CARGA': 'CARGA_ORG_LOT',
+    "GESTOR_PORTAL": "PORTAL",
+    "GESTOR_PNGI": "ACOES_PNGI",
+    "GESTOR_CARGA": "CARGA_ORG_LOT",
 }
 
 atribuidos = []
@@ -42,20 +45,18 @@ for codigoperfil, codigointerno_app in perfis_desejados.items():
     try:
         aplicacao = Aplicacao.objects.get(codigointerno=codigointerno_app)
         role = Role.objects.get(codigoperfil=codigoperfil, aplicacao=aplicacao)
-        
+
         userrole, created = UserRole.objects.get_or_create(
-            user=alexandre,
-            aplicacao=aplicacao,
-            role=role
+            user=alexandre, aplicacao=aplicacao, role=role
         )
-        
+
         if created:
             print(f"✅ {codigoperfil} ATRIBUÍDO")
         else:
             print(f"ℹ️  {codigoperfil} já existia")
-        
+
         atribuidos.append(codigoperfil)
-        
+
     except Aplicacao.DoesNotExist:
         print(f"❌ Aplicação {codigointerno_app} não encontrada")
     except Role.DoesNotExist:

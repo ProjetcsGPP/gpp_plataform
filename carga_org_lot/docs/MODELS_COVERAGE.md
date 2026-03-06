@@ -196,7 +196,7 @@ GET /api/carga_org_lot/status-token/{id}/
   - `GET /api/carga_org_lot/organogramas/{id}/orgaos/`
   - `GET /api/carga_org_lot/organogramas/{id}/hierarquia/`
 
-**Recomendação**: 
+**Recomendação**:
 - ✅ **OK** - Acesso via organograma é suficiente
 - 🔵 **Opcional**: Criar `OrgaoUnidadeViewSet` se precisar de CRUD direto
 
@@ -210,7 +210,7 @@ GET /api/carga_org_lot/status-token/{id}/
 - ⚠️ **Parcial**: Listado via custom action de `LotacaoVersaoViewSet`
   - `GET /api/carga_org_lot/lotacoes/{id}/registros/`
 
-**Recomendação**: 
+**Recomendação**:
 - ✅ **OK** - Acesso via versão de lotação é suficiente
 - 🔵 **Opcional**: Criar `LotacaoViewSet` se precisar de CRUD direto ou buscas complexas
 
@@ -224,7 +224,7 @@ GET /api/carga_org_lot/status-token/{id}/
 - ⚠️ **Parcial**: Acesso via custom action de `OrganogramaVersaoViewSet`
   - `GET /api/carga_org_lot/organogramas/{id}/json_envio/`
 
-**Recomendação**: 
+**Recomendação**:
 - 🟡 **Considerar**: Criar `OrganogramaJsonViewSet` similar a `LotacaoJsonOrgaoViewSet`
 - Endpoints sugeridos:
   - `POST .../regenerar/` - Regenerar JSON
@@ -241,7 +241,7 @@ GET /api/carga_org_lot/status-token/{id}/
   - `GET /api/carga_org_lot/lotacoes/{id}/inconsistencias/`
   - `GET /api/carga_org_lot/cargas/{id}/timeline/`
 
-**Recomendação**: 
+**Recomendação**:
 - ✅ **OK** - São dados complementares, acesso via entidade principal é suficiente
 
 ---
@@ -323,5 +323,5 @@ Se necessário, criar views web para:
 
 ---
 
-**Última Atualização**: 27 de janeiro de 2026  
+**Última Atualização**: 27 de janeiro de 2026
 **Status**: 🎉 Cobertura completa de models com views implementadas

@@ -12,21 +12,21 @@ Migration Strategy:
 
 # Temporary imports for Phase 1
 from accounts.models import (
-    User,
     Aplicacao,
-    Role,
-    UserRole,
     Attribute,
+    Role,
     RolePermission,
+    User,
     UserManager,
+    UserRole,
 )
 
 __all__ = [
-    'User',
-    'Aplicacao',
-    'Role',
-    'UserRole',
-    'Attribute',
-    'RolePermission',
-    'UserManager',
+    "User",
+    "Aplicacao",
+    "Role",
+    "UserRole",
+    "Attribute",
+    "RolePermission",
+    "UserManager",
 ]

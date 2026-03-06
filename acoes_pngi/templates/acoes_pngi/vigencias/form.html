@@ -75,17 +75,17 @@
                         <div class="card-body p-4">
                             <form method="post" novalidate>
                                 {% csrf_token %}
-                                
+
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="anovigencia" class="form-label">
                                             <i class="fas fa-calendar me-1"></i> Ano *
                                         </label>
-                                        <input 
-                                            type="number" 
-                                            class="form-control" 
-                                            id="anovigencia" 
-                                            name="anovigencia" 
+                                        <input
+                                            type="number"
+                                            class="form-control"
+                                            id="anovigencia"
+                                            name="anovigencia"
                                             value="{{ vigencia.anovigencia|default:'' }}"
                                             min="2020"
                                             max="2050"
@@ -108,10 +108,10 @@
                                     <label for="descricaovigencia" class="form-label">
                                         <i class="fas fa-align-left me-1"></i> Descrição *
                                     </label>
-                                    <textarea 
-                                        class="form-control" 
-                                        id="descricaovigencia" 
-                                        name="descricaovigencia" 
+                                    <textarea
+                                        class="form-control"
+                                        id="descricaovigencia"
+                                        name="descricaovigencia"
                                         rows="3"
                                         placeholder="Digite a descrição da vigência..."
                                         required>{{ vigencia.descricaovigencia|default:'' }}</textarea>
@@ -122,11 +122,11 @@
                                         <label for="datavigenciainicio" class="form-label">
                                             <i class="fas fa-calendar-check me-1"></i> Data Início *
                                         </label>
-                                        <input 
-                                            type="date" 
-                                            class="form-control" 
-                                            id="datavigenciainicio" 
-                                            name="datavigenciainicio" 
+                                        <input
+                                            type="date"
+                                            class="form-control"
+                                            id="datavigenciainicio"
+                                            name="datavigenciainicio"
                                             value="{% if vigencia.datavigenciainicio %}{{ vigencia.datavigenciainicio|date:'Y-m-d' }}{% endif %}"
                                             required>
                                     </div>
@@ -135,11 +135,11 @@
                                         <label for="datavigenciafim" class="form-label">
                                             <i class="fas fa-calendar-times me-1"></i> Data Fim *
                                         </label>
-                                        <input 
-                                            type="date" 
-                                            class="form-control" 
-                                            id="datavigenciafim" 
-                                            name="datavigenciafim" 
+                                        <input
+                                            type="date"
+                                            class="form-control"
+                                            id="datavigenciafim"
+                                            name="datavigenciafim"
                                             value="{% if vigencia.datavigenciafim %}{{ vigencia.datavigenciafim|date:'Y-m-d' }}{% endif %}"
                                             required>
                                     </div>
@@ -202,7 +202,7 @@
     document.querySelector('form').addEventListener('submit', function(e) {
         const dataInicio = document.getElementById('datavigenciainicio').value;
         const dataFim = document.getElementById('datavigenciafim').value;
-        
+
         if (dataInicio && dataFim && dataInicio >= dataFim) {
             e.preventDefault();
             alert('A data de fim deve ser posterior à data de início!');

@@ -51,18 +51,18 @@
       transition: 0.2s;
       border-left: 3px solid transparent;
     }
-    .sidebar a:hover 
-    { 
+    .sidebar a:hover
+    {
       background-color: #575757;
       color: #fff;
     }
-    .sidebar a.active 
+    .sidebar a.active
     {
       color: #fff;
       background-color: #2b2b2b;
       border-left-color: #56AAF0;
     }
-    #main { 
+    #main {
       margin-left: 250px;
       min-height: 100vh;
       display: flex;
@@ -85,7 +85,7 @@
       font-weight: bolder;
     }
     #content { padding: 20px; color: #fff; }
-    
+
     /* Estilos para lista hierárquica */
     .lista-hierarquica {
         list-style-type: none;
@@ -146,7 +146,7 @@
       border-color: #28a745;
     }
     #tabela-patriarcas td:last-child {
-      white-space: nowrap; 
+      white-space: nowrap;
       text-align: center;
     }
 
@@ -386,10 +386,10 @@
           <div class="modal-footer">
               <!-- Adicione este botão -->
               <button type="button" class="btn btn-danger" id="btnExcluirOrgao" onclick="excluirOrgao()">Excluir</button>
-              
+
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
               <button type="submit" class="btn btn-primary">Salvar</button>
-          </div>          
+          </div>
         </form>
       </div>
     </div>
@@ -559,7 +559,7 @@
           console.error("Elemento #tabela-patriarcas não encontrado.");
           return;
       }
-      
+
       tbody.innerHTML = `<tr><td colspan="9" class="text-center p-4"><div class="spinner-border text-info" role="status"></div><p class="mt-2 text-muted">Carregando patriarcas...</p></td></tr>`;
 
       google.script.run
@@ -613,7 +613,7 @@
                           selectButton = `<button class="btn btn-success btn-sm me-2" onclick="selecionarPatriarca('${p.idPatriarca}')">Selecionar</button>`;
                       }
                   }
-                  
+
                   const orgGerado = p.organogramaGerado === 'X' ? 'Sim' : 'Não';
                   let lotGerado = 'Não';
                   if (p.lotacaoGerado === 'X') { lotGerado = 'Sim'; }
@@ -621,7 +621,7 @@
                   const tokenRecebido = p.token ? 'Token recebido' : '';
 
                   // não pode editar o ID do Patriarca PMEXE
-                  
+
                   var btnEditar = `
                   <button class="btn btn-light btn-sm" onclick="editarPatriarca('${p.idPatriarca}')">Editar</button>`;
                   if (p.sigla === 'PMEXE'){
@@ -630,9 +630,9 @@
                   selectButton = selectButton + btnEditar;
 
                   const detailsButton = `
-                      <button 
-                          class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" 
-                          onclick="mostrarDetalhesEnvio('${p.idPatriarca}')" 
+                      <button
+                          class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip"
+                          onclick="mostrarDetalhesEnvio('${p.idPatriarca}')"
                           ${!p.temHistoricoDeEnvio ? 'disabled' : ''}
                           title="Ver detalhes do último envio">
                           <i class="fas fa-list-alt"></i>
@@ -681,14 +681,14 @@
         })
         .setSelectedPatriarca(idPatriarca);
     }
-    
+
     function atualizarStatusPatriarca(idPatriarca) {
       google.script.run
         .withSuccessHandler(function(response) {
           if (response.success) {
             showMessage(`${response.message}`, "success");
             atualizarBannerPatriarca(); // Atualizar o banner
-            
+
           } else {
             showMessage(`Erro ao selecionar patriarca: ${response.message}`, "danger");
           }
@@ -718,17 +718,17 @@
               editModal = new bootstrap.Modal(document.getElementById("editModal"), { backdrop: "static", keyboard: false });
             }
             editModal.show();
-            
+
             var innerHTML = `
               <div class="edit-item"><span class="edit-label">Sigla:</span><span id="editSigla" class="edit-value"> ${retId.dados.sigla || "N/A"}</span></div>
               <div class="edit-item"><span class="edit-label">Patriarca:</span><span id="editNome" class="edit-value"> ${retId.dados.nome || "N/A"}</span></div>
               <div class="edit-item inline">
                 <label for="editIdPatriarca" class="edit-label">Id do Patriarca - PRODEST:</label>
-                <input type="text" class="form-control edit-value" id="editIdPatriarca" value=${retId.dados.idpatriarca || "N/A"}></input> 
+                <input type="text" class="form-control edit-value" id="editIdPatriarca" value=${retId.dados.idpatriarca || "N/A"}></input>
               <div class="edit-item"><span class="edit-label" style="display: none">Linha:</span><span style="display: none" id="editIdPatriarca" class="edit-value"> ${retId.dados.numLinha || "N/A"}</span></div>`;
-              
+
             modalBody.innerHTML = innerHTML;
-            
+
             document.getElementById("btnCancelarEditModal").addEventListener("click", function (e) {
               e.preventDefault();
               if (editModal) {
@@ -802,10 +802,10 @@ function handleResetAndSelect(patriarcaId, button) {
     // Função chamada ao clicar no botão "Novo Patriarca"
     function abrirModalNovoPatriarca() {
       // Altera o título do modal
-      
+
       const modalTitle = document.getElementById("editModalTitle");
       const modalBody = document.getElementById("editModalBody");
-      
+
       modalTitle.textContent = "Novo Patriarca";
       modalBody.innerHTML = `
         <form id="editForm">
@@ -834,7 +834,7 @@ function handleResetAndSelect(patriarcaId, button) {
           <input type="text" class="form-control" id="idPatriarca" required>
         </div>
         `;
-        
+
       // Adiciona evento de cancelar apenas uma vez
       document.getElementById("btnCancelarEditModal").addEventListener("click", function (e) {
         e.preventDefault();
@@ -881,7 +881,7 @@ function handleResetAndSelect(patriarcaId, button) {
         .withSuccessHandler(function(result) {
           console.log("salvarNovoPatriarca - retorno com sucesso!");
           showAddModalMessage("Patriarca incluído com sucesso!", 'success');
-          carregarPatriarcas();        
+          carregarPatriarcas();
           editModal.hide();
           editModal = null;
         })
@@ -907,7 +907,7 @@ function carregarStatusCargas() {
     setTimeout(carregarStatusCargas, 100);
     return;
   }
-  
+
   statusContainer.innerHTML = `<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div><p>Carregando dados das cargas...</p></div>`;
   tableContainer.innerHTML = '';
 
@@ -919,7 +919,7 @@ function carregarStatusCargas() {
         let tableHtml = '<table class="table table-striped table-hover"><thead><tr>' +
           '<th>Patriarca</th><th>Data de Envio</th><th>Tipo de Carga</th><th>GUID da Carga</th><th>Status</th><th>Finalizado</th><th>Última Verificação</th><th>Ações</th>' +
           '</tr></thead><tbody>';
-        
+
         response.dados.forEach(carga => {
           const status = carga.status || '';
           const finalizado = carga.finalizado ? 'Sim' : 'Não';
@@ -935,7 +935,7 @@ function carregarStatusCargas() {
             <td class="finalizado-cell">${finalizado}</td>
             <td class="verificacao-cell">${dataUltimaVerificacao}</td>
             <td>
-              <button class="btn btn-sm btn-primary" 
+              <button class="btn btn-sm btn-primary"
                       onclick="verificarStatusCargaDetalhado('${guidCarga}', '${carga.idPatriarca}', this)"
                       ${!guidCarga ? 'disabled' : ''}>
                 <span class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
@@ -973,7 +973,7 @@ function verificarStatusCargaDetalhado(guidCarga, idPatriarca, button) {
   button.disabled = true;
 
   // Assume ambiente 'HML' como padrão para verificação manual. Altere para 'PRD' se necessário.
-  const ambiente = 'HML'; 
+  const ambiente = 'HML';
 
   google.script.run
     .withSuccessHandler(function(response) {
@@ -1030,7 +1030,7 @@ function enviarCargaParaAPI(button, idPatriarca) {
                 showMessage(`Falha ao obter dados: ${errorMsg}`, 'danger');
                 return;
             }
-            
+
             const patriarca = patriarcaResult.dados;
 
             google.script.run
@@ -1149,7 +1149,7 @@ function monitorarCarga(guid, idPatriarca) {
 
   function inicializarOrganograma() {
     console.log("Inicializando página de organograma com chamada única e retorno de objeto direto...");
-    
+
     //google.script.run
     //    .withSuccessHandler(function(response) {
     //        // Verificação de segurança
@@ -1173,7 +1173,7 @@ function monitorarCarga(guid, idPatriarca) {
 //
     //        // --- Processar dados para o gráfico ---
     //        if (data.chartRows && data.chartRows.length > 0) {
-    //            const rowsJsonString = JSON.stringify(data.chartRows); 
+    //            const rowsJsonString = JSON.stringify(data.chartRows);
     //            const btn = document.getElementById('btnAbrirOrganograma');
     //            if (btn) {
     //                btn.disabled = false;
@@ -1206,7 +1206,7 @@ function monitorarCarga(guid, idPatriarca) {
       google.script.run
         .withSuccessHandler(dados => {
           if (dados.success) {
-            
+
             const btn = document.getElementById("btnAbrirOrganograma");
             btn.disabled = false;
             btn.onclick = function() {
@@ -1240,7 +1240,7 @@ function monitorarCarga(guid, idPatriarca) {
 
       const btn = document.getElementById("btnFazerUploadOrganograma");
       btn.disabled = true;
-      
+
       google.script.run.withSuccessHandler(patriarca => {
         if (!patriarca) {
           showMessage("Nenhum Patriarca selecionado. Por favor, selecione um Patriarca antes de fazer upload do arquivo.", "warning");
@@ -1321,8 +1321,8 @@ function monitorarCarga(guid, idPatriarca) {
           } else {
             // Se houve erro de validação (código 120), exibe o card de inconsistências
             if ((response.errorCode === 120) || (response.errorCode === 150)) {
-              //updateListOrganogramaDuplicado(response.data); 
-              updateListOrganograma(response.errors); 
+              //updateListOrganogramaDuplicado(response.data);
+              updateListOrganograma(response.errors);
             } else {
               // Para qualquer outro erro, exibe uma mensagem genérica de falha
               showMessage(response.message, 'danger');
@@ -1399,13 +1399,13 @@ function monitorarCarga(guid, idPatriarca) {
     function updateListOrganogramaInvalido(data) {
         let fileContentDiv = document.getElementById("fileList");
         if (!fileContentDiv) return;
-        
+
         fileContentDiv.innerHTML = "";
         if (!data || data.length === 0) {
             fileContentDiv.innerHTML = `<div class="alert alert-info">Nenhum item inválido encontrado.</div>`;
             return;
         }
-        
+
         const fileCard = document.createElement("div");
         fileCard.className = "card bg-warning text-dark mb-3";
         fileCard.innerHTML = `
@@ -1419,7 +1419,7 @@ function monitorarCarga(guid, idPatriarca) {
             </div>
         `;
         fileContentDiv.appendChild(fileCard);
-        
+
         console.log("updateListOrganogramaInvalido - data: " + JSON.stringify(data));
 
         const invalidContent = document.getElementById("invalidContent");
@@ -1440,7 +1440,7 @@ function monitorarCarga(guid, idPatriarca) {
                           </div>
                       </div>`;
 
-            }            
+            }
             if(item.acronym === ""){
               html += `<div class="duplicate-item mb-2 p-2 bg-light rounded">
                           <div class="d-flex justify-content-between align-items-start">
@@ -1505,7 +1505,7 @@ function monitorarCarga(guid, idPatriarca) {
       google.script.run
         .withSuccessHandler(dados => {
           if (dados.success) {
-            
+
             const btn = document.getElementById("btnAbrirOrganograma");
             btn.disabled = false;
             btn.onclick = function() {
@@ -1547,30 +1547,30 @@ function monitorarCarga(guid, idPatriarca) {
 //  var nodeMap = {};
 //  var linksData = [];
 //  var rootNode = null;
-//  
+//
 //  for (var i = 0; i < rows.length; i++) {
 //    if (!rows[i] || !rows[i][0]) continue;
-//    
+//
 //    var rawName = rows[i][0].f || rows[i][0].v || '';
 //    var nomeLimpo = cleanName(rawName);
 //    var pos = nomeLimpo.search(/[^A-Z0-9.-]/i);
 //    var sigla = pos > 0 ? nomeLimpo.substring(0, pos) : nomeLimpo;
 //    var nomeParte = nomeLimpo.substring(sigla.length).trim();
-//    
+//
 //    var normalizedId = sigla.toUpperCase().replace(/\s+/g, '');
-//    
+//
 //    nodeMap[normalizedId] = {
 //      id: normalizedId,
 //      name: sigla,
 //      fullName: nomeLimpo,
 //      parentId: null
 //    };
-//    
+//
 //    if (rows[i][1]) {
 //      var parentRaw = rows[i][1].v || rows[i][1];
 //      var parentNormalized = cleanName(parentRaw).toUpperCase().replace(/\s+/g, '');
 //      nodeMap[normalizedId].parentId = parentNormalized;
-//      
+//
 //      if (nodeMap[parentNormalized]) {
 //        linksData.push({source: parentNormalized, target: normalizedId});
 //      }
@@ -1776,7 +1776,7 @@ function gerarResultadoParaNovaAbaHorizontalGoogleCharts(dataTableJson) {
   var textEndScript = '<\/script>';
 
   var dataTable = JSON.parse(dataTableJson);
-  
+
   var htmlTemplate = [
     '<!DOCTYPE html>',
     '<html>',
@@ -1874,9 +1874,9 @@ function construirListaHierarquicaOrganograma(lista) {
 
 
     function inicializarLotacao(){
-      
+
         const fileInput = document.getElementById('fileInputLotacao');
-        
+
         const uploadButton = document.getElementById('btnFazerUploadLotacao');
 
         // Habilita o botão novamente sempre que um novo arquivo for escolhido
@@ -1885,14 +1885,14 @@ function construirListaHierarquicaOrganograma(lista) {
             if (this.files.length > 0) {
               uploadButton.disabled = false;
             }
-          });        
+          });
     }
 
     function uploadFileLotacao() {
 
       const btn = document.getElementById("btnFazerUploadLotacao");
       btn.disabled = true;
-      
+
 
       google.script.run.withSuccessHandler(patriarca => {
         if (!patriarca) {
@@ -1902,7 +1902,7 @@ function construirListaHierarquicaOrganograma(lista) {
         processarUploadLotacao();
       }).getSelectedPatriarca();
 
-      
+
       btn.disabled = false;
     }
 
@@ -1976,7 +1976,7 @@ function construirListaHierarquicaOrganograma(lista) {
         return;
       }
       showMessage(`Processando ${abasSelecionadas.length} aba(s)...`, "info");
-      
+
       const btn = document.getElementById("btnProcessarAbas");
       const spinner = document.getElementById("spinnerProcessar");
 
@@ -2143,14 +2143,14 @@ function construirListaHierarquicaOrganograma(lista) {
 
       showMessage("Gerando arquivos JSON de lotação...", "info");
 
-      document.getElementById('divSpinner').style.display = 'block'; 
+      document.getElementById('divSpinner').style.display = 'block';
 
       botao = document.getElementById('btnGerarJsonLotacao');
       botao.disabled = true;
 
       google.script.run
         .withSuccessHandler(function(response) {
-          document.getElementById('divSpinner').style.display = 'd-none'; 
+          document.getElementById('divSpinner').style.display = 'd-none';
 
           if (response.success) {
             showMessage(response.message, "success");
@@ -2161,7 +2161,7 @@ function construirListaHierarquicaOrganograma(lista) {
           }
         })
         .withFailureHandler(function(response) {
-          document.getElementById('divSpinner').style.display = 'd-none'; 
+          document.getElementById('divSpinner').style.display = 'd-none';
           error => showMessage(`Erro de comunicação ao gerar JSON: ${error.message}`, "danger")
         })
         .gerarJsonLotacao();
@@ -2179,7 +2179,7 @@ function construirListaHierarquicaOrganograma(lista) {
   var setRfEdges = null;
 
   // Função principal que inicializa o editor do organograma
-  
+
 
   function inicializarOrganogramaEdicao() {
     google.script.run
@@ -2189,9 +2189,9 @@ function construirListaHierarquicaOrganograma(lista) {
           document.getElementById('reactflow-container').innerHTML = '<div class="alert alert-warning">Nenhum patriarca selecionado.</div>';
           return;
         }
-        
+
         rfPatriarca = patriarca;
-        
+
         // Chamar função modificada
         google.script.run
           .withSuccessHandler(response => {
@@ -2220,13 +2220,13 @@ function construirListaHierarquicaOrganograma(lista) {
       e.preventDefault();
       salvarOrganogramaVisual();
     });
-  
+
     document.getElementById("btnOrganizarOrganogramaVisual").addEventListener("click", function (e) {
       e.preventDefault();
       organizarOrganogramaVisual();
     });
 
-    
+
     // botão Gerar Organograma para envio
     document.getElementById('btnAbrirOrganograma').addEventListener("click", function (e) {
       e.preventDefault();
@@ -2256,14 +2256,14 @@ function construirListaHierarquicaOrganograma(lista) {
 //
       //      // --- Processar dados para o gráfico ---
       //      if (data.chartRows && data.chartRows.length > 0) {
-      //          gerarResultadoParaNovaAbaHorizontal(JSON.stringify(data.chartRows));                  
+      //          gerarResultadoParaNovaAbaHorizontal(JSON.stringify(data.chartRows));
       //      }
       //  })
       //  .withFailureHandler(function(err) {
       //      showMessage("Erro crítico na comunicação com o servidor: " + err.message, "danger");
       //  })
       //  .getOrganogramaCompleto();
-      
+
       // Substitua as duas chamadas por uma única
       google.script.run
         .withSuccessHandler(dados => {
@@ -2281,7 +2281,7 @@ function construirListaHierarquicaOrganograma(lista) {
         .getChartDataTable(); //.getOrganogramaGoogleCharts();
 
     });
-    
+
     // Anexa os ouvintes de eventos DEPOIS das chamadas assíncronas
     const searchInput = document.getElementById('nodeSearchInput');
     if (searchInput) {
@@ -2290,7 +2290,7 @@ function construirListaHierarquicaOrganograma(lista) {
         });
     }
 
-    document.addEventListener('keydown', handleKeyboardShortcuts);      
+    document.addEventListener('keydown', handleKeyboardShortcuts);
   }
 
   function mostrarModalEscolhaFonte(response) {
@@ -2343,13 +2343,13 @@ function construirListaHierarquicaOrganograma(lista) {
         </div>
       </div>
     `;
-    
+
     // Remove modal anterior se existir
     const existingModal = document.getElementById('modalEscolhaFonte');
     if (existingModal) {
       existingModal.remove();
     }
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     new bootstrap.Modal(document.getElementById('modalEscolhaFonte')).show();
   }
@@ -2359,16 +2359,16 @@ function construirListaHierarquicaOrganograma(lista) {
     if (modal) {
       modal.hide();
     }
-    
+
     showMessage('Carregando dados escolhidos...', 'info');
-    
+
     var data = [];
 
     google.script.run
       .withSuccessHandler(response => {
         if (response.success) {
           renderReactFlow(response.data.nodes, response.data.edges);
-          
+
           data = response.data;
 
           showMessage(`Organograma carregado usando ${escolha === 'json' ? 'arquivo salvo' : 'dados da planilha'}.`, 'success');
@@ -2380,7 +2380,7 @@ function construirListaHierarquicaOrganograma(lista) {
         showMessage('Erro ao buscar dados do organograma: ' + err.message, 'danger');
       })
       .getOrganogramaJsonParaEdicao(escolha);
-      
+
       // botão Salvar
       document.getElementById('btnSalvarOrganogramaVisual').addEventListener("click", function (e) {
         e.preventDefault();
@@ -2391,7 +2391,7 @@ function construirListaHierarquicaOrganograma(lista) {
         e.preventDefault();
         organizarOrganogramaVisual();
       });
-      
+
       // botão Gerar Organograma para envio
       document.getElementById('btnAbrirOrganograma').addEventListener("click", function (e) {
         e.preventDefault();
@@ -2421,7 +2421,7 @@ function construirListaHierarquicaOrganograma(lista) {
 //
         //      // --- Processar dados para o gráfico ---
         //      if (data.chartRows && data.chartRows.length > 0) {
-        //          gerarResultadoParaNovaAbaHorizontal(JSON.stringify(data.chartRows));                  
+        //          gerarResultadoParaNovaAbaHorizontal(JSON.stringify(data.chartRows));
         //      }
         //  })
         //  .withFailureHandler(function(err) {
@@ -2433,7 +2433,7 @@ function construirListaHierarquicaOrganograma(lista) {
         google.script.run
           .withSuccessHandler(dados => {
             if (dados.success) {
-              
+
               const btn = document.getElementById("btnAbrirOrganograma");
               btn.disabled = false;
               btn.onclick = function() {
@@ -2447,9 +2447,9 @@ function construirListaHierarquicaOrganograma(lista) {
             }
           })
           .withFailureHandler(err => showMessage(`Erro de comunicação: ${err.message}`, "danger"))
-          .getChartDataTable(); //.getOrganogramaGoogleCharts();        
+          .getChartDataTable(); //.getOrganogramaGoogleCharts();
       });
-      
+
       // Anexa os ouvintes de eventos DEPOIS das chamadas assíncronas
       const searchInput = document.getElementById('nodeSearchInput');
       if (searchInput) {
@@ -2598,15 +2598,15 @@ function construirListaHierarquicaOrganograma(lista) {
   function renderReactFlow(initialNodes, initialEdges) {
     const { React } = window;
     const { createRoot } = ReactDOM;
-    
-    const { 
-        ReactFlow, 
-        Controls, 
-        ReactFlowProvider, 
-        useNodesState, 
-        useEdgesState, 
-        useReactFlow, 
-        addEdge 
+
+    const {
+        ReactFlow,
+        Controls,
+        ReactFlowProvider,
+        useNodesState,
+        useEdgesState,
+        useReactFlow,
+        addEdge
     } = window.ReactFlow;
 
     function RFEditor() {
@@ -2641,7 +2641,7 @@ function construirListaHierarquicaOrganograma(lista) {
             fitView: true,
             style: { width: '100%', height: '700px' }
           },
-          
+
           // MiniMap do ReactFlow
           // Infelizmente o minimap não fica legível e nem está obdecendo o css
           // Não consegui estabelecer qual o motivo deste problema
@@ -2713,7 +2713,7 @@ function construirListaHierarquicaOrganograma(lista) {
     }
   }
 
-  
+
   // 2.1 - Ação da tecla INSERT
   function handleInsertKey(selectedNode) {
       const parentNode = selectedNode || rfInstance.getNode('root');
@@ -2730,7 +2730,7 @@ function construirListaHierarquicaOrganograma(lista) {
         showMessage('O nó raiz (Patriarca) não pode ser excluído.', 'danger');
         return;
     }
-    
+
     // Abre o modal em modo de exclusão
     const form = document.getElementById('formOrgao');
     form.reset();
@@ -2738,7 +2738,7 @@ function construirListaHierarquicaOrganograma(lista) {
     form.dataset.nodeId = selectedNode.id;
 
     document.getElementById('modalOrgaoTitle').textContent = `Excluir "${selectedNode.data.label}"?`;
-    
+
     // Desabilita campos e botões
     document.getElementById('orgaoNome').value = selectedNode.data.nome;
     document.getElementById('orgaoSigla').value = selectedNode.data.sigla;
@@ -2774,10 +2774,10 @@ function construirListaHierarquicaOrganograma(lista) {
 
     const parentEdge = edges.find(e => e.target === selectedNode.id);
     const parentId = parentEdge ? parentEdge.source : null;
-    
+
     const childrenEdges = edges.filter(e => e.source === selectedNode.id);
     const siblingsEdges = edges.filter(e => e.source === parentId);
-    
+
     let nextNodeId = null;
 
     switch (key) {
@@ -2832,7 +2832,7 @@ function construirListaHierarquicaOrganograma(lista) {
       form.reset();
       form.dataset.mode = 'edit';
       form.dataset.nodeId = node.id;
-      
+
       document.getElementById('orgaoNome').value = node.data.nome || node.data.label;
       document.getElementById('orgaoSigla').value = node.data.sigla;
       //document.getElementById('btnExcluirOrgao').style.display = node.id === 'root' ? 'none' : 'block';
@@ -2842,7 +2842,7 @@ function construirListaHierarquicaOrganograma(lista) {
       new bootstrap.Modal(document.getElementById('modalOrgao')).show();
   }
 
-  
+
   function validaInsercaoNos(termo) {
     if (!rfInstance || !termo) {
       return { success: false, message: 'A instância do Organograma não foi encontrada ou o termo de pesquisa está vazio!' };
@@ -2883,7 +2883,7 @@ function construirListaHierarquicaOrganograma(lista) {
 
     var retValidaNome = validaInsercaoNos(nome);
     if(retValidaNome.success){
-      
+
     }
 
 
@@ -2901,7 +2901,7 @@ function construirListaHierarquicaOrganograma(lista) {
     } else if (mode === 'add') {
         const parentId = this.dataset.parentId;
         const parentNode = rfInstance.getNode(parentId);
-        
+
         // Validação para garantir que um nó pai existe antes de adicionar um filho
         if (!parentNode) {
             showMessage('Erro: O nó pai selecionado não foi encontrado. Tente selecionar novamente.', 'danger');
@@ -2922,7 +2922,7 @@ function construirListaHierarquicaOrganograma(lista) {
         window.setRfNodes(nds => [...nds, newNode]);
         window.setRfEdges(eds => [...eds, newEdge]);
     }
-    
+
     // Esconde o modal após a operação
     bootstrap.Modal.getInstance(document.getElementById('modalOrgao')).hide();
   });
@@ -3122,7 +3122,7 @@ function construirListaHierarquicaOrganograma(lista) {
 
     function carregarListaOrgaos() {
       const container = document.getElementById('listaOrgaosContainer');
-      
+
       google.script.run
         .withSuccessHandler(function(result) {
           if (result.success) {
@@ -3172,7 +3172,7 @@ function construirListaHierarquicaOrganograma(lista) {
       }
 
       const checkboxes = document.querySelectorAll('#listaOrgaosContainer input[type="checkbox"]:checked');
-      
+
       if (checkboxes.length === 0) {
         showMessage('Selecione pelo menos um órgão para enviar', 'warning');
         return;
@@ -3238,14 +3238,14 @@ function construirListaHierarquicaOrganograma(lista) {
 
       let detalhesHtml = `<h6>Resultado do Envio (Modo: ${modo})</h6>`;
       detalhesHtml += `<p>${result.message}</p>`;
-      
+
       if (result.resultados) {
         detalhesHtml += '<ul class="list-unstyled">';
         result.resultados.forEach(function(r) {
-          const icone = r.success ? 
-            '<i class="fas fa-check-circle text-success me-2"></i>' : 
+          const icone = r.success ?
+            '<i class="fas fa-check-circle text-success me-2"></i>' :
             '<i class="fas fa-times-circle text-danger me-2"></i>';
-          
+
           detalhesHtml += `
             <li class="mb-2">
               ${icone}
@@ -3259,7 +3259,7 @@ function construirListaHierarquicaOrganograma(lista) {
 
       document.getElementById('progressoDetalhes').innerHTML = detalhesHtml;
       showMessage(result.message, 'success');
-      
+
       // Reabilitar botão após alguns segundos
       setTimeout(function() {
         document.getElementById('btnEnviarLotacoes').disabled = false;
@@ -3274,7 +3274,7 @@ function construirListaHierarquicaOrganograma(lista) {
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       `;
-      
+
       // Auto-dismiss após 5 segundos
       setTimeout(function() {
         const alert = container.querySelector('.alert');
@@ -3312,7 +3312,7 @@ function construirListaHierarquicaOrganograma(lista) {
     google.script.run
       .withSuccessHandler(function(result) {
         const alertDiv = document.getElementById('alertTokenContainer');
-        
+
         if (result.tokenValido) {
           statusTokenOk = true;
           alertDiv.innerHTML = `
@@ -3325,11 +3325,11 @@ function construirListaHierarquicaOrganograma(lista) {
         } else {
           statusTokenOk = false;
           let actionButton = '';
-          
+
           if (result.requiredAction === 'GERAR_TOKEN') {
             actionButton = '<button class="btn btn-sm btn-warning mt-2" onclick="gerarNovoToken()"><i class="fas fa-key me-1"></i>Gerar Token</button>';
           }
-          
+
           alertDiv.innerHTML = `
             <div class="alert alert-warning alert-sm">
               <i class="fas fa-exclamation-triangle me-2"></i>
@@ -3355,7 +3355,7 @@ function construirListaHierarquicaOrganograma(lista) {
     // NOVA FUNÇÃO
     function gerarNovoToken() {
       showMessage('Gerando novo token...', 'info');
-      
+
       google.script.run
         .withSuccessHandler(function(result) {
           if (result.success) {
@@ -3374,7 +3374,7 @@ function construirListaHierarquicaOrganograma(lista) {
     // ATUALIZAR FUNÇÃO
     function verificarSeHabilitaBotaoEnvio() {
       const btn = document.getElementById('btnEnviarLotacoes');
-      
+
       // Habilita apenas se organograma OK e token OK
       if (statusOrganogramaOk && statusTokenOk) {
         btn.disabled = false;
@@ -3428,7 +3428,7 @@ function construirListaHierarquicaOrganograma(lista) {
     patriarcas.forEach(function(patriarca) {
       const tr = document.createElement('tr');
       tr.id = `patriarca-row-${patriarca.idPatriarca}`;
-      
+
       var config = statusConfig[patriarca.status] || { badge: 'secondary', icon: 'fa-question-circle', label: patriarca.status };
       let acoesHtml = '';
 
@@ -3439,7 +3439,7 @@ function construirListaHierarquicaOrganograma(lista) {
               <i class="fas fa-upload me-1"></i> Iniciar Envio
             </button>`;
           break;
-        
+
         case 'Enviando Carga':
           acoesHtml = `
             <button class="btn btn-sm btn-outline-info" disabled>
@@ -3447,7 +3447,7 @@ function construirListaHierarquicaOrganograma(lista) {
               Em Processamento...
             </button>`;
           break;
-        
+
         case 'Carga processada':
           // --- LÓGICA DE VERIFICAÇÃO DO TOKEN ---
           if (patriarca.tokenValido) {
@@ -3486,7 +3486,7 @@ function construirListaHierarquicaOrganograma(lista) {
         </td>
         <td class="text-center">${acoesHtml}</td>
       `;
-      
+
       tbody.appendChild(tr);
     });
   }
@@ -3523,7 +3523,7 @@ function construirListaHierarquicaOrganograma(lista) {
             <small>O processamento foi iniciado. Verifique o status na opção "Validar Envio de Carga".</small>`,
             'success'
           );
-          
+
           // Recarregar tabela após 2 segundos
           setTimeout(function() {
             console.log('Chamando carregarPatriarcasParaEnvio em iniciarEnvioOrganograma');
@@ -3637,7 +3637,7 @@ function construirListaHierarquicaOrganograma(lista) {
   function abrirTelaEnvioLotacoes(idPatriarca) {
     // 1. Armazena o ID do patriarca na variável global
     parametroParaPagina = idPatriarca;
-    
+
     // 2. Chama a função carregarPagina da forma original, sem modificá-la
     carregarPagina('selecionarOrgaosLotacao');
   }
@@ -3657,7 +3657,7 @@ function construirListaHierarquicaOrganograma(lista) {
 
     const container = document.getElementById('lotacao-content-container');
     const btnEnviar = document.getElementById('btnEnviarLotacoes');
-    
+
     if (!container) {
       console.error("Erro crítico: Container 'lotacao-content-container' não foi encontrado. Verifique o arquivo selecionarOrgaosLotacao.html.");
       return;
@@ -3756,7 +3756,7 @@ function construirListaHierarquicaOrganograma(lista) {
 
         if (registros && registros.length > 0) {
           modalTitle.innerHTML = `<i class="fas fa-history me-2"></i>Histórico de Envio: <strong>${registros[0].nomePatriarca}</strong>`;
-          
+
           let tableHtml = '<div class="table-responsive"><table class="table table-dark table-sm table-hover">';
           tableHtml += `<thead>
                           <tr>
@@ -3768,11 +3768,11 @@ function construirListaHierarquicaOrganograma(lista) {
                           </tr>
                         </thead>
                         <tbody>`;
-          
+
           registros.forEach(reg => {
             tableHtml += `
               <tr>
-                <td>${reg.dataHoraEnvio || 'N/A'}</td> 
+                <td>${reg.dataHoraEnvio || 'N/A'}</td>
                 <td>${reg.tipoArquivo || 'N/A'}</td>
                 <td><small>${reg.guidCarga || 'N/A'}</small></td>
                 <td style="text-align: center; vertical-align: middle;"><span class="badge bg-info">${reg.status || 'N/A'}</span></td>

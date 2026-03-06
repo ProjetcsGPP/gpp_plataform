@@ -78,7 +78,7 @@ def patriarca_create(request):
             return redirect('carga_org_lot:patriarca_detail', patriarca_id=patriarca.id)
     else:
         form = PatriarcaForm()
-    
+
     return render(request, 'carga_org_lot/patriarca_form.html', {'form': form})
 ```
 
@@ -148,7 +148,7 @@ urlpatterns = [
        'patriarca_create',
        'patriarca_list',
    ]
-   
+
    # ❌ ERRADO
    __all__ = [
        patriarca_create,  # ← Sem aspas!
@@ -160,7 +160,7 @@ urlpatterns = [
    # ✅ CORRETO
    from ..views import web_views
    web_views.patriarca_create  # Usar assim
-   
+
    # ❌ ERRADO
    from ..views.web_views import patriarca_create  # Depois import direto
    patriarca_create  # Causa confusão

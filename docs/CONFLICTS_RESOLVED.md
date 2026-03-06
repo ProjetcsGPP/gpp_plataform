@@ -105,10 +105,10 @@ git pull origin main
 
 ```bash
 # Windows PowerShell
-Get-ChildItem -Recurse -Directory -Filter "api_views" | 
+Get-ChildItem -Recurse -Directory -Filter "api_views" |
     Where-Object { Test-Path "$($_.Parent.FullName)\api_views.py" }
 
-Get-ChildItem -Recurse -Directory -Filter "web_views" | 
+Get-ChildItem -Recurse -Directory -Filter "web_views" |
     Where-Object { Test-Path "$($_.Parent.FullName)\web_views.py" }
 ```
 
@@ -207,12 +207,12 @@ from pathlib import Path
 def find_conflicts(root_dir='.'):
     """Encontra conflitos arquivo/diretório"""
     conflicts = []
-    
+
     for dirpath, dirnames, filenames in os.walk(root_dir):
         # Ignorar diretórios especiais
         if any(x in dirpath for x in ['venv', '__pycache__', '.git', 'node_modules']):
             continue
-            
+
         for filename in filenames:
             if filename.endswith('.py'):
                 base_name = filename[:-3]
@@ -222,12 +222,12 @@ def find_conflicts(root_dir='.'):
                         'file': filename,
                         'dir': base_name + '/'
                     })
-    
+
     return conflicts
 
 if __name__ == '__main__':
     conflicts = find_conflicts()
-    
+
     if conflicts:
         print(f"❌ Encontrados {len(conflicts)} conflitos:")
         for c in conflicts:
@@ -261,6 +261,6 @@ python scripts/detect_conflicts.py
 
 ---
 
-**Data da Resolução**: 27 de janeiro de 2026  
-**Último Commit**: [1253e42](https://github.com/ProjetcsGPP/gpp_plataform/commit/1253e42)  
+**Data da Resolução**: 27 de janeiro de 2026
+**Último Commit**: [1253e42](https://github.com/ProjetcsGPP/gpp_plataform/commit/1253e42)
 **Status**: ✅ Resolvido Completamente

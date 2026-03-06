@@ -4,63 +4,113 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Eixo',
+            name="Eixo",
             fields=[
-                ('ideixo', models.AutoField(db_column='ideixo', primary_key=True, serialize=False)),
-                ('strdescricaoeixo', models.CharField(db_column='strdescricaoeixo', max_length=100)),
-                ('stralias', models.CharField(db_column='stralias', max_length=5, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
+                (
+                    "ideixo",
+                    models.AutoField(
+                        db_column="ideixo", primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "strdescricaoeixo",
+                    models.CharField(db_column="strdescricaoeixo", max_length=100),
+                ),
+                (
+                    "stralias",
+                    models.CharField(db_column="stralias", max_length=5, unique=True),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
             ],
             options={
-                'verbose_name': 'Eixo',
-                'verbose_name_plural': 'Eixos',
-                'db_table': 'acoes_pngi"."tbleixos',
-                'ordering': ['stralias'],
-                'managed': True,
+                "verbose_name": "Eixo",
+                "verbose_name_plural": "Eixos",
+                "db_table": 'acoes_pngi"."tbleixos',
+                "ordering": ["stralias"],
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='SituacaoAcao',
+            name="SituacaoAcao",
             fields=[
-                ('idsituacaoacao', models.AutoField(db_column='idsituacaoacao', primary_key=True, serialize=False)),
-                ('strdescricaosituacao', models.CharField(db_column='strdescricaosituacao', max_length=15, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
+                (
+                    "idsituacaoacao",
+                    models.AutoField(
+                        db_column="idsituacaoacao", primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "strdescricaosituacao",
+                    models.CharField(
+                        db_column="strdescricaosituacao", max_length=15, unique=True
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
             ],
             options={
-                'verbose_name': 'Situação de Ação',
-                'verbose_name_plural': 'Situações de Ações',
-                'db_table': 'acoes_pngi"."tblsituacaoacao',
-                'ordering': ['strdescricaosituacao'],
-                'managed': True,
+                "verbose_name": "Situação de Ação",
+                "verbose_name_plural": "Situações de Ações",
+                "db_table": 'acoes_pngi"."tblsituacaoacao',
+                "ordering": ["strdescricaosituacao"],
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='VigenciaPNGI',
+            name="VigenciaPNGI",
             fields=[
-                ('idvigenciapngi', models.AutoField(db_column='idvigenciapngi', primary_key=True, serialize=False)),
-                ('strdescricaovigenciapngi', models.CharField(db_column='strdescricaovigenciapngi', max_length=100)),
-                ('datiniciovigencia', models.DateField(db_column='datiniciovigencia')),
-                ('datfinalvigencia', models.DateField(db_column='datfinalvigencia')),
-                ('isvigenciaativa', models.BooleanField(db_column='isvigenciaativa', default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
+                (
+                    "idvigenciapngi",
+                    models.AutoField(
+                        db_column="idvigenciapngi", primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "strdescricaovigenciapngi",
+                    models.CharField(
+                        db_column="strdescricaovigenciapngi", max_length=100
+                    ),
+                ),
+                ("datiniciovigencia", models.DateField(db_column="datiniciovigencia")),
+                ("datfinalvigencia", models.DateField(db_column="datfinalvigencia")),
+                (
+                    "isvigenciaativa",
+                    models.BooleanField(db_column="isvigenciaativa", default=False),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
             ],
             options={
-                'verbose_name': 'Vigência PNGI',
-                'verbose_name_plural': 'Vigências PNGI',
-                'db_table': 'acoes_pngi"."tblvigenciapngi',
-                'ordering': ['-datiniciovigencia'],
-                'managed': True,
+                "verbose_name": "Vigência PNGI",
+                "verbose_name_plural": "Vigências PNGI",
+                "db_table": 'acoes_pngi"."tblvigenciapngi',
+                "ordering": ["-datiniciovigencia"],
+                "managed": True,
             },
         ),
     ]

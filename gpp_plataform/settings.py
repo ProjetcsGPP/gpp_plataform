@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 
 # Hosts/IPs para desenvolvimento (Ubuntu/WSL + Windows)
-HOST_IP = os.getenv('DJANGO_HOST_IP', '172.22.176.1')  # Seu IP do Ubuntu
+HOST_IP = os.getenv("DJANGO_HOST_IP", "172.22.176.1")  # Seu IP do Ubuntu
 FRONTEND_URLS = [
     f"http://{HOST_IP}:3000",
     "http://localhost:3000",
@@ -29,10 +29,10 @@ FRONTEND_URLS = [
 
 # Hosts Django
 ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
+    "localhost",
+    "127.0.0.1",
     HOST_IP,
-    '*',  # Só dev
+    "*",  # Só dev
 ]
 
 # CORS/CSRF para Next.js (Ubuntu)
@@ -40,56 +40,54 @@ CORS_ALLOWED_ORIGINS = FRONTEND_URLS
 CSRF_TRUSTED_ORIGINS = FRONTEND_URLS
 
 
-
-
 # Configuração de sessão
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 86400  # 24 horas
 
 # Messages framework
-MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [BASE_DIR / 'templates'],
-    'APP_DIRS': True,
-    'OPTIONS': {
-        'context_processors': [
-            'django.template.context_processors.debug',
-            'django.template.context_processors.request',
-            'django.contrib.auth.context_processors.auth',
-            'django.contrib.messages.context_processors.messages',
-            
-            # Context processors das apps
-            'accounts.context_processors.active_role_context',
-            'acoes_pngi.context_processors.acoes_permissions',
-            'acoes_pngi.context_processors.acoes_pngi_context',  # NOVO - dropdown com perfis
-            'carga_org_lot.context_processors.carga_org_lot_context',
-        ],
-    },
-}]
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                # Context processors das apps
+                "accounts.context_processors.active_role_context",
+                "acoes_pngi.context_processors.acoes_permissions",
+                "acoes_pngi.context_processors.acoes_pngi_context",  # NOVO - dropdown com perfis
+                "carga_org_lot.context_processors.carga_org_lot_context",
+            ],
+        },
+    }
+]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Secrete como estava antes
-#SECRET_KEY = 'django-insecure-zi_0xgun9-=se!8anfq0cian(+e%*%-k(f-6xwxr8qe^85(10p'
+# SECRET_KEY = 'django-insecure-zi_0xgun9-=se!8anfq0cian(+e%*%-k(f-6xwxr8qe^85(10p'
 
 SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-CHANGE-IN-PRODUCTION-USE-ENV-VAR'
+    "DJANGO_SECRET_KEY", "django-insecure-CHANGE-IN-PRODUCTION-USE-ENV-VAR"
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '172.22.176.1',      # ← SEU IP DO UBUNTU
-    '*',                  # ← TEMPORÁRIO para desenvolvimento
+    "localhost",
+    "127.0.0.1",
+    "172.22.176.1",  # ← SEU IP DO UBUNTU
+    "*",  # ← TEMPORÁRIO para desenvolvimento
 ]
 
 
@@ -97,91 +95,82 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     # Django core
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_extensions', 
-
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django_extensions",
     # Terceiros
-    'rest_framework',
-    'rest_framework.authtoken',
-    'corsheaders',
-
-    
+    "rest_framework",
+    "rest_framework.authtoken",
+    "corsheaders",
     # Apps do projeto
-    'common',
-    'accounts',
-    'auth_service',
-    'portal',
-    'carga_org_lot',
-    'acoes_pngi',  # ← ADICIONAR AQUI
-    'db_service',
+    "common",
+    "accounts",
+    "auth_service",
+    "portal",
+    "carga_org_lot",
+    "acoes_pngi",  # ← ADICIONAR AQUI
+    "db_service",
 ]
-    
+
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',  # Para roles ativas
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",  # Para roles ativas
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     # ✨ SEU MIDDLEWARE JWT (CORRETO!)
-    'accounts.middleware.JWTUniversalAuthenticationMiddleware',
-    
+    "accounts.middleware.JWTUniversalAuthenticationMiddleware",
     # ✅ ActiveRoleMiddleware (MELHORADO)
-    'accounts.middleware.ActiveRoleMiddleware', 
-    
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'common.middleware.app_context.AppContextMiddleware',
+    "accounts.middleware.ActiveRoleMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "common.middleware.app_context.AppContextMiddleware",
 ]
 
 
+ROOT_URLCONF = "gpp_plataform.urls"
 
-ROOT_URLCONF = 'gpp_plataform.urls'
-
-WSGI_APPLICATION = 'gpp_plataform.wsgi.application'
+WSGI_APPLICATION = "gpp_plataform.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gpp_plataform',
-        'USER': 'postgres',
-        'PASSWORD': 'GPP_bd@202601',
-        'HOST': 'localhost',
-        'PORT': '5432',
-        'OPTIONS': {
-            'options': '-c search_path=public,acoes_pngi,carga_org_lot'
-        }
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "gpp_plataform",
+        "USER": "postgres",
+        "PASSWORD": "GPP_bd@202601",
+        "HOST": "localhost",
+        "PORT": "5432",
+        "OPTIONS": {"options": "-c search_path=public,acoes_pngi,carga_org_lot"},
     }
 }
 
-DATABASE_ROUTERS = ['carga_org_lot.db_router.CargaOrgLotRouter']
+DATABASE_ROUTERS = ["carga_org_lot.db_router.CargaOrgLotRouter"]
 
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = "accounts.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -189,9 +178,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -201,34 +190,31 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 REST_FRAMEWORK = {
-     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
-    
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication', 
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
 }
 
 # Configuração do SIMPLE_JWT
 from datetime import timedelta
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-
-    'AUTH_HEADER_TYPES': ('Bearer',),
-
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 
@@ -236,34 +222,32 @@ SIMPLE_JWT = {
 if DEBUG:
     # DEV: Django padrão PRIMEIRO (admin funciona)
     AUTHENTICATION_BACKENDS = [
-        'django.contrib.auth.backends.ModelBackend',
-        'accounts.backends.EmailBackend',
+        "django.contrib.auth.backends.ModelBackend",
+        "accounts.backends.EmailBackend",
     ]
 else:
     # PROD: Backend customizado primeiro
     AUTHENTICATION_BACKENDS = [
-        'accounts.backends.EmailBackend',
-        'django.contrib.auth.backends.ModelBackend',
+        "accounts.backends.EmailBackend",
+        "django.contrib.auth.backends.ModelBackend",
     ]
 
 # Configurações de Login
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/login/'
-
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/dashboard/"
+LOGOUT_REDIRECT_URL = "/login/"
 
 
 CORS_ALLOW_CREDENTIALS = True
 
 # Session Configuration
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = False  # True em produção com HTTPS
 SESSION_COOKIE_AGE = 86400  # 24 horas
 
 CSRF_COOKIE_HTTPONLY = False  # Permitir JS ler o token
-CSRF_COOKIE_SAMESITE = 'Lax'
-
+CSRF_COOKIE_SAMESITE = "Lax"
 
 
 # =========================================================================
@@ -271,48 +255,48 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 # =========================================================================
 
 # Porta do portal (para apps filhas acessarem)
-PORTAL_PORT = os.getenv('PORTAL_PORT', '8000')
+PORTAL_PORT = os.getenv("PORTAL_PORT", "8000")
 
 # Credenciais do Service Account (para apps acessarem APIs do Portal)
-PORTAL_SERVICE_EMAIL = os.getenv('PORTAL_SERVICE_EMAIL', '')
-PORTAL_SERVICE_PASSWORD = os.getenv('PORTAL_SERVICE_PASSWORD', '')
+PORTAL_SERVICE_EMAIL = os.getenv("PORTAL_SERVICE_EMAIL", "")
+PORTAL_SERVICE_PASSWORD = os.getenv("PORTAL_SERVICE_PASSWORD", "")
 
 # Cache para tokens (já existe, mas certifique-se de ter configurado)
-if 'CACHES' not in locals():
+if "CACHES" not in locals():
     CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'gpp-plataform-cache',
-            'TIMEOUT': 3600,  # 1 hora
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "gpp-plataform-cache",
+            "TIMEOUT": 3600,  # 1 hora
         }
     }
 
 
 # Logging
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
         },
     },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
     },
-    'loggers': {
-        'common.services.portal_auth': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
+    "loggers": {
+        "common.services.portal_auth": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
         },
     },
 }
@@ -322,27 +306,27 @@ LOGGING = {
 # =========================================================================
 
 # Test Runner customizado
-TEST_RUNNER = 'common.test_runner.GPPTestRunner'
+TEST_RUNNER = "common.test_runner.GPPTestRunner"
 
 # Configuração específica para testes
-if 'test' in sys.argv:
+if "test" in sys.argv:
     # Adicionar conexão 'gpp_plataform_db' como alias para 'default'
     # Isso resolve o erro: ConnectionDoesNotExist: The connection 'gpp_plataform_db' doesn't exist
-    DATABASES['gpp_plataform_db'] = DATABASES['default'].copy()
-    DATABASES['gpp_plataform_db']['TEST'] = {
-        'NAME': 'test_gpp_plataform',
-        'CHARSET': 'UTF8',
-        'MIRROR': 'default',  # Usar o mesmo banco de teste do 'default'
+    DATABASES["gpp_plataform_db"] = DATABASES["default"].copy()
+    DATABASES["gpp_plataform_db"]["TEST"] = {
+        "NAME": "test_gpp_plataform",
+        "CHARSET": "UTF8",
+        "MIRROR": "default",  # Usar o mesmo banco de teste do 'default'
     }
-    
+
     # Usar mesmas credenciais do banco de desenvolvimento
     # O Django criará automaticamente test_gpp_plataform
-    DATABASES['default']['TEST'] = {
-        'NAME': 'test_gpp_plataform',
-        'CHARSET': 'UTF8',
+    DATABASES["default"]["TEST"] = {
+        "NAME": "test_gpp_plataform",
+        "CHARSET": "UTF8",
     }
-    
+
     # Acelerar testes
     PASSWORD_HASHERS = [
-        'django.contrib.auth.hashers.MD5PasswordHasher',
+        "django.contrib.auth.hashers.MD5PasswordHasher",
     ]

@@ -152,14 +152,14 @@ function Write-AppHeader([string]$appName, [string]$appDisplayName) {
 
 function Test-AppUnit([string]$appName) {
     Write-ColorOutput "[Unit Tests] Executando testes Django para $appName..." 'INFO'
-    
+
     $appTestPath = "${appName}.tests.test_context_processors"
     Write-ColorOutput "Comando: python manage.py test $appTestPath -v 2" 'INFO'
     Write-ColorOutput "Diretório: $(Get-Location)" 'INFO'
-    
+
     try {
         $testOutput = python manage.py test $appTestPath -v 2 2>&1
-        
+
         if ($LASTEXITCODE -eq 0) {
             Write-ColorOutput "✓ Testes unitários executados com sucesso!" 'SUCCESS'
             return @{
@@ -193,17 +193,17 @@ function Test-AppUnit([string]$appName) {
 
 function Test-WebViews([string]$appName, [string[]]$paths) {
     Write-ColorOutput "[Web Views] Testando renderização de templates..." 'INFO'
-    
+
     $passed = 0
     $failed = 0
-    
+
     foreach ($path in $paths) {
         $url = "$BaseURL$path"
         Write-ColorOutput "  Acessando: $path" 'INFO'
-        
+
         try {
             $response = Invoke-WebRequest -Uri $url -Method GET -SkipHttpErrorCheck -TimeoutSec 10
-            
+
             if ($response.StatusCode -in @(200, 301, 302, 403)) {
                 Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
                 $passed++
@@ -216,7 +216,7 @@ function Test-WebViews([string]$appName, [string[]]$paths) {
             $failed++
         }
     }
-    
+
     return @{
         'passed' = $passed
         'failed' = $failed
@@ -225,21 +225,21 @@ function Test-WebViews([string]$appName, [string[]]$paths) {
 
 function Test-APIEndpoints([string]$appName, [string[]]$endpoints) {
     Write-ColorOutput "[API REST] Testando endpoints da API..." 'INFO'
-    
+
     $passed = 0
     $failed = 0
-    
+
     foreach ($endpoint in $endpoints) {
         $url = "$BaseURL$endpoint"
         Write-ColorOutput "  Acessando: $endpoint" 'INFO'
-        
+
         try {
             $headers = @{
                 'Content-Type' = 'application/json'
             }
-            
+
             $response = Invoke-WebRequest -Uri $url -Method GET -Headers $headers -SkipHttpErrorCheck -TimeoutSec 10
-            
+
             if ($response.StatusCode -in @(200, 403, 401)) {
                 Write-ColorOutput "    ✓ Status: $($response.StatusCode)" 'SUCCESS'
                 $passed++
@@ -257,7 +257,7 @@ function Test-APIEndpoints([string]$appName, [string[]]$endpoints) {
             }
         }
     }
-    
+
     return @{
         'passed' = $passed
         'failed' = $failed
@@ -283,29 +283,29 @@ foreach ($app in $Apps) {
         Write-ColorOutput "⚠️  App '$app' não encontrada nas configurações" 'WARNING'
         continue
     }
-    
+
     $config = $appConfig[$app]
     Write-AppHeader $app $config['name']
-    
+
     # 1. Testes Unitários
     Write-SectionHeader "1. TESTES UNITÁRIOS"
     $unitResult = Test-AppUnit $app
-    
+
     # 2. Views Web
     Write-SectionHeader "2. VIEWS WEB"
     $webResult = Test-WebViews $app $config['paths']
-    
+
     # 3. API Endpoints
     Write-SectionHeader "3. ENDPOINTS DA API"
     $apiResult = Test-APIEndpoints $app $config['apiEndpoints']
-    
+
     # Armazena resultado
     $globalResults[$app] = @{
         'unit' = $unitResult
         'web' = $webResult
         'api' = $apiResult
     }
-    
+
     $totalTestsPassed += $unitResult.passed + $webResult.passed + $apiResult.passed
     $totalTestsFailed += $webResult.failed + $apiResult.failed
 }
@@ -322,10 +322,10 @@ foreach ($app in $Apps) {
     if (-not $globalResults.ContainsKey($app)) {
         continue
     }
-    
+
     $result = $globalResults[$app]
     $appName = $appConfig[$app]['name']
-    
+
     Write-Host "`n$appName ($app):"
     Write-ColorOutput "  ✓ Unit Tests: $(if ($result['unit'].passed) {'PASSOU'} else {'FALHOU'})" $(if ($result['unit'].passed) { 'SUCCESS' } else { 'FAIL' })
     Write-ColorOutput "  ✓ Web Views:  $($result['web'].passed) passou, $($result['web'].failed) falhou" $(if ($result['web'].failed -eq 0) { 'SUCCESS' } else { 'WARNING' })

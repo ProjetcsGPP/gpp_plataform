@@ -8,510 +8,546 @@ Testa os ViewSets:
 - AcaoDestaqueViewSet: CRUD de Destaques
 """
 
-from django.test import TestCase
-from .base import BaseTestCase, BaseAPITestCase
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from rest_framework.test import APIClient
-from rest_framework import status
 from datetime import date, datetime, timedelta
 
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.test import APIClient
+
 from accounts.models import Aplicacao, Role, UserRole
+
 from ..models import (
-    Acoes, AcaoPrazo, AcaoDestaque,
-    VigenciaPNGI, TipoEntraveAlerta,
-    Eixo, SituacaoAcao,
-    UsuarioResponsavel, RelacaoAcaoUsuarioResponsavel
+    AcaoDestaque,
+    AcaoPrazo,
+    Acoes,
+    RelacaoAcaoUsuarioResponsavel,
+    TipoEntraveAlerta,
+    UsuarioResponsavel,
+    VigenciaPNGI,
 )
+from .base import BaseTestCase
 
 User = get_user_model()
 
 
 class AcoesViewSetTest(BaseTestCase):
     """Testes para AcoesViewSet"""
-    
-    databases = {'default', 'gpp_plataform_db'}
-    
+
+    databases = {"default", "gpp_plataform_db"}
+
     def setUp(self):
         """Setup com usuário autenticado e dados de teste"""
         self.client = APIClient()
-        
+
         # Criar aplicação e role
         self.app, _ = Aplicacao.objects.get_or_create(
-            codigointerno='ACOES_PNGI',
-            defaults={'nomeaplicacao': 'Ações PNGI'}
+            codigointerno="ACOES_PNGI", defaults={"nomeaplicacao": "Ações PNGI"}
         )
-        
+
         self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
-            codigoperfil='GESTOR_PNGI',
-            defaults={'nomeperfil': 'Gestor PNGI'}
+            codigoperfil="GESTOR_PNGI",
+            defaults={"nomeperfil": "Gestor PNGI"},
         )
-        
+
         # Criar usuário
         self.user = User.objects.create_user(
-            email='gestor@test.com',
-            password='test123',
-            name='Gestor Teste'
+            email="gestor@test.com", password="test123", name="Gestor Teste"
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
-        
+
         # Autenticar
-        self.client.force_authenticate(user=self.user)        # Criar tipo de entrave
+        self.client.force_authenticate(user=self.user)  # Criar tipo de entrave
         self.tipo_entrave = TipoEntraveAlerta.objects.create(
-            strdescricaotipoentravealerta='Crítico'
+            strdescricaotipoentravealerta="Crítico"
         )
-        
+
         # Criar ações com timezone-aware datetime
         self.acao1 = Acoes.objects.create(
-            strapelido='ACAO-001',
-            strdescricaoacao='Descrição da Ação 001',
-            strdescricaoentrega='Entrega 001',
+            strapelido="ACAO-001",
+            strdescricaoacao="Descrição da Ação 001",
+            strdescricaoentrega="Entrega 001",
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
             idsituacaoacao=self.situacao_base,
             idtipoentravealerta=self.tipo_entrave,
-            datdataentrega=timezone.now() + timedelta(days=180)
+            datdataentrega=timezone.now() + timedelta(days=180),
         )
-        
+
         self.acao2 = Acoes.objects.create(
-            strapelido='ACAO-002',
-            strdescricaoacao='Descrição da Ação 002',
-            strdescricaoentrega='Entrega 002',
+            strapelido="ACAO-002",
+            strdescricaoacao="Descrição da Ação 002",
+            strdescricaoentrega="Entrega 002",
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao_base
+            idsituacaoacao=self.situacao_base,
         )
-    
+
     def test_list_acoes_requires_authentication(self):
         """Lista de ações requer autenticação"""
         self.client.force_authenticate(user=None)
-        response = self.client.get('/api/v1/acoes_pngi/acoes/')
+        response = self.client.get("/api/v1/acoes_pngi/acoes/")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
+
     def test_list_acoes_authenticated(self):
         """Usuário autenticado pode listar ações"""
-        response = self.client.get('/api/v1/acoes_pngi/acoes/')
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        response = self.client.get("/api/v1/acoes_pngi/acoes/")
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
-    
+
     def test_retrieve_acao(self):
         """Recuperar detalhes de uma ação específica"""
-        response = self.client.get(f'/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/')
+        response = self.client.get(f"/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['strapelido'], 'ACAO-001')
-    
+        self.assertEqual(response.data["strapelido"], "ACAO-001")
+
     def test_create_acao(self):
         """Criar nova ação"""
         data = {
-            'strapelido': 'ACAO-003',
-            'strdescricaoacao': 'Nova Ação',
-            'strdescricaoentrega': 'Nova Entrega',
-            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
-            'ideixo': self.eixo_base.ideixo,
-            'idsituacaoacao': self.situacao_base.idsituacaoacao
+            "strapelido": "ACAO-003",
+            "strdescricaoacao": "Nova Ação",
+            "strdescricaoentrega": "Nova Entrega",
+            "idvigenciapngi": self.vigencia_base.idvigenciapngi,
+            "ideixo": self.eixo_base.ideixo,
+            "idsituacaoacao": self.situacao_base.idsituacaoacao,
         }
-        response = self.client.post('/api/v1/acoes_pngi/acoes/', data, format='json')
+        response = self.client.post("/api/v1/acoes_pngi/acoes/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(Acoes.objects.filter(strapelido='ACAO-003').exists())
-    
+        self.assertTrue(Acoes.objects.filter(strapelido="ACAO-003").exists())
+
     def test_update_acao(self):
         """Atualizar ação existente"""
         data = {
-            'strapelido': 'ACAO-001-UPD',
-            'strdescricaoacao': 'Descrição Atualizada',
-            'strdescricaoentrega': 'Entrega Atualizada',
-            'idvigenciapngi': self.vigencia_base.idvigenciapngi,
-            'ideixo': self.eixo_base.ideixo,
-            'idsituacaoacao': self.situacao_base.idsituacaoacao
+            "strapelido": "ACAO-001-UPD",
+            "strdescricaoacao": "Descrição Atualizada",
+            "strdescricaoentrega": "Entrega Atualizada",
+            "idvigenciapngi": self.vigencia_base.idvigenciapngi,
+            "ideixo": self.eixo_base.ideixo,
+            "idsituacaoacao": self.situacao_base.idsituacaoacao,
         }
         response = self.client.put(
-            f'/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/',
-            data,
-            format='json'
+            f"/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/", data, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.acao1.refresh_from_db()
-        self.assertEqual(self.acao1.strapelido, 'ACAO-001-UPD')
-    
+        self.assertEqual(self.acao1.strapelido, "ACAO-001-UPD")
+
     def test_partial_update_acao(self):
         """Atualização parcial de ação"""
-        data = {'strdescricaoacao': 'Descrição Parcialmente Atualizada'}
+        data = {"strdescricaoacao": "Descrição Parcialmente Atualizada"}
         response = self.client.patch(
-            f'/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/',
-            data,
-            format='json'
+            f"/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/", data, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.acao1.refresh_from_db()
-        self.assertEqual(self.acao1.strdescricaoacao, 'Descrição Parcialmente Atualizada')
+        self.assertEqual(
+            self.acao1.strdescricaoacao, "Descrição Parcialmente Atualizada"
+        )
         # Outros campos não devem mudar
-        self.assertEqual(self.acao1.strapelido, 'ACAO-001')
-    
+        self.assertEqual(self.acao1.strapelido, "ACAO-001")
+
     def test_delete_acao(self):
         """Deletar ação"""
         acao_id = self.acao2.idacao
-        response = self.client.delete(f'/api/v1/acoes_pngi/acoes/{acao_id}/')
+        response = self.client.delete(f"/api/v1/acoes_pngi/acoes/{acao_id}/")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Acoes.objects.filter(idacao=acao_id).exists())
-    
+
     def test_filter_acoes_by_vigencia(self):
         """Filtrar ações por vigência"""
         # Criar outra vigência e ação
-        #vigencia2 = VigenciaPNGI.objects.create(
+        # vigencia2 = VigenciaPNGI.objects.create(
         #    strdescricaovigenciapngi='PNGI 2027',
         #    datiniciovigencia=date(2027, 1, 1,
         #    datfinalvigencia=date(2027, 12, 31)),
         #    datfinalvigencia=date(2027, 12, 31)
-        #)
+        # )
         vigencia = VigenciaPNGI.objects.create(
-            strdescricaovigenciapngi='PNGI 2027',
+            strdescricaovigenciapngi="PNGI 2027",
             datiniciovigencia=date(2027, 1, 1),  # ✅ 3 argumentos
             datfinalvigencia=date(2027, 12, 31),  # ✅ 3 argumentos
-            isvigenciaativa=False
+            isvigenciaativa=False,
         )
         Acoes.objects.create(
-            strapelido='ACAO-003',
-            strdescricaoacao='Ação 2027',
-            strdescricaoentrega='Entrega 2027',
+            strapelido="ACAO-003",
+            strdescricaoacao="Ação 2027",
+            strdescricaoentrega="Entrega 2027",
             idvigenciapngi=vigencia,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao_base
+            idsituacaoacao=self.situacao_base,
         )
-        
+
         response = self.client.get(
-            f'/api/v1/acoes_pngi/acoes/?idvigenciapngi={self.vigencia_base.idvigenciapngi}'
+            f"/api/v1/acoes_pngi/acoes/?idvigenciapngi={self.vigencia_base.idvigenciapngi}"
         )
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)  # Apenas ações de 2026
-    
+
     def test_filter_acoes_by_tipo_entrave(self):
         """Filtrar ações por tipo de entrave"""
         response = self.client.get(
-            f'/api/v1/acoes_pngi/acoes/?idtipoentravealerta={self.tipo_entrave.idtipoentravealerta}'
+            f"/api/v1/acoes_pngi/acoes/?idtipoentravealerta={self.tipo_entrave.idtipoentravealerta}"
         )
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)  # Apenas acao1 tem entrave
-    
+
     def test_search_acoes(self):
         """Buscar ações por apelido/descrição"""
-        response = self.client.get('/api/v1/acoes_pngi/acoes/?search=001')
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        response = self.client.get("/api/v1/acoes_pngi/acoes/?search=001")
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['strapelido'], 'ACAO-001')
-    
+        self.assertEqual(results[0]["strapelido"], "ACAO-001")
+
     def test_ordering_acoes(self):
         """Ordenar ações"""
-        response = self.client.get('/api/v1/acoes_pngi/acoes/?ordering=-strapelido')
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        response = self.client.get("/api/v1/acoes_pngi/acoes/?ordering=-strapelido")
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Deve vir em ordem decrescente (002, 001)
-        self.assertEqual(results[0]['strapelido'], 'ACAO-002')
-    
+        self.assertEqual(results[0]["strapelido"], "ACAO-002")
+
     def test_prazos_ativos_action(self):
         """Action customizada: prazos_ativos"""
         # Criar prazos para a ação
         AcaoPrazo.objects.create(
-            idacao=self.acao1,
-            strprazo='Prazo Ativo',
-            isacaoprazoativo=True
+            idacao=self.acao1, strprazo="Prazo Ativo", isacaoprazoativo=True
         )
         AcaoPrazo.objects.create(
-            idacao=self.acao1,
-            strprazo='Prazo Inativo',
-            isacaoprazoativo=False
+            idacao=self.acao1, strprazo="Prazo Inativo", isacaoprazoativo=False
         )
-        
-        response = self.client.get(f'/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/prazos_ativos/')
+
+        response = self.client.get(
+            f"/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/prazos_ativos/"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)  # Apenas ativo
-        self.assertEqual(response.data[0]['strprazo'], 'Prazo Ativo')
-    
+        self.assertEqual(response.data[0]["strprazo"], "Prazo Ativo")
+
     def test_responsaveis_list_action(self):
         """Action customizada: responsaveis_list"""
         # Criar responsável
         user2 = User.objects.create_user(
-            email='responsavel@test.com',
-            password='test123',
-            name='Responsável Teste'
+            email="responsavel@test.com", password="test123", name="Responsável Teste"
         )
         responsavel = UsuarioResponsavel.objects.create(
-            idusuario=user2,
-            strtelefone='27999999999',
-            strorgao='SEGER'
+            idusuario=user2, strtelefone="27999999999", strorgao="SEGER"
         )
         RelacaoAcaoUsuarioResponsavel.objects.create(
-            idacao=self.acao1,
-            idusuarioresponsavel=responsavel
+            idacao=self.acao1, idusuarioresponsavel=responsavel
         )
-        
-        response = self.client.get(f'/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/responsaveis_list/')
+
+        response = self.client.get(
+            f"/api/v1/acoes_pngi/acoes/{self.acao1.idacao}/responsaveis_list/"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
 
 class AcaoPrazoViewSetTest(BaseTestCase):
     """Testes para AcaoPrazoViewSet"""
-    
-    databases = {'default', 'gpp_plataform_db'}
-    
+
+    databases = {"default", "gpp_plataform_db"}
+
     def setUp(self):
         """Setup com usuário autenticado e dados de teste"""
         self.client = APIClient()
-        
+
         # Criar aplicação e role
         self.app, _ = Aplicacao.objects.get_or_create(
-            codigointerno='ACOES_PNGI',
-            defaults={'nomeaplicacao': 'Ações PNGI'}
+            codigointerno="ACOES_PNGI", defaults={"nomeaplicacao": "Ações PNGI"}
         )
-        
+
         self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
-            codigoperfil='GESTOR_PNGI',
-            defaults={'nomeperfil': 'Gestor PNGI'}
+            codigoperfil="GESTOR_PNGI",
+            defaults={"nomeperfil": "Gestor PNGI"},
         )
-        
+
         # Criar usuário
         self.user = User.objects.create_user(
-            email='gestor@test.com',
-            password='test123'
+            email="gestor@test.com", password="test123"
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
-        
+
         # Autenticar
         self.client.force_authenticate(user=self.user)
-        
+
         # Criar vigência        # Criar ação
         self.acao = Acoes.objects.create(
-            strapelido='ACAO-001',
-            strdescricaoacao='Ação Teste',
-            strdescricaoentrega='Entrega',
+            strapelido="ACAO-001",
+            strdescricaoacao="Ação Teste",
+            strdescricaoentrega="Entrega",
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao_base
+            idsituacaoacao=self.situacao_base,
         )
-        
+
         # Criar prazos
         self.prazo1 = AcaoPrazo.objects.create(
-            idacao=self.acao,
-            strprazo='Q1 2026',
-            isacaoprazoativo=True
+            idacao=self.acao, strprazo="Q1 2026", isacaoprazoativo=True
         )
-        
+
         self.prazo2 = AcaoPrazo.objects.create(
-            idacao=self.acao,
-            strprazo='Q4 2025',
-            isacaoprazoativo=False
+            idacao=self.acao, strprazo="Q4 2025", isacaoprazoativo=False
         )
-    
+
     def test_list_prazos_requires_authentication(self):
         """Lista de prazos requer autenticação"""
         self.client.force_authenticate(user=None)
-        response = self.client.get('/api/v1/acoes_pngi/acoes-prazo/')
+        response = self.client.get("/api/v1/acoes_pngi/acoes-prazo/")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
+
     def test_list_prazos_authenticated(self):
         """Usuário autenticado pode listar prazos"""
-        response = self.client.get('/api/v1/acoes_pngi/acoes-prazo/')
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        response = self.client.get("/api/v1/acoes_pngi/acoes-prazo/")
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
-    
+
     def test_retrieve_prazo(self):
         """Recuperar detalhes de um prazo específico"""
-        response = self.client.get(f'/api/v1/acoes_pngi/acoes-prazo/{self.prazo1.idacaoprazo}/')
+        response = self.client.get(
+            f"/api/v1/acoes_pngi/acoes-prazo/{self.prazo1.idacaoprazo}/"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['strprazo'], 'Q1 2026')
-    
+        self.assertEqual(response.data["strprazo"], "Q1 2026")
+
     def test_create_prazo(self):
         """Criar novo prazo"""
         # Primeiro desativar o prazo ativo existente
         self.prazo1.isacaoprazoativo = False
         self.prazo1.save()
-        
+
         data = {
-            'idacao': self.acao.idacao,
-            'strprazo': 'Q2 2026',
-            'isacaoprazoativo': True
+            "idacao": self.acao.idacao,
+            "strprazo": "Q2 2026",
+            "isacaoprazoativo": True,
         }
-        response = self.client.post('/api/v1/acoes_pngi/acoes-prazo/', data, format='json')
+        response = self.client.post(
+            "/api/v1/acoes_pngi/acoes-prazo/", data, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(AcaoPrazo.objects.filter(strprazo='Q2 2026').exists())
-    
+        self.assertTrue(AcaoPrazo.objects.filter(strprazo="Q2 2026").exists())
+
     def test_update_prazo(self):
         """Atualizar prazo existente"""
         data = {
-            'idacao': self.acao.idacao,
-            'strprazo': 'Q1 2026 - Atualizado',
-            'isacaoprazoativo': True
+            "idacao": self.acao.idacao,
+            "strprazo": "Q1 2026 - Atualizado",
+            "isacaoprazoativo": True,
         }
         response = self.client.put(
-            f'/api/v1/acoes_pngi/acoes-prazo/{self.prazo1.idacaoprazo}/',
+            f"/api/v1/acoes_pngi/acoes-prazo/{self.prazo1.idacaoprazo}/",
             data,
-            format='json'
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.prazo1.refresh_from_db()
-        self.assertEqual(self.prazo1.strprazo, 'Q1 2026 - Atualizado')
-    
+        self.assertEqual(self.prazo1.strprazo, "Q1 2026 - Atualizado")
+
     def test_delete_prazo(self):
         """Deletar prazo"""
         prazo_id = self.prazo2.idacaoprazo
-        response = self.client.delete(f'/api/v1/acoes_pngi/acoes-prazo/{prazo_id}/')
+        response = self.client.delete(f"/api/v1/acoes_pngi/acoes-prazo/{prazo_id}/")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(AcaoPrazo.objects.filter(idacaoprazo=prazo_id).exists())
-    
+
     def test_filter_prazos_by_acao(self):
         """Filtrar prazos por ação"""
-        response = self.client.get(f'/api/v1/acoes_pngi/acoes-prazo/?idacao={self.acao.idacao}')
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        response = self.client.get(
+            f"/api/v1/acoes_pngi/acoes-prazo/?idacao={self.acao.idacao}"
+        )
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
-    
+
     def test_filter_prazos_by_status(self):
         """Filtrar prazos por status ativo/inativo"""
-        response = self.client.get('/api/v1/acoes_pngi/acoes-prazo/?isacaoprazoativo=true')
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        response = self.client.get(
+            "/api/v1/acoes_pngi/acoes-prazo/?isacaoprazoativo=true"
+        )
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['strprazo'], 'Q1 2026')
-    
+        self.assertEqual(results[0]["strprazo"], "Q1 2026")
+
     def test_ativos_action(self):
         """Action customizada: ativos (apenas prazos ativos)"""
-        response = self.client.get('/api/v1/acoes_pngi/acoes-prazo/ativos/')
+        response = self.client.get("/api/v1/acoes_pngi/acoes-prazo/ativos/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['strprazo'], 'Q1 2026')
+        self.assertEqual(response.data[0]["strprazo"], "Q1 2026")
 
 
 class AcaoDestaqueViewSetTest(BaseTestCase):
     """Testes para AcaoDestaqueViewSet"""
-    
-    databases = {'default', 'gpp_plataform_db'}
-    
+
+    databases = {"default", "gpp_plataform_db"}
+
     def setUp(self):
         """Setup com usuário autenticado e dados de teste"""
         self.client = APIClient()
-        
+
         # Criar aplicação e role
         self.app, _ = Aplicacao.objects.get_or_create(
-            codigointerno='ACOES_PNGI',
-            defaults={'nomeaplicacao': 'Ações PNGI'}
+            codigointerno="ACOES_PNGI", defaults={"nomeaplicacao": "Ações PNGI"}
         )
-        
+
         self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
-            codigoperfil='GESTOR_PNGI',
-            defaults={'nomeperfil': 'Gestor PNGI'}
+            codigoperfil="GESTOR_PNGI",
+            defaults={"nomeperfil": "Gestor PNGI"},
         )
-        
+
         # Criar usuário
         self.user = User.objects.create_user(
-            email='gestor@test.com',
-            password='test123'
+            email="gestor@test.com", password="test123"
         )
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
-        
+
         # Autenticar
         self.client.force_authenticate(user=self.user)
-        
+
         # Criar vigência        # Criar ação
         self.acao = Acoes.objects.create(
-            strapelido='ACAO-001',
-            strdescricaoacao='Ação Teste',
-            strdescricaoentrega='Entrega',
+            strapelido="ACAO-001",
+            strdescricaoacao="Ação Teste",
+            strdescricaoentrega="Entrega",
             idvigenciapngi=self.vigencia_base,
             ideixo=self.eixo_base,
-            idsituacaoacao=self.situacao_base
+            idsituacaoacao=self.situacao_base,
         )
-        
+
         # Criar destaques com timezone-aware datetime
         now = timezone.now()
         self.destaque1 = AcaoDestaque.objects.create(
-            idacao=self.acao,
-            datdatadestaque=now + timedelta(days=30)
+            idacao=self.acao, datdatadestaque=now + timedelta(days=30)
         )
-        
+
         self.destaque2 = AcaoDestaque.objects.create(
-            idacao=self.acao,
-            datdatadestaque=now - timedelta(days=10)
+            idacao=self.acao, datdatadestaque=now - timedelta(days=10)
         )
-    
+
     def test_list_destaques_requires_authentication(self):
         """Lista de destaques requer autenticação"""
         self.client.force_authenticate(user=None)
-        response = self.client.get('/api/v1/acoes_pngi/acoes-destaque/')
+        response = self.client.get("/api/v1/acoes_pngi/acoes-destaque/")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
+
     def test_list_destaques_authenticated(self):
         """Usuário autenticado pode listar destaques"""
-        response = self.client.get('/api/v1/acoes_pngi/acoes-destaque/')
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        response = self.client.get("/api/v1/acoes_pngi/acoes-destaque/")
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
-    
+
     def test_retrieve_destaque(self):
         """Recuperar detalhes de um destaque específico"""
         response = self.client.get(
-            f'/api/v1/acoes_pngi/acoes-destaque/{self.destaque1.idacaodestaque}/'
+            f"/api/v1/acoes_pngi/acoes-destaque/{self.destaque1.idacaodestaque}/"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_create_destaque(self):
         """Criar novo destaque"""
         future_date = (timezone.now() + timedelta(days=60)).isoformat()
-        data = {
-            'idacao': self.acao.idacao,
-            'datdatadestaque': future_date
-        }
-        response = self.client.post('/api/v1/acoes_pngi/acoes-destaque/', data, format='json')
+        data = {"idacao": self.acao.idacao, "datdatadestaque": future_date}
+        response = self.client.post(
+            "/api/v1/acoes_pngi/acoes-destaque/", data, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(AcaoDestaque.objects.filter(idacao=self.acao).count(), 3)
-    
+
     def test_update_destaque(self):
         """Atualizar destaque existente"""
         new_date = (timezone.now() + timedelta(days=45)).isoformat()
-        data = {
-            'idacao': self.acao.idacao,
-            'datdatadestaque': new_date
-        }
+        data = {"idacao": self.acao.idacao, "datdatadestaque": new_date}
         response = self.client.put(
-            f'/api/v1/acoes_pngi/acoes-destaque/{self.destaque1.idacaodestaque}/',
+            f"/api/v1/acoes_pngi/acoes-destaque/{self.destaque1.idacaodestaque}/",
             data,
-            format='json'
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_delete_destaque(self):
         """Deletar destaque"""
         destaque_id = self.destaque2.idacaodestaque
-        response = self.client.delete(f'/api/v1/acoes_pngi/acoes-destaque/{destaque_id}/')
+        response = self.client.delete(
+            f"/api/v1/acoes_pngi/acoes-destaque/{destaque_id}/"
+        )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(AcaoDestaque.objects.filter(idacaodestaque=destaque_id).exists())
-    
+        self.assertFalse(
+            AcaoDestaque.objects.filter(idacaodestaque=destaque_id).exists()
+        )
+
     def test_filter_destaques_by_acao(self):
         """Filtrar destaques por ação"""
         response = self.client.get(
-            f'/api/v1/acoes_pngi/acoes-destaque/?idacao={self.acao.idacao}'
+            f"/api/v1/acoes_pngi/acoes-destaque/?idacao={self.acao.idacao}"
         )
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results), 2)
-    
+
     def test_ordering_destaques(self):
         """Destaques ordenados por data (mais recente primeiro)"""
-        response = self.client.get('/api/v1/acoes_pngi/acoes-destaque/')
-        results = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        response = self.client.get("/api/v1/acoes_pngi/acoes-destaque/")
+        results = (
+            response.data
+            if isinstance(response.data, list)
+            else response.data.get("results", [])
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Primeiro resultado deve ser o mais recente (futuro)
         first_date = datetime.fromisoformat(
-            results[0]['datdatadestaque'].replace('Z', '+00:00')
+            results[0]["datdatadestaque"].replace("Z", "+00:00")
         )
         second_date = datetime.fromisoformat(
-            results[1]['datdatadestaque'].replace('Z', '+00:00')
+            results[1]["datdatadestaque"].replace("Z", "+00:00")
         )
         self.assertGreater(first_date, second_date)

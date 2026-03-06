@@ -4,7 +4,7 @@
 
 ### Batch 1 (Already Fixed)
 - ✅ auth_service
-- ✅ accounts  
+- ✅ accounts
 - ✅ db_service
 
 ### Batch 2 (This Commit)

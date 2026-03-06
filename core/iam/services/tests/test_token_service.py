@@ -5,29 +5,28 @@ Cobertura: 95%+ dos métodos principais + cenários críticos.
 Executar: pytest core/iam/services/tests/test_token_service.py -v
 """
 
-
-
-from django.utils import timezone
-import pytest
-import uuid
 from datetime import UTC, datetime, timedelta
-from unittest.mock import patch, MagicMock
-from django.test import TestCase
+from unittest.mock import patch
+
+import jwt
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.conf import settings
-import jwt
-import time
-#from django.utils.timezone import UTC
+from django.test import TestCase
+from django.utils import timezone
+
+from accounts.models import Aplicacao, Role, UserRole
 
 # IMPORTS DEPOIS do django.setup()
 from accounts.services.token_service import (
-    TokenService,
     InvalidTokenException,
+    TokenService,
     TokenServiceException,
     UserRoleNotFoundException,
 )
-from accounts.models import Aplicacao, Role, UserRole
+
+# from django.utils.timezone import UTC
+
 
 User = get_user_model()
 
@@ -43,20 +42,18 @@ class TokenServiceTest(TestCase):
             password="test123",
             is_active=True,
         )
-        
+
         cls.app_acoes = Aplicacao.objects.get(codigointerno="ACOES_PNGI")
-        
+
         cls.app_org = Aplicacao.objects.get(codigointerno="CARGA_ORG_LOT")
-        
+
         cls.role_gestor = Role.objects.get(
             aplicacao=cls.app_acoes,
-            codigoperfil="GESTOR_PNGI"  # Role REAL das migrações
+            codigoperfil="GESTOR_PNGI",  # Role REAL das migrações
         )
-        
+
         cls.user_role_gestor, created = UserRole.objects.get_or_create(
-            user=cls.user,
-            aplicacao=cls.app_acoes,
-            role=cls.role_gestor
+            user=cls.user, aplicacao=cls.app_acoes, role=cls.role_gestor
         )
         print(f"✅ UserRole {'criada' if created else 'já existia'}")
 
@@ -92,7 +89,9 @@ class TokenServiceTest(TestCase):
         """Falha se UserRole não existe."""
         with self.assertRaises(UserRoleNotFoundException):
             self.token_service.issue_access_token(
-                self.user, "ACOES_PNGI", 999  # Role inexistente
+                self.user,
+                "ACOES_PNGI",
+                999,  # Role inexistente
             )
 
     def test_issue_access_token_user_inactive(self):
@@ -133,9 +132,7 @@ class TokenServiceTest(TestCase):
     def test_issue_refresh_token_user_role_not_found(self):
         """Falha se UserRole não existe."""
         with self.assertRaises(UserRoleNotFoundException):
-            self.token_service.issue_refresh_token(
-                self.user, "ACOES_PNGI", 999
-            )
+            self.token_service.issue_refresh_token(self.user, "ACOES_PNGI", 999)
 
     # ------------------------------------------------------------------
     # TESTES: login
@@ -279,7 +276,9 @@ class TokenServiceTest(TestCase):
         self.assertIn("refresh_token", new_tokens)
 
         # Novo access token deve ser válido
-        new_payload = self.token_service.validate_access_token(new_tokens["access_token"])
+        new_payload = self.token_service.validate_access_token(
+            new_tokens["access_token"]
+        )
         self.assertEqual(new_payload["sub"], str(self.user.id))
 
     def test_refresh_expired(self):
@@ -312,7 +311,7 @@ class TokenServiceTest(TestCase):
         )
 
         # Primeiro refresh (deve blacklistar)
-        new_tokens = self.token_service.refresh(refresh_token)
+        self.token_service.refresh(refresh_token)
 
         # Segundo refresh com mesmo token (deve falhar - blacklisted)
         with self.assertRaises(InvalidTokenException):
@@ -336,7 +335,7 @@ class TokenServiceTest(TestCase):
         self.assertEqual(cached_data["expires_at"], exp.isoformat())
 
         # TTL deve ser ~5min (300s)
-        ttl = 300 if not hasattr(cache, 'ttl') else cache.ttl(key)
+        ttl = 300 if not hasattr(cache, "ttl") else cache.ttl(key)
         self.assertGreater(ttl, 290)  # Margem de erro
 
     def test_blacklist_token_already_expired(self):
@@ -421,7 +420,7 @@ class TokenServiceIntegrationTest(TokenServiceTest):
         # 3) Refresh
         new_tokens = self.token_service.refresh(refresh_token)
         new_access = new_tokens["access_token"]
-        new_refresh = new_tokens["refresh_token"]
+        new_tokens["refresh_token"]
 
         # Novo access deve ser válido
         new_payload = self.token_service.validate_access_token(new_access)

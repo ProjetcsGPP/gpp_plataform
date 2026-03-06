@@ -1,7 +1,7 @@
 # Correções Estruturais - Autenticação e Testes Web Views
 
-**Data**: 02 de Fevereiro de 2026  
-**Status**: ✅ COMPLETO  
+**Data**: 02 de Fevereiro de 2026
+**Status**: ✅ COMPLETO
 **Impacto**: ALTO - Afeta funcionalidade do sistema em produção
 
 ---
@@ -98,14 +98,14 @@ def carga_org_lot_required(view_func):
             user=request.user,
             aplicacao__codigointerno='CARGA_ORG_LOT'
         ).exists()
-        
+
         if not has_access:
             messages.error(request, 'Você não tem permissão para acessar esta aplicação.')
             logout(request)
             return redirect('carga_org_lot_web:login')
-        
+
         return view_func(request, *args, **kwargs)
-    
+
     return wrapper
 ```
 
@@ -129,30 +129,30 @@ urlpatterns = [
     path('login/', carga_login, name='login'),
     path('logout/', carga_logout, name='logout'),
     path('dashboard/', carga_dashboard, name='dashboard'),
-    
+
     # Patriarcas (✅ NOVO)
     path('patriarcas/', patriarca_list, name='patriarca_list'),
     path('patriarcas/<int:patriarca_id>/', patriarca_detail, name='patriarca_detail'),
-    
+
     # Organogramas (✅ NOVO)
     path('organogramas/', organograma_list, name='organograma_list'),
     path('organogramas/<int:organograma_id>/', organograma_detail, name='organograma_detail'),
     path('organogramas/<int:organograma_id>/hierarquia/json/', organograma_hierarquia_json, name='organograma_hierarquia_json'),
-    
+
     # Lotações (✅ NOVO)
     path('lotacoes/', lotacao_list, name='lotacao_list'),
     path('lotacoes/<int:lotacao_versao_id>/', lotacao_detail, name='lotacao_detail'),
     path('lotacoes/<int:lotacao_versao_id>/inconsistencias/', lotacao_inconsistencias, name='lotacao_inconsistencias'),
-    
+
     # Cargas (✅ NOVO)
     path('cargas/', carga_list, name='carga_list'),
     path('cargas/<int:carga_id>/', carga_detail, name='carga_detail'),
-    
+
     # Upload (✅ NOVO)
     path('upload/', upload_page, name='upload'),
     path('upload/organograma/', upload_organograma_handler, name='upload_organograma'),
     path('upload/lotacao/', upload_lotacao_handler, name='upload_lotacao'),
-    
+
     # AJAX (✅ NOVO)
     path('ajax/search-orgao/', search_orgao_ajax, name='search_orgao_ajax'),
 ]
@@ -174,10 +174,10 @@ urlpatterns = [
 ```python
 def setUp(self):
     self.client = Client()
-    
+
     # ✅ USA force_login() - Método recomendado pela documentação Django
     self.client.force_login(self.user)
-    
+
     # Valida sessão
     if not self.client.session.get('_auth_user_id'):
         logger.error("❌ Falha ao forçar login do usuário de teste")
@@ -247,16 +247,16 @@ def setUp(self):
 
 ## 📝 Commits das Correções
 
-1. **Decorador Corrigido**  
-   [`41c8206`](https://github.com/ProjetcsGPP/gpp_plataform/commit/41c820624c343d85a75437f183b2dd63301986b7)  
+1. **Decorador Corrigido**
+   [`41c8206`](https://github.com/ProjetcsGPP/gpp_plataform/commit/41c820624c343d85a75437f183b2dd63301986b7)
    `fix: corrige decorador carga_org_lot_required com @wraps e @login_required`
 
-2. **URLs Adicionadas**  
-   [`4466141`](https://github.com/ProjetcsGPP/gpp_plataform/commit/44661413e263683f14bb50b11f03aa629f40ab6f)  
+2. **URLs Adicionadas**
+   [`4466141`](https://github.com/ProjetcsGPP/gpp_plataform/commit/44661413e263683f14bb50b11f03aa629f40ab6f)
    `feat: adiciona URLs faltantes para todas as views web implementadas`
 
-3. **Testes Corrigidos**  
-   [`5b9ac38`](https://github.com/ProjetcsGPP/gpp_plataform/commit/5b9ac383b12240afbb6e271fec53d6f01d15c9d8)  
+3. **Testes Corrigidos**
+   [`5b9ac38`](https://github.com/ProjetcsGPP/gpp_plataform/commit/5b9ac383b12240afbb6e271fec53d6f01d15c9d8)
    `fix: usa force_login() nos testes web views para garantir autenticação`
 
 ---

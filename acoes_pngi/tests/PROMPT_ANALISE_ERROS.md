@@ -197,6 +197,6 @@ Após enviar o prompt com o log, espere uma resposta estruturada assim:
 
 ---
 
-**Criado em:** 12/02/2026  
-**Branch:** fix/correcao-massiva-testes-pngi  
+**Criado em:** 12/02/2026
+**Branch:** fix/correcao-massiva-testes-pngi
 **Última atualização:** 12/02/2026

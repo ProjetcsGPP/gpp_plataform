@@ -9,21 +9,36 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('accounts', '0001_initial'),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AppClient',
+            name="AppClient",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('client_id', models.CharField(max_length=100, unique=True)),
-                ('client_secret_hash', models.CharField(max_length=255)),
-                ('is_active', models.BooleanField(default=True)),
-                ('aplicacao', models.OneToOneField(db_column='aplicacao_id', on_delete=django.db.models.deletion.CASCADE, to='accounts.aplicacao')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("client_id", models.CharField(max_length=100, unique=True)),
+                ("client_secret_hash", models.CharField(max_length=255)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "aplicacao",
+                    models.OneToOneField(
+                        db_column="aplicacao_id",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="accounts.aplicacao",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'db_service_appclient',
+                "db_table": "db_service_appclient",
             },
         ),
     ]

@@ -1,9 +1,3 @@
-from .web_views import (
-    WebLoginView,
-    WebValidateTokenView, 
-    WebUserManagementView
-)
+from .web_views import WebLoginView, WebUserManagementView, WebValidateTokenView
 
-__all__ = [
-    'WebLoginView', 'WebValidateTokenView', 'WebUserManagementView'
-]
+__all__ = ["WebLoginView", "WebValidateTokenView", "WebUserManagementView"]

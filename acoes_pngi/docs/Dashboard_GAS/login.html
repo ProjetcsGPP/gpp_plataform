@@ -9,7 +9,7 @@
   <script src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
   <style>
     body {
-      background: linear-gradient(135deg, #468BC4 0%, #3F93B8 100%);      
+      background: linear-gradient(135deg, #468BC4 0%, #3F93B8 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -41,11 +41,11 @@
       opacity: 0.8;
       transition: opacity 0.3s ease;
     }
-    
+
     .bottom-left-image:hover {
       opacity: 1;
     }
-    
+
     /* Estilo para a imagem no canto inferior direito */
     .bottom-right-image {
       position: fixed;
@@ -57,7 +57,7 @@
       opacity: 0.8;
       transition: opacity 0.3s ease;
     }
-    
+
     .bottom-right-image:hover {
       opacity: 1;
     }
@@ -69,11 +69,11 @@
         left: 10px;
       }
     }
-    
+
     @media (max-width: 480px) {
       .bottom-left-image {
         display: none; /* Esconde em telas muito pequenas */
-      }    
+      }
     }
   </style>
 </head>
@@ -177,7 +177,7 @@
           if (alertIfEmailEmpty()) {
             return; // Para se o e-mail estiver vazio
           }
-          
+
           const emailValue = document.getElementById('email').value.trim();
           const messageDiv = document.getElementById('message');
           messageDiv.innerHTML = '<div class="alert alert-info">Aguarde...</div>';
@@ -194,7 +194,7 @@
               } else {
                  messageDiv.innerHTML = '<div class="alert alert-danger">Não foi possível obter a URL do site.</div>';
               }
-              
+
               const event = {
                 contentLength:-1,
                 parameters:
@@ -210,7 +210,7 @@
 
               google.script.run
                 .withSuccessHandler(function(resultLoad) {
-                  
+
                   console.log('remindPasswordLink.loadRemindPassword.result: ' + JSON.stringify(resultLoad));
                 })
                 .withFailureHandler(function(errorm){
@@ -221,7 +221,7 @@
             .withFailureHandler(function(error){
                messageDiv.innerHTML = '<div class="alert alert-danger">Erro ao salvar e-mail: ' + error.message + '</div>';
             })
-            .setAndGetSiteURL(emailValue); 
+            .setAndGetSiteURL(emailValue);
         });
       }
 
@@ -247,7 +247,7 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const messageDiv = document.getElementById('message');
-      
+
       if (!email || !password) {
         messageDiv.innerHTML = '<div class="alert alert-warning">Por favor, preencha todos os campos.</div>';
         return;
@@ -272,7 +272,7 @@
               .withFailureHandler(function(error){
                 messageDiv.innerHTML = '<div class="alert alert-danger">Erro ao salvar e-mail: ' + error.message + '</div>';
               })
-              .setAndGetSiteURL(email); 
+              .setAndGetSiteURL(email);
           }
           else {
             messageDiv.innerHTML = '<div class="alert alert-danger">' + (result.message || 'Erro ao autenticar').replace(/\n/g, '<br>') + '</div>';

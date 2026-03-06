@@ -90,7 +90,7 @@ const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutos
 
 function validateTimeOutUserSession(){
   try {
-    const user = getUserProperties();    
+    const user = getUserProperties();
     const now = new Date().getTime();
     const elapsed = now - parseInt(user.sessionStart, 10);
 
@@ -104,7 +104,7 @@ function validateTimeOutUserSession(){
     }
     return { sessionExpired: false };
   }
-  catch(error){    
+  catch(error){
     return { sessionExpired: false };
   }
 }
@@ -117,31 +117,31 @@ function validateTimeOutUserSession(){
 function onEdit(e) {
   if (!e) return;
   var sheetName = e.range.getSheet().getName();
-  
+
   if (sheetName === CONFIG.DATA_SHEET_PAGE) {
     incrementGlobalAcoesVersion();
-      
+
     // Debug mais detalhado
     //console.log('onEdit chamado:', e);
     //console.log('Tipo de e:', typeof e);
     //console.log('e.range existe?', e && e.range);
 
     var emailUsuario = e.user.email;
-    
+
     var user = getUserProperties();
 
     if (user && user.email) {
       emailUsuario = user.email;
     }
-    
+
     const range = e.range;
-    
+
     const editedValue = e.value;
     const oldValue = e.oldValue || '';
-    
+
     Logger.log("OnEdit - e.oldValue: " + e.oldValue);
     Logger.log("OnEdit - e.value: " + e.value);
-    
+
     gravarLogAlteracao(emailUsuario, range, oldValue, editedValue);
 
   }
@@ -167,7 +167,7 @@ function doGet(e) {
 
   if ((retUserProps.sessionId !== null) && (retUserProps.sessionStart !== null)){
     var retValidTimeOut = validateTimeOutUserSession();
-    
+
     Logger.log("doGet(e) - retValidTimeOut: " + JSON.stringify(retValidTimeOut));
     if (token.trim() !== ''){
       page = 'set-new-password';
@@ -193,7 +193,7 @@ function doGet(e) {
     page = 'login';
     htmlFile = 'login';
   }
-  
+
   Logger.log("doGet(e) - page: " + page + ", htmlFile: " + htmlFile + ", getUrl(): " + ScriptApp.getService().getUrl());
 
   switch (page) {
@@ -283,7 +283,7 @@ function getConfigKeysForSituacao(situacao) {
   };
 
   const keySuffix = map[situacao.toUpperCase()];
-  
+
   if (!keySuffix) {
     console.warn(`Situação "${situacao}" não mapeada.`);
     return { success: false, background: null, font: null };
@@ -369,7 +369,7 @@ try {
     if (!sheet) throw new Error("Aba 'Token' não encontrada.");
 
     const data = sheet.getRange(CONFIG.TAB_TOKEN).getValues();
-    
+
     var ultimaLinha = sheet.getLastRow();
     // Obtenha o valor da célula da última linha preenchida (por exemplo, coluna A).
     var valor = sheet.getRange(ultimaLinha, 1).getValue();
@@ -393,7 +393,7 @@ try {
     sheet.getRange(proximaLinha, 5).setValue('solicitado');
 
     return { success: true, message: '' };
-    
+
   } catch (error) {
     return { success: false, message: 'Não foi possível gravar o novo token de envio de email. ' + error.message };
   }
@@ -405,14 +405,14 @@ try {
     data.getRange(linha, 5).setValue(status);
 
     return { success: true, message: '' };
-    
+
   } catch (error) {
     return { success: false, message: 'Não foi possível atualizar o token de envio de email. ' + error.message };
   }
 }
 
 function getValidToken(token){
-  
+
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_TOKEN);
     if (!sheet) throw new Error("Aba 'Token' não encontrada.");
@@ -433,18 +433,18 @@ function getValidToken(token){
       valEmail = dados[linha][1];
       valToken = dados[linha][2];
       //Logger.log("Linha: " + linha.toString() + ", Token: " + String(tokenLimpo).trim() + ", valEmail: " + valEmail + ", valToken: " + String(valToken).trim());
-      
+
       if (String(valToken).trim() === tokenLimpo) {
         bAchei = true;
         break;
-      }        
+      }
     }
     retorno = { success : false, message : 'Token não encontrado!', email: '' };
     if (bAchei){
       retorno = { success : true, message : '', email: valEmail };
     }
     return retorno;
-    
+
   } catch (error) {
     return { success: false, message: 'Não foi possível recuperar token de envio de email. ' + error.message, email: '' };
   }
@@ -468,11 +468,11 @@ function getAndValidateEmailToken(email, token){
     var valDataExpiracao = '';
     var valStatus = '';
     var tokenLimpo = String(token).trim().replace(/^["']|["']$/g, '');
-    
+
     //Logger.log("getAndValidateEmailToken - dados.length : " + dados.length.toString());
     if (dados.length >= 1){
       // pesquisa do último para o primeiro
-      
+
       //for (let linha = dados.length - 1; linha >= 0 ; linha--) {
       for (let linha = 0; linha <= dados.length ; linha++) {
         valEmail = dados[linha][1];
@@ -546,7 +546,7 @@ function getAndValidateEmailToken(email, token){
               break;
             }
           }
-          
+
           // se o token é o mesmo passado como parâmetro e esse token está expirado
           if((String(valToken).trim() === tokenLimpo) && (valStatus == 'expirado')){
             if(valEmail == email){
@@ -558,7 +558,7 @@ function getAndValidateEmailToken(email, token){
           }
         }
       }
-     
+
       if (!bAchei){
         retorno = { success : false, message : 'Token não encontrado!', valor: '' };
       }
@@ -575,7 +575,7 @@ function getAndValidateEmailToken(email, token){
         if (bTokenUtilizado){
           retorno = { success : false, message : 'Este token já foi utilizado para a troca da senha!', valor: '' };
         }
-      }      
+      }
       Logger.log("retorno: "+ JSON.stringify(retorno))
       return retorno;
     }
@@ -630,7 +630,7 @@ function getUserProperties() {
 
 
 
-function removeAllSiteProperties(){  
+function removeAllSiteProperties(){
   const scriptProperties = PropertiesService.getScriptProperties();
   scriptProperties.deleteAllProperties();
 
@@ -848,13 +848,13 @@ function verificaPrazoFinalAcao(){
 
   //To Do:
   // a rotina só verifica ações que estão com situação AGUARDANDO FEED, REPACTUADA e EM ANDAMENTO
-  
-  // Quando for o último dia do mês anterior ao prazo final 
+
+  // Quando for o último dia do mês anterior ao prazo final
 
 
   // Se Prazo + 7 dias = hoje e situação diferente de ATRASADA
-  // então 
-  //    altera a situação para ATRASADA. 
+  // então
+  //    altera a situação para ATRASADA.
   //    Manda email de atraso
 
 
@@ -868,7 +868,7 @@ function verificaPrazoFinalAcao(){
   //Para que as regras acima sejam executadas, cada ação deve ter sua situação como: AGUARDANDO FEED, REPACTUADA ou EM ANDAMENTO. As outras situações (ATRASADA, CONCLUÍDA, CANCELADA ou NÃO INICIADA) não devem enviar emails.
 //
   //Em relação aos monitoramentos de cada ação:
-  //Atualmente, a planilha não contém uma data para próximo monitoramento, entretanto no site, foi definido um campo solicitando que cada participante que incluir um monitoramento, deverá preencher a próxima data esperada //para o monitoramento seguinte. Esta data será utilizada como base para o envio do email de avisando quando é esperado uma atualização do próximo monitoramento. 
+  //Atualmente, a planilha não contém uma data para próximo monitoramento, entretanto no site, foi definido um campo solicitando que cada participante que incluir um monitoramento, deverá preencher a próxima data esperada //para o monitoramento seguinte. Esta data será utilizada como base para o envio do email de avisando quando é esperado uma atualização do próximo monitoramento.
   //O envio de email será para todos os participantes de cada ação, com cópia para Claudio, Agatha, Sabrini e Pedro (estamos vendo a possibilidade de criação de grupo de emails), mais a Emilia (MGI). Se for necessário incluir //mais alguém do MGI, favor responder este email com os endereçõs de email que devo acrescentar.
   //Quando houver data do proximo monitoramento, a aplicação deverá validar sozinha e enviar email um mês antes.
   //No caso do próximo monitoramento for definido em um tempo entre 15 dias e 30 dias da útima atualização, a aplicação irá enviar email assim que for identificado.
@@ -880,7 +880,7 @@ function verificaPrazoFinalAcao(){
 
   try{
     var formato = "dd/MM/yyyy";
-    var fusoHorario = Session.getScriptTimeZone(); 
+    var fusoHorario = Session.getScriptTimeZone();
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.DATA_SHEET_PAGE);
 
@@ -892,7 +892,7 @@ function verificaPrazoFinalAcao(){
 
     // Lê os dados da faixa TAB_PRAZOS: 'B4:M50'
     var data = sheet.getRange(CONFIG.TAB_PRAZOS).getValues();
-    
+
     // Aqui você remove as linhas em branco
     data = removerLinhasEmBranco(data);
 
@@ -909,7 +909,7 @@ function verificaPrazoFinalAcao(){
     hoje = Utilities.formatDate(hojeSemHora, Session.getScriptTimeZone(), "dd/MM/yyyy");
 
     for(linha = 0; linha < data.length; linha++){
-      
+
       var linhaPlanilha = linha + 4;
 
       // EIXO	nº	ÁLIAS	AÇÕES	PRAZOS	SITUAÇÃO
@@ -924,7 +924,7 @@ function verificaPrazoFinalAcao(){
 
           numAcao = parseInt(rowNumAcao.toString().trim(), 10);
           var dataFinal = Utilities.parseDate(rowPrazo, fusoHorario, formato);
-          
+
           var prazoMesAnterior = new Date(dataFinal.getFullYear(), dataFinal.getMonth(), 1);
           prazoMesAnterior.setDate(prazoMesAnterior.getDate() - 1);
 
@@ -968,7 +968,7 @@ function verificaPrazoFinalAcao(){
           }
         }
       }
-    } 
+    }
 
     // pega Lista de Participantes
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1004,17 +1004,17 @@ function verificaPrazoFinalAcao(){
         const colB = 1;
         const colK = 9;
         const colM = 11;
-        
+
         if (objArray.numAcao == item[colB]) {
           const participantesRaw = [item[colK], item[colM]]
             .filter(Boolean)
             .join(";");
-            
+
           const participantes = participantesRaw
             .split(/[,;]+/)
             .map(part => {
               part = part.trim();
-              
+
               // Caso esteja no formato: "Nome" <email>
               const match = part.match(/^(.+?)\s*<([^>]+)>$/);
               if (match) {
@@ -1022,28 +1022,28 @@ function verificaPrazoFinalAcao(){
                 const email = match[2].toLowerCase();
                 return { nome: nome, email: email };
               }
-              
+
               // Se for apenas email
               if (part.includes("@")) {
                 const email = part.toLowerCase();
                 const nome = emailToNomeMap[email] || ""; // Busca o nome pelo email
                 return { nome: nome, email: email };
               }
-              
+
               // Se for apenas nome (sem <>), tenta buscar no mapa
               const nomeLimpo = part.replace(/["']/g, "").toLowerCase();
               const email = usuariosMap[nomeLimpo];
               if (email) {
                 return { nome: part.replace(/["']/g, "").trim(), email: email };
               }
-              
+
               return null; // Retorna null para participantes inválidos
             })
             .filter(participante => participante !== null && participante.email.includes("@")) // remove inválidos
-            .filter((participante, idx, arr) => 
+            .filter((participante, idx, arr) =>
               arr.findIndex(p => p.email === participante.email) === idx // remove duplicados baseado no email
             );
-            
+
           objArray.participantes = participantes;
           break; // termina for (const item of data)
         }
@@ -1069,7 +1069,7 @@ function verificaPrazoFinalAcao(){
       msgError = "Erro genérico: " + JSON.stringify(e);
       Logger.log(msgError);
     }
-      
+
     return { success: false, message: msgError, arrayAcoesParaVencer: null };
   }
 }
@@ -1163,7 +1163,7 @@ function sendEmailEmAtraso(){
         </body>
         </html>
         `;
-      
+
 
         const subject = "Redefinição de senha do site de Ações do PNGI do Espírito Santo";
 
@@ -1181,7 +1181,7 @@ function sendEmailEmAtraso(){
 
       })
     }
-  
+
   }
   catch (error) {
     Logger.log("Erro ao enviar email de ação em atraso: " + error.message);
@@ -1234,7 +1234,7 @@ function sendResetLink(email) {
     if (bAcheiUser && bEmailAtivo && rowToUpdate !== -1) {
 
       const resetToken = Utilities.getUuid();
-      
+
       var retNewToken = setNewEmailToken(email, resetToken);
 
       if(!retNewToken.success){
@@ -1244,11 +1244,11 @@ function sendResetLink(email) {
               resetLink: ''
             };
       }
-            
+
       // Aqui você enviaria o email com o link de reset
       // Por simplicidade, vamos apenas retornar o token
       const resetLink = `${ScriptApp.getService().getUrl()}?page=set-new-password&token=${encodeURIComponent(resetToken)}`;
-      
+
       const htmlBody = `<!DOCTYPE html>
                         <html lang="pt-BR">
                         <head>
@@ -1350,7 +1350,7 @@ function sendResetLink(email) {
         };
       }
     }
-    
+
     Logger.log("Erro no envio de email - sendResetLink");
 
     return {
@@ -1367,10 +1367,10 @@ function sendResetLink(email) {
 
 function resetPasswordWithToken(email, token, novaSenha) {
   //Logger.log("resetPasswordWithToken - email: " + email + ", token: " + token + " novaSenha: " + novaSenha);
-  
+
   if (!email || !token || !novaSenha){
     return {succes: false, message: 'Alguma das informações necessárias para atualizar a senha não foi passada!'};
-  } 
+  }
 
   var retUser = getUserState(email);
   //Logger.log("resetPasswordWithToken - getUserState - retUser: " + JSON.stringify(retUser));
@@ -1401,7 +1401,7 @@ function resetPasswordWithToken(email, token, novaSenha) {
  * Atualiza a senha do usuário (dummy - substitua pelo seu backend real)
  */
 function atualizarSenhaDoUsuario(email, novaSenha) {
-  
+
   try {
     const sheetAtuSenha = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_LISTAS);
 
@@ -1413,17 +1413,17 @@ function atualizarSenhaDoUsuario(email, novaSenha) {
 
     for (let i = 1; i < data.length; i++) {
       if (data[i][0] === email) {
-        
+
         var idx_col = parseInt(CONFIG.IDX_COL_PASSWD);
         sheetAtuSenha.getRange(i + 1, idx_col).setValue(novaSenha);
-        
+
         //PropertiesService.getScriptProperties().deleteProperty('reset_' + token);
-        
+
         Logger.log(`Senha do usuário ${email} redefinida para: ${novaSenha}`);
         return { success: true, message: 'Senha redefinida com sucesso' };
       }
     }
-    
+
     return { success: false, message: 'Usuário não encontrado' };
   } catch (error) {
     console.error('Erro ao redefinir senha:', error);
@@ -1452,18 +1452,18 @@ function getOptionsForDropdown(configDropdown, bTodosOption = false, bSort = fal
   let options = [];
   const configkey = CONFIG[configDropdown];
 
-  Logger.log("configDropdown: " + configDropdown);  
+  Logger.log("configDropdown: " + configDropdown);
   Logger.log("configkey: " + configkey);
 
   if (configkey !== null && configkey !== undefined && String(configkey).trim() !== ''){
 
     const dataSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_LISTAS);
     data = dataSheet.getRange(configkey).getValues();
-    
+
     if (data.length === 0) {
       dataSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_ACOES);
       data = dataSheet.getRange(configkey).getValues();
-    }    
+    }
 
     Logger.log("data: " + data);
 
@@ -1472,12 +1472,12 @@ function getOptionsForDropdown(configDropdown, bTodosOption = false, bSort = fal
     if (bTodosOption){
       options.push('Todos');
     }
-    
+
     for (let i = 0; i < data.length; i++) {
       const value = data[i][0];
       if (value) options.push(value);
     }
-    
+
     if (bSort) {
       return options.sort((a, b) => {
         if (a === 'Todos') return -1;
@@ -1485,12 +1485,12 @@ function getOptionsForDropdown(configDropdown, bTodosOption = false, bSort = fal
         return a.localeCompare(b);
       });
     }
-    
+
   }
   else{
     options.push('Valores não carregados para a opção: ' + configDropdown);
   }
-  Logger.log("resultado da execução: " + options);  
+  Logger.log("resultado da execução: " + options);
 
   return options;
 }
@@ -1500,7 +1500,7 @@ function _testeGetOptionsForDropdownForDates()
   var ret = getOptionsForDropdownForDates(true, true, true);
 
   Logger.log('Primeira chamada com bShowExpiredDeadlines = true: ' + JSON.stringify(ret));
-  
+
   var ret1 = getOptionsForDropdownForDates(true, true, false);
 
   Logger.log('Primeira chamada com bShowExpiredDeadlines = false: ' + JSON.stringify(ret1));
@@ -1510,23 +1510,23 @@ function _testeGetOptionsForDropdownForDates()
 function getOptionsForDropdownForDates(bTodosOption = false, bSort = false, bShowExpiredDeadlines = true) {
 
   let options = [];
-  
+
   const dataSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_LISTAS);
   data = dataSheet.getRange(CONFIG.DROPDOWN_PRAZOS).getValues();
-  
+
   if (data.length === 0) {
     dataSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_ACOES);
     data = dataSheet.getRange(CONFIG.DROPDOWN_PRAZOS).getValues();
-  }    
+  }
 
   let numOpcoes = data.length;
 
   const today = new Date();
   const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0'); 
+  const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
-  const todayFormatted = `${year}-${month}-${day}`; 
-  
+  const todayFormatted = `${year}-${month}-${day}`;
+
   for (let i = 0; i < data.length; i++) {
     const value = data[i][0];
     if (value){
@@ -1539,7 +1539,7 @@ function getOptionsForDropdownForDates(bTodosOption = false, bSort = false, bSho
         }
       } else {
         options.push(value);
-      }        
+      }
     }
   }
 
@@ -1557,14 +1557,14 @@ function getOptionsForDropdownForDates(bTodosOption = false, bSort = false, bSho
       // Converte "dd/mm/yyyy" para "yyyy-mm-dd" para comparação
       const aa = a.split('/').reverse().join('-');
       const bb = b.split('/').reverse().join('-');
-      
+
       // Usa localeCompare() para ordenar
-      return aa.localeCompare(bb); 
+      return aa.localeCompare(bb);
     });
-    
+
     options = [];
     options = [...filteredValues];
-    
+
     // adiciona na primeira posição
     if (bTodosOption){
       options.unshift('Todos');
@@ -1582,7 +1582,7 @@ function getOptionsForDropdownForDates(bTodosOption = false, bSort = false, bSho
       return a.localeCompare(b);
     });
   }
-  
+
   return options;
 }
 
@@ -1612,7 +1612,7 @@ function removerLinhasEmBranco(sheetData) {
         // Verifica se as células estão vazias ou null/undefined
         if (cellValue !== null && cellValue !== undefined && String(cellValue).trim() !== '' && String(cellValue).trim() !== 'Não atribuído') {
           //cleanedRow.push(cellValue);
-          lastRow = i;         
+          lastRow = i;
           break;
         }
         else if (String(cellValue).trim() == 'Não atribuído' || String(cellValue).trim() == '') {
@@ -1627,7 +1627,7 @@ function removerLinhasEmBranco(sheetData) {
       break;
     }
   }
-  
+
   for (let i = 0; i <= lastRow; i++) {
     const linhaOriginal = sheetData[i];
     const novaLinha = linhaOriginal.slice(0, linhaOriginal.length);
@@ -1637,12 +1637,12 @@ function removerLinhasEmBranco(sheetData) {
 }
 
 function getProjetsInternal(){
-  
+
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(CONFIG.DATA_SHEET_PAGE);
     if (!sheet) return { success: false, message: "Aba 'Monitor de Ações' não encontrada." };
-    
+
     const headerRange = sheet.getRange("B3:AQ3");
     const headers = headerRange.getValues()[0];
 
@@ -1745,7 +1745,7 @@ function getProjects() {
   }
 
   let retValidaTempo = validateTimeOutUserSession();
-  if (retValidaTempo.sessionExpired){   
+  if (retValidaTempo.sessionExpired){
     return {
       gzip: null,
       data: null,
@@ -1763,7 +1763,7 @@ function getProjects() {
   if(resposta.success){
     Logger.log("Total de projetos: " + resposta.projetos.length);
     Logger.log("Exemplo de projeto: " + JSON.stringify(resposta.projetos[0]));
-    
+
     let projetos = [];
     projetos = resposta.projetos;
 
@@ -1781,19 +1781,19 @@ function getProjects() {
     return { success: true, gzip: true, data: encoded, versaoAtual : versaoAtual, message: '' };
   }
   else{
-    
+
     return { success: false, gzip: false, message: projetos.message, data: null, versaoAtual : versaoAtual};
   }
 
 }
 
 function getProjectDetail(numProject){
-  
+
   try {
-    
+
     let resposta = [];
     resposta = getProjetsInternal();
-    
+
     if(resposta.success){
 
       let projetos = [];
@@ -1805,7 +1805,7 @@ function getProjectDetail(numProject){
       if (!projetoEncontrado) {
         return { success: false, message: "Projeto não encontrado" };
       }
-  
+
       // Compressão de dados para retorno
       const jsonString = JSON.stringify({ success: true, projeto: projetoEncontrado });
       //Logger.log("jsonString :" + jsonString);
@@ -1815,7 +1815,7 @@ function getProjectDetail(numProject){
       return { gzip: true, data: base64 };
     }
     else{
-      
+
       return { success: false, message: "Erro em getProjetsInternal()" };
     }
   }
@@ -1842,15 +1842,15 @@ function convertColumnToLetter(column) {
 function convertLetterToColumn(columnLetter) {
   let columnNumber = 0;
   // Convert the input to uppercase to handle both "a" and "A"
-  columnLetter = columnLetter.toUpperCase(); 
+  columnLetter = columnLetter.toUpperCase();
 
   for (let i = 0; i < columnLetter.length; i++) {
     const char = columnLetter[i];
     // Get the character code and adjust for 'A' (A=1, B=2, etc.)
-    const charValue = char.charCodeAt(0) - 'A'.charCodeAt(0) + 1; 
-    
+    const charValue = char.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+
     // Multiply by 26 for each position to the left (like base-26)
-    columnNumber = columnNumber * 26 + charValue; 
+    columnNumber = columnNumber * 26 + charValue;
   }
   return columnNumber;
 }
@@ -1861,25 +1861,25 @@ function registrarMonitoramento(sheet, row, timestamp, user) {
 
     // Pega o valor da coluna N (número do monitoramento)
     const valorN = sheet.getRange(row, 14).getValue(); // Coluna N = 14
-    
+
     // Converte para número se necessário
     let numeroMonitoramento = valorN;
     if (typeof valorN === 'string') {
       // Remove caracteres não numéricos (como °) e converte para número
       numeroMonitoramento = parseInt(valorN.replace(/[^0-9]/g, ''));
     }
-    
+
     //Logger.log('registrarMonitoramento - Valor da coluna N: ', valorN, 'Número do monitoramento: ', numeroMonitoramento);
-    
+
     // Verifica se é um número válido entre 1 e 24
     if (isNaN(numeroMonitoramento) || numeroMonitoramento < 1 || numeroMonitoramento > 24) {
       Logger.log('Número de monitoramento inválido:', numeroMonitoramento);
       return;
     }
-    
+
     // Calcula a coluna correspondente (U=21, ..., AQ=43)
     // Monitoramento 1° = coluna U (21), 2° = coluna V (22), ..., 24° = coluna AQ (43)
-    const colunaDestino = 20 + numeroMonitoramento; // U=21, então 20 + 1 = 21   
+    const colunaDestino = 20 + numeroMonitoramento; // U=21, então 20 + 1 = 21
 
     const data = new Date(sheet.getRange(row, 15).getValue());
 
@@ -1898,16 +1898,16 @@ function registrarMonitoramento(sheet, row, timestamp, user) {
     //Logger.log('valorO_formatado: ' + valorO_formatado);
     const valorP_formatado = formatarDataOuTexto('P', sheet.getRange(row, 16).getValue());
     const valorQ_formatado = formatarDataOuTexto('Q', sheet.getRange(row, 17).getValue());
-    
+
     // Concatena os valores
     const valorConcatenado = `Em ${timestamp}, ${user} atualizou: Monitoramento: ${valorN_formatado} Próxima data: ${valorO_formatado}, Próxima ação: ${valorP_formatado}, Responsável: ${valorQ_formatado}`;
-    
+
     // Insere na coluna correspondente ao monitoramento
     sheet.getRange(row, colunaDestino).setValue(valorConcatenado);
-    
+
     //Logger.log(`Monitoramento ${numeroMonitoramento}° registrado na coluna ${convertColumnToLetter(colunaDestino)} (${colunaDestino})`);
     //Logger.log('Valor concatenado:', valorConcatenado);
-    
+
   } catch (error) {
     Logger.log('Erro ao registrar monitoramento:', error);
   }
@@ -1917,17 +1917,17 @@ function registrarMonitoramento(sheet, row, timestamp, user) {
 
     const col = range.getColumn();
     const row = range.getRow();
-    
+
     const colLetter = convertColumnToLetter(col);
     //Logger.log('gravarLogAlteracao - row: ' + range.getRow() + ', col: ' + range.getColumn() + ', colLetter: ' + colLetter);
 
-    
+
     const monitorSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.DATA_SHEET_PAGE);
     if (!monitorSheet) {
       Logger.log('Sheet de Monitor não encontrada');
       return;
     }
-    
+
     const logSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_LOG);
     if (!logSheet) {
       Logger.log('Sheet de log não encontrada');
@@ -1935,7 +1935,7 @@ function registrarMonitoramento(sheet, row, timestamp, user) {
     }
 
     if ((colLetter == 'G') || (colLetter == 'N') || (colLetter == 'O') || (colLetter == 'P') || (colLetter == 'Q')) {
-    
+
       const timestamp = new Date();
       const user = emailUsuario || 'Desconhecido';
       const fieldName = monitorSheet.getRange(3, col).getValue() || 'Campo não identificado';
@@ -1945,7 +1945,7 @@ function registrarMonitoramento(sheet, row, timestamp, user) {
 
       // CORREÇÃO: Passar o colLetter para a função
       if (colLetter == 'O'){
-        valorConvertidoAntigo = formatDateForJS(new Date((parseFloat(oldValue).toFixed(0) - 25568) * 86400000)); 
+        valorConvertidoAntigo = formatDateForJS(new Date((parseFloat(oldValue).toFixed(0) - 25568) * 86400000));
         valorConvertidoNovo = formatDateForJS(new Date((parseFloat(editedValue).toFixed(0) - 25568) * 86400000));
       }else{
         valorConvertidoAntigo = oldValue;
@@ -1995,7 +1995,7 @@ function findProjectDetail(numAcao){
         }
       }
       return { success: false, message: "Ação não encontrada!" };
-    } else {      
+    } else {
       return { success: false, message: "Erro em getProjetsInternal()!" };
     }
   }
@@ -2037,12 +2037,12 @@ function saveAcao(user, numAcao, updateSituacao, updateData, objOriginal) {
       message: msgError
     };
   }
-  
+
   // Validar usuário
   const validarUser = getUserProperties();
   if (validarUser.sessionId !== user.sessionId) {
     msgError = "Usuário não é válido para salvar!";
-    
+
     errorCode = 1001;
 
     return {
@@ -2062,7 +2062,7 @@ function saveAcao(user, numAcao, updateSituacao, updateData, objOriginal) {
     // pegar valores das céluas para comparar ao objOriginal
     // se forem iguais, ok continu
     // se forem diferentes, retorna errorCode = 1004(objeto original já alterado)
-    
+
     //originalFormState = {
     //  numAcao: document.getElementById('editAcaoId')?.value || '',
     //  situacao: document.getElementById('editSituacao')?.value || '',
@@ -2081,19 +2081,19 @@ function saveAcao(user, numAcao, updateSituacao, updateData, objOriginal) {
     const colNumN = convertLetterToColumn('N');
     const rangeN = sheet.getRange(rowNum, colNumN);
     const oldValueN = rangeN.getValue();
-    
+
     const colNumO = convertLetterToColumn('O');
     const rangeO = sheet.getRange(rowNum, colNumO);
     const oldValueO = rangeO.getValue();
-    
+
     const colNumP = convertLetterToColumn('P');
     const rangeP = sheet.getRange(rowNum, colNumP);
     const oldValueP = rangeP.getValue();
-    
+
     const colNumQ = convertLetterToColumn('Q');
     const rangeQ = sheet.getRange(rowNum, colNumQ);
     const oldValueQ = rangeQ.getValue();
-    
+
 
     console.log("saveAcao - Antes de comparar");
     console.log("objOriginal.numAcao.toString(): " + objOriginal.numAcao.toString() + ", numAcao: " + numAcao.toString());
@@ -2104,7 +2104,7 @@ function saveAcao(user, numAcao, updateSituacao, updateData, objOriginal) {
     if ((objOriginal.numAcao.toString() !== numAcao.toString()) || (oldValueG !== objOriginal.situacao) || (oldValueN !== objOriginal.monitoramento))
     {
       msgError = "Não foi possível atualizar a Ação pois outra pessoa já atualizou primeiro.";
-      
+
       errorCode = 1004;
 
       return {
@@ -2120,7 +2120,7 @@ function saveAcao(user, numAcao, updateSituacao, updateData, objOriginal) {
       if (updateSituacao && typeof updateSituacao.situacao === "string" && updateSituacao.situacao.trim() !== "") {
         rangeG.setValue(updateSituacao.situacao.trim());
         gravarLogAlteracao(user.email, rangeG, oldValueG, updateSituacao.situacao.trim());
-        
+
         bSuccess = true;
       }
 
@@ -2184,7 +2184,7 @@ function formatDateForJS(date) {
 }
 
 function formatarDataOuTexto(colLetter, valor) {
-  
+
   // Se for null, undefined ou string vazia, retorna como está
   if (!valor || valor === '') return valor;
 
@@ -2193,16 +2193,16 @@ function formatarDataOuTexto(colLetter, valor) {
   }
 
   if(colLetter == 'O') {
-    
+
     var numeroValor = 0 ;
 
     if (valor instanceof Date && !isNaN(valor)) {
       //Logger.log("formatarDataOuTexto - Date");
       valor =  formatCellAsDate();
     }
-    
+
   }
-  
+
   return valor; // Retorna o valor original se não conseguir formatar
 }
 
@@ -2229,7 +2229,7 @@ function getZimbraConfiguration_(){
     msgreturn = 'Erro ao recuperar as informações de configuração de envio de e-mail: ' + e.message;
   }
   retorno = {success: success, msgreturn: msgreturn, url: url, displayAccount: displayAccount, account: account, password: passwd };
-  
+
   //Logger.log(JSON.stringify(retorno));
   return retorno;
 }
@@ -2243,7 +2243,7 @@ function encodeRFC2047(str) {
 }
 
 function getZimbraAuth_() {
-  
+
   var msgError = '';
   var retorno = {};
 
@@ -2281,10 +2281,10 @@ function getZimbraAuth_() {
   var response = null;
   var retjson = '';
   var authToken = '';
-  
+
   try {
     response = UrlFetchApp.fetch(url, options);
-    
+
     retjson = JSON.parse(response.getContentText());
     //Logger.log('retjson: ' + JSON.stringify(retjson));
 
@@ -2376,7 +2376,7 @@ function sendZimbraHtmlEmail(destinatario, assunto, htmlContent) {
 function testeSendZimbraEmail(){
 
   const resetLink = `https://link_do_site.com.br?page=remind-password&blablabla`; //`${ScriptApp.getService().getUrl()}?page=remind-password&token=${resetToken}`;
-  
+
   const htmlBody = `<!DOCTYPE html>
                     <html lang="pt-BR">
                     <head>
@@ -2451,7 +2451,7 @@ function testeSendZimbraEmail(){
                             <p>Atenciosamente,<br>Equipe GPP</p>
                           </div>
                           <div class="footer">
-                            <p id="ano"></p> 
+                            <p id="ano"></p>
                           </div>
                         </div>
                       </div>
@@ -2475,14 +2475,14 @@ function testarResetPasswordWithToken(){
   var retorno = resetPasswordWithToken(email, token, novaSenha );
 
   Logger.log("retorno: " + JSON.stringify(retorno) );
-  
+
 }
 
 function testeauthenticateUser(){
   Logger.log("Teste de usuário encontrado!");
   let email = "claudio.campos@seger.es.gov.br";
   let password = "111";
-  
+
   Logger.log("email parâmetro: " + email);
   Logger.log("password parâmetro: " + password);
   let resposta = {};
@@ -2495,7 +2495,7 @@ function testeauthenticateUser(){
   Logger.log("Teste de usuário NÃO ENCONTRADO!");
   email = "andeeeerson.costa@enap.gov.br";
   password = "123";
-  
+
   Logger.log("email parâmetro: " + email);
   Logger.log("password parâmetro: " + password);
   resposta = {};
@@ -2504,11 +2504,11 @@ function testeauthenticateUser(){
   Logger.log("sessionId: " + resposta.sessionId);
 
   Logger.log("===========================================");
-  
+
   Logger.log("Teste de usuário INATIVO!");
   email = "anderson.costa@enap.gov.br";
   password = "123";
-  
+
   Logger.log("email parâmetro: " + email);
   Logger.log("password parâmetro: " + password);
   resposta = {};
@@ -2519,12 +2519,12 @@ function testeauthenticateUser(){
 
 
 function testarResetPassword(){
-  
+
   Logger.log("Teste de alteração de senha!");
   let email = "alexandre.mohamad@seger.es.gov.br";
   let oldPassword = "111";
   let newPassword = "222";
-  
+
   Logger.log("email parâmetro: " + email);
   Logger.log("oldPassword parâmetro: " + oldPassword);
   Logger.log("newPassword parâmetro: " + newPassword);
@@ -2543,17 +2543,17 @@ function testarSendResetLink(){
   Logger.log("email parâmetro: " + email);
   let resposta = {};
   resposta = sendResetLink(email);
-  
+
   Logger.log("success: " + resposta.success);
   Logger.log("message: " + resposta.message);
   Logger.log("resetLink: " + resposta.resetLink);
 }
 
-function testeGetProjects(){  
+function testeGetProjects(){
   Logger.log("Teste de recuperação dos projetos");
   let resposta = {};
   resposta = getProjects();
-  
+
   Logger.log("resposta.gzip: " + resposta.gzip);
 
 }
@@ -2568,7 +2568,7 @@ function testarGetOptionsForDropdown(){
   for (i = 0; i < resposta.length ; i ++){
     Logger.log("Opção do Eixo SEM opção Todos: " + [i].toString() + ": " + resposta[i]);
   }
-  
+
   bTodosOption = true;
   Logger.log("Teste de Popular Combo Eixo COM opção Todos");
   resposta = getOptionsForDropdown('DROPDOWN_EIXO', bTodosOption, true);
@@ -2585,7 +2585,7 @@ function testarGetOptionsForDropdown(){
   for (i = 0; i < resposta.length ; i ++){
     Logger.log("Opção de Situação SEM opção Todos: " + [i].toString() + ": " + resposta[i]);
   }
-  
+
   bTodosOption = true;
   Logger.log("Teste de Popular Combo SITUAÇÃO COM opção Todos");
   resposta = getOptionsForDropdown('DROPDOWN_SITUACAO', bTodosOption, true);
@@ -2602,7 +2602,7 @@ function testarGetOptionsForDropdown(){
   for (i = 0; i < resposta.length ; i ++){
     Logger.log("Opção de MONITORAMENTO SEM opção Todos: " + [i].toString() + ": " + resposta[i]);
   }
-  
+
   bTodosOption = true;
   Logger.log("Teste de Popular Combo MONITORAMENTO COM opção Todos");
   resposta = getOptionsForDropdown('DROPDOWN_MONITORAMENTO', bTodosOption, true);
@@ -2620,7 +2620,7 @@ function testarGetOptionsForDropdown(){
   for (i = 0; i < resposta.length ; i ++){
     Logger.log("Opção de DROPDOWN_PESSOAS SEM opção Todos: " + [i].toString() + ": " + resposta[i]);
   }
-  
+
   bTodosOption = true;
   Logger.log("Teste de Popular Combo DROPDOWN_PESSOAS COM opção Todos");
   resposta = getOptionsForDropdown('DROPDOWN_PESSOAS', bTodosOption, true);
@@ -2655,25 +2655,25 @@ function testarGetProjectDetail() {
   }
 }
 
-  
+
 function testarEdicaoAbaMonitor() {
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.DATA_SHEET_PAGE);
   if (!sheet) throw new Error("Aba 'Monitor' não encontrada");
 
   Logger.log("Teste de EdicaoAbaMonitor");
-  
+
   Logger.log("Editar situação na linha 4");
   var colNum = convertLetterToColumn('G');
   const valorSituacao = sheet.getRange(4, colNum).getValue();
-  
+
   Logger.log("Situação Atual: " + valorSituacao);
 
   if (valorSituacao == 'ATRASADA'){
     sheet.getRange(4, colNum).setValue('CONCLUÍDA');
     Logger.log("Situação Nova: " + 'CONCLUÍDA');
   }
-  
+
   if (valorSituacao == 'CONCLUÍDA'){
     sheet.getRange(4, colNum).setValue('ATRASADA');
     Logger.log("Situação Nova: " + 'ATRASADA');
@@ -2681,10 +2681,10 @@ function testarEdicaoAbaMonitor() {
 }
 
 function testarFindProjectDetail(){
-  
+
   Logger.log("Teste de FindProjectDetail");
   const resposta = findProjectDetail(3);
-  
+
   Logger.log("resposta: " + resposta.success);
   Logger.log("ação: " + JSON.stringify(resposta.acao));
 }
@@ -2693,9 +2693,9 @@ function testarVerificaPrazoFinalAcao(){
 
   Logger.log("Teste de VerificaPrazoFinalAcao");
   const resposta = verificaPrazoFinalAcao();
-  
+
   Logger.log("resposta.success: " + resposta.success);
   Logger.log("resposta.message: " + resposta.message);
-  Logger.log("resposta.arrayAcoesParaVencer: " + JSON.stringify(resposta.arrayAcoesParaVencer));  
+  Logger.log("resposta.arrayAcoesParaVencer: " + JSON.stringify(resposta.arrayAcoesParaVencer));
 
 }

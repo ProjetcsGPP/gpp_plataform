@@ -72,23 +72,23 @@ Write-ColorOutput "GET $vigorUrl" 'INFO'
 
 try {
     $response = Invoke-RestMethod -Uri $vigorUrl -Method GET -Headers (Get-Headers) -SkipHttpErrorCheck -TimeoutSec 10
-    
+
     if ($response.StatusCode -in @(200, 403, 401)) {
         Write-ColorOutput "✓ Status: $($response.StatusCode)" 'SUCCESS'
-        
+
         try {
             $data = $response.Content | ConvertFrom-Json
             if ($data.count) {
                 Write-ColorOutput "  Total de vigências encontradas: $($data.count)" 'INFO'
-                
+
                 if ($data.results -and $data.results.Count -gt 0) {
                     $vigencias = $data.results
                     Write-ColorOutput "  Primeiras vigências:" 'INFO'
-                    
+
                     $vigencias | Select-Object -First 3 | ForEach-Object {
                         Write-ColorOutput "    - ID: $($_.idvigenciapngi), Descrição: $($_.strdescricaovigencia), Ativa: $($_.isvigenciaativa)" 'INFO'
                     }
-                    
+
                     $vigenciasLista = $vigencias
                 }
             } else {
@@ -117,10 +117,10 @@ $vigenciaAtualId = $null
 
 try {
     $response = Invoke-RestMethod -Uri $vigorAtivaUrl -Method GET -Headers (Get-Headers) -SkipHttpErrorCheck -TimeoutSec 10
-    
+
     if ($response.StatusCode -eq 200) {
         Write-ColorOutput "✓ Vigência ativa encontrada (Status: $($response.StatusCode))" 'SUCCESS'
-        
+
         try {
             $data = $response.Content | ConvertFrom-Json
             Write-ColorOutput "  ID: $($data.idvigenciapngi)" 'INFO'
@@ -157,20 +157,20 @@ if (-not $Token) {
     Write-ColorOutput "  Para testar criação, execute: .\Test-Vigencia-Complete.ps1 -Token \"seu_jwt_token\"" 'INFO'
 } else {
     Write-ColorOutput "POST $vigorUrl" 'INFO'
-    
+
     $novaVigencia = @{
         'strdescricaovigencia' = "Vigência Teste - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         'dtiniciovigencia' = (Get-Date -Format 'yyyy-MM-dd')
         'dtfimvigencia' = (Get-Date).AddYears(1).ToString('yyyy-MM-dd')
         'isvigenciaativa' = $false
     } | ConvertTo-Json
-    
+
     try {
         $response = Invoke-RestMethod -Uri $vigorUrl -Method POST -Headers (Get-Headers) -Body $novaVigencia -SkipHttpErrorCheck -TimeoutSec 10
-        
+
         if ($response.StatusCode -in @(200, 201)) {
             Write-ColorOutput "✓ Vigência criada (Status: $($response.StatusCode))" 'SUCCESS'
-            
+
             try {
                 $data = $response.Content | ConvertFrom-Json
                 Write-ColorOutput "  ID da nova vigência: $($data.idvigenciapngi)" 'INFO'
@@ -197,13 +197,13 @@ if (-not $novaVigenciaId -and -not $vigenciasLista) {
 } else {
     $vigorParaAtivar = $novaVigenciaId -or ($vigenciasLista[0].idvigenciapngi)
     $ativarUrl = "$BaseURL/api/$APIVersion/acoes_pngi/vigencias/$vigorParaAtivar/ativar/"
-    
+
     Write-ColorOutput "POST $ativarUrl" 'INFO'
     Write-ColorOutput "  Ativando vigência ID: $vigorParaAtivar" 'INFO'
-    
+
     try {
         $response = Invoke-RestMethod -Uri $ativarUrl -Method POST -Headers (Get-Headers) -SkipHttpErrorCheck -TimeoutSec 10
-        
+
         if ($response.StatusCode -in @(200, 201)) {
             Write-ColorOutput "✓ Vigência ativada (Status: $($response.StatusCode))" 'SUCCESS'
             $vigenciaAtualId = $vigorParaAtivar
@@ -225,10 +225,10 @@ Write-ColorOutput "GET $vigorAtivaUrl" 'INFO'
 
 try {
     $response = Invoke-RestMethod -Uri $vigorAtivaUrl -Method GET -Headers (Get-Headers) -SkipHttpErrorCheck -TimeoutSec 10
-    
+
     if ($response.StatusCode -eq 200) {
         Write-ColorOutput "✓ Vigência ativa encontrada (Status: $($response.StatusCode))" 'SUCCESS'
-        
+
         try {
             $data = $response.Content | ConvertFrom-Json
             Write-ColorOutput "  ID: $($data.idvigenciapngi)" 'INFO'
@@ -236,7 +236,7 @@ try {
             Write-ColorOutput "  Data Início: $($data.dtiniciovigencia)" 'INFO'
             Write-ColorOutput "  Data Fim: $($data.dtfimvigencia)" 'INFO'
             Write-ColorOutput "  Ativa: $($data.isvigenciaativa)" $(if ($data.isvigenciaativa) { 'SUCCESS' } else { 'FAIL' })
-            
+
             if ($data.isvigenciaativa) {
                 Write-ColorOutput "✓ Vigência está corretamente marcada como ativa" 'SUCCESS'
             } else {

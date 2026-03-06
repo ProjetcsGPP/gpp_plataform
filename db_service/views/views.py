@@ -1,15 +1,17 @@
 from rest_framework.permissions import BasePermission
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from db_service.auth import AppJWTAuthentication
 
+
 class IsAppClient(BasePermission):
     def has_permission(self, request, view):
-        token = getattr(request, 'auth', None)
+        token = getattr(request, "auth", None)
         if not token:
             return False
-        return 'app_code' in token
+        return "app_code" in token
+
 
 class GetPatriarcaView(APIView):
     authentication_classes = [AppJWTAuthentication]

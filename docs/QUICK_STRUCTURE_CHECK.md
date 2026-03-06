@@ -172,7 +172,7 @@ python manage.py generate_structure_docs --format markdown
 
 ### Erro: "View não encontrada"
 
-**Causa:** URL referencia view que não existe  
+**Causa:** URL referencia view que não existe
 **Solução:**
 1. Abrir `docs/app_structure/STRUCTURE.md`
 2. Verificar nome da view na app
@@ -181,7 +181,7 @@ python manage.py generate_structure_docs --format markdown
 
 ### Erro: "Reverse for 'nome' not found"
 
-**Causa:** URL com esse name não existe  
+**Causa:** URL com esse name não existe
 **Solução:**
 1. Procurar no `STRUCTURE.md` pela URL
 2. Se não existe, criar
@@ -190,7 +190,7 @@ python manage.py generate_structure_docs --format markdown
 
 ### Erro: "Model does not exist"
 
-**Causa:** Model referenciado não foi definido  
+**Causa:** Model referenciado não foi definido
 **Solução:**
 1. Procurar no `STRUCTURE.md` → Models
 2. Se não existe, criar

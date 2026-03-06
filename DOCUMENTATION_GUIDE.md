@@ -202,7 +202,7 @@ python manage.py generate_docs --output minha_pasta/
 **Recomendado:** Commitar os arquivos de documentação
 
 ```bash
-git add docs/app_structure.* 
+git add docs/app_structure.*
 sgit commit -m "docs: Atualizar estrutura de apps"
 ```
 
@@ -232,14 +232,14 @@ touch common/management/commands/__init__.py
 
 ## Perguntas Frequentes
 
-**P: Com que frequência devo regenerar?**  
+**P: Com que frequência devo regenerar?**
 R: Sempre que adicionar/remover views ou models, regenere antes de commitar.
 
-**P: E se esquecer de atualizar a documentação?**  
+**P: E se esquecer de atualizar a documentação?**
 R: É um risco! Use o arquivo como referência antes de qualquer modificação.
 
-**P: Posso editar o Markdown manualmente?**  
+**P: Posso editar o Markdown manualmente?**
 R: Não recomendado - será sobrescrito na próxima geração. Use o JSON para referências de código.
 
-**P: Como saber se uma view está disponibilizada?**  
+**P: Como saber se uma view está disponibilizada?**
 R: Procure em `docs/app_structure.md` na seção Views. Se não estiver lá, não existe ou não está em `__all__`.

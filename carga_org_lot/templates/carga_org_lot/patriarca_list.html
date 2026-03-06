@@ -26,10 +26,10 @@
         <form method="get" class="row g-3">
             <div class="col-md-5">
                 <label for="search" class="form-label">Buscar</label>
-                <input type="text" 
-                       class="form-control" 
-                       id="search" 
-                       name="search" 
+                <input type="text"
+                       class="form-control"
+                       id="search"
+                       name="search"
                        value="{{ search }}"
                        placeholder="Buscar por sigla ou nome...">
             </div>
@@ -38,7 +38,7 @@
                 <select class="form-select" id="status" name="status">
                     <option value="">Todos</option>
                     {% for status in status_list %}
-                        <option value="{{ status.id_status_progresso }}" 
+                        <option value="{{ status.id_status_progresso }}"
                                 {% if status_id == status.id_status_progresso|stringformat:"s" %}selected{% endif %}>
                             {{ status.str_descricao }}
                         </option>
@@ -93,11 +93,11 @@
                                 {% else %}
                                     <span class="badge badge-status-processado">{{ patriarca.id_status_progresso.str_descricao }}</span>
                                 {% endif %}
-                                
+
                                 {# Badge de EXPIRADO quando timeout é detectado #}
                                 {% if patriarca.expirado %}
-                                    <span class="badge bg-danger ms-1" 
-                                          data-bs-toggle="tooltip" 
+                                    <span class="badge bg-danger ms-1"
+                                          data-bs-toggle="tooltip"
                                           title="Processo expirou (>1 hora desde última alteração). Requer atualização.">
                                         <i class="fas fa-clock"></i> Expirado
                                     </span>
@@ -124,7 +124,7 @@
                                 <div class="btn-group btn-group-sm" role="group">
                                     {# Botão Visualizar - SÓ HABILITADO PARA STATUS 5 OU 6 #}
                                     {% if patriarca.id_status_progresso.id_status_progresso in "5,6"|make_list or patriarca.id_status_progresso.id_status_progresso == 5 or patriarca.id_status_progresso.id_status_progresso == 6 %}
-                                        <a href="{% url 'carga_org_lot_web:patriarca_detail' patriarca.id_patriarca %}" 
+                                        <a href="{% url 'carga_org_lot_web:patriarca_detail' patriarca.id_patriarca %}"
                                            class="btn btn-outline-info"
                                            data-bs-toggle="tooltip"
                                            title="Visualizar detalhes do patriarca">
@@ -138,17 +138,17 @@
                                             <i class="fas fa-eye-slash"></i>
                                         </button>
                                     {% endif %}
-                                    
+
                                     {# Botão Editar #}
-                                    <a href="{% url 'carga_org_lot_web:patriarca_update' patriarca.id_patriarca %}" 
+                                    <a href="{% url 'carga_org_lot_web:patriarca_update' patriarca.id_patriarca %}"
                                        class="btn btn-outline-warning"
                                        data-bs-toggle="tooltip"
                                        title="Editar informações do patriarca">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    
+
                                     {# === LÓGICA CONDICIONAL DE AÇÕES (GAS carregarPatriarcas) === #}
-                                    
+
                                     {% if patriarca.acao == 'selecionar' %}
                                         {# Cenário 1 ou 2 sem timeout: Botão verde "Selecionar" #}
                                         <button type="button"
@@ -158,7 +158,7 @@
                                                 onclick="abrirModalConfirmacao('selecionar', '{{ patriarca.id_patriarca }}', '{{ patriarca.str_sigla_patriarca }}', '{{ patriarca.str_nome }}')">
                                             <i class="fas fa-check"></i> Selecionar
                                         </button>
-                                        
+
                                     {% elif patriarca.acao == 'reset' %}
                                         {# Cenário 2 com timeout: Botão azul "Atualizar e Selecionar" #}
                                         <button type="button"
@@ -168,10 +168,10 @@
                                                 onclick="abrirModalConfirmacao('reset', '{{ patriarca.id_patriarca }}', '{{ patriarca.str_sigla_patriarca }}', '{{ patriarca.str_nome }}')">
                                             <i class="fas fa-redo"></i> Atualizar e Selecionar
                                         </button>
-                                        
+
                                     {% else %}
                                         {# Cenário 3: Bloqueado #}
-                                        <button class="btn btn-outline-secondary" 
+                                        <button class="btn btn-outline-secondary"
                                                 disabled
                                                 data-bs-toggle="tooltip"
                                                 title="Patriarca bloqueado no status atual. Não é possível selecionar neste momento.">
@@ -185,7 +185,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Paginação -->
         {% if page_obj.has_other_pages %}
             <nav aria-label="Paginação">
@@ -202,11 +202,11 @@
                             </a>
                         </li>
                     {% endif %}
-                    
+
                     <li class="page-item active">
                         <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
                     </li>
-                    
+
                     {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_id %}&status={{ status_id }}{% endif %}">

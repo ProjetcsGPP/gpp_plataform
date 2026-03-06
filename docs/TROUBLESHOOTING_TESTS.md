@@ -117,7 +117,7 @@ from ..views.api import CustomTokenObtainPairView  # Mudou!
 # Forçar import do arquivo
 import importlib.util
 spec = importlib.util.spec_from_file_location(
-    "api_views", 
+    "api_views",
     "auth_service/views/api_views.py"
 )
 module = importlib.util.module_from_spec(spec)
@@ -155,7 +155,7 @@ try:
     print(f"Localização: {CustomTokenObtainPairView.__module__}")
 except ImportError as e:
     print(f"❌ Erro: {e}")
-    
+
     # Verificar o que Python está importando
     import auth_service.views.api_views as api_views
     print(f"Arquivo: {api_views.__file__}")
@@ -180,7 +180,7 @@ from pathlib import Path
 def find_conflicts(root_dir='.'):
     """Encontra conflitos arquivo/diretório"""
     conflicts = []
-    
+
     for dirpath, dirnames, filenames in os.walk(root_dir):
         for filename in filenames:
             if filename.endswith('.py'):
@@ -191,7 +191,7 @@ def find_conflicts(root_dir='.'):
                         'file': os.path.join(dirpath, filename),
                         'dir': conflict_path
                     })
-    
+
     return conflicts
 
 if __name__ == '__main__':
@@ -343,7 +343,7 @@ class MyTest(TestCase):
 
 ---
 
-**Última Atualização**: 27 de janeiro de 2026  
-**Status**: ✅ Todos os conflitos resolvidos  
-**Apps Afetadas**: auth_service, accounts, db_service  
+**Última Atualização**: 27 de janeiro de 2026
+**Status**: ✅ Todos os conflitos resolvidos
+**Apps Afetadas**: auth_service, accounts, db_service
 **Commits**: [62c91fb](https://github.com/ProjetcsGPP/gpp_plataform/commit/62c91fb) a [14c37dc](https://github.com/ProjetcsGPP/gpp_plataform/commit/14c37dc)

@@ -39,37 +39,37 @@ const CONFIG = {
   RESPONSE_CODE_SUCCESS_GENERIC: 200,
   RESPONSE_CODE_SUCCESS_CARGA: 201,
   RESPONSE_CODE_SUCCESS_MSG: 'A solicitação para a chamada do método da API foi executada com sucesso!',
-  
+
   RESPONSE_CODE_BAD_REQUEST: 400,
   RESPONSE_CODE_BAD_REQUEST_MSG: 'A sintaxe da solicitação para a chamada do método da API está inválida ou malformada.',
-  
+
   RESPONSE_CODE_UNAUTHORIZED: 401,
   RESPONSE_CODE_UNAUTHORIZED_MSG: 'A solicitação para a chamada do método da API não está autorizada; são necessárias credenciais válidas.',
-  
+
   RESPONSE_CODE_FORBIDDEN: 403,
   RESPONSE_CODE_FORBIDDEN_MSG: 'O servidor recebeu a solicitação, mas foi negada!',
-  
+
   RESPONSE_CODE_NOT_FOUND: 404,
   RESPONSE_CODE_NOT_FOUND_MSG: 'A solicitação para a chamada do método da API não existe no servidor.',
-  
+
   RESPONSE_CODE_METHOD_NOT_ALLOWED: 405,
   RESPONSE_CODE_METHOD_NOT_ALLOWED_MSG: 'O método HTTP utilizado (GET, POST, etc.) não é permitido para a chamada do método da API.',
-  
+
   RESPONSE_CODE_NOT_ACCEPTABLE: 406,
   RESPONSE_CODE_NOT_ACCEPTABLE_MSG: 'O servidor não pode gerar uma resposta no formato solicitado (Accept header).',
-  
+
   RESPONSE_CODE_REQUEST_TIMEOUT: 408,
   RESPONSE_CODE_REQUEST_TIMEOUT_MSG: 'O tempo de resposta da solicitação para a chamada ao método da API expirou!',
-  
+
   RESPONSE_CODE_CONFLICT: 409,
   RESPONSE_CODE_CONFLICT_MSG: 'A solicitação para a chamada ao método da API conflita com o estado atual do recurso no servidor.',
-  
+
   RESPONSE_CODE_UNPROCESSABLE_ENTITY: 422,
   RESPONSE_CODE_UNPROCESSABLE_ENTITY_MSG: 'A solicitação para a chamada ao método da API estava bem formada, mas contém erros semânticos (falha na validação de regra).',
-  
+
   RESPONSE_CODE_TOO_MANY_REQUESTS: 429, // Nova constante
   RESPONSE_CODE_TOO_MANY_REQUESTS_MSG: 'Foram executadas muitas requisições à API! O limite foi excedido!', // 'Muitas solicitações (Erro 429). O limite de taxa foi excedido.',
-  
+
   RESPONSE_CODE_INTERNAL_SERVER_ERROR: 500,
   RESPONSE_CODE_INTERNAL_SERVER_ERROR_MSG: 'Ocorreu um erro genérico na solicitação para a chamada do método da API', //'Um erro genérico ocorreu no servidor.',
 
@@ -91,7 +91,7 @@ const CONFIG = {
   CLIENT_ID_CARGARH: 'f1407cd0-511e-44b3-8103-e3e9887a03fd',
   CLIENT_SECRET_CARGARH: '1UT5X$NVvL8eRCre6g1TKhovcSNcfi',
   CLIENT_SCOPE_CARGARH: 'api-cargarh-base api-cargarh-inicial',
-  
+
   // Configurações de verificação de status
   STATUS_CHECK_INTERVAL_MS: 180000, // 3 minutos em milissegundos
   STATUS_MAX_ATTEMPTS: 5, // Máximo de tentativas de verificação
@@ -150,13 +150,13 @@ const CONFIG = {
     ORGANOGRAMA: 'cargadeorgaos_{sigla}.json',      // Ex: cargadeorgaos_PMEXE.json
     LOTACAO: 'cargalotacao_{sigla}_{orgao}.json'   // Ex: cargalotacao_PMEXE_SMMA.json
   },
-  
+
   // Pasta no Drive
-  FOLDER_CARGA_ENVIO: 'Carga - Para Envio'  
+  FOLDER_CARGA_ENVIO: 'Carga - Para Envio'
 };
 
 const MimeType = {
-  
+
   GOOGLE_FORMS: "application/vnd.google-apps.form",
   GOOGLE_FOLDER: "application/vnd.google-apps.folder",
   GOOGLE_FILES: "application/vnd.google-apps.file",
@@ -447,14 +447,14 @@ function setSelectedPatriarca(patriarcaId, noValidationMode) {
     for (let i = 1; i < data.length; i++) { // Começa de 1 para pular o cabeçalho
       const [rowNome, rowSigla, rowId, rowStatus, rowOrg_gerado, rowLot_Gerado, rowToken, rowDataSolicitacao] = data[i];
       if (rowId.toString() === patriarcaId.toString()) {
-        foundPatriarca = { 
-          nome: rowNome, 
-          sigla: rowSigla, 
-          idpatriarca: rowId, 
-          status: rowStatus, 
-          organogramagerado: rowOrg_gerado, 
-          lotacaogerado: rowLot_Gerado, 
-          token: rowToken, 
+        foundPatriarca = {
+          nome: rowNome,
+          sigla: rowSigla,
+          idpatriarca: rowId,
+          status: rowStatus,
+          organogramagerado: rowOrg_gerado,
+          lotacaogerado: rowLot_Gerado,
+          token: rowToken,
           datasolicitacao: rowDataSolicitacao
         };
         break;
@@ -469,7 +469,7 @@ function setSelectedPatriarca(patriarcaId, noValidationMode) {
       if (foundPatriarca.status.toLowerCase() !== 'em progresso' && foundPatriarca.status.toLowerCase() !== 'novo' && foundPatriarca.status.toLowerCase() !== 'Enviando carga') {
         var msg = `Patriarca '${foundPatriarca.nome}' não pode ser selecionado! Status atual: ${foundPatriarca.status}.`;
         return { success: false, message: msg };
-      }  
+      }
     }
 
     const userProperties = PropertiesService.getUserProperties();
@@ -538,12 +538,12 @@ function resetPatriarca(patriarcaId) {
                 token: rowToken, datasolicitacao: rowDataSolicitacao
               };
               shouldUpdateSheet = false; // Não atualiza a planilha
-              break; 
+              break;
             }
           }
           // Se não houver data ou o prazo expirou, a função continuará para o reset.
         }
-        
+
         // NOVO: Lógica para status 'carga processada'
         if (currentStatus === 'carga processada') {
           if (rowDataSolicitacao && rowDataSolicitacao instanceof Date) {
@@ -553,14 +553,14 @@ function resetPatriarca(patriarcaId) {
             const diffHoras = diffMs / (1000 * 60 * 60); // Converte para horas
 
             if (diffHoras > 1) {
-              // FORA DO PRAZO: 
+              // FORA DO PRAZO:
               patriarcaData = {
                 nome: rowNome, sigla: rowSigla, idpatriarca: rowId, status: 'Em progresso',
                 organogramagerado: rowOrg_gerado, lotacaogerado: rowLot_Gerado,
                 token: '', datasolicitacao: ''
               };
               shouldUpdateSheet = true; // atualiza a planilha
-              break; 
+              break;
             }
           }
           // Se não houver data ou o prazo expirou, a função continuará para o reset.
@@ -631,7 +631,7 @@ function getUserProperties() {
   };
 }
 
-function removeAllSiteProperties(){  
+function removeAllSiteProperties(){
   const scriptProperties = PropertiesService.getScriptProperties();
   scriptProperties.deleteAllProperties();
 
@@ -649,7 +649,7 @@ const SESSION_TIMEOUT = 60 * 60 * 1000; // 60 minutos
 
 function validateTimeOutUserSession(){
   try {
-    const user = getUserProperties();    
+    const user = getUserProperties();
     const now = new Date().getTime();
     const elapsed = now - parseInt(user.sessionStart, 10);
 
@@ -663,7 +663,7 @@ function validateTimeOutUserSession(){
     }
     return { sessionExpired: false };
   }
-  catch(error){    
+  catch(error){
     return { sessionExpired: false };
   }
 }
@@ -685,9 +685,9 @@ function doGet(e) {
 
   if ((retUserProps.sessionId !== null) && (retUserProps.sessionStart !== null)){
     var retValidTimeOut = validateTimeOutUserSession();
-    
+
     Logger.log("doGet(e) - retValidTimeOut: " + JSON.stringify(retValidTimeOut));
-  
+
     if (retValidTimeOut.sessionExpired === true || retUserProps.sessionId.trim() === '') {
       page = 'login';
       htmlFile = 'login';
@@ -700,7 +700,7 @@ function doGet(e) {
     page = 'login';
     htmlFile = 'login';
   }
-  
+
   Logger.log("doGet(e) - page: " + page + ", htmlFile: " + htmlFile + ", getUrl(): " + ScriptApp.getService().getUrl());
 
   switch (page) {
@@ -749,12 +749,12 @@ function verificarEAbrirPlanilha(nomeArquivo) {
 }
 
 function authenticateUser(email, password) {
-  try {    
+  try {
     var retorno = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
 
     if(retorno.success){
-      const spreadsheet = SpreadsheetApp.openById(retorno.fileId); 
-      const sheet = spreadsheet.getSheetByName(CONFIG.SHEET_LISTAS); 
+      const spreadsheet = SpreadsheetApp.openById(retorno.fileId);
+      const sheet = spreadsheet.getSheetByName(CONFIG.SHEET_LISTAS);
       if (!sheet) throw new Error("Aba 'Listas' não encontrada.");
       Logger.log(sheet.getName());
 
@@ -821,28 +821,28 @@ function getHtmlPage(nome) {
 function findSpreadsheetData(nomePlanilha, nomeAba, nomeTabela, valorProcurado){
 
   var retLerArq = verificarEAbrirPlanilha(nomePlanilha);
-  
+
   var success = false;
   var msg = '';
   var data = [];
   var dados = {};
 
   if (retLerArq.success){
-    
-    const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId); 
-    const sheet = spreadsheet.getSheetByName(nomeAba); 
+
+    const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
+    const sheet = spreadsheet.getSheetByName(nomeAba);
     if (!sheet){
       msg = 'A aba ' + nomeAba + ' não foi encontrada!';
     }
     if (nomeTabela.trim() !== ''){
       data = sheet.getRange(nomeTabela).getValues();
     }else{
-      
+
       data = sheet.getDataRange().getValues();
     }
 
-    const rowIndex = data.findIndex(row => 
-                                      row.some(cell => 
+    const rowIndex = data.findIndex(row =>
+                                      row.some(cell =>
                                           String(cell).trim().toUpperCase().includes(String(valorProcurado).trim().toUpperCase())
                                       )
                                     );
@@ -855,7 +855,7 @@ function findSpreadsheetData(nomePlanilha, nomeAba, nomeTabela, valorProcurado){
 
       // Cria objeto dinâmico
       for (let c = 0; c < linha.length; c++) {
-        if (linha[c] !== "" && linha[c] !== null) {  
+        if (linha[c] !== "" && linha[c] !== null) {
           dados["coluna" + (c + 1)] = linha[c]; // chave = "coluna1", "coluna2"...
         }
       }
@@ -889,7 +889,7 @@ function findSpreadsheetData(nomePlanilha, nomeAba, nomeTabela, valorProcurado){
  */
 function listarPatriarcas() {
   try {
-    
+
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
 
     if (!retLerArq.success) throw new Error(`Erro ao abrir o arquivo: ${CONFIG.SPREADSHEET_PARAM}.`);
@@ -912,17 +912,17 @@ function listarPatriarcas() {
 
     const dados = valuesPatriarcas.map(row => {
       const [nome, sigla, id, status, orgGerado, lotGerado, token, dataSolicitacao] = row;
-      
+
       let tokenValido = false; // Valor padrão
-      
+
       // >>> VALIDAÇÃO DE TOKEN REINTEGRADA <<<
       // Se o patriarca está pronto para o próximo passo (enviar lotações), valida o token.
       if (status && status.trim() === 'Carga processada') {
-       
+
         const patriarcaParaValidar = {
           nome: nome,
           sigla: sigla,
-          idpatriarca: id, 
+          idpatriarca: id,
           status: status,
           organogramaGerado: orgGerado,
           lotacaoGerado: lotGerado,
@@ -974,7 +974,7 @@ function getPatriarca(idPatriarca) {
     for (let i = 1; i < values.length; i++) {
       const row = values[i];
       if (row[COLS.ID_PATRIARCA] && row[COLS.ID_PATRIARCA].toString() === idPatriarca.toString()) {
-        
+
         // Monta o objeto com a propriedade 'idpatriarca' em minúsculo
         const patriarcaData = {
           nome: row[COLS.NOME],
@@ -990,7 +990,7 @@ function getPatriarca(idPatriarca) {
         return { success: true, message: 'Patriarca encontrado.', dados: patriarcaData };
       }
     }
-    
+
     throw new Error(`Patriarca com ID ${idPatriarca} não encontrado.`);
 
   } catch (e) {
@@ -1009,7 +1009,7 @@ function loginAndRenderPrincipal(email, password) {
   var template = HtmlService.createTemplateFromFile("principal");
   template.initialPage = 'patriarcas'; // define página inicial
   template.webAppUrl = ScriptApp.getService().getUrl();
-  
+
   return {
     success: true,
     html: template.evaluate().getContent()
@@ -1107,13 +1107,13 @@ function incluirNovoPatriarca(patriarcaData) {
 
     // Logging para depuração: mostra exatamente o que será gravado.
     Logger.log(`Incluindo novo patriarca: ${JSON.stringify(novaLinha)}`);
-    
+
     // O appendRow adiciona os dados na primeira linha vazia da planilha.
     // Para garantir que os dados sejam inseridos na tabela correta,
     // é preciso criar um array com o número certo de colunas vazias no início.
     const colGIndex = 7; // 'G' é a 7ª coluna
     const linhaParaPlanilha = new Array(colGIndex - 1).fill('').concat(novaLinha);
-    
+
     sheet.appendRow(linhaParaPlanilha);
 
     return { success: true, message: 'Patriarca incluído com sucesso!' };
@@ -1164,25 +1164,25 @@ function atualizarPatriarca(idPatriarca, dadosParaAtualizar) {
     for (let i = 1; i < values.length; i++) {
       if (values[i][idColIndex] && values[i][idColIndex].toString() === idPatriarca.toString()) {
         const linhaParaAtualizar = startRow + i;
-        
+
         for (const key in dadosParaAtualizar) {
           const lowerKey = key.toLowerCase();
           if (colMap.hasOwnProperty(lowerKey)) {
             const colIndex = colMap[lowerKey];
             let valor = dadosParaAtualizar[key];
-            
+
             if (typeof valor === 'string') {
               valor = valor.replace(/\[translate:|\]/g, '').trim();
             }
             sheet.getRange(linhaParaAtualizar, range.getColumn() + colIndex).setValue(valor);
           }
         }
-        
+
         Logger.log(`Patriarca ID ${idPatriarca} atualizado na linha ${linhaParaAtualizar}.`);
         return { success: true, message: 'Patriarca atualizado com sucesso.' };
       }
     }
-    
+
     throw new Error(`Patriarca com ID ${idPatriarca} não encontrado.`);
   } catch (error) {
     Logger.log(`ERRO CRÍTICO em atualizarPatriarca: ${error.message}`);
@@ -1227,12 +1227,12 @@ function getOrganogramaJsonParaEdicao(userChoice = null) {
     // 1. SEMPRE comparar dados do arquivo com planilha
     const reactFlowFileName = `cargadeorgaos_${patriarca.sigla}_reactflow.json`;
     const reactFlowContent = findJsonFileContentByName("Carga - Para Envio", reactFlowFileName);
-    
+
     // 2. Obter dados da planilha
     const nomeAba = patriarca.sigla + '_O';
     const spreadsheet = SpreadsheetApp.openById(verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM).fileId);
     const sheet = spreadsheet.getSheetByName(nomeAba);
-    
+
     let planilhaData = [];
     if (sheet && sheet.getLastRow() > 1) {
       const data = sheet.getDataRange().getValues();
@@ -1244,7 +1244,7 @@ function getOrganogramaJsonParaEdicao(userChoice = null) {
     // 3. Se há arquivo JSON, comparar com planilha
     if (reactFlowContent && userChoice === null) {
       const diferencas = compararDadosJsonPlanilha(reactFlowContent, planilhaData);
-      
+
       if (diferencas.length > 0) {
         return {
           success: false,
@@ -1262,12 +1262,12 @@ function getOrganogramaJsonParaEdicao(userChoice = null) {
     // 4. Processar escolha do usuário
     if (userChoice === 'json' && reactFlowContent) {
       Logger.log(`Usuário escolheu manter dados do JSON para '${patriarca.sigla}'.`);
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: adicionarNumerosPlanilhaAoJson(reactFlowContent, planilhaData)
       };
     }
-    
+
     if (userChoice === 'planilha' || !reactFlowContent) {
       Logger.log(`Construindo layout da planilha para '${patriarca.sigla}'.`);
       return construirLayoutDaPlanilha(patriarca, planilhaData);
@@ -1275,8 +1275,8 @@ function getOrganogramaJsonParaEdicao(userChoice = null) {
 
     // 5. Se não há diferenças, continuar normalmente
     if (reactFlowContent) {
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: adicionarNumerosPlanilhaAoJson(reactFlowContent, planilhaData)
       };
     }
@@ -1376,7 +1376,7 @@ function adicionarNumerosPlanilhaAoJson(jsonData, planilhaData) {
   planilhaData.forEach(item => {
     numeroMap.set(item.sigla, item.numero);
   });
-  
+
   const nodesComNumero = jsonData.nodes.map(node => ({
     ...node,
     data: {
@@ -1384,7 +1384,7 @@ function adicionarNumerosPlanilhaAoJson(jsonData, planilhaData) {
       numero: numeroMap.get(node.data.sigla) || ''
     }
   }));
-  
+
   return {
     ...jsonData,
     nodes: nodesComNumero
@@ -1395,7 +1395,7 @@ function adicionarNumerosPlanilhaAoJson(jsonData, planilhaData) {
 function construirLayoutDaPlanilha(patriarca, planilhaData) {
   // Se não há dados da planilha, retorna layout com apenas o patriarca
   if (planilhaData.length === 0) {
-    
+
     Logger.log(`planilhaData.length == 0 para '${patriarca.sigla}'. Retornando estrutura para criar novo Organograma!`);
     return {
       success: true,
@@ -1403,7 +1403,7 @@ function construirLayoutDaPlanilha(patriarca, planilhaData) {
         nodes: [{
           id: "root",
           type: "input",
-          data: { 
+          data: {
             label: `${patriarca.sigla} - ${patriarca.nome}`,
             nome: patriarca.nome,
             sigla: patriarca.sigla,
@@ -1419,15 +1419,15 @@ function construirLayoutDaPlanilha(patriarca, planilhaData) {
 
   // *** TODO O CÓDIGO EXISTENTE DA FUNÇÃO ORIGINAL AQUI ***
   // Com a modificação importante de incluir o campo numero em todos os nós criados
-  
+
   // Exemplo de como modificar a criação dos nós:
   const nodes = [];
   const edges = [];
-  
+
   // Criar mapa dos dados
   const treeMap = new Map();
   const rootNodes = [];
-  
+
   // Primeira passada: criar nós
   planilhaData.forEach(item => {
     const { nome, sigla, paiSigla, numero } = item;
@@ -1442,7 +1442,7 @@ function construirLayoutDaPlanilha(patriarca, planilhaData) {
       width: 0
     });
   });
-  
+
   // Segunda passada: estabelecer hierarquia
   planilhaData.forEach(item => {
     const { sigla, paiSigla } = item;
@@ -1468,9 +1468,9 @@ function construirLayoutDaPlanilha(patriarca, planilhaData) {
       position: { x: treeNode.x, y: treeNode.y },
       className: 'xy-theme__node'
     };
-    
+
     nodes.push(node);
-    
+
     treeNode.children.forEach(child => {
       edges.push({
         id: `e-${node.id}-${child.sigla}`,
@@ -1491,7 +1491,7 @@ function construirLayoutDaPlanilha(patriarca, planilhaData) {
   // Definir os espaçamentos corretos (da sua versão antiga)
   const x_spacing = 300;
   const y_spacing = 180;
-  
+
   // 1ª Passada (Bottom-up): Calcula a largura de cada sub-árvore
   function calculateWidth(node) {
     if (node.children.length === 0) {
@@ -1544,15 +1544,15 @@ function convertColumnToLetter(column) {
 function convertLetterToColumn(columnLetter) {
   let columnNumber = 0;
   // Convert the input to uppercase to handle both "a" and "A"
-  columnLetter = columnLetter.toUpperCase(); 
+  columnLetter = columnLetter.toUpperCase();
 
   for (let i = 0; i < columnLetter.length; i++) {
     const char = columnLetter[i];
     // Get the character code and adjust for 'A' (A=1, B=2, etc.)
-    const charValue = char.charCodeAt(0) - 'A'.charCodeAt(0) + 1; 
-    
+    const charValue = char.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+
     // Multiply by 26 for each position to the left (like base-26)
-    columnNumber = columnNumber * 26 + charValue; 
+    columnNumber = columnNumber * 26 + charValue;
   }
   return columnNumber;
 }
@@ -1605,7 +1605,7 @@ function getMimeTypeValue(variavel){
  */
 function readSpreadsheetTabs(base64Content, fileName, fileMimeType) {
   let fileId = null;
-  
+
   try {
     const selectedPatriarca = getSelectedPatriarca();
     if (!selectedPatriarca) {
@@ -1613,41 +1613,41 @@ function readSpreadsheetTabs(base64Content, fileName, fileMimeType) {
     }
 
     const decodedBlob = Utilities.newBlob(
-      Utilities.base64Decode(base64Content), 
-      fileMimeType, 
+      Utilities.base64Decode(base64Content),
+      fileMimeType,
       fileName
     );
-    
+
     let tabNames = [];
-    
+
     // Verificar se é um arquivo Excel ou ODS
-    if (fileMimeType === MimeType.MICROSOFT_EXCEL || 
-        fileMimeType === MimeType.MICROSOFT_EXCEL_LEGACY || 
+    if (fileMimeType === MimeType.MICROSOFT_EXCEL ||
+        fileMimeType === MimeType.MICROSOFT_EXCEL_LEGACY ||
         fileMimeType === MimeType.OPEN_DOCUMENT_SPREADSHEET) {
-      
+
       // Converter para Google Sheets temporariamente para ler as abas
       const tempFile = DriveApp.createFile(decodedBlob);
       fileId = tempFile.getId();
-      
+
       const convertedFile = Drive.Files.copy(
         { parents: [{ id: DriveApp.getRootFolder().getId() }] },
         fileId,
         { convert: true }
       );
-      
+
       const spreadsheet = SpreadsheetApp.openById(convertedFile.id);
       const sheets = spreadsheet.getSheets();
-      
+
       tabNames = sheets.map(sheet => sheet.getName());
-      
+
       // Limpar arquivos temporários
       DriveApp.getFileById(fileId).setTrashed(true);
       DriveApp.getFileById(convertedFile.id).setTrashed(true);
-      
+
     } else {
       return { success: false, message: 'Tipo de arquivo não suportado para leitura de abas. Use arquivos Excel (.xlsx, .xls) ou OpenDocument (.ods).', data: null };
     }
-    
+
     return { success: true, message: `${tabNames.length} aba(s) encontrada(s) no arquivo.`, data: tabNames };
 
   } catch (error) {
@@ -1823,9 +1823,9 @@ function _testeProcessUploadedFileOrganograma(){
   };
 
   var retSetSelectedPatriarca = setSelectedPatriarca(patriarcaData.idpatriarca);
-  
+
   var nomeArquivo = 'encodedBlob_' + patriarcaData.sigla + '.txt';
-  
+
   const folders = DriveApp.getFoldersByName(CONFIG.FOLDER_CARGA_ENVIO);
   if (!folders.hasNext()) {
     return { success: false, message: `Pasta '${CONFIG.FOLDER_CARGA_ENVIO}' não encontrada` };
@@ -1833,11 +1833,11 @@ function _testeProcessUploadedFileOrganograma(){
   const folder = folders.next();
   var folderName = folder.getName();
   const files = folder.getFilesByName(nomeArquivo);
-    
+
   if (!files.hasNext()) {
     return { success: false, message: `Arquivo '${nomeArquivo}' não encontrado` };
-  } 
-  
+  }
+
   const file = files.next();
   var fileName = file.getName();
   var fileId = file.getId();
@@ -1885,7 +1885,7 @@ function processUploadedFileOrganograma(base64Content, fileName, fileMimeType) {
     let tipoArquivo = '';
     let fileNameAlter = '';
     let bSemHierarquiaNoPatriarca = false;
-  
+
     const folders = DriveApp.getFoldersByName(CONFIG.FOLDER_CARGA_ENVIO);
     if (!folders.hasNext()) {
       return { success: false, errorCode: -1010, message: `Pasta '${CONFIG.FOLDER_CARGA_ENVIO}' não encontrada`, errors: null };
@@ -1900,7 +1900,7 @@ function processUploadedFileOrganograma(base64Content, fileName, fileMimeType) {
 
       fileNameAlter = fileName.replace(/\.\w+$/, '.gsheet');
       convertedFile = Drive.Files.insert(
-        { title: fileNameAlter, 
+        { title: fileNameAlter,
           mimeType: MimeType.GOOGLE_SPREADSHEET,
           parents: [
             {
@@ -1951,7 +1951,7 @@ function processUploadedFileOrganograma(base64Content, fileName, fileMimeType) {
             colItem = "0";
             bSemHierarquiaNoPatriarca = true;
           }
-        } 
+        }
 
         dados.push({
           linhaPlanilha: i,
@@ -1959,7 +1959,7 @@ function processUploadedFileOrganograma(base64Content, fileName, fileMimeType) {
           nomeOrgaoUnidade: colNomeOrgao,
           siglaOrgaoUnidade: colSigla
         });
-        
+
         linhaVazia = 0;
       }
 
@@ -1982,7 +1982,7 @@ function processUploadedFileOrganograma(base64Content, fileName, fileMimeType) {
       if(dados[0].siglaOrgaoUnidade === selectedPatriarca.sigla ){
         dados[0].siglaPai = '';
       }
-     
+
       validacao = validarTodosOsCriterios(dados);
 
       if (validacao.length > 0) {
@@ -2001,7 +2001,7 @@ function processUploadedFileOrganograma(base64Content, fileName, fileMimeType) {
 
       fileNameAlter = fileName.replace(/\.\w+$/, '.gdoc');
       convertedFile = Drive.Files.insert(
-        { title: fileNameAlter, 
+        { title: fileNameAlter,
           mimeType: MimeType.GOOGLE_DOCUMENT,
           parents: [
             {
@@ -2066,7 +2066,7 @@ function processUploadedFileOrganograma(base64Content, fileName, fileMimeType) {
 
       dadosParaValidacao = converterHierarquiaParaFormatoPaiSigla(hierarchicalData, selectedPatriarca);
 
-      
+
       const validacao = validarEstruturaOrganograma(dadosParaValidacao);
       if (!validacao.success) {
         const errorMsg = 'O arquivo contém erros que impedem o processamento: ' + validacao.errors.join('; ');
@@ -2155,13 +2155,13 @@ function organizarHierarquia(dados) {
 }
 
 function reorganizarItemSemHierarquiaNoPatriarca(itens) {
-  
+
   //{linhaPlanilha, hierarquiaOrgaoUnidade, nomeOrgaoUnidade, siglaOrgaoUnidade}
   var hierarquiaInicial = "1.";
 
   // Busca o item inicial linhaPlanilha===1
   var item = itens.find(dados => dados.linhaPlanilha === 1);
-  
+
   if (!item) {
     return { success: false, message: 'Registro inicial não encontrado!', dados: [] };
   }
@@ -2199,7 +2199,7 @@ function processAndSaveOrganograma(patriarca, items, origem, tipoArquivo) {
       }
       else {
         //dadosParaPlanilha = adicionarNumeracaoHierarquica(items);
-        
+
         dadosParaPlanilha = items.map(item => [
               item.text,
               item.acronym,
@@ -2246,11 +2246,11 @@ function processAndSaveOrganograma(patriarca, items, origem, tipoArquivo) {
       dadosParaPlanilha.forEach(([nome, sigla, paiSigla, numero]) => {
         // Uma unidade pertence a um órgão se seu número começar com o número do órgão + "."
         if (numero && numero.startsWith(orgao.Numero + '.')) {
-          
+
           // Lógica para encontrar a UnidadePai
           const partesNumero = numero.split('.');
           const numeroPai = partesNumero.slice(0, -1).join('.'); // Ex: de "1.1.2.a" para "1.1.2"
-          
+
           let siglaUnidadePai = null;
           // Se o pai da unidade NÃO é o próprio órgão, encontramos a sigla do pai
           if (numeroPai !== orgao.Numero) {
@@ -2259,7 +2259,7 @@ function processAndSaveOrganograma(patriarca, items, origem, tipoArquivo) {
               siglaUnidadePai = pai.Sigla;
             }
           }
-          
+
           // Adiciona a unidade à lista, sem campos extras
           unidadesDoOrgao.push({
             Nome: nome,
@@ -2572,7 +2572,7 @@ function adicionarNumeracaoHierarquica(dadosPlanilha) {
 
     caminhoAtual.add(siglaNoAtual);
     mapaDeNumeracao[siglaNoAtual] = prefixo;
-    
+
     const filhos = filhosPorPai[siglaNoAtual] || [];
     filhos.forEach((filho, index) => {
       const novoPrefixo = prefixo ? `${prefixo}.${index + 1}` : `${index + 1}`;
@@ -2618,7 +2618,7 @@ function converterDadosVisuaisParaFormatoPlanilha(nodes, edges) {
     const paiSigla = parentSiglaMap.get(node.id) || ''; // Se não encontrar pai, é um nó raiz.
     return [nome, sigla, paiSigla];
   });
-  
+
   return listaPlana;
 }
 
@@ -2706,11 +2706,11 @@ function _testeSalvarOrganogramaVisual(){
 
   const reactFlowFileName = `cargadeorgaos_${patriarca.sigla}_reactflow.json`;
   const reactFlowContent = findJsonFileContentByName("Carga - Para Envio", reactFlowFileName);
-  
+
   const reconstructedItems = reconstruirHierarquiaDosNodes(reactFlowContent.nodes, reactFlowContent.edges, patriarca);
 
   const resultadoProcessamento = processAndSaveOrganograma(patriarca, reconstructedItems, 'salvarOrganogramaVisual');
-  
+
 }
 
 function converterTextosParaCaixaAlta(dados) {
@@ -2720,7 +2720,7 @@ function converterTextosParaCaixaAlta(dados) {
     const sigla = linha[1] ? linha[1].toUpperCase() : '';
     const paiSigla = linha[2] ? linha[2].toUpperCase() : '';
     const numero = linha[3]; // O número não é alterado.
-    
+
     return [nome, sigla, paiSigla, numero];
   });
 }
@@ -2730,11 +2730,11 @@ function ordenarDadosPorNumero(dados) {
     // A coluna 'Numero' está no índice 3.
     const numeroA = a[3] || '';
     const numeroB = b[3] || '';
-    
+
     // localeCompare com a opção numeric:true trata os números dentro das strings corretamente.
     return numeroA.localeCompare(numeroB, undefined, { numeric: true, sensitivity: 'base' });
   });
-  
+
   return dados;
 }
 
@@ -2753,7 +2753,7 @@ function salvarOrganogramaVisual(visualData) {
     if (!nodes || !edges) {
       throw new Error("Dados visuais inválidos recebidos do editor.");
     }
-    
+
     // 1. Converter dados visuais para formato de lista hierárquica [Nome, Sigla, Pai_Sigla]
     const dadosHierarquicos = converterDadosVisuaisParaFormatoPlanilha(nodes, edges);
 
@@ -2772,9 +2772,9 @@ function salvarOrganogramaVisual(visualData) {
 
     // 3. Adicionar a numeração hierárquica (WBS), gerando a 4ª coluna 'Numero'
     const dadosNumerados = adicionarNumeracaoHierarquica(dadosHierarquicos);
-    
+
     const dadosMaiusculos = converterTextosParaCaixaAlta(dadosNumerados);
-    
+
     // 5: Ordenar os dados pela coluna 'Numero' antes de gravar
     const dadosOrdenados = ordenarDadosPorNumero(dadosMaiusculos);
 
@@ -2801,9 +2801,9 @@ function salvarOrganogramaVisual(visualData) {
       Logger.log(`Aviso: O organograma foi salvo, mas falhou ao atualizar o status do patriarca: ${retAtualizarPatriarca.message}`);
     }
 
-    return { 
-      success: true, 
-      message: 'Organograma visual salvo com sucesso. A numeração foi recalculada e gravada.' 
+    return {
+      success: true,
+      message: 'Organograma visual salvo com sucesso. A numeração foi recalculada e gravada.'
     };
 
   } catch (error) {
@@ -2823,17 +2823,17 @@ function salvarOrganogramaVisual(visualData) {
 function reconstruirHierarquiaDosNodes(nodes, edges, patriarca) {
   const nodesById = new Map(nodes.map(node => [node.id, node]));
   const childrenByParentId = new Map();
-  
+
   // --> CORREÇÃO: Adiciona mapeamento para encontrar o pai de cada nó
   const parentByChildId = new Map();
-  
+
   edges.forEach(edge => {
     // Mapear filhos por pai (como já estava)
     if (!childrenByParentId.has(edge.source)) {
       childrenByParentId.set(edge.source, []);
     }
     childrenByParentId.get(edge.source).push(edge.target);
-    
+
     // --> NOVO: Mapear pai por filho
     parentByChildId.set(edge.target, edge.source);
   });
@@ -2844,7 +2844,7 @@ function reconstruirHierarquiaDosNodes(nodes, edges, patriarca) {
   }
 
   const reconstructedItems = [];
-  
+
   function dfs(nodeId, level) {
     const node = nodesById.get(nodeId);
     if (!node) return;
@@ -2888,13 +2888,13 @@ function gravarOrganogramaEmPlanilha(nomeNovaAba, dadosFormatados) {
   try {
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) throw new Error(`Erro ao abrir a planilha de carga: ${CONFIG.SPREADSHEET_PARAM}`);
-    
+
     const spreadsheetCarga = SpreadsheetApp.openById(retLerArq.fileId);
     let existingSheet = spreadsheetCarga.getSheetByName(nomeNovaAba);
     if (existingSheet) spreadsheetCarga.deleteSheet(existingSheet);
-    
+
     const novaAba = spreadsheetCarga.insertSheet(nomeNovaAba);
-    
+
     // Cabeçalho atualizado com 4 colunas
     const header = ['Nome', 'Sigla', 'Pai_Sigla', 'Numero'];
     novaAba.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight('bold');
@@ -2918,14 +2918,14 @@ function gravarOrganogramaEmPlanilha(nomeNovaAba, dadosFormatados) {
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /**
- * 
+ *
  * Funções de Lotação
- * 
+ *
 */
 
 function processUploadedFileLotacao(base64Content, fileName, fileMimeType) {
   let fileId = null;
-  
+
   try {
     const selectedPatriarca = getSelectedPatriarca();
     if (!selectedPatriarca) {
@@ -2940,8 +2940,8 @@ function processUploadedFileLotacao(base64Content, fileName, fileMimeType) {
     saveTxtToFile(textFile, "Carga_Lotacao - Para Envio", 'encodedBlob_' + selectedPatriarca.sigla + '.txt');
 
     const decodedBlob = Utilities.newBlob(
-      Utilities.base64Decode(base64Content), 
-      fileMimeType, 
+      Utilities.base64Decode(base64Content),
+      fileMimeType,
       fileName
     );
 
@@ -2959,16 +2959,16 @@ function processUploadedFileLotacao(base64Content, fileName, fileMimeType) {
       const range = sheet.getDataRange();
       processedData = range.getValues();
       Logger.log("processUploadedFileLotacao - Excel processado! processedData: " + JSON.stringify(processedData));
-      
+
     } else {
       return { success: false, message: 'Tipo de arquivo não suportado.', data: null };
     }
-    
+
     // Deleta o arquivo temporário
     if (convertedFile && convertedFile.id) {
       DriveApp.getFileById(convertedFile.id).setTrashed(true);
     }
-    
+
     return { success: true, message: 'Arquivo processado com sucesso!', data: processedData };
 
   } catch (error) {
@@ -2998,7 +2998,7 @@ function processSelectedTabs(fileName, selectedTabs) {
     }
 
     const spreadsheetCarga = SpreadsheetApp.openById(retLerArqCarga.fileId);
-    
+
     // MODIFICADO: Define o nome da nova aba para Lotação
     const nomeNovaAba = selectedPatriarca.sigla + '_L';
 
@@ -3011,7 +3011,7 @@ function processSelectedTabs(fileName, selectedTabs) {
 
     // Criar nova aba
     const novaAba = spreadsheetCarga.insertSheet(nomeNovaAba);
-    
+
     // Cabeçalho
     const dataProcessamento = new Date().toLocaleString('pt-BR');
     const cabecalho = [
@@ -3047,7 +3047,7 @@ function processSelectedTabs(fileName, selectedTabs) {
       let linhaplanilha = 8;
 
       const sheetServidor = spreadsheetArqServidores.getSheetByName(tabName);
-      if(sheetServidor){        
+      if(sheetServidor){
         const lastRow = sheetServidor.getLastRow();
 
         if(lastRow > 0){
@@ -3093,10 +3093,10 @@ function processSelectedTabs(fileName, selectedTabs) {
       }
     }
 
-    return { 
-      success: true, 
-      message: `${selectedTabs.length} aba(s) processada(s) com sucesso.`, 
-      sheetName: nomeNovaAba 
+    return {
+      success: true,
+      message: `${selectedTabs.length} aba(s) processada(s) com sucesso.`,
+      sheetName: nomeNovaAba
     };
 
   } catch (error) {
@@ -3123,7 +3123,7 @@ function abrirPlanilhaGenerica(fileId){
       title: file.getName(),
       mimeType: MimeType.GOOGLE_SHEETS
     };
-    
+
     // Aqui sim converte para Google Sheets
     const convertedFile = Drive.Files.insert(resource, blob, {convert: true});
 
@@ -3139,7 +3139,7 @@ function abrirPlanilhaGenerica(fileId){
  */
 function getCleanedData(sheetServidor) {
   const lastRow = sheetServidor.getLastRow();
-  const lastCol = 7; // sheetServidor.getLastColumn(); só é necessário selecionar até a coluna G. 
+  const lastCol = 7; // sheetServidor.getLastColumn(); só é necessário selecionar até a coluna G.
 
   if (lastRow === 0 || lastCol === 0) {
     return []; // nenhuma linha de dados
@@ -3272,7 +3272,7 @@ function validarDadosLotacao() {
 
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) throw new Error("Não foi possível abrir a planilha de carga.");
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const lotacaoSheet = spreadsheet.getSheetByName(patriarca.sigla + '_L');
     const organogramaSheet = spreadsheet.getSheetByName(patriarca.sigla + '_O');
@@ -3346,7 +3346,7 @@ function validarDadosLotacao() {
           indicador_erro: indicador_erro
         });
       };
-      
+
       // Validação 1: O órgão do servidor (Coluna B) deve ser um órgão válido.
       if (!orgaos.has(orgaoServidor)) {
         addInconsistencia("Órgão Inválido", `O órgão "${orgaoServidor}" na coluna B não é um órgão válido (não é um filho direto de ${siglaPatriarca}).`);
@@ -3390,7 +3390,7 @@ function validarDadosLotacao() {
       if (!cargo || String(cargo).trim() === '') {
         addInconsistencia("Cargo Vazio", "O campo Cargo é obrigatório e não está preenchido.");
       }
-      
+
       // Validação de Ortografia (placeholder)
       // ...
     }
@@ -3413,11 +3413,11 @@ function gerarJsonLotacao() {
 
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) throw new Error("Planilha de carga não encontrada.");
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const lotacaoSheet = spreadsheet.getSheetByName(patriarca.sigla + '_L');
     if (!lotacaoSheet) throw new Error(`Aba de lotação '${patriarca.sigla}_L' não encontrada.`);
-    
+
     const lotacaoData = lotacaoSheet.getDataRange().getValues();
 
     let currentAba = null;
@@ -3426,7 +3426,7 @@ function gerarJsonLotacao() {
     for (let i = 7; i < lotacaoData.length; i++) { // Começa a ler da linha 8 (índice 7)
       const row = lotacaoData[i];
       const firstCell = row[0] ? String(row[0]) : '';
-      
+
       const match = firstCell.match(/^Aba \d+: (.*)$/);
       if (match) {
         currentAba = match[1].trim();
@@ -3450,7 +3450,7 @@ function gerarJsonLotacao() {
 
         if (cpf.length === 11 && unidade && cargo) {
           const lotacao = { Cpf: cpf, Unidade: unidade, Cargo: cargo };
-          
+
           if (!orgaosMap[orgaoSigla]) {
             orgaosMap[orgaoSigla] = [];
           }
@@ -3471,14 +3471,14 @@ function gerarJsonLotacao() {
         Comissoes: [],
         Gestores: []
       };
-      
+
       const jsonString = JSON.stringify(jsonData, null, 2);
       const fileName = `cargalotacao_${patriarca.sigla}_${orgaoSigla}.json`;
 
       saveJsonToFile(jsonString, "Carga - Para Envio", fileName);
       arquivosGerados++;
     }
-    
+
     Logger.log("gerarJsonLotacao: " + `${arquivosGerados} arquivo(s) JSON de lotação gerado(s) com sucesso!` );
 
     patriarca.status = "Em progresso";
@@ -3486,7 +3486,7 @@ function gerarJsonLotacao() {
     Logger.log("gerarJsonLotacao - atualizarPatriarca! " + JSON.stringify(patriarca));
 
     var retAtualizarPatriarca = atualizarPatriarca(patriarca);
-    
+
     if(retAtualizarPatriarca.success){
       Logger.log("gerarJsonLotacao - atualizarPatriarca - Atualizado com sucesso!");
       return { success: true, message: `${arquivosGerados} arquivo(s) JSON de lotação gerado(s) com sucesso!` };
@@ -3551,7 +3551,7 @@ function normalizarCargo(cargo) {
 
 function debugGetOrganogramaGoogleCharts() {
   var response = getOrganogramaCompleto();
-  
+
   console.log('=== DEBUG getOrganogramaCompleto() ===');
   console.log('response:', response);
   console.log('response.success:', response.success);
@@ -3559,7 +3559,7 @@ function debugGetOrganogramaGoogleCharts() {
   console.log('typeof response.data:', typeof response.data);
   console.log('Array.isArray(response.data):', Array.isArray(response.data));
   console.log('response.data.length:', response.data ? response.data.length : 'N/A');
-  
+
   if (response.data && Array.isArray(response.data)) {
     console.log('Primeiro item:', response.data[0]);
     console.log('Total itens:', response.data.length);
@@ -3568,24 +3568,24 @@ function debugGetOrganogramaGoogleCharts() {
 
 function getOrganogramaGoogleCharts() {
   var response = getOrganogramaCompleto();
-  
+
   if (!response.success || !response.data) {
     throw new Error('Estrutura inválida de getOrganogramaCompleto()');
   }
-  
+
   // Usa listaHierarquica (mais limpa) ou chartRows (formato Google Charts)
-  var organogramaData = response.data.listaHierarquica || 
+  var organogramaData = response.data.listaHierarquica ||
                        response.data.chartRows?.map(row => ({...row[0], superior: row[1] })) || [];
-  
+
   if (!Array.isArray(organogramaData) || organogramaData.length === 0) {
     throw new Error('Nenhum dado válido encontrado');
   }
-  
+
   console.log(`Processando ${organogramaData.length} linhas da listaHierarquica...`);
-  
+
   var data = [['Nome', 'Superior', 'Tooltip']];
   var count = 0;
-  
+
   organogramaData.forEach(row => {
     // Prioriza listaHierarquica (Nome/Sigla/UnidadePai)
     if (row.Nome && row.Sigla) {
@@ -3604,7 +3604,7 @@ function getOrganogramaGoogleCharts() {
       count++;
     }
   });
-  
+
   return {
     success: true,
     data: data,
@@ -3636,7 +3636,7 @@ function getOrganogramaCompleto() {
     if (!sheet || sheet.getLastRow() < 2) {
       return { success: true, data: { chartRows: [], listaHierarquica: [] } };
     }
-    
+
     const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
     Logger.log("Lendo " + data.length + " linhas da aba " + nomeNovaAba);
 
@@ -3659,10 +3659,10 @@ function getOrganogramaCompleto() {
       Sigla: row[colMap.sigla],
       UnidadePai: row[colMap.unidadePai] || null
     }));
-    
+
     const itemsMap = {};
     items.forEach(item => { if (item.Sigla) itemsMap[item.Sigla] = item; });
-    
+
     const depthCache = {};
     function getDepth(sigla) {
       if (depthCache[sigla] !== undefined) return depthCache[sigla];
@@ -3670,9 +3670,9 @@ function getOrganogramaCompleto() {
       if (!item || !item.UnidadePai || !itemsMap[item.UnidadePai]) return (depthCache[sigla] = 0);
       return (depthCache[sigla] = getDepth(item.UnidadePai) + 1);
     }
-    
+
     items.forEach(item => { item.nestingLevel = item.Sigla ? getDepth(item.Sigla) : 0; });
-    
+
     Logger.log("Processamento concluído. Retornando objeto diretamente com dados corretos.");
 
     return {
@@ -3696,7 +3696,7 @@ function getChartDataTable() {
 
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) throw new Error("Não foi possível abrir a planilha de carga.");
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const organogramaSheet = spreadsheet.getSheetByName(patriarca.sigla + '_O');
     if (!organogramaSheet) throw new Error(`Aba de organograma '${patriarca.sigla}_O' não encontrada.`);
@@ -3710,9 +3710,9 @@ function getChartDataTable() {
       const nome = data[i][0];
       const sigla = data[i][1];
       const paiSigla = data[i][2] || '';
-      
+
       // Formato do Google Charts: [ {v: 'ID_UNICO', f: 'HTML_DO_LABEL'}, 'ID_DO_PAI', 'TOOLTIP' ]
-     
+
       chartRows.push([
         { v: sigla, f: `${sigla} - ${nome}` },
         paiSigla, // O ID do pai
@@ -3733,9 +3733,9 @@ function encodeRFC2047(str) {
 }
 
 /**
- * 
+ *
  * Tratamento de arquivos
- * 
+ *
 */
 
 function saveTxtToFile(textContent, folderName, fileName) {
@@ -3989,10 +3989,10 @@ function readJsonFromDrive(fileInfo) {
 */
 
 function deleteTokenCacheTime(idPatriarca){
-  
+
   const cache = CacheService.getScriptCache();
   let tokenData = cache.get("cargarh_token_" + idPatriarca);
-  
+
   if (tokenData) {
     cache.remove("cargarh_token_" + idPatriarca);
   }
@@ -4041,7 +4041,7 @@ function checkTokenCacheTime(idPatriarca) {
       if (!row[COL_ID_INDEX] || row[COL_ID_INDEX].toString().trim() === '') {
         continue;
       }
-      
+
       if (row[COL_ID_INDEX].toString() === idPatriarca.toString() && row[COL_TOKEN_INDEX]) {
         const dataCriacao = new Date(row[COL_DATA_INDEX]).getTime();
         if (isNaN(dataCriacao)) continue; // Pula se a data for inválida
@@ -4053,7 +4053,7 @@ function checkTokenCacheTime(idPatriarca) {
         if (tempoRestanteMs > 60000) { // Se ainda resta mais de 1 minuto
           const token = row[COL_TOKEN_INDEX];
           const tempoRestanteSeg = Math.floor(tempoRestanteMs / 1000);
-          
+
           // Re-armazena no cache para otimizar a próxima chamada
           setNewToken(idPatriarca, token, tempoRestanteSeg);
           Logger.log(`Token válido recuperado da planilha para ${idPatriarca}.`);
@@ -4119,7 +4119,7 @@ function fetchFromAPI_Sync(url, options) {
       statusCode = response.getResponseCode();
       responseHeaders = response.getAllHeaders();
       responseContent = response.getContentText(); // Obter como texto
-      
+
       // Tenta parsear o JSON, mas permite corpo vazio ou não-JSON
       try {
         if (responseContent) {
@@ -4185,7 +4185,7 @@ function fetchFromAPI_Sync(url, options) {
       statusCode = -1; // Código interno para erro de rede/timeout
       msg = error.message;
       body = '';
-      
+
       if (attempt >= CONFIG.MAX_RETRIES - 1) {
         // Última tentativa falhou
         break;
@@ -4212,11 +4212,11 @@ function fetchFromAPI_Sync(url, options) {
       case CONFIG.RESPONSE_CODE_BAD_REQUEST:
         msg = CONFIG.RESPONSE_CODE_BAD_REQUEST_MSG;
         break;
-      case CONFIG.RESPONSE_CODE_UNAUTHORIZED: 
-        msg = CONFIG.RESPONSE_CODE_UNAUTHORIZED_MSG; 
+      case CONFIG.RESPONSE_CODE_UNAUTHORIZED:
+        msg = CONFIG.RESPONSE_CODE_UNAUTHORIZED_MSG;
         break;
       case CONFIG.RESPONSE_CODE_FORBIDDEN:
-        msg = CONFIG.RESPONSE_CODE_FORBIDDEN_MSG; 
+        msg = CONFIG.RESPONSE_CODE_FORBIDDEN_MSG;
         break;
       case CONFIG.RESPONSE_CODE_NOT_FOUND:
         msg = CONFIG.RESPONSE_CODE_NOT_FOUND_MSG;
@@ -4227,7 +4227,7 @@ function fetchFromAPI_Sync(url, options) {
       case CONFIG.RESPONSE_CODE_REQUEST_TIMEOUT:
         msg = CONFIG.RESPONSE_CODE_REQUEST_TIMEOUT_MSG;
         break;
-      case CONFIG.RESPONSE_CODE_CONFLICT: 
+      case CONFIG.RESPONSE_CODE_CONFLICT:
         msg = CONFIG.RESPONSE_CODE_CONFLICT_MSG;
         break;
       case CONFIG.RESPONSE_CODE_UNPROCESSABLE_ENTITY:
@@ -4249,7 +4249,7 @@ function fetchFromAPI_Sync(url, options) {
         msg = CONFIG.RESPONSE_CODE_SERVICE_UNAVAILABLE_MSG;
         break;
       case CONFIG.RESPONSE_CODE_GATEWAY_TIMEOUT:
-        msg = CONFIG.RESPONSE_CODE_GATEWAY_TIMEOUT_MSG; 
+        msg = CONFIG.RESPONSE_CODE_GATEWAY_TIMEOUT_MSG;
         break;
       default:
         // Se a msg ainda estiver vazia, define um padrão
@@ -4332,7 +4332,7 @@ function getAccessToken(idPatriarca) {
     // CHECAGEM DE RETORNO 4: A planilha foi atualizada?
     // (A função 'atualizarStatusPatriarca' já contém seu próprio try/catch, então apenas logamos).
     Logger.log(`${logContext}: Tentativa de atualização do status do patriarca concluída.`);
-    
+
     // Etapa 6: Retornar sucesso com o novo token.
     return {
       success: true,
@@ -4358,7 +4358,7 @@ function formatDateTime(date) {
   const seconds = String(date.getSeconds()).padStart(2, '0');
 
   var dateUS = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-  var datePTbr = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;  
+  var datePTbr = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 
   return { normal: datePTbr, invertida: dateUS, dia: day, mes: month, ano: year, hora: hours, minuto: minutes, segundo: seconds };
 }
@@ -4409,10 +4409,10 @@ function verificarStatusCarga(guidCarga, idPatriarca, ambiente) {
     // A lógica de obtenção de token e chamada à API permanece a mesma.
     const patriarcaResponse = getPatriarca(idPatriarca);
     if (!patriarcaResponse.success) throw new Error(`Patriarca com ID ${idPatriarca} não encontrado.`);
-    
+
     const tokenResponse = garantirTokenValido(patriarcaResponse.dados, ambiente);
     if (!tokenResponse.success) throw new Error(`Falha ao obter token: ${tokenResponse.message}`);
-    
+
     const baseUrl = ambiente === 'HML' ? CONFIG.URL_CARGA_HML : CONFIG.URL_CARGA_PRD;
     const endpoint = CONFIG.API_ENDPOINTS.STATUS.replace('{guid}', guidCarga);
     const url = baseUrl + CONFIG.CARGA_V3 + endpoint;
@@ -4437,15 +4437,15 @@ function verificarStatusCarga(guidCarga, idPatriarca, ambiente) {
       mensagemErro: responseData.mensagemErro || '',
       observacoes: `Verificação automática em ${new Date().toLocaleString('pt-BR')}.`
     };
-    
+
     // Atualiza a planilha em segundo plano
     atualizarStatusNaPlanilha(guidCarga, statusDataParaPlanilha);
-    
+
     if (responseData.finalizada) {
       const novoStatus = (numericStatus === 6) ? 'Erro no Envio' : 'Carga processada';
       atualizarStatusPatriarca(idPatriarca, novoStatus);
     }
-    
+
     // Prepara e retorna o objeto de dados para o frontend
     const dataParaFrontend = {
       ...uiData,
@@ -4485,9 +4485,9 @@ function atualizarStatusPatriarca(patriarcaId, novoStatus) {
         const COL_STATUS_INDEX = 3; // Coluna J (G=0, H=1, I=2, J=3)
 
         for (let i = 1; i < values.length; i++) {
-            if (values[i][COL_ID_INDEX] && values[i][COL_ID_INDEX].toString() === patriarcaId.toString()) { 
+            if (values[i][COL_ID_INDEX] && values[i][COL_ID_INDEX].toString() === patriarcaId.toString()) {
                 const linhaParaAtualizar = startRow + i;
-                sheet.getRange(linhaParaAtualizar, range.getColumn() + COL_STATUS_INDEX).setValue(novoStatus); 
+                sheet.getRange(linhaParaAtualizar, range.getColumn() + COL_STATUS_INDEX).setValue(novoStatus);
                 Logger.log(`Status do patriarca ${patriarcaId} (linha ${linhaParaAtualizar}) atualizado para '${novoStatus}'.`);
                 return;
             }
@@ -4511,12 +4511,12 @@ function atualizarStatusPatriarca(patriarcaId, novoStatus) {
 function atualizarStatusNaPlanilha(guidCarga, statusData) {
   try {
     const nomeAba = CONFIG.SHEET_STATUS_ENVIO;
-    
+
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) {
       throw new Error(`Erro ao abrir planilha: ${CONFIG.SPREADSHEET_PARAM}`);
     }
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const sheet = spreadsheet.getSheetByName(nomeAba);
     if (!sheet) {
@@ -4548,7 +4548,7 @@ function atualizarStatusNaPlanilha(guidCarga, statusData) {
       sheet.getRange(linhaEncontrada, 11).setValue(tentativasAtuais + 1);          // K - TentativasVerificacao
       sheet.getRange(linhaEncontrada, 12).setValue(new Date());                    // L - DataUltimaVerificacao
       sheet.getRange(linhaEncontrada, 13).setValue(statusData.observacoes || '');  // M - ObservacoesAdicionais
-      
+
       Logger.log(`Linha ${linhaEncontrada} (GUID: ${guidCarga}) atualizada.`);
 
     } else {
@@ -4594,7 +4594,7 @@ function monitorarStatusCarga(guid, patriarca, ambiente) {
   try {
     // Reutiliza sua função para verificar o status na API
     const resultadoVerificacao = verificarStatusCarga(guid, ambiente, patriarca.idpatriarca);
-    
+
     if (!resultadoVerificacao.success) {
       Logger.log(`Falha ao verificar status para GUID ${guid}: ${resultadoVerificacao.message}`);
       // Não atualizamos a planilha se a própria verificação falhar, para não sobrescrever o último status válido.
@@ -4602,7 +4602,7 @@ function monitorarStatusCarga(guid, patriarca, ambiente) {
     }
 
     const statusApi = resultadoVerificacao.data;
-    
+
     // Reutiliza sua função para atualizar a aba Status_Envio
     atualizarStatusNaPlanilha(guid, { statusApi: statusApi, patriarca: patriarca });
 
@@ -4615,7 +4615,7 @@ function monitorarStatusCarga(guid, patriarca, ambiente) {
       }
       atualizarStatusPatriarca(patriarca.idpatriarca, novoStatus);
     }
-    
+
     return { success: true, data: statusApi };
 
   } catch (e) {
@@ -4631,21 +4631,21 @@ function monitorarStatusCarga(guid, patriarca, ambiente) {
 function obterStatusAtualDaPlanilha(guidCarga) {
   try {
     const nomeAba = CONFIG.SHEET_STATUS_ENVIO;
-    
+
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) {
       return { success: false, message: `Erro ao abrir planilha: ${CONFIG.SPREADSHEET_PARAM}` };
     }
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const sheet = spreadsheet.getSheetByName(nomeAba);
     if (!sheet) {
       return { success: false, message: `Aba '${nomeAba}' não encontrada` };
     }
-    
+
     const range = sheet.getRange(CONFIG.TAB_STATUS_CARGA);
     const values = range.getValues();
-    
+
     for (let i = 1; i < values.length; i++) {
       if (values[i][6] === guidCarga) {
         return {
@@ -4657,9 +4657,9 @@ function obterStatusAtualDaPlanilha(guidCarga) {
         };
       }
     }
-    
+
     return { success: false, message: 'Carga não encontrada' };
-    
+
   } catch (error) {
     return { success: false, message: 'Erro: ' + error.message };
   }
@@ -4671,17 +4671,17 @@ function obterStatusAtualDaPlanilha(guidCarga) {
 function registrarAvisoMaximoTentativas(guidCarga) {
   try {
     const nomeAba = CONFIG.SHEET_STATUS_ENVIO;
-    
+
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) return;
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const sheet = spreadsheet.getSheetByName(nomeAba);
     if (!sheet) return;
-    
+
     const range = sheet.getRange(CONFIG.TAB_STATUS_CARGA);
     const values = range.getValues();
-    
+
     for (let i = 1; i < values.length; i++) {
       if (values[i][6] === guidCarga) {
         const linha = i + 1;
@@ -4718,7 +4718,7 @@ function enviarOrganogramaCargaInicial(patriarca, ambiente, token) {
       payload: JSON.stringify(arquivoJsonContent),
       muteHttpExceptions: true
     };
-    
+
     //const response = UrlFetchApp.fetch(url, options);
     const response = fetchFromAPI_Sync(url, options);
 
@@ -4728,7 +4728,7 @@ function enviarOrganogramaCargaInicial(patriarca, ambiente, token) {
     }
 
     const guidCarga = JSON.parse(response.getContentText());
-    
+
     // --- ORDEM CORRETA DAS OPERAÇÕES ---
     // 1. Atualiza a aba 'Listas' com token, data e status
     atualizarPatriarca(patriarca.idpatriarca, {
@@ -4752,21 +4752,21 @@ function enviarOrganogramaCargaInicial(patriarca, ambiente, token) {
 function atualizarPatriarcaAposEnvio(patriarca, tipoArquivo, guidCarga) {
   try {
     const nomeAba = CONFIG.SHEET_LISTAS;
-    
+
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) return;
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const sheet = spreadsheet.getSheetByName(nomeAba);
     if (!sheet) return;
-    
+
     const range = sheet.getRange(CONFIG.TAB_PATRIARCA);
     const values = range.getValues();
-    
+
     for (let i = 1; i < values.length; i++) {
       if (values[i][2] === patriarca.idpatriarca) { // Coluna C (índice 2) - Id
         const linha = i + 1;
-        
+
         if (tipoArquivo === 'organograma') {
           // Coluna E (índice 4) - Org_gerado
           sheet.getRange(linha, 5).setValue(guidCarga);
@@ -4774,15 +4774,15 @@ function atualizarPatriarcaAposEnvio(patriarca, tipoArquivo, guidCarga) {
           // Coluna F (índice 5) - Lot_Gerado
           sheet.getRange(linha, 6).setValue(guidCarga);
         }
-        
+
         // Atualizar status
         sheet.getRange(linha, 4).setValue('Em Processamento'); // Coluna D - Status
-        
+
         // Atualizar data de solicitação
         const now = new Date();
         const dataFormatada = Utilities.formatDate(now, Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
         sheet.getRange(linha, 8).setValue(dataFormatada); // Coluna H - DataSolicitacao
-        
+
         break;
       }
     }
@@ -4800,11 +4800,11 @@ function enviarLotacoesSequencial(patriarca, environment, listaOrgaosSelecionado
     if (!patriarca || !patriarca.idpatriarca) {
       return { success: false, message: 'Patriarca inválido' };
     }
-    
+
     if (!listaOrgaosSelecionados || listaOrgaosSelecionados.length === 0) {
       return { success: false, message: 'Nenhum órgão selecionado para envio' };
     }
-    
+
     // NOVO: Verificar se organograma foi finalizado
     const statusOrganograma = verificarStatusOrganogramaFinalizado(patriarca);
     if (!statusOrganograma.success || !statusOrganograma.finalizado) {
@@ -4813,7 +4813,7 @@ function enviarLotacoesSequencial(patriarca, environment, listaOrgaosSelecionado
         message: 'Aguardando finalização do processamento do organograma antes de enviar lotações. Status: ' + statusOrganograma.message
       };
     }
-    
+
     // NOVO: Validar token antes de iniciar envios
     const tokenValidacao = validarTokenParaEnvio(patriarca);
     if (!tokenValidacao.tokenValido) {
@@ -4823,19 +4823,19 @@ function enviarLotacoesSequencial(patriarca, environment, listaOrgaosSelecionado
         requiredAction: tokenValidacao.requiredAction
       };
     }
-    
+
     Logger.log(`✓ Token válido. Tempo restante: ${tokenValidacao.tempoRestante} minuto(s)`);
-    
+
     const resultados = [];
     let totalSucesso = 0;
     let totalErro = 0;
-    
+
     // Processar cada órgão sequencialmente
     for (let i = 0; i < listaOrgaosSelecionados.length; i++) {
       const orgaoSigla = listaOrgaosSelecionados[i];
-      
+
       Logger.log(`Enviando lotação ${i + 1}/${listaOrgaosSelecionados.length}: ${orgaoSigla}`);
-      
+
       // NOVO: Revalidar token antes de cada envio (caso o processo seja longo)
       if (i > 0) {
         const revalidacao = validarTokenParaEnvio(patriarca);
@@ -4850,10 +4850,10 @@ function enviarLotacoesSequencial(patriarca, environment, listaOrgaosSelecionado
           break; // Interrompe o processo
         }
       }
-      
+
       // Enviar lotação do órgão
       const envioResult = enviarLotacaoOrgao(patriarca, environment, orgaoSigla);
-      
+
       if (!envioResult.success) {
         resultados.push({
           orgao: orgaoSigla,
@@ -4862,11 +4862,11 @@ function enviarLotacoesSequencial(patriarca, environment, listaOrgaosSelecionado
           ordem: i + 1
         });
         totalErro++;
-        
+
         Logger.log(`Erro no envio de ${orgaoSigla}. Continuando...`);
         continue;
       }
-      
+
       // Aguardar finalização do processamento
       Logger.log(`Aguardando finalização do processamento de ${orgaoSigla}...`);
       const monitorResult = aguardarFinalizacaoLotacao(
@@ -4875,7 +4875,7 @@ function enviarLotacoesSequencial(patriarca, environment, listaOrgaosSelecionado
         environment,
         orgaoSigla
       );
-      
+
       resultados.push({
         orgao: orgaoSigla,
         success: monitorResult.success && monitorResult.comSucesso,
@@ -4884,20 +4884,20 @@ function enviarLotacoesSequencial(patriarca, environment, listaOrgaosSelecionado
         status: monitorResult.status,
         ordem: i + 1
       });
-      
+
       if (monitorResult.success && monitorResult.comSucesso) {
         totalSucesso++;
       } else {
         totalErro++;
       }
-      
+
       // Se deu erro, decidir se continua ou para
       if (!monitorResult.success || !monitorResult.comSucesso) {
         Logger.log(`Erro no processamento de ${orgaoSigla}. Interrompendo envio sequencial.`);
         break;
       }
     }
-    
+
     return {
       success: true,
       message: `Envio sequencial concluído: ${totalSucesso} sucesso(s), ${totalErro} erro(s)`,
@@ -4907,7 +4907,7 @@ function enviarLotacoesSequencial(patriarca, environment, listaOrgaosSelecionado
       sucessos: totalSucesso,
       erros: totalErro
     };
-    
+
   } catch (error) {
     Logger.log('Erro em enviarLotacoesSequencial: ' + error.message);
     return { success: false, message: 'Erro no envio sequencial: ' + error.message };
@@ -4921,31 +4921,31 @@ function enviarLotacoesSequencial(patriarca, environment, listaOrgaosSelecionado
 function verificarStatusOrganogramaFinalizado(patriarca) {
   try {
     const nomeAba = CONFIG.SHEET_STATUS_ENVIO;
-    
+
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) {
       return { success: false, message: 'Erro ao abrir planilha' };
     }
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const sheet = spreadsheet.getSheetByName(nomeAba);
     if (!sheet) {
       return { success: false, message: 'Aba Status_Envio não encontrada' };
     }
-    
+
     const range = sheet.getRange(CONFIG.TAB_STATUS_CARGA);
     const values = range.getValues();
-    
+
     // Procurar pelo último envio de organograma deste patriarca
     for (let i = values.length - 1; i >= 1; i--) {
       const idPatriarca = values[i][0];         // Coluna A
       const tipoCarga = values[i][3];           // Coluna D
       const statusCarga = values[i][7];         // Coluna H
       const finalizada = values[i][8];          // Coluna I
-      
-      if (idPatriarca === patriarca.idpatriarca && 
+
+      if (idPatriarca === patriarca.idpatriarca &&
           tipoCarga === CONFIG.TIPO_CARGA.INICIAL_ORGANOGRAMA) {
-        
+
         if (finalizada === true && statusCarga === 'Finalizado') {
           return {
             success: true,
@@ -4970,12 +4970,12 @@ function verificarStatusOrganogramaFinalizado(patriarca) {
         }
       }
     }
-    
+
     return {
       success: false,
       message: 'Nenhum envio de organograma encontrado para este patriarca'
     };
-    
+
   } catch (error) {
     Logger.log('Erro em verificarStatusOrganogramaFinalizado: ' + error.message);
     return { success: false, message: 'Erro: ' + error.message };
@@ -4990,23 +4990,23 @@ function aguardarFinalizacaoLotacao(guidCarga, patriarca, environment, orgaoSigl
   try {
     let tentativas = 0;
     const maxTentativas = CONFIG.STATUS_MAX_ATTEMPTS;
-    
+
     while (tentativas < maxTentativas) {
       // Aguardar 3 minutos antes de verificar (exceto na primeira tentativa)
       if (tentativas > 0) {
         Logger.log(`Aguardando ${CONFIG.STATUS_CHECK_INTERVAL_MS / 1000 / 60} minutos antes da próxima verificação...`);
         Utilities.sleep(CONFIG.STATUS_CHECK_INTERVAL_MS);
       }
-      
+
       tentativas++;
       Logger.log(`Tentativa ${tentativas}/${maxTentativas} - Verificando status de ${orgaoSigla}...`);
-      
+
       // Verificar status
       const statusResult = monitorarStatusCarga(guidCarga, patriarca, environment);
-      
+
       if (!statusResult.success) {
         Logger.log(`Erro ao verificar status (tentativa ${tentativas}): ${statusResult.message}`);
-        
+
         // Se não for a última tentativa, continuar
         if (tentativas < maxTentativas) {
           continue;
@@ -5018,7 +5018,7 @@ function aguardarFinalizacaoLotacao(guidCarga, patriarca, environment, orgaoSigl
           };
         }
       }
-      
+
       // Se finalizou com sucesso
       if (statusResult.finalizado && statusResult.comSucesso) {
         Logger.log(`✓ Lotação do órgão ${orgaoSigla} processada com sucesso!`);
@@ -5030,7 +5030,7 @@ function aguardarFinalizacaoLotacao(guidCarga, patriarca, environment, orgaoSigl
           tentativas: tentativas
         };
       }
-      
+
       // Se finalizou com erro
       if (statusResult.finalizado && !statusResult.comSucesso) {
         Logger.log(`✗ Lotação do órgão ${orgaoSigla} finalizada com ERRO: ${statusResult.erro}`);
@@ -5043,11 +5043,11 @@ function aguardarFinalizacaoLotacao(guidCarga, patriarca, environment, orgaoSigl
           tentativas: tentativas
         };
       }
-      
+
       // Ainda processando
       Logger.log(`Status atual: ${statusResult.status} - Ainda processando...`);
     }
-    
+
     // Máximo de tentativas atingido
     Logger.log(`⚠ Máximo de tentativas atingido para lotação do órgão ${orgaoSigla}`);
     return {
@@ -5055,7 +5055,7 @@ function aguardarFinalizacaoLotacao(guidCarga, patriarca, environment, orgaoSigl
       message: `Máximo de ${maxTentativas} tentativas atingido para lotação do órgão ${orgaoSigla}. O processamento ainda está em andamento. Contate a PRODEST ou verifique o status manualmente mais tarde.`,
       tentativas: maxTentativas
     };
-    
+
   } catch (error) {
     Logger.log('Erro em aguardarFinalizacaoLotacao: ' + error.message);
     return { success: false, message: 'Erro: ' + error.message };
@@ -5073,11 +5073,11 @@ function enviarLotacoesParalelo(patriarca, environment, listaOrgaosSelecionados)
     if (!patriarca || !patriarca.idpatriarca) {
       return { success: false, message: 'Patriarca inválido' };
     }
-    
+
     if (!listaOrgaosSelecionados || listaOrgaosSelecionados.length === 0) {
       return { success: false, message: 'Nenhum órgão selecionado para envio' };
     }
-    
+
     // NOVO: Verificar se organograma foi finalizado
     const statusOrganograma = verificarStatusOrganogramaFinalizado(patriarca);
     if (!statusOrganograma.success || !statusOrganograma.finalizado) {
@@ -5086,7 +5086,7 @@ function enviarLotacoesParalelo(patriarca, environment, listaOrgaosSelecionados)
         message: 'Aguardando finalização do processamento do organograma antes de enviar lotações. Status: ' + statusOrganograma.message
       };
     }
-    
+
     // NOVO: Validar token antes de iniciar envios
     const tokenValidacao = validarTokenParaEnvio(patriarca);
     if (!tokenValidacao.tokenValido) {
@@ -5096,22 +5096,22 @@ function enviarLotacoesParalelo(patriarca, environment, listaOrgaosSelecionados)
         requiredAction: tokenValidacao.requiredAction
       };
     }
-    
+
     Logger.log(`✓ Token válido. Tempo restante: ${tokenValidacao.tempoRestante} minuto(s)`);
-    
+
     const resultados = [];
     let totalSucesso = 0;
     let totalErro = 0;
-    
+
     // Enviar todas as lotações
     for (let i = 0; i < listaOrgaosSelecionados.length; i++) {
       const orgaoSigla = listaOrgaosSelecionados[i];
-      
+
       Logger.log(`Enviando lotação ${i + 1}/${listaOrgaosSelecionados.length}: ${orgaoSigla}`);
-      
+
       // Enviar lotação do órgão
       const envioResult = enviarLotacaoOrgao(patriarca, environment, orgaoSigla);
-      
+
       resultados.push({
         orgao: orgaoSigla,
         success: envioResult.success,
@@ -5120,14 +5120,14 @@ function enviarLotacoesParalelo(patriarca, environment, listaOrgaosSelecionados)
         statusCode: envioResult.statusCode,
         ordem: i + 1
       });
-      
+
       if (envioResult.success) {
         totalSucesso++;
       } else {
         totalErro++;
       }
     }
-    
+
     return {
       success: true,
       message: `Envio paralelo concluído: ${totalSucesso} enviado(s) com sucesso, ${totalErro} falha(s). Verifique o status de processamento posteriormente.`,
@@ -5136,7 +5136,7 @@ function enviarLotacoesParalelo(patriarca, environment, listaOrgaosSelecionados)
       sucessos: totalSucesso,
       falhas: totalErro
     };
-    
+
   } catch (error) {
     Logger.log('Erro em enviarLotacoesParalelo: ' + error.message);
     return { success: false, message: 'Erro no envio paralelo: ' + error.message };
@@ -5152,34 +5152,34 @@ function enviarLotacaoOrgao(patriarca, environment, orgaoSigla) {
     // ATUALIZADO: Garantir token válido
     const tokenResponse = garantirTokenValido(patriarca);
     if (!tokenResponse.success) {
-      return { 
-        success: false, 
-        message: 'Erro ao obter/validar token: ' + tokenResponse.message 
+      return {
+        success: false,
+        message: 'Erro ao obter/validar token: ' + tokenResponse.message
       };
     }
-    
+
     if (tokenResponse.novo) {
       Logger.log('Novo token gerado para envio de ' + orgaoSigla);
     }
-    
+
     // Nome do arquivo padrão
     const nomeArquivo = `cargalotacao_${patriarca.sigla}_${orgaoSigla}.json`;
-    
+
     // Carregar JSON da lotação do órgão
     const jsonFile = buscarArquivoJson(nomeArquivo);
     if (!jsonFile.success) {
-      return { 
-        success: false, 
-        message: `Arquivo JSON de lotação não encontrado: ${nomeArquivo}` 
+      return {
+        success: false,
+        message: `Arquivo JSON de lotação não encontrado: ${nomeArquivo}`
       };
     }
-    
+
     const dadosLotacao = JSON.parse(jsonFile.content);
-    
+
     // Montar URL
     const baseUrl = environment === 'HML' ? CONFIG.URL_CARGA_HML : CONFIG.URL_CARGA_PRD;
     const url = baseUrl + CONFIG.CARGA_V3 + CONFIG.API_ENDPOINTS.LOTACOES + patriarca.idpatriarca;
-    
+
     // Preparar requisição
     const options = {
       method: 'POST',
@@ -5191,7 +5191,7 @@ function enviarLotacaoOrgao(patriarca, environment, orgaoSigla) {
       payload: JSON.stringify(dadosLotacao),
       muteHttpExceptions: true
     };
-    
+
     // Salvar log da requisição
     const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
     saveTxtToFile(
@@ -5199,17 +5199,17 @@ function enviarLotacaoOrgao(patriarca, environment, orgaoSigla) {
       CONFIG.FOLDER_CARGA_ENVIO,
       `log_requisicao_lotacao_${patriarca.sigla}_${orgaoSigla}_${timestamp}.txt`
     );
-    
+
     // Enviar para API
     const response = fetchFromAPI_Sync(url, options);
-    
+
     // Salvar log da resposta
     saveTxtToFile(
       'Status: ' + response.statusCode + '\n\nResponse:\n' + response.responseText,
       CONFIG.FOLDER_CARGA_ENVIO,
       `log_response_lotacao_${patriarca.sigla}_${orgaoSigla}_${timestamp}.txt`
     );
-    
+
     // Verificar resposta
     if (!response.success || response.statusCode !== CONFIG.RESPONSE_CODE_SUCCESS_CARGA) {
       return {
@@ -5218,10 +5218,10 @@ function enviarLotacaoOrgao(patriarca, environment, orgaoSigla) {
         statusCode: response.statusCode
       };
     }
-    
+
     // Parsear resposta para obter o GUID
     let guidCarga = response.responseText.replace(/"/g, '').trim();
-    
+
     // Registrar na planilha Status_Envio
     const registroResult = registrarEnvioInicial(
       patriarca,
@@ -5230,18 +5230,18 @@ function enviarLotacaoOrgao(patriarca, environment, orgaoSigla) {
       guidCarga,
       CONFIG.TIPO_CARGA.INICIAL_LOTACOES
     );
-    
+
     if (!registroResult.success) {
       Logger.log('AVISO: Envio realizado mas falha ao registrar na planilha: ' + registroResult.message);
     }
-    
+
     return {
       success: true,
       message: `Lotação do órgão ${orgaoSigla} enviada com sucesso!`,
       guidCarga: guidCarga,
       statusCode: 201
     };
-    
+
   } catch (error) {
     Logger.log(`Erro em enviarLotacaoOrgao (${orgaoSigla}): ` + error.message);
     return { success: false, message: 'Erro ao enviar lotação: ' + error.message };
@@ -5296,7 +5296,7 @@ function obterDadosTelaLotacao(idPatriarca) {
       const nomeArquivoLotacao = CONFIG.JSON_PATTERNS.LOTACAO
         .replace('{sigla}', patriarca.sigla)
         .replace('{orgao}', orgao.sigla);
-      
+
       if (findJsonFileContentByName(CONFIG.FOLDER_CARGA_ENVIO, nomeArquivoLotacao)) {
         orgaosDisponiveis.push({ ...orgao, arquivo: nomeArquivoLotacao });
       } else {
@@ -5311,9 +5311,9 @@ function obterDadosTelaLotacao(idPatriarca) {
     }
 
     // 5. Se tudo estiver correto, retornar os dados
-    return { 
-      success: true, 
-      message: 'Órgãos carregados com sucesso.', 
+    return {
+      success: true,
+      message: 'Órgãos carregados com sucesso.',
       data: {
         patriarca: patriarca,
         orgaos: orgaosDisponiveis,
@@ -5342,13 +5342,13 @@ function resetarStatusPatriarca(idPatriarca) {
       throw new Error("ID do Patriarca não fornecido para o reset.");
     }
     Logger.log(`Iniciando reset de token para o Patriarca ID: ${idPatriarca}`);
-    
+
     const dadosParaResetar = {
       status: 'Em progresso',
       token: '',
       dataSolicitacao: ''
     };
-    
+
     const updateResult = atualizarPatriarca(idPatriarca, dadosParaResetar);
     if (!updateResult.success) {
       throw new Error(`Falha ao reiniciar o status: ${updateResult.message}`);
@@ -5371,40 +5371,40 @@ function resetarStatusPatriarca(idPatriarca) {
 function limparControlesEnvio(patriarca) {
   try {
     const nomeAba = CONFIG.SHEET_LISTAS;
-    
+
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) {
       return { success: false, message: `Erro ao abrir planilha: ${CONFIG.SPREADSHEET_PARAM}` };
     }
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const sheet = spreadsheet.getSheetByName(nomeAba);
     if (!sheet) {
       return { success: false, message: `Aba '${nomeAba}' não encontrada` };
     }
-    
+
     const range = sheet.getRange(CONFIG.TAB_PATRIARCA);
     const values = range.getValues();
-    
+
     for (let i = 1; i < values.length; i++) {
       if (values[i][2] === patriarca.idpatriarca) { // Coluna C - Id
         const linha = i + 1;
-        
+
         // Limpar Token (coluna G)
         sheet.getRange(linha, 7).setValue('');
-        
+
         // Limpar DataSolicitacao (coluna H)
         sheet.getRange(linha, 8).setValue('');
-        
+
         break;
       }
     }
-    
+
     return {
       success: true,
       message: 'Controles de envio limpos com sucesso'
     };
-    
+
   } catch (error) {
     Logger.log('Erro em limparControlesEnvio: ' + error.message);
     return { success: false, message: 'Erro ao limpar controles: ' + error.message };
@@ -5417,21 +5417,21 @@ function limparControlesEnvio(patriarca) {
 function limparRegistroStatusEnvio(guidCarga) {
   try {
     const nomeAba = CONFIG.SHEET_STATUS_ENVIO;
-    
+
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) {
       return { success: false, message: `Erro ao abrir planilha: ${CONFIG.SPREADSHEET_PARAM}` };
     }
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const sheet = spreadsheet.getSheetByName(nomeAba);
     if (!sheet) {
       return { success: false, message: `Aba '${nomeAba}' não encontrada` };
     }
-    
+
     const range = sheet.getRange(CONFIG.TAB_STATUS_CARGA);
     const values = range.getValues();
-    
+
     for (let i = 1; i < values.length; i++) {
       if (values[i][6] === guidCarga) { // Coluna G - GuidCarga
         const linha = i + 1;
@@ -5443,12 +5443,12 @@ function limparRegistroStatusEnvio(guidCarga) {
         };
       }
     }
-    
+
     return {
       success: false,
       message: 'Registro não encontrado'
     };
-    
+
   } catch (error) {
     Logger.log('Erro em limparRegistroStatusEnvio: ' + error.message);
     return { success: false, message: 'Erro ao limpar registro: ' + error.message };
@@ -5461,29 +5461,29 @@ function limparRegistroStatusEnvio(guidCarga) {
 function buscarArquivoJson(nomeArquivo) {
   try {
     const nomePasta = CONFIG.FOLDER_CARGA_ENVIO; // 'Carga - Para Envio'
-    
+
     const folders = DriveApp.getFoldersByName(nomePasta);
     if (!folders.hasNext()) {
       return { success: false, message: `Pasta '${nomePasta}' não encontrada` };
     }
-    
+
     const folder = folders.next();
     const files = folder.getFilesByName(nomeArquivo);
-    
+
     if (!files.hasNext()) {
       return { success: false, message: `Arquivo '${nomeArquivo}' não encontrado` };
     }
-    
+
     const file = files.next();
     const content = file.getBlob().getDataAsString();
-    
+
     return {
       success: true,
       content: content,
       fileId: file.getId(),
       fileName: nomeArquivo
     };
-    
+
   } catch (error) {
     Logger.log('Erro em buscarArquivoJson: ' + error.message);
     return { success: false, message: 'Erro ao buscar arquivo: ' + error.message };
@@ -5499,16 +5499,16 @@ function buscarArquivoJson(nomeArquivo) {
 function validarTokenParaEnvio(patriarca) {
   try {
     if (!patriarca || !patriarca.idpatriarca) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         tokenValido: false,
-        message: 'Patriarca inválido' 
+        message: 'Patriarca inválido'
       };
     }
-    
+
     // Verificar se existe token em cache
     const respToken = checkTokenCacheTime(patriarca.idpatriarca);
-    
+
     if (!respToken.success) {
       return {
         success: false,
@@ -5517,10 +5517,10 @@ function validarTokenParaEnvio(patriarca) {
         requiredAction: 'GERAR_TOKEN'
       };
     }
-    
+
     // Verificar tempo de expiração
     const expiresIn = respToken.expiresIn; // em segundos
-    
+
     if (expiresIn <= 0) {
       return {
         success: false,
@@ -5529,7 +5529,7 @@ function validarTokenParaEnvio(patriarca) {
         requiredAction: 'GERAR_TOKEN'
       };
     }
-    
+
     // Token válido mas expirando em menos de 5 minutos (300 segundos)
     if (expiresIn < 300) {
       return {
@@ -5540,7 +5540,7 @@ function validarTokenParaEnvio(patriarca) {
         tempoRestante: expiresIn
       };
     }
-    
+
     // Token válido com tempo suficiente
     const minutos = Math.floor(expiresIn / 60);
     return {
@@ -5551,13 +5551,13 @@ function validarTokenParaEnvio(patriarca) {
       expiresIn: expiresIn,
       tempoRestante: minutos
     };
-    
+
   } catch (error) {
     Logger.log('Erro em validarTokenParaEnvio: ' + error.message);
-    return { 
-      success: false, 
+    return {
+      success: false,
       tokenValido: false,
-      message: 'Erro ao validar token: ' + error.message 
+      message: 'Erro ao validar token: ' + error.message
     };
   }
 }
@@ -5568,7 +5568,7 @@ function validarTokenParaEnvio(patriarca) {
  */
 function testeGarantirTokenValido() {
   Logger.log("--- Iniciando teste da função garantirTokenValido ---");
-  
+
   // 1. Criar um objeto patriarca de teste com os dados fornecidos.
   // Os campos 'clientId' e 'clientSecret' foram extraídos dos seus logs.
   const patriarcaDeTeste = {
@@ -5595,7 +5595,7 @@ function testeGarantirTokenValido() {
     Logger.log("Sucesso: " + resultado.success);
     Logger.log("Mensagem: " + resultado.message);
     Logger.log("--------------------------");
-    
+
     return resultado;
 
   } catch (e) {
@@ -5616,7 +5616,7 @@ function garantirTokenValido(patriarca) {
   try {
     // Primeiro, verificar se já existe token válido
     const validacao = validarTokenParaEnvio(patriarca);
-    
+
     if (validacao.tokenValido) {
       return {
         success: true,
@@ -5626,7 +5626,7 @@ function garantirTokenValido(patriarca) {
         novo: false
       };
     }
-    
+
     // Se token não é válido, verificar se é por expiração próxima
     if (validacao.requiredAction === 'AGUARDAR_EXPIRACAO') {
       return {
@@ -5635,18 +5635,18 @@ function garantirTokenValido(patriarca) {
         requiredAction: 'AGUARDAR'
       };
     }
-    
+
     // Token não existe ou está expirado - gerar novo
     Logger.log('Token não válido. Gerando novo token...');
     const novoToken = getAccessToken(patriarca.idpatriarca);
-    
+
     if (!novoToken.success) {
       return {
         success: false,
         message: 'Erro ao gerar novo token: ' + novoToken.message
       };
     }
-    
+
     return {
       success: true,
       message: 'Novo token gerado com sucesso',
@@ -5654,12 +5654,12 @@ function garantirTokenValido(patriarca) {
       expiresIn: novoToken.expiresIn,
       novo: true
     };
-    
+
   } catch (error) {
     Logger.log('Erro em garantirTokenValido: ' + error.message);
-    return { 
-      success: false, 
-      message: 'Erro ao garantir token válido: ' + error.message 
+    return {
+      success: false,
+      message: 'Erro ao garantir token válido: ' + error.message
     };
   }
 }
@@ -5670,7 +5670,7 @@ function garantirTokenValido(patriarca) {
  */
 function testeIniciarFluxoEnvioOrganograma() {
   Logger.log("--- Iniciando teste da função testeIniciarFluxoEnvioOrganograma ---");
-  
+
   // 1. Criar um objeto patriarca de teste com os dados fornecidos.
   // Os campos 'clientId' e 'clientSecret' foram extraídos dos seus logs.
   const patriarcaDeTeste = {
@@ -5702,7 +5702,7 @@ function testeIniciarFluxoEnvioOrganograma() {
       Logger.log("Nenhum dado retornado.");
     }
     Logger.log("--------------------------");
-    
+
     return resultado;
 
   } catch (e) {
@@ -5727,18 +5727,18 @@ function iniciarFluxoEnvioOrganograma(patriarca, ambiente) {
     if (!patriarca || !patriarca.idpatriarca) {
       throw new Error("Objeto Patriarca recebido pelo backend é inválido ou não contém 'idpatriarca'.");
     }
-    
+
     const tokenResult = garantirTokenValido(patriarca);
     if (!tokenResult.success) return tokenResult;
-    
+
     const envioResult = enviarOrganogramaCargaInicial(patriarca, ambiente, tokenResult.token);
     if (!envioResult.success) {
       atualizarPatriarca(patriarca.idpatriarca, { status: 'Erro no Envio' });
       return envioResult;
     }
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       message: 'Envio iniciado com sucesso.',
       data: { guid: envioResult.data.guid, patriarca: patriarca }
     };
@@ -5763,7 +5763,7 @@ function converterDataParaString(valor) {
   if (valor instanceof Date && !isNaN(valor.getTime())) {
     return Utilities.formatDate(valor, Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
   }
-  
+
   // Se não for uma data válida (pode ser "", null, ou um texto), retorna o valor original.
   return valor;
 }
@@ -5776,46 +5776,46 @@ function obterStatusCargas() {
   try {
     const nomeAba = CONFIG.SHEET_STATUS_ENVIO;
     const nomeTabela = CONFIG.TAB_STATUS_CARGA;
-    
+
     const retLerArq = verificarEAbrirPlanilha(CONFIG.SPREADSHEET_PARAM);
     if (!retLerArq.success) {
       return { success: false, dados: [] };
     }
-    
+
     const spreadsheet = SpreadsheetApp.openById(retLerArq.fileId);
     const sheet = spreadsheet.getSheetByName(nomeAba);
     if (!sheet) {
       return { success: false, dados: [] };
     }
-    
+
     const range = sheet.getRange(nomeTabela);
     const values = range.getValues();
     const dados = [];
-    
+
     for (let i = 1; i < values.length; i++) {
-      
+
       const [colIdPatriarca, colNomePatriarca, colDataHoraEnvio, colTipoCarga, colTipoArquivo, colNomeArquivo, colGuidCarga, colStatus, colFinalizado, colMensagemErro, colTentativasVerificacao, colDataUltimaVerificacao, colObservacoes] = values[i];
       if (!colIdPatriarca || colIdPatriarca === '') break;
-      
+
       dados.push({
-        idPatriarca: colIdPatriarca, 
-        nomePatriarca: colNomePatriarca, 
+        idPatriarca: colIdPatriarca,
+        nomePatriarca: colNomePatriarca,
         dataHoraEnvio: converterDataParaString(colDataHoraEnvio), // <<< Tratamento robusto
-        tipoCarga: colTipoCarga, 
-        tipoArquivo: colTipoArquivo, 
-        nomeArquivo: colNomeArquivo, 
-        guidCarga: colGuidCarga, 
-        status: colStatus, 
-        finalizado: colFinalizado, 
-        mensagemErro: colMensagemErro, 
-        tentativasVerificacao: colTentativasVerificacao, 
+        tipoCarga: colTipoCarga,
+        tipoArquivo: colTipoArquivo,
+        nomeArquivo: colNomeArquivo,
+        guidCarga: colGuidCarga,
+        status: colStatus,
+        finalizado: colFinalizado,
+        mensagemErro: colMensagemErro,
+        tentativasVerificacao: colTentativasVerificacao,
         dataUltimaVerificacao: converterDataParaString(colDataUltimaVerificacao), // <<< Tratamento robusto
         observacoes: colObservacoes
       });
     }
-    
+
     return { success: true, dados: dados };
-    
+
   } catch (error) {
     Logger.log('Erro em obterStatusCargas: ' + error.message + ' Stack: ' + error.stack);
     return { success: false, dados: [], message: 'Erro no servidor: ' + error.message };
@@ -5859,7 +5859,7 @@ function obterDetalhesDeEnvioPorPatriarca(idPatriarca) {
       dataUltimaVerificacao: header.indexOf("DataUltimaVerificacao"),
       observacoes: header.indexOf("ObservacoesAdicionais")
     };
-    
+
     if (colunas.idPatriarca === -1 || colunas.dataHoraEnvio === -1 || colunas.tipoCarga === -1) {
       throw new Error("Colunas essenciais (IdPatriarca, DataHoraEnvio, TipoCarga) não encontradas.");
     }
@@ -5878,7 +5878,7 @@ function obterDetalhesDeEnvioPorPatriarca(idPatriarca) {
       const dataUltimoCiclo = new Date(ultimoEnvioOrganograma[colunas.dataHoraEnvio]);
       registrosParaProcessar = enviosDoPatriarca.filter(row => new Date(row[colunas.dataHoraEnvio]) >= dataUltimoCiclo);
     }
-    
+
     // Mapeia os registros para o formato de objeto JSON sem converter as datas
     const dadosFormatados = registrosParaProcessar.map(row => {
 

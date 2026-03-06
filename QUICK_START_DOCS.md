@@ -43,9 +43,9 @@ AttributeError: module 'carga_org_lot.views.web_views' has no attribute 'organog
 2. **Abra `docs/app_structure.md` e procure:**
    ```markdown
    ## carga_org_lot
-   
+
    ### 👀 Views
-   
+
    | Nome | Tipo | Módulo |
    |------|------|--------|
    | `patriarca_list` | function | web_views |
@@ -57,14 +57,14 @@ AttributeError: module 'carga_org_lot.views.web_views' has no attribute 'organog
    # Implemente em carga_org_lot/views/web_views/patriarca_views.py
    def patriarca_create(request):
        ...
-   
+
    # Adicione ao __all__ em carga_org_lot/views/web_views/__init__.py
    __all__ = [
        'patriarca_list',
        'patriarca_detail',
        'patriarca_create',  # <-- NOVO
    ]
-   
+
    # Regenere
    python manage.py generate_docs
    ```

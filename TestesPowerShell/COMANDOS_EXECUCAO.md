@@ -265,5 +265,5 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ---
 
-**Última atualização:** 2026-02-05  
+**Última atualização:** 2026-02-05
 **Status:** ✅ Pronto para uso

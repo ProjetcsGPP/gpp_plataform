@@ -11,6 +11,7 @@ class CommonConfig(AppConfig):
     Configuração da aplicação Common.
     Responsável por fornecer funcionalidades compartilhadas.
     """
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'common'
-    verbose_name = 'Common Utilities'
+
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "common"
+    verbose_name = "Common Utilities"
