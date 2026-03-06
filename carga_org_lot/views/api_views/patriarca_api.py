@@ -1,12 +1,14 @@
 """
 API ViewSet para Patriarca
+
+REFATORADO: Implementa HasModelPermission do AuthorizationService
 """
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 
+from accounts.services.authorization_service import HasModelPermission
 from ...models import (
     TblPatriarca,
     TblOrganogramaVersao,
@@ -29,13 +31,16 @@ class PatriarcaViewSet(viewsets.ModelViewSet):
     update:  PUT /api/carga_org_lot/patriarcas/{id}/
     partial_update: PATCH /api/carga_org_lot/patriarcas/{id}/
     destroy: DELETE /api/carga_org_lot/patriarcas/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tblpatriarca
     """
     queryset = TblPatriarca.objects.select_related(
         'id_status_progresso',
         'id_usuario_criacao'
     ).all()
     serializer_class = TblPatriarcaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tblpatriarca'
     
     def get_queryset(self):
         """Permite filtros via query params"""
