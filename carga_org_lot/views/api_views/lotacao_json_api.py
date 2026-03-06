@@ -1,14 +1,16 @@
 """
 API ViewSet para JSON de Lotação por Órgão
+
+REFATORADO: Implementa HasModelPermission do AuthorizationService
 """
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Q
 from django.utils import timezone
 
+from accounts.services.authorization_service import HasModelPermission
 from ...models import (
     TblLotacaoJsonOrgao,
     TblLotacao,
@@ -30,6 +32,8 @@ class LotacaoJsonOrgaoViewSet(viewsets.ModelViewSet):
     update:   PUT /api/carga_org_lot/lotacao-json-orgao/{id}/
     partial_update: PATCH /api/carga_org_lot/lotacao-json-orgao/{id}/
     destroy:  DELETE /api/carga_org_lot/lotacao-json-orgao/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tbllotacaojsonorgao
     """
     queryset = TblLotacaoJsonOrgao.objects.select_related(
         'id_lotacao_versao',
@@ -38,7 +42,8 @@ class LotacaoJsonOrgaoViewSet(viewsets.ModelViewSet):
         'id_orgao_lotacao'
     ).all()
     serializer_class = TblLotacaoJsonOrgaoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tbllotacaojsonorgao'
     
     def get_queryset(self):
         """Permite filtros via query params"""
