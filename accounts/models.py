@@ -2,6 +2,20 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager, PermissionsMixin
 from django.db import models
 
+# =====================
+# FUNÇÕES DEFAULT GLOBAIS (SERIALIZÁVEIS)
+# =====================
+def default_status_usuario():
+    """Status Ativo (ID=1)."""
+    return TblStatusUsuario.objects.get(pk=1)
+
+def default_tipo_usuario():
+    """Tipo Interno (ID=1)."""
+    return TblTipoUsuario.objects.get(pk=1)
+
+def default_classificacao_usuario():
+    """Classificação Padrão (ID=1)."""
+    return TblClassificacaoUsuario.objects.get(pk=1)
 
 class Aplicacao(models.Model):
     idaplicacao = models.AutoField(primary_key=True)
@@ -31,7 +45,7 @@ class TblStatusUsuario(models.Model):
         managed = True
         verbose_name = "Status de Usuário"
         verbose_name_plural = "Status de Usuários"
-
+        
     def __str__(self):
         return self.strdescricao
 
@@ -73,11 +87,14 @@ class TblClassificacaoUsuario(models.Model):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, username, email=None, password=None, **extra_fields):
         if not email:
             raise ValueError("Email é obrigatório")
+        if not username:
+            username = email.split('@')[0]  # pega a parte antes de @
+        # Normaliza o email, cria o User e salva
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        user = self.model(username=username, email=email, **extra_fields)
         if password:
             user.set_password(password)
         else:
@@ -85,7 +102,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -99,7 +116,7 @@ class UserManager(BaseUserManager):
         if not password:
             raise ValueError("Superuser precisa de senha")
 
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(username, email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -131,21 +148,22 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     idstatususuario = models.ForeignKey(
         TblStatusUsuario,
+        default=default_status_usuario,  # ✅ Nomeada + serializável
         on_delete=models.PROTECT,
-        db_column="idstatususuario",
-        default=1,
+        db_column="idstatususuario"
     )
-
     idtipousuario = models.ForeignKey(
-        TblTipoUsuario, on_delete=models.PROTECT, db_column="idtipousuario", default=1
+        TblTipoUsuario,
+        default=default_tipo_usuario,
+        on_delete=models.PROTECT,
+        db_column="idtipousuario"
     )
-
     idclassificacaousuario = models.ForeignKey(
         TblClassificacaoUsuario,
+        default=default_classificacao_usuario,
         on_delete=models.PROTECT,
-        db_column="idclassificacaousuario",
-        default=1,
-    )
+        db_column="idclassificacaousuario"
+    )    
 
     # =====================
     # AUDITORIA (dump)
@@ -229,7 +247,6 @@ class UserRole(models.Model):
     def __str__(self):
         return f"{self.user} → {self.aplicacao} ({self.role})"
 
-
 class Attribute(models.Model):
     """ABAC por usuário/aplicação"""
 
@@ -249,4 +266,6 @@ class Attribute(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user} / {self.aplicacao.codigointerno} / {self.key}={self.value}"
+        # ✅ OPÇÃO 1: Mais legível
+        app_code = self.aplicacao.codigointerno if self.aplicacao else "N/A"
+        return f"{self.user} / {app_code} / {self.key}={self.value}"
