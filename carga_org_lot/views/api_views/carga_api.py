@@ -1,12 +1,14 @@
 """
 API ViewSet para Carga
+
+REFATORADO: Implementa HasModelPermission do AuthorizationService
 """
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 
+from accounts.services.authorization_service import HasModelPermission
 from ...models import (
     TblCargaPatriarca,
     TblDetalheStatusCarga,
@@ -21,6 +23,8 @@ class CargaPatriarcaViewSet(viewsets.ModelViewSet):
     list:    GET /api/carga_org_lot/cargas/
     create:  POST /api/carga_org_lot/cargas/
     retrieve: GET /api/carga_org_lot/cargas/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tblcargapatriarca
     """
     queryset = TblCargaPatriarca.objects.select_related(
         'id_patriarca',
@@ -29,7 +33,8 @@ class CargaPatriarcaViewSet(viewsets.ModelViewSet):
         'id_token_envio_carga'
     ).all()
     serializer_class = TblCargaPatriarcaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tblcargapatriarca'
     
     def get_queryset(self):
         queryset = super().get_queryset()
