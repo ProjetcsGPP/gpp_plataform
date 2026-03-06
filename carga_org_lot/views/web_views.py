@@ -2,6 +2,11 @@
 """
 Web Views para Carga Org/Lot.
 Views tradicionais Django para renderizar páginas HTML.
+
+REFATORAÇÃO: Implementação completa de AuthorizationService
+- Todas as views protegidas agora usam @require_app_permission
+- Views públicas (login/logout) não requerem permissão
+- Permissões específicas por modelo e ação (view_, add_, change_)
 """
 
 from functools import wraps
@@ -17,6 +22,7 @@ from django.utils import timezone
 import json
 
 from accounts.models import UserRole, Aplicacao, User
+from accounts.services.authorization_service import require_app_permission
 from ..models import (
     TblPatriarca,
     TblOrganogramaVersao,
@@ -37,7 +43,7 @@ from ..models import (
 
 
 # ============================================
-# AUTENTICAÇÃO
+# AUTENTICAÇÃO - VIEWS PÚBLICAS
 # ============================================
 
 def carga_login(request):
@@ -46,6 +52,8 @@ def carga_login(request):
     
     Página de login do Carga Org/Lot.
     Valida usuário, senha e permissão para esta aplicação.
+    
+    ✅ VIEW PÚBLICA - Sem @require_app_permission
     """
     if request.user.is_authenticated:
         # Verifica se já tem acesso ao carga_org_lot
@@ -117,6 +125,8 @@ def carga_logout(request):
     GET /carga_org_lot/logout/
     
     Logout do Carga Org/Lot.
+    
+    ✅ VIEW PÚBLICA - Sem @require_app_permission
     """
     logout(request)
     messages.success(request, 'Logout realizado com sucesso.')
@@ -124,46 +134,18 @@ def carga_logout(request):
 
 
 # ============================================
-# DECORADOR DE VERIFICAÇÃO DE ACESSO
-# ============================================
-
-def carga_org_lot_required(view_func):
-    """
-    Decorador que verifica se usuário tem acesso ao Carga Org/Lot.
-    Combina @login_required + verificação de role.
-    
-    CORREÇÃO: Usa @wraps para preservar metadados da view original.
-    Usa @login_required nativo do Django para garantir compatibilidade.
-    """
-    @wraps(view_func)
-    @login_required(login_url='/carga_org_lot/login/')
-    def wrapper(request, *args, **kwargs):
-        # Verifica se usuário tem acesso à aplicação
-        has_access = UserRole.objects.filter(
-            user=request.user,
-            aplicacao__codigointerno='CARGA_ORG_LOT'
-        ).exists()
-        
-        if not has_access:
-            messages.error(request, 'Você não tem permissão para acessar esta aplicação.')
-            logout(request)
-            return redirect('carga_org_lot_web:login')
-        
-        return view_func(request, *args, **kwargs)
-    
-    return wrapper
-
-
-# ============================================
 # DASHBOARD
 # ============================================
 
-@carga_org_lot_required
+@require_app_permission('view_tblpatriarca', 'CARGA_ORG_LOT')
 def carga_dashboard(request):
     """
     GET /carga_org_lot/
     
     Dashboard principal com estatísticas gerais.
+    
+    ✅ PERMISSÃO: view_tblpatriarca
+    Permite visualizar dashboard com estatísticas de patriarcas
     """
     user = request.user
     
@@ -212,12 +194,14 @@ def carga_dashboard(request):
 # PATRIARCAS
 # ============================================
 
-@carga_org_lot_required
+@require_app_permission('view_tblpatriarca', 'CARGA_ORG_LOT')
 def patriarca_list(request):
     """
     GET /carga_org_lot/patriarcas/
     
     Lista todos os patriarcas com filtros e paginação.
+    
+    ✅ PERMISSÃO: view_tblpatriarca
     """
     # Filtros
     search = request.GET.get('search', '')
@@ -259,12 +243,14 @@ def patriarca_list(request):
     return render(request, 'carga_org_lot/patriarca_list.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('view_tblpatriarca', 'CARGA_ORG_LOT')
 def patriarca_detail(request, patriarca_id):
     """
     GET /carga_org_lot/patriarcas/{id}/
     
     Detalhes de um patriarca específico.
+    
+    ✅ PERMISSÃO: view_tblpatriarca
     """
     patriarca = get_object_or_404(
         TblPatriarca.objects.select_related(
@@ -306,12 +292,14 @@ def patriarca_detail(request, patriarca_id):
 # ORGANOGRAMAS
 # ============================================
 
-@carga_org_lot_required
+@require_app_permission('view_tblorganogramaversao', 'CARGA_ORG_LOT')
 def organograma_list(request):
     """
     GET /carga_org_lot/organogramas/
     
     Lista versões de organogramas.
+    
+    ✅ PERMISSÃO: view_tblorganogramaversao
     """
     patriarca_id = request.GET.get('patriarca', '')
     apenas_ativos = request.GET.get('ativos', '')
@@ -344,12 +332,14 @@ def organograma_list(request):
     return render(request, 'carga_org_lot/organograma_list.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('view_tblorganogramaversao', 'CARGA_ORG_LOT')
 def organograma_detail(request, organograma_id):
     """
     GET /carga_org_lot/organogramas/{id}/
     
     Detalhes de uma versão de organograma.
+    
+    ✅ PERMISSÃO: view_tblorganogramaversao
     """
     organograma = get_object_or_404(
         TblOrganogramaVersao.objects.select_related('id_patriarca'),
@@ -376,12 +366,14 @@ def organograma_detail(request, organograma_id):
     return render(request, 'carga_org_lot/organograma_detail.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('view_tblorganogramaversao', 'CARGA_ORG_LOT')
 def organograma_hierarquia_json(request, organograma_id):
     """
     GET /carga_org_lot/organogramas/{id}/hierarquia/json/
     
     Retorna hierarquia em formato JSON para visualização em árvore.
+    
+    ✅ PERMISSÃO: view_tblorganogramaversao
     """
     organograma = get_object_or_404(TblOrganogramaVersao, id_organograma_versao=organograma_id)
     
@@ -419,12 +411,14 @@ def organograma_hierarquia_json(request, organograma_id):
 # LOTAÇÕES
 # ============================================
 
-@carga_org_lot_required
+@require_app_permission('view_tbllotacaoversao', 'CARGA_ORG_LOT')
 def lotacao_list(request):
     """
     GET /carga_org_lot/lotacoes/
     
     Lista versões de lotações.
+    
+    ✅ PERMISSÃO: view_tbllotacaoversao
     """
     patriarca_id = request.GET.get('patriarca', '')
     
@@ -455,12 +449,14 @@ def lotacao_list(request):
     return render(request, 'carga_org_lot/lotacao_list.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('view_tbllotacaoversao', 'CARGA_ORG_LOT')
 def lotacao_detail(request, lotacao_versao_id):
     """
     GET /carga_org_lot/lotacoes/{id}/
     
     Detalhes de uma versão de lotação.
+    
+    ✅ PERMISSÃO: view_tbllotacaoversao
     """
     lotacao_versao = get_object_or_404(
         TblLotacaoVersao.objects.select_related(
@@ -519,12 +515,14 @@ def lotacao_detail(request, lotacao_versao_id):
     return render(request, 'carga_org_lot/lotacao_detail.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('view_tbllotacaoinconsistencia', 'CARGA_ORG_LOT')
 def lotacao_inconsistencias(request, lotacao_versao_id):
     """
     GET /carga_org_lot/lotacoes/{id}/inconsistencias/
     
     Lista inconsistências de uma versão de lotação.
+    
+    ✅ PERMISSÃO: view_tbllotacaoinconsistencia
     """
     lotacao_versao = get_object_or_404(TblLotacaoVersao, id_lotacao_versao=lotacao_versao_id)
     
@@ -549,12 +547,14 @@ def lotacao_inconsistencias(request, lotacao_versao_id):
 # CARGAS
 # ============================================
 
-@carga_org_lot_required
+@require_app_permission('view_tblcargapatriarca', 'CARGA_ORG_LOT')
 def carga_list(request):
     """
     GET /carga_org_lot/cargas/
     
     Lista todas as cargas com filtros.
+    
+    ✅ PERMISSÃO: view_tblcargapatriarca
     """
     patriarca_id = request.GET.get('patriarca', '')
     tipo_id = request.GET.get('tipo', '')
@@ -601,12 +601,14 @@ def carga_list(request):
     return render(request, 'carga_org_lot/carga_list.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('view_tblcargapatriarca', 'CARGA_ORG_LOT')
 def carga_detail(request, carga_id):
     """
     GET /carga_org_lot/cargas/{id}/
     
     Detalhes de uma carga específica com timeline.
+    
+    ✅ PERMISSÃO: view_tblcargapatriarca
     """
     carga = get_object_or_404(
         TblCargaPatriarca.objects.select_related(
@@ -636,12 +638,15 @@ def carga_detail(request, carga_id):
 # UPLOAD
 # ============================================
 
-@carga_org_lot_required
+@require_app_permission('view_tblpatriarca', 'CARGA_ORG_LOT')
 def upload_page(request):
     """
     GET /carga_org_lot/upload/
     
     Página de upload de arquivos (organograma e lotação).
+    
+    ✅ PERMISSÃO: view_tblpatriarca
+    Permite visualizar página de upload
     """
     patriarcas = TblPatriarca.objects.filter(
         id_status_progresso__in=[1, 2, 3]  # Apenas patriarcas ativos
@@ -654,26 +659,32 @@ def upload_page(request):
     return render(request, 'carga_org_lot/upload.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('add_tblorganogramaversao', 'CARGA_ORG_LOT')
 @require_http_methods(["POST"])
 def upload_organograma_handler(request):
     """
     POST /carga_org_lot/upload/organograma/
     
     Processa upload de arquivo de organograma.
+    
+    ✅ PERMISSÃO: add_tblorganogramaversao
+    Permite criar nova versão de organograma via upload
     """
     # TODO: Implementar lógica de processamento
     messages.info(request, 'Processamento de organograma em desenvolvimento.')
     return redirect('carga_org_lot_web:upload')
 
 
-@carga_org_lot_required
+@require_app_permission('add_tbllotacaoversao', 'CARGA_ORG_LOT')
 @require_http_methods(["POST"])
 def upload_lotacao_handler(request):
     """
     POST /carga_org_lot/upload/lotacao/
     
     Processa upload de arquivo de lotação.
+    
+    ✅ PERMISSÃO: add_tbllotacaoversao
+    Permite criar nova versão de lotação via upload
     """
     # TODO: Implementar lógica de processamento
     messages.info(request, 'Processamento de lotação em desenvolvimento.')
@@ -684,12 +695,14 @@ def upload_lotacao_handler(request):
 # BUSCA/AUTOCOMPLETE
 # ============================================
 
-@carga_org_lot_required
+@require_app_permission('view_tblorgaounidade', 'CARGA_ORG_LOT')
 def search_orgao_ajax(request):
     """
     GET /carga_org_lot/ajax/search-orgao/?q=termo&patriarca_id=1
     
     Busca órgãos por sigla ou nome (para autocomplete).
+    
+    ✅ PERMISSÃO: view_tblorgaounidade
     """
     query = request.GET.get('q', '')
     patriarca_id = request.GET.get('patriarca_id', None)
