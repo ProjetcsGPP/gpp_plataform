@@ -1,134 +1,33 @@
+# carga_org_lot/permissions.py - VERSÃO REFATORADA
+
 """
 Classes de permissão DRF para carga_org_lot.
-Verificação automática baseada em Django permissions.
+🔄 MIGRADO para usar AuthorizationService centralizado.
 """
 
 import logging
-
 from rest_framework.permissions import SAFE_METHODS, BasePermission
-
-from .utils.permissions import APP_CODE, has_permission, is_coordenador_or_above
+from accounts.services.authorization_service import get_authorization_service
 
 logger = logging.getLogger(__name__)
 
+# ============================================================================
+# ✅ IMPORTAR DO SERVIÇO CENTRALIZADO
+# ============================================================================
 
-class HasCargaOrgLotPermission(BasePermission):
-    """
-    Classe de permissão que verifica automaticamente Django permissions
-    baseada na action do ViewSet.
+from accounts.services.authorization_service import HasModelPermission
 
-    Mapeia actions do ViewSet para permissões Django:
-    - list, retrieve: view_<model>
-    - create: add_<model>
-    - update, partial_update: change_<model>
-    - destroy: delete_<model>
-
-    Uso:
-        class PatriarcaViewSet(viewsets.ModelViewSet):
-            permission_classes = [HasCargaOrgLotPermission]
-
-    ✨ Usa helpers com cache para performance otimizada.
-    """
-
-    def has_permission(self, request, view):
-        """
-        Verifica permissão no nível de view.
-        """
-        # Não autenticado = sem permissão
-        if not request.user or not request.user.is_authenticated:
-            logger.warning("Usuário não autenticado tentou acessar API")
-            return False
-
-        # Superusuário = sempre permitido
-        if request.user.is_superuser:
-            return True
-
-        # Se view é None (caso de testes), verifica apenas se tem alguma role
-        if view is None:
-            from accounts.models import UserRole
-
-            return UserRole.objects.filter(
-                user=request.user, aplicacao__codigointerno="CARGA_ORG_LOT"
-            ).exists()
-
-        # Determina permissão requerida baseada na action
-        required_perm = self._get_required_permission(view)
-
-        if not required_perm:
-            # Se não conseguir determinar, nega acesso
-            action_name = getattr(view, "action", "unknown")
-            model_name = getattr(getattr(view, "queryset", None), "model", "unknown")
-            if model_name != "unknown":
-                model_name = model_name.__name__
-
-            logger.warning(
-                f"Não foi possível determinar permissão para action '{action_name}' "
-                f"no model '{model_name}'"
-            )
-            return False
-
-        # Verifica permissão usando helper com cache
-        has_perm = has_permission(request.user, required_perm, APP_CODE)
-
-        if not has_perm:
-            action_name = getattr(view, "action", "unknown")
-            logger.warning(
-                f"Usuário {request.user.email} sem permissão '{required_perm}' "
-                f"para action '{action_name}'"
-            )
-
-        return has_perm
-
-    def _get_required_permission(self, view):
-        """
-        Determina permissão requerida baseada na action do ViewSet.
-
-        Args:
-            view: ViewSet instance
-
-        Returns:
-            str: Codename da permissão (ex: 'view_patriarca')
-        """
-        if view is None:
-            return None
-
-        # Obtém nome do modelo em lowercase
-        try:
-            model_name = view.queryset.model._meta.model_name
-        except:
-            return None
-
-        # Mapeia action para operação
-        action = getattr(view, "action", None)
-
-        if not action:
-            return None
-
-        # Mapeamento de actions para permissões
-        action_permission_map = {
-            "list": "view",
-            "retrieve": "view",
-            "create": "add",
-            "update": "change",
-            "partial_update": "change",
-            "destroy": "delete",
-        }
-
-        # Actions customizadas geralmente são de leitura (view)
-        operation = action_permission_map.get(action, "view")
-
-        # Formato: {operation}_{model_name}
-        return f"{operation}_{model_name}"
-
+# ============================================================================
+# PERMISSÕES ESPECIALIZADAS (Lógica de negócio específica)
+# ============================================================================
 
 class IsCoordenadorOrAbove(BasePermission):
     """
+    🔄 MIGRADO: Usa AuthorizationService.
+    
     Permite acesso apenas para Coordenadores e Gestores.
-
-    Uso:
-        @action(detail=True, methods=['post'], permission_classes=[IsCoordenadorOrAbove])
-        def ativar_organograma(self, request, pk=None):
-            ...
+    
+    Mantida porque views antigas usam diretamente em @action decorators.
     """
 
     def has_permission(self, request, view):
@@ -138,17 +37,31 @@ class IsCoordenadorOrAbove(BasePermission):
         if request.user.is_superuser:
             return True
 
+        # Usar AuthorizationService
+        token_payload = getattr(request, "token_payload", {})
+        if token_payload:
+            active_role_id = token_payload.get("active_role_id")
+            
+            if active_role_id:
+                try:
+                    from accounts.models import Role
+                    role = Role.objects.get(id=active_role_id)
+                    return role.codigoperfil in ["COORDENADOR_CARGA", "GESTOR_CARGA"]
+                except:
+                    return False
+
+        # Fallback para compatibilidade
+        from .utils.permissions import is_coordenador_or_above, APP_CODE
         return is_coordenador_or_above(request.user, APP_CODE)
 
 
 class IsGestor(BasePermission):
     """
+    🔄 MIGRADO: Usa AuthorizationService.
+    
     Permite acesso apenas para Gestores.
-
-    Uso:
-        @action(detail=True, methods=['delete'], permission_classes=[IsGestor])
-        def delete_all_data(self, request, pk=None):
-            ...
+    
+    Mantida porque operações críticas requerem apenas GESTOR.
     """
 
     def has_permission(self, request, view):
@@ -158,41 +71,61 @@ class IsGestor(BasePermission):
         if request.user.is_superuser:
             return True
 
-        from .utils.permissions import is_gestor
+        # Usar AuthorizationService
+        token_payload = getattr(request, "token_payload", {})
+        if token_payload:
+            active_role_id = token_payload.get("active_role_id")
+            
+            if active_role_id:
+                try:
+                    from accounts.models import Role
+                    role = Role.objects.get(id=active_role_id)
+                    return role.codigoperfil == "GESTOR_CARGA"
+                except:
+                    return False
 
+        # Fallback para compatibilidade
+        from .utils.permissions import is_gestor, APP_CODE
         return is_gestor(request.user, APP_CODE)
 
 
 class ReadOnly(BasePermission):
     """
     Permite apenas operações de leitura (GET, HEAD, OPTIONS).
-
-    Uso:
-        permission_classes = [IsAuthenticated, ReadOnly]
+    
+    Mantida porque é simples e não precisa de AuthorizationService.
     """
 
     def has_permission(self, request, view):
         return request.method in SAFE_METHODS
 
 
-# ============================================
-# COMPAT: Mantendo classes antigas para compatibilidade
-# ============================================
+# ============================================================================
+# ALIASES DE COMPATIBILIDADE (Manter temporariamente)
+# ============================================================================
 
-
-class CanManageCarga(HasCargaOrgLotPermission):
+class CanManageCarga(HasModelPermission):
     """
     Alias para compatibilidade com código antigo.
-    Usa a mesma lógica de HasCargaOrgLotPermission.
+    Agora usa HasModelPermission do AuthorizationService.
     """
-
     pass
 
 
-class IsCargaOrgLotUser(HasCargaOrgLotPermission):
+class IsCargaOrgLotUser(HasModelPermission):
     """
     Alias para compatibilidade com testes antigos.
-    Usa a mesma lógica de HasCargaOrgLotPermission.
+    Agora usa HasModelPermission do AuthorizationService.
     """
-
     pass
+
+
+# Nota: HasCargaOrgLotPermission foi REMOVIDA
+# Substituir por: HasModelPermission nas views
+#
+# Exemplo de uso:
+# from accounts.services.authorization_service import HasModelPermission
+#
+# class PatriarcaViewSet(viewsets.ModelViewSet):
+#     permission_classes = [HasModelPermission]
+#     permission_model = 'patriarca'

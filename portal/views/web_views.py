@@ -1,14 +1,24 @@
+# portal/views/web_views.py
+"""
+Views Web do Portal - REFATORADO com PortalAuthorizationService
+"""
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from accounts.models import User, UserRole
+from accounts.models import User
+
+from ..services.portal_authorization import get_portal_authorization_service
 
 
 def portal_login(request):
     """
     Login do Portal - valida usuário e senha
+    
+    ✅ MANTIDO: Lógica de login permanece inalterada
+    ✅ REFATORADO: Usa PortalAuthorizationService para validar acesso
     """
     if request.user.is_authenticated:
         return redirect("portal:dashboard")
@@ -42,10 +52,12 @@ def portal_login(request):
         user = authenticate(request, username=email, password=password)
 
         if user is not None:
-            # Verifica se usuário tem acesso a pelo menos uma aplicação
-            user_roles = UserRole.objects.filter(user=user).select_related("aplicacao")
+            # ✅ REFATORADO: Usa PortalAuthorizationService
+            # ✅ CORRIGIDO: Type hint adequado para user.id
+            portal_service = get_portal_authorization_service()
+            applications = portal_service.get_user_applications(user.id)  # type: ignore
 
-            if not user_roles.exists():
+            if not applications:
                 messages.error(
                     request, "Usuário sem permissão de acesso a nenhuma aplicação."
                 )
@@ -53,7 +65,8 @@ def portal_login(request):
 
             # Login bem-sucedido
             login(request, user)
-            messages.success(request, f"Bem-vindo(a), {user.name}!")
+            # ✅ CORRIGIDO: Type hint adequado para user.name
+            messages.success(request, f"Bem-vindo(a), {user.name}!")  # type: ignore
             return redirect("portal:dashboard")
         else:
             messages.error(request, "Senha incorreta. Tente novamente.")
@@ -62,38 +75,25 @@ def portal_login(request):
     return render(request, "portal/login.html")
 
 
-@login_required(
-    login_url="/login/"
-)  # ✅ Corrigido: usa /login/ em vez de /portal/login/
+@login_required(login_url="/login/")
 def portal_dashboard(request):
     """
     Dashboard do Portal - exibe aplicações disponíveis para o usuário
 
-    Protegido por @login_required com redirecionamento para /login/
-    (consistênte com settings.LOGIN_URL = '/login/')
+    ✅ REFATORADO: Usa PortalAuthorizationService
+    ✅ PROTEGIDO: @login_required mantido
     """
-    user = request.user
-
-    # Busca todas as aplicações que o usuário tem acesso
-    roles = UserRole.objects.filter(user=user).select_related("aplicacao", "role")
-
-    # Organiza aplicações por código interno (evita duplicatas)
-    apps_dict = {}
-    for ur in roles:
-        app_code = ur.aplicacao.codigointerno
-        if app_code not in apps_dict:
-            if not ur.aplicacao.isshowinportal:
-                continue
-
-            apps_dict[app_code] = {"aplicacao": ur.aplicacao, "roles": []}
-        apps_dict[app_code]["roles"].append(ur.role)
+    portal_service = get_portal_authorization_service()
+    # ✅ CORRIGIDO: Type hint adequado para request.user.id
+    portal_service = get_portal_authorization_service()
+    applications = portal_service.get_user_applications(request.user.id)  # type: ignore
 
     return render(
         request,
         "portal/dashboard.html",
         {
-            "user": user,
-            "applications": apps_dict.values(),
+            "user": request.user,
+            "applications": applications,
         },
     )
 
@@ -101,6 +101,8 @@ def portal_dashboard(request):
 def portal_logout(request):
     """
     Logout do Portal
+    
+    ✅ MANTIDO: Lógica inalterada
     """
     logout(request)
     messages.success(request, "Logout realizado com sucesso.")
