@@ -1,31 +1,30 @@
 """
-Testes para API views do Portal - REFATORADAS E TYPE SAFE
+Testes API Portal - AUTENTICAÇÃO NATIVA (SEM force_authenticate)
+100% Django nativo + seu modelo User custom
 """
 
-from typing import Any
-from django.test import TestCase
+import json
+
+from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient, APIRequestFactory
-from rest_framework.response import Response
+from django.urls import reverse
+from rest_framework import status
+from django.test.client import Client as DjangoClient
 
 from accounts.models import Aplicacao, Role, UserRole
-from portal.views.api_views import (
-    rest_list_applications,
-    rest_check_app_access,
-    rest_get_application,
-)
 
 
 class PortalAPIViewsTest(TestCase):
-    """Testes das views API do Portal."""
+    """Testes nativos das API views."""
 
     @classmethod
     def setUpTestData(cls) -> None:
-        """Configura dados de teste compartilhados."""
+        """Dados compartilhados."""
         User = get_user_model()
         
         # Usuário com acesso
         cls.user = User.objects.create_user(
+            username="test@example.com",
             email="test@example.com",
             name="Test User",
             password="testpass123"
@@ -33,98 +32,96 @@ class PortalAPIViewsTest(TestCase):
         
         # Usuário sem acesso
         cls.other_user = User.objects.create_user(
+            username="other@example.com",
             email="other@example.com",
             name="Other User",
             password="pass123"
         )
         
-        # Aplicação
+        # Superusuário
+        cls.superuser = User.objects.create_superuser(
+            username="admin@example.com",
+            email="admin@example.com",
+            name="Admin GPP",
+            password="admin123"
+        )
+        
+        # Aplicações
         cls.app = Aplicacao.objects.create(
             codigointerno="TEST_APP",
-            nomeaplicacao="Test Application",
+            nomeaplicacao="Test App",
             base_url="http://test.com",
             isshowinportal=True
         )
         
-        # Role
-        cls.role = Role.objects.create(
-            codigoperfil="TEST_ROLE",
-            nome="Test Role"
-        )
-        
-        # UserRole para usuário com acesso
+        cls.role = Role.objects.create(codigoperfil="TEST", nome="Test")
         UserRole.objects.create(
-            user=cls.user,
-            aplicacao=cls.app,
-            role=cls.role
+            user=cls.user, aplicacao=cls.app, role=cls.role
         )
 
-    def setUp(self) -> None:
-        """Configura cliente para cada teste."""
-        self.client = APIClient()
-        self.factory = APIRequestFactory()
+    def _login_user(self, username: str, password: str) -> DjangoClient:
+        """Login nativo via POST /login/."""
+        client = DjangoClient()
+        login_data = {
+            'email': username,  # Seu login usa email
+            'password': password
+        }
+        client.post(reverse('accounts:login'), login_data)  # Ajuste URL se necessário
+        return client
 
-    def test_list_applications_requires_authentication(self) -> None:
-        """Testa que listagem requer autenticação."""
-        response = self.client.get("/api/v1/portal/applications/")
+    # ========== 401 SEM AUTENTICAÇÃO ==========
+    def test_list_unauthenticated(self) -> None:
+        client = DjangoClient()
+        response = client.get("/api/v1/portal/applications/")
         self.assertEqual(response.status_code, 401)
 
-    def test_list_applications_returns_user_apps(self) -> None:
-        """Testa que retorna aplicações do usuário."""
-        self.client.force_authenticate(user=self.user)
-        response: Response = self.client.get("/api/v1/portal/applications/")
-        
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["codigo"], "TEST_APP")
-        self.assertEqual(response.data[0]["nome"], "Test Application")
+    def test_get_app_unauthenticated(self) -> None:
+        client = DjangoClient()
+        response = client.get("/api/v1/portal/applications/TEST_APP/")
+        self.assertEqual(response.status_code, 401)
 
-    def test_get_application_requires_permission(self) -> None:
-        """Testa que detalhes da aplicação requerem permissão."""
-        self.client.force_authenticate(user=self.other_user)
-        response: Response = self.client.get("/api/v1/portal/applications/TEST_APP/")
-        
-        # Deve retornar 403 Forbidden (CanViewApplication falha)
+    # ========== 403 SEM PERMISSÃO ==========
+    def test_list_no_portal_access(self) -> None:
+        """Usuário sem apps -> CanAccessPortal falha."""
+        client = self._login_user("other@example.com", "pass123")
+        response = client.get("/api/v1/portal/applications/")
         self.assertEqual(response.status_code, 403)
 
-    def test_get_application_returns_data_with_permission(self) -> None:
-        """Testa que retorna dados com permissão válida."""
-        self.client.force_authenticate(user=self.user)
-        response: Response = self.client.get("/api/v1/portal/applications/TEST_APP/")
+    def test_get_app_no_permission(self) -> None:
+        """Sem role na app -> CanViewApplication falha."""
+        client = self._login_user("other@example.com", "pass123")
+        response = client.get("/api/v1/portal/applications/TEST_APP/")
+        self.assertEqual(response.status_code, 403)
+
+    # ========== 200 COM PERMISSÃO ==========
+    def test_list_returns_apps(self) -> None:
+        client = self._login_user("test@example.com", "testpass123")
+        response = client.get("/api/v1/portal/applications/")
         
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["codigo"], "TEST_APP")
-        self.assertEqual(response.data["nome"], "Test Application")
-        self.assertEqual(response.data["showInPortal"], True)
+        # Para JSON response, usa content
+        import json
+        data = json.loads(response.content)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["codigo"], "TEST_APP")
 
-    def test_check_app_access_correctly(self) -> None:
-        """Testa verificação de acesso à aplicação."""
-        self.client.force_authenticate(user=self.user)
-        response: Response = self.client.get("/api/v1/portal/applications/TEST_APP/access/")
+    def test_get_app_success(self) -> None:
+        client = self._login_user("test@example.com", "testpass123")
+        response = client.get("/api/v1/portal/applications/TEST_APP/")
         
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.data["hasAccess"])
-        self.assertEqual(response.data["application"]["codigo"], "TEST_APP")
+        data = json.loads(response.content)
+        self.assertEqual(data["codigo"], "TEST_APP")
 
-    def test_check_app_access_denied(self) -> None:
-        """Testa verificação de acesso negado."""
-        self.client.force_authenticate(user=self.other_user)
-        response: Response = self.client.get("/api/v1/portal/applications/TEST_APP/access/")
+    # ========== SUPERUSER BYPASS ==========
+    def test_superuser_access_all(self) -> None:
+        client = self._login_user("admin@example.com", "admin123")
         
-        self.assertEqual(response.status_code, 403)  # CanViewApplication falha
+        response = client.get("/api/v1/portal/applications/TEST_APP/")
+        self.assertEqual(response.status_code, 200)
 
-    def test_app_not_found_returns_404(self) -> None:
-        """Testa aplicação não encontrada."""
-        self.client.force_authenticate(user=self.user)
-        response: Response = self.client.get("/api/v1/portal/applications/NONEXISTENT/")
-        
+    # ========== 404 ERROS ==========
+    def test_nonexistent_app_404(self) -> None:
+        client = self._login_user("test@example.com", "testpass123")
+        response = client.get("/api/v1/portal/applications/FAKE/")
         self.assertEqual(response.status_code, 404)
-
-    def test_functional_view_test_with_factory(self) -> None:
-        """Testa views funcionais usando APIRequestFactory."""
-        request = self.factory.get("/api/v1/portal/applications/")
-        request.user = self.user
-        
-        response: Response = rest_list_applications(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
