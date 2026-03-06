@@ -1,5 +1,7 @@
 """
 Views de Patriarca para Carga Org/Lot
+
+REFATORADO: Implementa require_app_permission do AuthorizationService
 """
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -9,6 +11,7 @@ from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 
+from accounts.services.authorization_service import require_app_permission
 from ...models import (
     TblPatriarca,
     TblOrganogramaVersao,
@@ -17,16 +20,17 @@ from ...models import (
     TblStatusProgresso,
 )
 from ...forms import PatriarcaForm
-from .auth_views import carga_org_lot_required
 
 
-@carga_org_lot_required
+@require_app_permission('view_tblpatriarca', 'CARGA_ORG_LOT')
 def patriarca_list(request):
     """
     GET /carga_org_lot/patriarcas/
     
     Lista todos os patriarcas com filtros, paginação e lógica de ações.
     Equivalente a carregarPatriarcas() do GAS.
+    
+    ✅ PERMISSÃO: view_tblpatriarca
     
     LÓGICA DE NEGÓCIO (conforme STATUS_PATRIARCA.md):
     
@@ -145,13 +149,15 @@ def patriarca_list(request):
     return render(request, 'carga_org_lot/patriarca_list.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('view_tblpatriarca', 'CARGA_ORG_LOT')
 def patriarca_detail(request, pk):
     """
     GET /carga_org_lot/patriarcas/{id}/
     
     Detalhes de um patriarca específico.
     Disponível apenas para status 5 e 6 (com histórico de envio).
+    
+    ✅ PERMISSÃO: view_tblpatriarca
     """
     patriarca = get_object_or_404(
         TblPatriarca.objects.select_related(
@@ -189,13 +195,15 @@ def patriarca_detail(request, pk):
     return render(request, 'carga_org_lot/patriarca_detail.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('add_tblpatriarca', 'CARGA_ORG_LOT')
 def patriarca_create(request):
     """
     GET/POST /carga_org_lot/patriarcas/novo/
     
     Cria novo patriarca.
     Equivalente a incluirNovoPatriarca() do GAS.
+    
+    ✅ PERMISSÃO: add_tblpatriarca
     
     Todo novo patriarca começa automaticamente com:
     - id_status_progresso = 1 (Nova Carga)
@@ -245,13 +253,15 @@ def patriarca_create(request):
     return render(request, 'carga_org_lot/patriarca_form.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('change_tblpatriarca', 'CARGA_ORG_LOT')
 def patriarca_update(request, pk):
     """
     GET/POST /carga_org_lot/patriarcas/{id}/editar/
     
     Edita patriarca existente.
     Equivalente a editarPatriarca() do GAS.
+    
+    ✅ PERMISSÃO: change_tblpatriarca
     
     Atenção: O campo id_status_progresso NÃO pode ser alterado via formulário.
     O status é gerenciado automaticamente pelo sistema durante o ciclo de vida.
@@ -288,13 +298,15 @@ def patriarca_update(request, pk):
     return render(request, 'carga_org_lot/patriarca_form.html', context)
 
 
-@carga_org_lot_required
+@require_app_permission('view_tblpatriarca', 'CARGA_ORG_LOT')
 def patriarca_select(request, pk):
     """
     GET /carga_org_lot/patriarcas/{id}/selecionar/
     
     Seleciona patriarca na sessão.
     Equivalente a setSelectedPatriarca() do GAS.
+    
+    ✅ PERMISSÃO: view_tblpatriarca
     
     Permite seleção para status 1, 2, 3, 4, 5 (< 1h) e 6 (< 1h).
     """
@@ -345,13 +357,15 @@ def patriarca_select(request, pk):
     return redirect('carga_org_lot_web:dashboard')
 
 
-@carga_org_lot_required
+@require_app_permission('change_tblpatriarca', 'CARGA_ORG_LOT')
 def patriarca_reset(request, pk):
     """
     GET /carga_org_lot/patriarcas/{id}/reset/
     
     Reseta status do patriarca para "Organograma em Progresso" (Status 2).
     Equivalente a resetPatriarca() do GAS.
+    
+    ✅ PERMISSÃO: change_tblpatriarca
     
     Usado quando:
     - Patriarca em status 5 ou 6 expirou (>= 1 hora)
