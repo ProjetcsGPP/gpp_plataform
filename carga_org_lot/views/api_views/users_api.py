@@ -1,5 +1,7 @@
 """
 Users API - Gerenciamento de Usuários
+
+NOTA: Usa IsGestor customizado pois gerencia usuários, não modelos específicos
 """
 
 from rest_framework import viewsets, status
@@ -19,7 +21,9 @@ class UserManagementViewSet(viewsets.ViewSet):
     """
     ViewSet para gerenciamento de usuários do app CARGA_ORG_LOT.
     
-    Apenas Gestores têm acesso.
+    ⚠️ PERMISSÃO ESPECIAL: IsGestor (customizada)
+    Usa permission class específica pois gerencia usuários, não modelos.
+    Apenas Gestores têm acesso a estas operações.
     """
     permission_classes = [IsAuthenticated, IsGestor]
     lookup_field = 'email'
