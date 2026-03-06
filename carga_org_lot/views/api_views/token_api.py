@@ -1,14 +1,16 @@
 """
 API ViewSets para Token de Envio e Tabelas Auxiliares
+
+REFATORADO: Implementa HasModelPermission do AuthorizationService
 """
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count
 from django.utils import timezone
 
+from accounts.services.authorization_service import HasModelPermission
 from ...models import (
     TblTokenEnvioCarga,
     TblStatusProgresso,
@@ -35,10 +37,13 @@ class StatusProgressoViewSet(viewsets.ReadOnlyModelViewSet):
     
     list:     GET /api/carga_org_lot/status-progresso/
     retrieve: GET /api/carga_org_lot/status-progresso/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tblstatusprogresso
     """
     queryset = TblStatusProgresso.objects.all()
     serializer_class = TblStatusProgressoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tblstatusprogresso'
 
 
 class StatusCargaViewSet(viewsets.ReadOnlyModelViewSet):
@@ -47,10 +52,13 @@ class StatusCargaViewSet(viewsets.ReadOnlyModelViewSet):
     
     list:     GET /api/carga_org_lot/status-carga/
     retrieve: GET /api/carga_org_lot/status-carga/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tblstatuscarga
     """
     queryset = TblStatusCarga.objects.all()
     serializer_class = TblStatusCargaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tblstatuscarga'
 
 
 class TipoCargaViewSet(viewsets.ReadOnlyModelViewSet):
@@ -59,10 +67,13 @@ class TipoCargaViewSet(viewsets.ReadOnlyModelViewSet):
     
     list:     GET /api/carga_org_lot/tipo-carga/
     retrieve: GET /api/carga_org_lot/tipo-carga/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tbltipocarga
     """
     queryset = TblTipoCarga.objects.all()
     serializer_class = TblTipoCargaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tbltipocarga'
 
 
 class StatusTokenEnvioCargaViewSet(viewsets.ReadOnlyModelViewSet):
@@ -71,10 +82,13 @@ class StatusTokenEnvioCargaViewSet(viewsets.ReadOnlyModelViewSet):
     
     list:     GET /api/carga_org_lot/status-token/
     retrieve: GET /api/carga_org_lot/status-token/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tblstatustokenenviocarga
     """
     queryset = TblStatusTokenEnvioCarga.objects.all()
     serializer_class = TblStatusTokenEnvioCargaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tblstatustokenenviocarga'
 
 
 # ============================================
@@ -93,13 +107,16 @@ class TokenEnvioCargaViewSet(viewsets.ModelViewSet):
     update:   PUT /api/carga_org_lot/tokens/{id}/
     partial_update: PATCH /api/carga_org_lot/tokens/{id}/
     destroy:  DELETE /api/carga_org_lot/tokens/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tbltokenenviocarga
     """
     queryset = TblTokenEnvioCarga.objects.select_related(
         'id_patriarca',
         'id_status_token_envio_carga'
     ).all()
     serializer_class = TblTokenEnvioCargaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tbltokenenviocarga'
     
     def get_queryset(self):
         """Permite filtros via query params"""
