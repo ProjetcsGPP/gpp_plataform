@@ -1,13 +1,15 @@
 """
 API de Dashboard e Utilitários
+
+REFATORADO: Implementa require_api_permission do AuthorizationService
 """
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.db.models import Q, Count
 
+from accounts.services.authorization_service import require_api_permission
 from accounts.models import UserRole
 from ...models import (
     TblPatriarca,
@@ -19,27 +21,15 @@ from ...models import (
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@require_api_permission('view_tblpatriarca', 'CARGA_ORG_LOT')
 def dashboard_stats(request):
     """
     GET /api/carga_org_lot/dashboard/
     
     Retorna estatísticas gerais do sistema de carga.
+    
+    ✅ PERMISSÃO: view_tblpatriarca
     """
-    app_code = request.app_context.get('code', 'CARGA_ORG_LOT')
-    
-    # Verifica acesso
-    has_access = UserRole.objects.filter(
-        user=request.user,
-        aplicacao__codigointerno=app_code
-    ).exists()
-    
-    if not has_access:
-        return Response(
-            {'detail': 'Acesso negado'},
-            status=status.HTTP_403_FORBIDDEN
-        )
-    
     # Estatísticas gerais
     stats = {
         'patriarcas': {
@@ -78,12 +68,14 @@ def dashboard_stats(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@require_api_permission('view_tblorgaounidade', 'CARGA_ORG_LOT')
 def search_orgao(request):
     """
     GET /api/carga_org_lot/search/orgao/?q=termo&patriarca_id=1
     
     Busca órgãos por sigla ou nome.
+    
+    ✅ PERMISSÃO: view_tblorgaounidade
     """
     query = request.query_params.get('q', '')
     patriarca_id = request.query_params.get('patriarca_id', None)
@@ -116,7 +108,7 @@ def search_orgao(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@require_api_permission('add_tblorganogramaversao', 'CARGA_ORG_LOT')
 def upload_organograma(request):
     """
     POST /api/carga_org_lot/upload/organograma/
@@ -126,6 +118,8 @@ def upload_organograma(request):
     Body (multipart/form-data):
         - file: arquivo
         - patriarca_id: ID do patriarca
+    
+    ✅ PERMISSÃO: add_tblorganogramaversao
     """
     # TODO: Implementar lógica de upload e processamento
     
@@ -135,7 +129,7 @@ def upload_organograma(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@require_api_permission('add_tbllotacaoversao', 'CARGA_ORG_LOT')
 def upload_lotacao(request):
     """
     POST /api/carga_org_lot/upload/lotacao/
@@ -146,6 +140,8 @@ def upload_lotacao(request):
         - file: arquivo
         - patriarca_id: ID do patriarca
         - organograma_versao_id: ID da versão do organograma
+    
+    ✅ PERMISSÃO: add_tbllotacaoversao
     """
     # TODO: Implementar lógica de upload e processamento
     
