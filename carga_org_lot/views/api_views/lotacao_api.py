@@ -1,13 +1,15 @@
 """
 API ViewSet para Lotação
+
+REFATORADO: Implementa HasModelPermission do AuthorizationService
 """
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count
 
+from accounts.services.authorization_service import HasModelPermission
 from ...models import (
     TblLotacaoVersao,
     TblLotacao,
@@ -26,13 +28,16 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
     list:    GET /api/carga_org_lot/lotacoes/
     create:  POST /api/carga_org_lot/lotacoes/
     retrieve: GET /api/carga_org_lot/lotacoes/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tbllotacaoversao
     """
     queryset = TblLotacaoVersao.objects.select_related(
         'id_patriarca',
         'id_organograma_versao'
     ).all()
     serializer_class = TblLotacaoVersaoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tbllotacaoversao'
     
     def get_queryset(self):
         queryset = super().get_queryset()
