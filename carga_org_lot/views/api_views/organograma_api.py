@@ -1,12 +1,14 @@
 """
 API ViewSet para Organograma
+
+REFATORADO: Implementa HasModelPermission do AuthorizationService
 """
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 
+from accounts.services.authorization_service import HasModelPermission
 from ...models import (
     TblOrganogramaVersao,
     TblOrgaoUnidade,
@@ -25,10 +27,13 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
     list:    GET /api/carga_org_lot/organogramas/
     create:  POST /api/carga_org_lot/organogramas/
     retrieve: GET /api/carga_org_lot/organogramas/{id}/
+    
+    ✅ PERMISSÃO: HasModelPermission com tblorganogramaversao
     """
     queryset = TblOrganogramaVersao.objects.select_related('id_patriarca').all()
     serializer_class = TblOrganogramaVersaoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasModelPermission]
+    permission_model = 'tblorganogramaversao'
     
     def get_queryset(self):
         queryset = super().get_queryset()
