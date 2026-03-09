@@ -12,8 +12,8 @@ from rest_framework.response import Response
 
 from accounts.services.authorization_service import HasModelPermission
 
-from ...models import TblLotacao, TblLotacaoJsonOrgao
-from ...serializers import TblLotacaoJsonOrgaoSerializer
+from ...models import Lotacao, LotacaoJsonOrgao
+from ...serializers import LotacaoJsonOrgaoSerializer
 
 
 class LotacaoJsonOrgaoViewSet(viewsets.ModelViewSet):
@@ -30,15 +30,15 @@ class LotacaoJsonOrgaoViewSet(viewsets.ModelViewSet):
     partial_update: PATCH /api/carga_org_lot/lotacao-json-orgao/{id}/
     destroy:  DELETE /api/carga_org_lot/lotacao-json-orgao/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tbllotacaojsonorgao
+    ✅ PERMISSÃO: HasModelPermission com lotacaojsonorgao
     """
 
-    queryset = TblLotacaoJsonOrgao.objects.select_related(
+    queryset = LotacaoJsonOrgao.objects.select_related(
         "id_lotacao_versao", "id_organograma_versao", "id_patriarca", "id_orgao_lotacao"
     ).all()
-    serializer_class = TblLotacaoJsonOrgaoSerializer
+    serializer_class = LotacaoJsonOrgaoSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tbllotacaojsonorgao"
+    permission_model = "lotacaojsonorgao"
 
     def get_queryset(self):
         """Permite filtros via query params"""
@@ -109,7 +109,7 @@ class LotacaoJsonOrgaoViewSet(viewsets.ModelViewSet):
         json_orgao = self.get_object()
 
         # Buscar lotações válidas do órgão
-        lotacoes = TblLotacao.objects.filter(
+        lotacoes = Lotacao.objects.filter(
             id_lotacao_versao=json_orgao.id_lotacao_versao,
             id_orgao_lotacao=json_orgao.id_orgao_lotacao,
             flg_valido=True,

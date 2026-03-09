@@ -10,8 +10,8 @@ from rest_framework.response import Response
 
 from accounts.services.authorization_service import HasModelPermission
 
-from ...models import TblCargaPatriarca, TblDetalheStatusCarga
-from ...serializers import TblCargaPatriarcaSerializer
+from ...models import CargaPatriarca, DetalheStatusCarga
+from ...serializers import CargaPatriarcaSerializer
 
 
 class CargaPatriarcaViewSet(viewsets.ModelViewSet):
@@ -22,15 +22,15 @@ class CargaPatriarcaViewSet(viewsets.ModelViewSet):
     create:  POST /api/carga_org_lot/cargas/
     retrieve: GET /api/carga_org_lot/cargas/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tblcargapatriarca
+    ✅ PERMISSÃO: HasModelPermission com cargapatriarca
     """
 
-    queryset = TblCargaPatriarca.objects.select_related(
+    queryset = CargaPatriarca.objects.select_related(
         "id_patriarca", "id_status_carga", "id_tipo_carga", "id_token_envio_carga"
     ).all()
-    serializer_class = TblCargaPatriarcaSerializer
+    serializer_class = CargaPatriarcaSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tblcargapatriarca"
+    permission_model = "cargapatriarca"
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -62,7 +62,7 @@ class CargaPatriarcaViewSet(viewsets.ModelViewSet):
         carga = self.get_object()
 
         detalhes = (
-            TblDetalheStatusCarga.objects.filter(id_carga_patriarca=carga)
+            DetalheStatusCarga.objects.filter(id_carga_patriarca=carga)
             .select_related("id_status_carga")
             .order_by("dat_registro")
         )

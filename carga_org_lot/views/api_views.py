@@ -1,6 +1,6 @@
 """
 API Views para Carga Org/Lot.
-Usa HasCargaOrgLotPermission para verificação automática de permissões.
+Usa HasModelPermission para verificação automática de permissões.
 """
 
 import logging
@@ -17,42 +17,42 @@ from accounts.models import User, UserRole
 from common.serializers import UserCreateSerializer, UserListSerializer, UserSerializer
 
 from ..models import (
-    TblCargaPatriarca,
-    TblDetalheStatusCarga,
-    TblLotacao,
-    TblLotacaoInconsistencia,
-    TblLotacaoVersao,
-    TblOrganogramaJson,
-    TblOrganogramaVersao,
-    TblOrgaoUnidade,
-    TblPatriarca,
-    TblStatusCarga,
-    TblStatusProgresso,
-    TblStatusTokenEnvioCarga,
-    TblTipoCarga,
-    TblTokenEnvioCarga,
+    CargaPatriarca,
+    DetalheStatusCarga,
+    Lotacao,
+    LotacaoInconsistencia,
+    LotacaoVersao,
+    OrganogramaJson,
+    OrganogramaVersao,
+    OrgaoUnidade,
+    Patriarca,
+    StatusCarga,
+    StatusProgresso,
+    StatusTokenEnvioCarga,
+    TipoCarga,
+    TokenEnvioCarga,
 )
-from ..permissions import HasCargaOrgLotPermission, IsCoordenadorOrAbove
+from ..permissions import IsCoordenadorOrAbove, HasModelPermission
 from ..serializers import (
-    TblCargaPatriarcaSerializer,
-    TblDetalheStatusCargaSerializer,
-    TblLotacaoInconsistenciaSerializer,
-    TblLotacaoLightSerializer,
-    TblLotacaoVersaoLightSerializer,
-    TblLotacaoVersaoSerializer,
-    TblOrganogramaJsonSerializer,
-    TblOrganogramaVersaoLightSerializer,
-    TblOrganogramaVersaoSerializer,
-    TblOrgaoUnidadeLightSerializer,
-    TblOrgaoUnidadeSerializer,
-    TblOrgaoUnidadeTreeSerializer,
-    TblPatriarcaLightSerializer,
-    TblPatriarcaSerializer,
-    TblStatusCargaSerializer,
-    TblStatusProgressoSerializer,
-    TblStatusTokenEnvioCargaSerializer,
-    TblTipoCargaSerializer,
-    TblTokenEnvioCargaSerializer,
+    CargaPatriarcaSerializer,
+    DetalheStatusCargaSerializer,
+    LotacaoInconsistenciaSerializer,
+    LotacaoLightSerializer,
+    LotacaoVersaoLightSerializer,
+    LotacaoVersaoSerializer,
+    OrganogramaJsonSerializer,
+    OrganogramaVersaoLightSerializer,
+    OrganogramaVersaoSerializer,
+    OrgaoUnidadeLightSerializer,
+    OrgaoUnidadeSerializer,
+    OrgaoUnidadeTreeSerializer,
+    PatriarcaLightSerializer,
+    PatriarcaSerializer,
+    StatusCargaSerializer,
+    StatusProgressoSerializer,
+    StatusTokenEnvioCargaSerializer,
+    TipoCargaSerializer,
+    TokenEnvioCargaSerializer,
 )
 from ..utils.permissions import (
     get_model_permissions,
@@ -111,19 +111,19 @@ def user_permissions(request):
 
         # Permissões por modelo
         specific = {
-            "patriarca": get_model_permissions(request.user, "tblpatriarca", app_code),
+            "patriarca": get_model_permissions(request.user, "patriarca", app_code),
             "organograma": get_model_permissions(
-                request.user, "tblorganogramaversao", app_code
+                request.user, "organogramaversao", app_code
             ),
             "orgao_unidade": get_model_permissions(
-                request.user, "tblorgaounidade", app_code
+                request.user, "orgaounidade", app_code
             ),
             "lotacao": get_model_permissions(
-                request.user, "tbllotacaoversao", app_code
+                request.user, "lotacaoversao", app_code
             ),
-            "carga": get_model_permissions(request.user, "tblcargapatriarca", app_code),
+            "carga": get_model_permissions(request.user, "cargapatriarca", app_code),
             "token": get_model_permissions(
-                request.user, "tbltokenenviocarga", app_code
+                request.user, "tokenenviocarga", app_code
             ),
         }
 
@@ -137,17 +137,17 @@ def user_permissions(request):
                 "is_superuser": request.user.is_superuser,
                 "groups": {
                     "can_manage_patriarcas": any(
-                        p in perms for p in ["add_tblpatriarca", "change_tblpatriarca"]
+                        p in perms for p in ["add_patriarca", "change_patriarca"]
                     ),
                     "can_upload": any(
                         p in perms
-                        for p in ["add_tblorganogramaversao", "add_tbllotacaoversao"]
+                        for p in ["add_organogramaversao", "add_lotacaoversao"]
                     ),
                     "can_process": any(
                         p in perms
                         for p in [
-                            "change_tblorganogramaversao",
-                            "change_tbllotacaoversao",
+                            "change_organogramaversao",
+                            "change_lotacaoversao",
                         ]
                     ),
                     "can_send_api": "pode_enviar_api" in perms,
@@ -268,32 +268,32 @@ class UserManagementViewSet(viewsets.ViewSet):
 class StatusProgressoViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet para Status de Progresso (somente leitura)"""
 
-    queryset = TblStatusProgresso.objects.all()
-    serializer_class = TblStatusProgressoSerializer
+    queryset = StatusProgresso.objects.all()
+    serializer_class = StatusProgressoSerializer
     permission_classes = [IsAuthenticated]
 
 
 class StatusCargaViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet para Status de Carga (somente leitura)"""
 
-    queryset = TblStatusCarga.objects.all()
-    serializer_class = TblStatusCargaSerializer
+    queryset = StatusCarga.objects.all()
+    serializer_class = StatusCargaSerializer
     permission_classes = [IsAuthenticated]
 
 
 class TipoCargaViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet para Tipo de Carga (somente leitura)"""
 
-    queryset = TblTipoCarga.objects.all()
-    serializer_class = TblTipoCargaSerializer
+    queryset = TipoCarga.objects.all()
+    serializer_class = TipoCargaSerializer
     permission_classes = [IsAuthenticated]
 
 
 class StatusTokenEnvioCargaViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet para Status Token Envio Carga (somente leitura)"""
 
-    queryset = TblStatusTokenEnvioCarga.objects.all()
-    serializer_class = TblStatusTokenEnvioCargaSerializer
+    queryset = StatusTokenEnvioCarga.objects.all()
+    serializer_class = StatusTokenEnvioCargaSerializer
     permission_classes = [IsAuthenticated]
 
 
@@ -307,23 +307,23 @@ class PatriarcaViewSet(viewsets.ModelViewSet):
     ViewSet para gerenciar Patriarcas.
 
     🔒 Permissões verificadas automaticamente:
-    - GET: requer view_tblpatriarca
-    - POST: requer add_tblpatriarca
-    - PUT/PATCH: requer change_tblpatriarca
-    - DELETE: requer delete_tblpatriarca
+    - GET: requer view_patriarca
+    - POST: requer add_patriarca
+    - PUT/PATCH: requer change_patriarca
+    - DELETE: requer delete_patriarca
     """
 
-    queryset = TblPatriarca.objects.select_related(
+    queryset = Patriarca.objects.select_related(
         "id_status_progresso", "id_usuario_criacao"
     ).all()
-    serializer_class = TblPatriarcaSerializer
-    permission_classes = [HasCargaOrgLotPermission]
+    serializer_class = PatriarcaSerializer
+    permission_classes = [HasModelPermission]
 
     def get_serializer_class(self):
         """Retorna serializer otimizado para listagem"""
         if self.action == "list":
-            return TblPatriarcaLightSerializer
-        return TblPatriarcaSerializer
+            return PatriarcaLightSerializer
+        return PatriarcaSerializer
 
     def get_queryset(self):
         """Permite filtros via query params"""
@@ -352,13 +352,13 @@ class PatriarcaViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=False, methods=["get"])
-    @require_api_permission("view_tblpatriarca")
+    @require_api_permission("view_patriarca")
     def list_light(self, request):
         """
         Endpoint otimizado para listagem rápida.
         GET /api/v1/carga_org_lot/patriarcas/list_light/
         """
-        patriarcas = TblPatriarca.objects.all().values(
+        patriarcas = Patriarca.objects.all().values(
             "id_patriarca", "str_sigla_patriarca", "str_nome"
         )
         return Response({"count": len(patriarcas), "results": list(patriarcas)})
@@ -370,11 +370,11 @@ class PatriarcaViewSet(viewsets.ModelViewSet):
         Lista organogramas do patriarca.
         """
         patriarca = self.get_object()
-        organogramas = TblOrganogramaVersao.objects.filter(
+        organogramas = OrganogramaVersao.objects.filter(
             id_patriarca=patriarca
         ).order_by("-dat_processamento")
 
-        serializer = TblOrganogramaVersaoLightSerializer(organogramas, many=True)
+        serializer = OrganogramaVersaoLightSerializer(organogramas, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
@@ -384,11 +384,11 @@ class PatriarcaViewSet(viewsets.ModelViewSet):
         Lista versões de lotação do patriarca.
         """
         patriarca = self.get_object()
-        lotacoes = TblLotacaoVersao.objects.filter(id_patriarca=patriarca).order_by(
+        lotacoes = LotacaoVersao.objects.filter(id_patriarca=patriarca).order_by(
             "-dat_processamento"
         )
 
-        serializer = TblLotacaoVersaoLightSerializer(lotacoes, many=True)
+        serializer = LotacaoVersaoLightSerializer(lotacoes, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
@@ -438,14 +438,14 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
     🔒 Permissões verificadas automaticamente.
     """
 
-    queryset = TblOrganogramaVersao.objects.select_related("id_patriarca").all()
-    serializer_class = TblOrganogramaVersaoSerializer
-    permission_classes = [HasCargaOrgLotPermission]
+    queryset = OrganogramaVersao.objects.select_related("id_patriarca").all()
+    serializer_class = OrganogramaVersaoSerializer
+    permission_classes = [HasModelPermission]
 
     def get_serializer_class(self):
         if self.action == "list":
-            return TblOrganogramaVersaoLightSerializer
-        return TblOrganogramaVersaoSerializer
+            return OrganogramaVersaoLightSerializer
+        return OrganogramaVersaoSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -483,7 +483,7 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
                 patriarca = organograma.id_patriarca
 
                 # Desativa todos os organogramas do patriarca
-                TblOrganogramaVersao.objects.filter(id_patriarca=patriarca).update(
+                OrganogramaVersao.objects.filter(id_patriarca=patriarca).update(
                     flg_ativo=False
                 )
 
@@ -519,12 +519,12 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
         """
         organograma = self.get_object()
         orgaos = (
-            TblOrgaoUnidade.objects.filter(id_organograma_versao=organograma)
+            OrgaoUnidade.objects.filter(id_organograma_versao=organograma)
             .select_related("id_orgao_unidade_pai")
             .order_by("str_numero_hierarquia")
         )
 
-        serializer = TblOrgaoUnidadeLightSerializer(orgaos, many=True)
+        serializer = OrgaoUnidadeLightSerializer(orgaos, many=True)
         return Response({"count": orgaos.count(), "results": serializer.data})
 
     @action(detail=True, methods=["get"])
@@ -536,13 +536,13 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
         organograma = self.get_object()
 
         # Buscar órgãos raiz
-        orgaos_raiz = TblOrgaoUnidade.objects.filter(
+        orgaos_raiz = OrgaoUnidade.objects.filter(
             id_organograma_versao=organograma,
             id_orgao_unidade_pai__isnull=True,
             flg_ativo=True,
         ).order_by("str_numero_hierarquia")
 
-        serializer = TblOrgaoUnidadeTreeSerializer(orgaos_raiz, many=True)
+        serializer = OrgaoUnidadeTreeSerializer(orgaos_raiz, many=True)
 
         return Response(
             {
@@ -561,10 +561,10 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
         organograma = self.get_object()
 
         try:
-            json_org = TblOrganogramaJson.objects.get(id_organograma_versao=organograma)
-            serializer = TblOrganogramaJsonSerializer(json_org)
+            json_org = OrganogramaJson.objects.get(id_organograma_versao=organograma)
+            serializer = OrganogramaJsonSerializer(json_org)
             return Response(serializer.data)
-        except TblOrganogramaJson.DoesNotExist:
+        except OrganogramaJson.DoesNotExist:
             return Response(
                 {"detail": "JSON de envio não encontrado para este organograma"},
                 status=status.HTTP_404_NOT_FOUND,
@@ -583,16 +583,16 @@ class OrgaoUnidadeViewSet(viewsets.ModelViewSet):
     🔒 Permissões verificadas automaticamente.
     """
 
-    queryset = TblOrgaoUnidade.objects.select_related(
+    queryset = OrgaoUnidade.objects.select_related(
         "id_patriarca", "id_organograma_versao", "id_orgao_unidade_pai"
     ).all()
-    serializer_class = TblOrgaoUnidadeSerializer
-    permission_classes = [HasCargaOrgLotPermission]
+    serializer_class = OrgaoUnidadeSerializer
+    permission_classes = [HasModelPermission]
 
     def get_serializer_class(self):
         if self.action == "list":
-            return TblOrgaoUnidadeLightSerializer
-        return TblOrgaoUnidadeSerializer
+            return OrgaoUnidadeLightSerializer
+        return OrgaoUnidadeSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -647,16 +647,16 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
     🔒 Permissões verificadas automaticamente.
     """
 
-    queryset = TblLotacaoVersao.objects.select_related(
+    queryset = LotacaoVersao.objects.select_related(
         "id_patriarca", "id_organograma_versao"
     ).all()
-    serializer_class = TblLotacaoVersaoSerializer
-    permission_classes = [HasCargaOrgLotPermission]
+    serializer_class = LotacaoVersaoSerializer
+    permission_classes = [HasModelPermission]
 
     def get_serializer_class(self):
         if self.action == "list":
-            return TblLotacaoVersaoLightSerializer
-        return TblLotacaoVersaoSerializer
+            return LotacaoVersaoLightSerializer
+        return LotacaoVersaoSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -694,7 +694,7 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
                 patriarca = lotacao.id_patriarca
 
                 # Desativa todas as lotações do patriarca
-                TblLotacaoVersao.objects.filter(id_patriarca=patriarca).update(
+                LotacaoVersao.objects.filter(id_patriarca=patriarca).update(
                     flg_ativo=False
                 )
 
@@ -736,7 +736,7 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
         offset = (page - 1) * page_size
 
         # Filtros
-        lotacoes = TblLotacao.objects.filter(id_lotacao_versao=versao)
+        lotacoes = Lotacao.objects.filter(id_lotacao_versao=versao)
 
         valido = request.query_params.get("valido", None)
         if valido == "true":
@@ -757,7 +757,7 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
             offset : offset + page_size
         ]
 
-        serializer = TblLotacaoLightSerializer(lotacoes, many=True)
+        serializer = LotacaoLightSerializer(lotacoes, many=True)
 
         return Response(
             {
@@ -778,14 +778,14 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
         versao = self.get_object()
 
         inconsistencias = (
-            TblLotacaoInconsistencia.objects.filter(
+            LotacaoInconsistencia.objects.filter(
                 id_lotacao__id_lotacao_versao=versao
             )
             .select_related("id_lotacao", "id_lotacao__id_orgao_lotacao")
             .order_by("-dat_registro")
         )
 
-        serializer = TblLotacaoInconsistenciaSerializer(inconsistencias, many=True)
+        serializer = LotacaoInconsistenciaSerializer(inconsistencias, many=True)
 
         return Response(
             {"total": inconsistencias.count(), "inconsistencias": serializer.data}
@@ -811,11 +811,11 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
                 ),
                 2,
             ),
-            "total_inconsistencias": TblLotacaoInconsistencia.objects.filter(
+            "total_inconsistencias": LotacaoInconsistencia.objects.filter(
                 id_lotacao__id_lotacao_versao=versao
             ).count(),
             "por_orgao": list(
-                TblLotacao.objects.filter(id_lotacao_versao=versao)
+                Lotacao.objects.filter(id_lotacao_versao=versao)
                 .values("id_orgao_lotacao__str_sigla")
                 .annotate(count=Count("id_lotacao"))
                 .order_by("-count")[:10]
@@ -837,11 +837,11 @@ class CargaPatriarcaViewSet(viewsets.ModelViewSet):
     🔒 Permissões verificadas automaticamente.
     """
 
-    queryset = TblCargaPatriarca.objects.select_related(
+    queryset = CargaPatriarca.objects.select_related(
         "id_patriarca", "id_status_carga", "id_tipo_carga", "id_token_envio_carga"
     ).all()
-    serializer_class = TblCargaPatriarcaSerializer
-    permission_classes = [HasCargaOrgLotPermission]
+    serializer_class = CargaPatriarcaSerializer
+    permission_classes = [HasModelPermission]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -872,12 +872,12 @@ class CargaPatriarcaViewSet(viewsets.ModelViewSet):
         carga = self.get_object()
 
         detalhes = (
-            TblDetalheStatusCarga.objects.filter(id_carga_patriarca=carga)
+            DetalheStatusCarga.objects.filter(id_carga_patriarca=carga)
             .select_related("id_status_carga")
             .order_by("dat_registro")
         )
 
-        serializer = TblDetalheStatusCargaSerializer(detalhes, many=True)
+        serializer = DetalheStatusCargaSerializer(detalhes, many=True)
 
         return Response(
             {"carga_id": carga.id_carga_patriarca, "timeline": serializer.data}
@@ -896,11 +896,11 @@ class TokenEnvioCargaViewSet(viewsets.ModelViewSet):
     🔒 Permissões verificadas automaticamente.
     """
 
-    queryset = TblTokenEnvioCarga.objects.select_related(
+    queryset = TokenEnvioCarga.objects.select_related(
         "id_patriarca", "id_status_token_envio_carga"
     ).all()
-    serializer_class = TblTokenEnvioCargaSerializer
-    permission_classes = [HasCargaOrgLotPermission]
+    serializer_class = TokenEnvioCargaSerializer
+    permission_classes = [HasModelPermission]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -934,7 +934,7 @@ def dashboard_stats(request):
     patriarca_id = request.query_params.get("patriarca", None)
 
     # Base queryset
-    patriarcas_qs = TblPatriarca.objects.all()
+    patriarcas_qs = Patriarca.objects.all()
     if patriarca_id:
         patriarcas_qs = patriarcas_qs.filter(id_patriarca=patriarca_id)
 
@@ -948,46 +948,46 @@ def dashboard_stats(request):
             ),
         },
         "organogramas": {
-            "total": TblOrganogramaVersao.objects.filter(
+            "total": OrganogramaVersao.objects.filter(
                 id_patriarca__in=patriarcas_qs
             ).count(),
-            "ativos": TblOrganogramaVersao.objects.filter(
+            "ativos": OrganogramaVersao.objects.filter(
                 id_patriarca__in=patriarcas_qs, flg_ativo=True
             ).count(),
             "por_status": list(
-                TblOrganogramaVersao.objects.filter(id_patriarca__in=patriarcas_qs)
+                OrganogramaVersao.objects.filter(id_patriarca__in=patriarcas_qs)
                 .values("str_status_processamento")
                 .annotate(count=Count("id_organograma_versao"))
             ),
         },
         "lotacoes": {
-            "total_versoes": TblLotacaoVersao.objects.filter(
+            "total_versoes": LotacaoVersao.objects.filter(
                 id_patriarca__in=patriarcas_qs
             ).count(),
-            "versoes_ativas": TblLotacaoVersao.objects.filter(
+            "versoes_ativas": LotacaoVersao.objects.filter(
                 id_patriarca__in=patriarcas_qs, flg_ativo=True
             ).count(),
-            "total_registros": TblLotacao.objects.filter(
+            "total_registros": Lotacao.objects.filter(
                 id_patriarca__in=patriarcas_qs
             ).count(),
-            "validos": TblLotacao.objects.filter(
+            "validos": Lotacao.objects.filter(
                 id_patriarca__in=patriarcas_qs, flg_valido=True
             ).count(),
-            "invalidos": TblLotacao.objects.filter(
+            "invalidos": Lotacao.objects.filter(
                 id_patriarca__in=patriarcas_qs, flg_valido=False
             ).count(),
         },
         "cargas": {
-            "total": TblCargaPatriarca.objects.filter(
+            "total": CargaPatriarca.objects.filter(
                 id_patriarca__in=patriarcas_qs
             ).count(),
             "por_status": list(
-                TblCargaPatriarca.objects.filter(id_patriarca__in=patriarcas_qs)
+                CargaPatriarca.objects.filter(id_patriarca__in=patriarcas_qs)
                 .values("id_status_carga__str_descricao")
                 .annotate(count=Count("id_carga_patriarca"))
             ),
             "por_tipo": list(
-                TblCargaPatriarca.objects.filter(id_patriarca__in=patriarcas_qs)
+                CargaPatriarca.objects.filter(id_patriarca__in=patriarcas_qs)
                 .values("id_tipo_carga__str_descricao")
                 .annotate(count=Count("id_carga_patriarca"))
             ),
@@ -1015,7 +1015,7 @@ def search_orgao(request):
     if len(query) < 2:
         return Response({"results": []})
 
-    orgaos = TblOrgaoUnidade.objects.filter(
+    orgaos = OrgaoUnidade.objects.filter(
         Q(str_sigla__icontains=query) | Q(str_nome__icontains=query), flg_ativo=True
     )
 

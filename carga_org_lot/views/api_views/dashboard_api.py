@@ -12,55 +12,55 @@ from rest_framework.response import Response
 from accounts.services.authorization_service import require_api_permission
 
 from ...models import (
-    TblCargaPatriarca,
-    TblLotacao,
-    TblOrganogramaVersao,
-    TblOrgaoUnidade,
-    TblPatriarca,
+    CargaPatriarca,
+    Lotacao,
+    OrganogramaVersao,
+    OrgaoUnidade,
+    Patriarca,
 )
 
 
 @api_view(["GET"])
-@require_api_permission("view_tblpatriarca", "CARGA_ORG_LOT")
+@require_api_permission("view_patriarca", "CARGA_ORG_LOT")
 def dashboard_stats(request):
     """
     GET /api/carga_org_lot/dashboard/
 
     Retorna estatísticas gerais do sistema de carga.
 
-    ✅ PERMISSÃO: view_tblpatriarca
+    ✅ PERMISSÃO: view_patriarca
     """
     # Estatísticas gerais
     stats = {
         "patriarcas": {
-            "total": TblPatriarca.objects.count(),
+            "total": Patriarca.objects.count(),
             "por_status": list(
-                TblPatriarca.objects.values(
+                Patriarca.objects.values(
                     "id_status_progresso__str_descricao"
                 ).annotate(count=Count("id_patriarca"))
             ),
         },
         "organogramas": {
-            "total": TblOrganogramaVersao.objects.count(),
-            "ativos": TblOrganogramaVersao.objects.filter(flg_ativo=True).count(),
-            "processados": TblOrganogramaVersao.objects.filter(
+            "total": OrganogramaVersao.objects.count(),
+            "ativos": OrganogramaVersao.objects.filter(flg_ativo=True).count(),
+            "processados": OrganogramaVersao.objects.filter(
                 str_status_processamento="PROCESSADO"
             ).count(),
         },
         "lotacoes": {
-            "total": TblLotacao.objects.count(),
-            "validas": TblLotacao.objects.filter(flg_valido=True).count(),
-            "invalidas": TblLotacao.objects.filter(flg_valido=False).count(),
+            "total": Lotacao.objects.count(),
+            "validas": Lotacao.objects.filter(flg_valido=True).count(),
+            "invalidas": Lotacao.objects.filter(flg_valido=False).count(),
         },
         "cargas": {
-            "total": TblCargaPatriarca.objects.count(),
+            "total": CargaPatriarca.objects.count(),
             "por_status": list(
-                TblCargaPatriarca.objects.values(
+                CargaPatriarca.objects.values(
                     "id_status_carga__str_descricao"
                 ).annotate(count=Count("id_carga_patriarca"))
             ),
             "por_tipo": list(
-                TblCargaPatriarca.objects.values(
+                CargaPatriarca.objects.values(
                     "id_tipo_carga__str_descricao"
                 ).annotate(count=Count("id_carga_patriarca"))
             ),
@@ -71,14 +71,14 @@ def dashboard_stats(request):
 
 
 @api_view(["GET"])
-@require_api_permission("view_tblorgaounidade", "CARGA_ORG_LOT")
+@require_api_permission("view_orgaounidade", "CARGA_ORG_LOT")
 def search_orgao(request):
     """
     GET /api/carga_org_lot/search/orgao/?q=termo&patriarca_id=1
 
     Busca órgãos por sigla ou nome.
 
-    ✅ PERMISSÃO: view_tblorgaounidade
+    ✅ PERMISSÃO: view_orgaounidade
     """
     query = request.query_params.get("q", "")
     patriarca_id = request.query_params.get("patriarca_id", None)
@@ -86,7 +86,7 @@ def search_orgao(request):
     if len(query) < 2:
         return Response({"results": []})
 
-    orgaos = TblOrgaoUnidade.objects.filter(
+    orgaos = OrgaoUnidade.objects.filter(
         Q(str_sigla__icontains=query) | Q(str_nome__icontains=query), flg_ativo=True
     )
 
@@ -110,7 +110,7 @@ def search_orgao(request):
 
 
 @api_view(["POST"])
-@require_api_permission("add_tblorganogramaversao", "CARGA_ORG_LOT")
+@require_api_permission("add_organogramaversao", "CARGA_ORG_LOT")
 def upload_organograma(request):
     """
     POST /api/carga_org_lot/upload/organograma/
@@ -121,7 +121,7 @@ def upload_organograma(request):
         - file: arquivo
         - patriarca_id: ID do patriarca
 
-    ✅ PERMISSÃO: add_tblorganogramaversao
+    ✅ PERMISSÃO: add_organogramaversao
     """
     # TODO: Implementar lógica de upload e processamento
 
@@ -132,7 +132,7 @@ def upload_organograma(request):
 
 
 @api_view(["POST"])
-@require_api_permission("add_tbllotacaoversao", "CARGA_ORG_LOT")
+@require_api_permission("add_lotacaoversao", "CARGA_ORG_LOT")
 def upload_lotacao(request):
     """
     POST /api/carga_org_lot/upload/lotacao/
@@ -144,7 +144,7 @@ def upload_lotacao(request):
         - patriarca_id: ID do patriarca
         - organograma_versao_id: ID da versão do organograma
 
-    ✅ PERMISSÃO: add_tbllotacaoversao
+    ✅ PERMISSÃO: add_lotacaoversao
     """
     # TODO: Implementar lógica de upload e processamento
 

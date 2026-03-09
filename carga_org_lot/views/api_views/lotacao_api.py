@@ -11,8 +11,8 @@ from rest_framework.response import Response
 
 from accounts.services.authorization_service import HasModelPermission
 
-from ...models import TblLotacao, TblLotacaoInconsistencia, TblLotacaoVersao
-from ...serializers import TblLotacaoSerializer, TblLotacaoVersaoSerializer
+from ...models import Lotacao, LotacaoInconsistencia, LotacaoVersao
+from ...serializers import LotacaoSerializer, LotacaoVersaoSerializer
 
 
 class LotacaoVersaoViewSet(viewsets.ModelViewSet):
@@ -23,15 +23,15 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
     create:  POST /api/carga_org_lot/lotacoes/
     retrieve: GET /api/carga_org_lot/lotacoes/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tbllotacaoversao
+    ✅ PERMISSÃO: HasModelPermission com lotacaoversao
     """
 
-    queryset = TblLotacaoVersao.objects.select_related(
+    queryset = LotacaoVersao.objects.select_related(
         "id_patriarca", "id_organograma_versao"
     ).all()
-    serializer_class = TblLotacaoVersaoSerializer
+    serializer_class = LotacaoVersaoSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tbllotacaoversao"
+    permission_model = "lotacaoversao"
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -57,7 +57,7 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
         offset = (page - 1) * page_size
 
         # Filtros
-        lotacoes = TblLotacao.objects.filter(id_lotacao_versao=versao)
+        lotacoes = Lotacao.objects.filter(id_lotacao_versao=versao)
 
         # Filtro apenas válidos/inválidos
         valido = request.query_params.get("valido", None)
@@ -76,7 +76,7 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
             offset : offset + page_size
         ]
 
-        serializer = TblLotacaoSerializer(lotacoes, many=True)
+        serializer = LotacaoSerializer(lotacoes, many=True)
 
         return Response(
             {
@@ -97,7 +97,7 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
         versao = self.get_object()
 
         inconsistencias = (
-            TblLotacaoInconsistencia.objects.filter(
+            LotacaoInconsistencia.objects.filter(
                 id_lotacao__id_lotacao_versao=versao
             )
             .select_related("id_lotacao")
@@ -126,13 +126,13 @@ class LotacaoVersaoViewSet(viewsets.ModelViewSet):
         """
         versao = self.get_object()
 
-        lotacoes = TblLotacao.objects.filter(id_lotacao_versao=versao)
+        lotacoes = Lotacao.objects.filter(id_lotacao_versao=versao)
 
         stats = {
             "total_registros": lotacoes.count(),
             "validos": lotacoes.filter(flg_valido=True).count(),
             "invalidos": lotacoes.filter(flg_valido=False).count(),
-            "total_inconsistencias": TblLotacaoInconsistencia.objects.filter(
+            "total_inconsistencias": LotacaoInconsistencia.objects.filter(
                 id_lotacao__id_lotacao_versao=versao
             ).count(),
             "por_orgao": list(

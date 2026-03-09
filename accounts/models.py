@@ -1,23 +1,22 @@
-from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.models import BaseUserManager, PermissionsMixin
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 
-# =====================
-# FUNÇÕES DEFAULT GLOBAIS (SERIALIZÁVEIS)
-# =====================
-def default_status_usuario():
-    """Status Ativo (ID=1)."""
-    return TblStatusUsuario.objects.get(pk=1)
+def get_default_status_usuario():
+    return StatusUsuario.objects.get(pk=1)
 
-def default_tipo_usuario():
-    """Tipo Interno (ID=1)."""
-    return TblTipoUsuario.objects.get(pk=1)
+def get_default_tipo_usuario():
+    return TipoUsuario.objects.get(pk=1)
 
-def default_classificacao_usuario():
-    """Classificação Padrão (ID=1)."""
-    return TblClassificacaoUsuario.objects.get(pk=1)
+def get_default_classificacao_usuario():
+    return ClassificacaoUsuario.objects.get(pk=1)
+
+# =====================
+# TABELAS AUXILIARES
+# =====================
 
 class Aplicacao(models.Model):
+    """Aplicações da plataforma GPP"""
     idaplicacao = models.AutoField(primary_key=True)
     codigointerno = models.CharField(max_length=50, unique=True)
     nomeaplicacao = models.CharField(max_length=200)
@@ -27,14 +26,15 @@ class Aplicacao(models.Model):
     class Meta:
         db_table = "tblaplicacao"
         managed = True
+        verbose_name = "Aplicação"
+        verbose_name_plural = "Aplicações"
 
     def __str__(self):
         return f"{self.codigointerno} - {self.nomeaplicacao}"
 
 
-class TblStatusUsuario(models.Model):
+class StatusUsuario(models.Model):
     """Status do usuário (Ativo, Inativo, etc.)"""
-
     idstatususuario = models.SmallIntegerField(
         primary_key=True, db_column="idstatususuario"
     )
@@ -45,14 +45,13 @@ class TblStatusUsuario(models.Model):
         managed = True
         verbose_name = "Status de Usuário"
         verbose_name_plural = "Status de Usuários"
-        
+
     def __str__(self):
         return self.strdescricao
 
 
-class TblTipoUsuario(models.Model):
+class TipoUsuario(models.Model):
     """Tipo de usuário (Gestor, Técnico, etc.)"""
-
     idtipousuario = models.SmallIntegerField(
         primary_key=True, db_column="idtipousuario"
     )
@@ -68,9 +67,8 @@ class TblTipoUsuario(models.Model):
         return self.strdescricao
 
 
-class TblClassificacaoUsuario(models.Model):
+class ClassificacaoUsuario(models.Model):
     """Classificação do usuário"""
-
     idclassificacaousuario = models.SmallIntegerField(
         primary_key=True, db_column="idclassificacaousuario"
     )
@@ -86,186 +84,165 @@ class TblClassificacaoUsuario(models.Model):
         return self.strdescricao
 
 
-class UserManager(BaseUserManager):
-    def create_user(self, username, email=None, password=None, **extra_fields):
-        if not email:
-            raise ValueError("Email é obrigatório")
-        if not username:
-            username = email.split('@')[0]  # pega a parte antes de @
-        # Normaliza o email, cria o User e salva
-        email = self.normalize_email(email)
-        user = self.model(username=username, email=email, **extra_fields)
-        if password:
-            user.set_password(password)
-        else:
-            user.set_unusable_password()
-        user.save(using=self._db)
-        return user
+# =====================
+# USER PROFILE (EXTENSÃO DO auth.User)
+# =====================
 
-    def create_superuser(self, username, email=None, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("is_active", True)
+class UserProfile(models.Model):
+    """
+    Extensão do User padrão do Django com campos específicos da GPP Platform.
+    Relacionamento OneToOne com auth.User.
+    """
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,  # 'auth.User'
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name='profile'
+    )
 
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")
+    # Nome completo (opcional, pois auth.User já tem first_name/last_name)
+    name = models.CharField(max_length=200, db_column="strnome", blank=True)
 
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True.")
-
-        if not password:
-            raise ValueError("Superuser precisa de senha")
-
-        return self.create_user(username, email, password, **extra_fields)
-
-
-class User(AbstractBaseUser, PermissionsMixin):
-    id = models.BigAutoField(primary_key=True, db_column="idusuario")
-
-    name = models.CharField(max_length=200, db_column="strnome")
-
-    email = models.EmailField(max_length=200, unique=True, db_column="stremail")
-
-    password = models.CharField(max_length=200, db_column="strsenha")
-
-    # =====================
-    # CAMPOS DJANGO AUTH
-    # =====================
-
-    is_active = models.BooleanField(default=True, db_column="is_active")
-
-    is_staff = models.BooleanField(default=False, db_column="is_staff")
-
-    is_superuser = models.BooleanField(default=False, db_column="is_superuser")
-
-    last_login = models.DateTimeField(null=True, blank=True, db_column="last_login")
-
-    date_joined = models.DateTimeField(auto_now_add=True, db_column="date_joined")
-
-    # =====================
-    # FK LEGADO (CORRIGIDO)
-    # =====================
-
-    idstatususuario = models.ForeignKey(
-        TblStatusUsuario,
-        default=default_status_usuario,  # ✅ Nomeada + serializável
+    # Campos de negócio (FK para tabelas auxiliares)
+    status_usuario = models.ForeignKey(
+        StatusUsuario,
+        default=get_default_status_usuario,
         on_delete=models.PROTECT,
         db_column="idstatususuario"
     )
-    idtipousuario = models.ForeignKey(
-        TblTipoUsuario,
-        default=default_tipo_usuario,
+    tipo_usuario = models.ForeignKey(
+        TipoUsuario,
+        default=get_default_tipo_usuario,
         on_delete=models.PROTECT,
         db_column="idtipousuario"
     )
-    idclassificacaousuario = models.ForeignKey(
-        TblClassificacaoUsuario,
-        default=default_classificacao_usuario,
+    classificacao_usuario = models.ForeignKey(
+        ClassificacaoUsuario,
+        default=get_default_classificacao_usuario,
         on_delete=models.PROTECT,
         db_column="idclassificacaousuario"
-    )    
+    )
 
-    # =====================
-    # AUDITORIA (dump)
-    # =====================
-
+    # Campos de auditoria
     idusuariocriacao = models.ForeignKey(
-        "self",
+        settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         db_column="idusuariocriacao",
-        related_name="usuarios_criados",
+        related_name="profiles_criados"
     )
-
     idusuarioalteracao = models.ForeignKey(
-        "self",
+        settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         db_column="idusuarioalteracao",
-        related_name="usuarios_alterados",
+        related_name="profiles_alterados"
     )
-
     datacriacao = models.DateTimeField(auto_now_add=True, db_column="datacriacao")
-
     data_alteracao = models.DateTimeField(
-        null=True, blank=True, db_column="data_alteracao"
+        null=True, blank=True, auto_now=True, db_column="data_alteracao"
     )
-
-    objects = UserManager()
-
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
 
     class Meta:
         db_table = "tblusuario"
         managed = True
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
 
     def __str__(self):
-        return self.email
+        return f"Profile de {self.user.username} ({self.user.email})"
 
+
+# =====================
+# RBAC - ROLES E PERMISSÕES
+# =====================
 
 class Role(models.Model):
-    """RBAC por aplicação"""
-
+    """Perfis RBAC por aplicação"""
     aplicacao = models.ForeignKey(
-        Aplicacao, on_delete=models.CASCADE, null=True, db_column="aplicacao_id"
+        Aplicacao,
+        on_delete=models.CASCADE,
+        null=True,
+        db_column="aplicacao_id"
     )
     nomeperfil = models.CharField(max_length=100)
     codigoperfil = models.CharField(max_length=100)
 
     class Meta:
         db_table = "accounts_role"
+        managed = True
         constraints = [
             models.UniqueConstraint(
-                fields=["aplicacao", "codigoperfil"],  # ✅ Único por app + código
+                fields=["aplicacao", "codigoperfil"],
                 name="uq_role_aplicacao_codigoperfil",
             )
         ]
+        verbose_name = "Role"
+        verbose_name_plural = "Roles"
 
     def __str__(self):
         return f"{self.aplicacao} / {self.codigoperfil}"
 
 
 class UserRole(models.Model):
-    user = models.ForeignKey("User", on_delete=models.CASCADE)
+    """Relacionamento User <-> Role por aplicação"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # 'auth.User'
+        on_delete=models.CASCADE
+    )
     aplicacao = models.ForeignKey(
-        Aplicacao, on_delete=models.CASCADE, null=True, db_column="aplicacao_id"
+        Aplicacao,
+        on_delete=models.CASCADE,
+        null=True,
+        db_column="aplicacao_id"
     )
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "accounts_userrole"
+        managed = True
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "aplicacao", "role"],  # ✅ CORRETO
+                fields=["user", "aplicacao", "role"],
                 name="uq_userrole_user_aplicacao_role",
             )
         ]
+        verbose_name = "User Role"
+        verbose_name_plural = "User Roles"
 
     def __str__(self):
         return f"{self.user} → {self.aplicacao} ({self.role})"
 
-class Attribute(models.Model):
-    """ABAC por usuário/aplicação"""
 
-    user = models.ForeignKey("User", on_delete=models.CASCADE)
+class Attribute(models.Model):
+    """ABAC - Atributos por usuário/aplicação"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # 'auth.User'
+        on_delete=models.CASCADE
+    )
     aplicacao = models.ForeignKey(
-        Aplicacao, on_delete=models.SET_NULL, null=True, db_column="aplicacao_id"
+        Aplicacao,
+        on_delete=models.SET_NULL,
+        null=True,
+        db_column="aplicacao_id"
     )
     key = models.CharField(max_length=100)
     value = models.CharField(max_length=255)
 
     class Meta:
         db_table = "accounts_attribute"
+        managed = True
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "aplicacao", "key"], name="uq_userrole_aplicacao_key"
+                fields=["user", "aplicacao", "key"],
+                name="uq_attribute_user_aplicacao_key"
             )
         ]
+        verbose_name = "Attribute"
+        verbose_name_plural = "Attributes"
 
     def __str__(self):
-        # ✅ OPÇÃO 1: Mais legível
         app_code = self.aplicacao.codigointerno if self.aplicacao else "N/A"
         return f"{self.user} / {app_code} / {self.key}={self.value}"

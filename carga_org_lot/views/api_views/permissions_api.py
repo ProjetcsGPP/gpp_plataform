@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
-@require_api_permission("view_tblpatriarca", "CARGA_ORG_LOT")
+@require_api_permission("view_patriarca", "CARGA_ORG_LOT")
 def user_permissions(request):
     """
     Retorna as permissões do usuário logado para o app CARGA_ORG_LOT.
@@ -35,7 +35,7 @@ def user_permissions(request):
 
     **URL:** `GET /api/v1/carga/permissions/`
 
-    ✅ PERMISSÃO: view_tblpatriarca (valida acesso básico ao app)
+    ✅ PERMISSÃO: view_patriarca (valida acesso básico ao app)
 
     **Response:**
     ```json
@@ -43,7 +43,7 @@ def user_permissions(request):
         "user_id": 123,
         "email": "user@example.com",
         "role": "COORDENADOR_CARGA",
-        "permissions": ["view_tblpatriarca", "add_tblpatriarca", ...],
+        "permissions": ["view_patriarca", "add_patriarca", ...],
         "groups": {
             "can_view": true,
             "can_add": true,
@@ -81,17 +81,17 @@ def user_permissions(request):
 
         # Organiza permissões por modelo
         models = [
-            "tblpatriarca",
-            "tblorganogramaversao",
-            "tbllotacaoversao",
-            "tblcargapatriarca",
-            "tbltokenenviocarga",
-            "tblorgaounidade",
+            "patriarca",
+            "organogramaversao",
+            "lotacaoversao",
+            "cargapatriarca",
+            "tokenenviocarga",
+            "orgaounidade",
         ]
 
         specific_perms = {}
         for model in models:
-            model_short = model.replace("tbl", "").replace("versao", "")
+            model_short = model.replace("", "").replace("versao", "")
             specific_perms[model_short] = {
                 "can_view": f"view_{model}" in permissions,
                 "can_add": f"add_{model}" in permissions,

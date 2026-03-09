@@ -10,11 +10,11 @@ from rest_framework.response import Response
 
 from accounts.services.authorization_service import HasModelPermission
 
-from ...models import TblLotacaoVersao, TblOrganogramaVersao, TblPatriarca
+from ...models import LotacaoVersao, OrganogramaVersao, Patriarca
 from ...serializers import (
-    TblLotacaoVersaoSerializer,
-    TblOrganogramaVersaoSerializer,
-    TblPatriarcaSerializer,
+    LotacaoVersaoSerializer,
+    OrganogramaVersaoSerializer,
+    PatriarcaSerializer,
 )
 
 
@@ -29,15 +29,15 @@ class PatriarcaViewSet(viewsets.ModelViewSet):
     partial_update: PATCH /api/carga_org_lot/patriarcas/{id}/
     destroy: DELETE /api/carga_org_lot/patriarcas/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tblpatriarca
+    ✅ PERMISSÃO: HasModelPermission com patriarca
     """
 
-    queryset = TblPatriarca.objects.select_related(
+    queryset = Patriarca.objects.select_related(
         "id_status_progresso", "id_usuario_criacao"
     ).all()
-    serializer_class = TblPatriarcaSerializer
+    serializer_class = PatriarcaSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tblpatriarca"
+    permission_model = "patriarca"
 
     def get_queryset(self):
         """Permite filtros via query params"""
@@ -63,11 +63,11 @@ class PatriarcaViewSet(viewsets.ModelViewSet):
         Lista organogramas do patriarca.
         """
         patriarca = self.get_object()
-        organogramas = TblOrganogramaVersao.objects.filter(
+        organogramas = OrganogramaVersao.objects.filter(
             id_patriarca=patriarca
         ).order_by("-dat_processamento")
 
-        serializer = TblOrganogramaVersaoSerializer(organogramas, many=True)
+        serializer = OrganogramaVersaoSerializer(organogramas, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
@@ -78,9 +78,9 @@ class PatriarcaViewSet(viewsets.ModelViewSet):
         Lista versões de lotação do patriarca.
         """
         patriarca = self.get_object()
-        lotacoes = TblLotacaoVersao.objects.filter(id_patriarca=patriarca).order_by(
+        lotacoes = LotacaoVersao.objects.filter(id_patriarca=patriarca).order_by(
             "-dat_processamento"
         )
 
-        serializer = TblLotacaoVersaoSerializer(lotacoes, many=True)
+        serializer = LotacaoVersaoSerializer(lotacoes, many=True)
         return Response(serializer.data)

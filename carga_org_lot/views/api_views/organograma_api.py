@@ -10,8 +10,8 @@ from rest_framework.response import Response
 
 from accounts.services.authorization_service import HasModelPermission
 
-from ...models import TblOrganogramaJson, TblOrganogramaVersao, TblOrgaoUnidade
-from ...serializers import TblOrganogramaVersaoSerializer, TblOrgaoUnidadeSerializer
+from ...models import OrganogramaJson, OrganogramaVersao, OrgaoUnidade
+from ...serializers import OrganogramaVersaoSerializer, OrgaoUnidadeSerializer
 
 
 class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
@@ -22,13 +22,13 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
     create:  POST /api/carga_org_lot/organogramas/
     retrieve: GET /api/carga_org_lot/organogramas/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tblorganogramaversao
+    ✅ PERMISSÃO: HasModelPermission com organogramaversao
     """
 
-    queryset = TblOrganogramaVersao.objects.select_related("id_patriarca").all()
-    serializer_class = TblOrganogramaVersaoSerializer
+    queryset = OrganogramaVersao.objects.select_related("id_patriarca").all()
+    serializer_class = OrganogramaVersaoSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tblorganogramaversao"
+    permission_model = "organogramaversao"
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -54,12 +54,12 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
         """
         organograma = self.get_object()
         orgaos = (
-            TblOrgaoUnidade.objects.filter(id_organograma_versao=organograma)
+            OrgaoUnidade.objects.filter(id_organograma_versao=organograma)
             .select_related("id_orgao_unidade_pai")
             .order_by("str_numero_hierarquia")
         )
 
-        serializer = TblOrgaoUnidadeSerializer(orgaos, many=True)
+        serializer = OrgaoUnidadeSerializer(orgaos, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
@@ -72,13 +72,13 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
         organograma = self.get_object()
 
         # Buscar órgãos raiz (sem pai)
-        orgaos_raiz = TblOrgaoUnidade.objects.filter(
+        orgaos_raiz = OrgaoUnidade.objects.filter(
             id_organograma_versao=organograma, id_orgao_unidade_pai__isnull=True
-        ).prefetch_related("tblorgaounidade_set")
+        ).prefetch_related("orgaounidade_set")
 
         def build_tree(orgao):
             """Constrói árvore recursivamente"""
-            children = TblOrgaoUnidade.objects.filter(id_orgao_unidade_pai=orgao)
+            children = OrgaoUnidade.objects.filter(id_orgao_unidade_pai=orgao)
             return {
                 "id": orgao.id_orgao_unidade,
                 "sigla": orgao.str_sigla,
@@ -107,7 +107,7 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
         organograma = self.get_object()
 
         try:
-            json_org = TblOrganogramaJson.objects.get(id_organograma_versao=organograma)
+            json_org = OrganogramaJson.objects.get(id_organograma_versao=organograma)
             return Response(
                 {
                     "conteudo": json_org.js_conteudo,
@@ -117,7 +117,7 @@ class OrganogramaVersaoViewSet(viewsets.ModelViewSet):
                     "mensagem_retorno": json_org.str_mensagem_retorno,
                 }
             )
-        except TblOrganogramaJson.DoesNotExist:
+        except OrganogramaJson.DoesNotExist:
             return Response(
                 {"detail": "JSON de envio não encontrado para este organograma"},
                 status=status.HTTP_404_NOT_FOUND,

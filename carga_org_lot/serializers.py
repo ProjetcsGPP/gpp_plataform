@@ -6,21 +6,21 @@ Versão completa com validações, campos derivados e serializers otimizados
 from rest_framework import serializers
 
 from .models import (
-    TblCargaPatriarca,
-    TblDetalheStatusCarga,
-    TblLotacao,
-    TblLotacaoInconsistencia,
-    TblLotacaoJsonOrgao,
-    TblLotacaoVersao,
-    TblOrganogramaJson,
-    TblOrganogramaVersao,
-    TblOrgaoUnidade,
-    TblPatriarca,
-    TblStatusCarga,
-    TblStatusProgresso,
-    TblStatusTokenEnvioCarga,
-    TblTipoCarga,
-    TblTokenEnvioCarga,
+    CargaPatriarca,
+    DetalheStatusCarga,
+    Lotacao,
+    LotacaoInconsistencia,
+    LotacaoJsonOrgao,
+    LotacaoVersao,
+    OrganogramaJson,
+    OrganogramaVersao,
+    OrgaoUnidade,
+    Patriarca,
+    StatusCarga,
+    StatusProgresso,
+    StatusTokenEnvioCarga,
+    TipoCarga,
+    TokenEnvioCarga,
 )
 
 # ============================================
@@ -28,35 +28,35 @@ from .models import (
 # ============================================
 
 
-class TblStatusProgressoSerializer(serializers.ModelSerializer):
+class StatusProgressoSerializer(serializers.ModelSerializer):
     """Serializer para Status Progresso"""
 
     class Meta:
-        model = TblStatusProgresso
+        model = StatusProgresso
         fields = "__all__"
 
 
-class TblStatusCargaSerializer(serializers.ModelSerializer):
+class StatusCargaSerializer(serializers.ModelSerializer):
     """Serializer para Status Carga"""
 
     class Meta:
-        model = TblStatusCarga
+        model = StatusCarga
         fields = "__all__"
 
 
-class TblTipoCargaSerializer(serializers.ModelSerializer):
+class TipoCargaSerializer(serializers.ModelSerializer):
     """Serializer para Tipo Carga"""
 
     class Meta:
-        model = TblTipoCarga
+        model = TipoCarga
         fields = "__all__"
 
 
-class TblStatusTokenEnvioCargaSerializer(serializers.ModelSerializer):
+class StatusTokenEnvioCargaSerializer(serializers.ModelSerializer):
     """Serializer para Status Token Envio Carga"""
 
     class Meta:
-        model = TblStatusTokenEnvioCarga
+        model = StatusTokenEnvioCarga
         fields = "__all__"
 
 
@@ -65,10 +65,10 @@ class TblStatusTokenEnvioCargaSerializer(serializers.ModelSerializer):
 # ============================================
 
 
-class TblPatriarcaSerializer(serializers.ModelSerializer):
+class PatriarcaSerializer(serializers.ModelSerializer):
     """Serializer completo para Patriarca"""
 
-    status_progresso = TblStatusProgressoSerializer(
+    status_progresso = StatusProgressoSerializer(
         source="id_status_progresso", read_only=True
     )
     status_progresso_descricao = serializers.CharField(
@@ -86,7 +86,7 @@ class TblPatriarcaSerializer(serializers.ModelSerializer):
     total_lotacoes = serializers.SerializerMethodField()
 
     class Meta:
-        model = TblPatriarca
+        model = Patriarca
         fields = "__all__"
         read_only_fields = (
             "id_patriarca",
@@ -130,7 +130,7 @@ class TblPatriarcaSerializer(serializers.ModelSerializer):
         return value.strip()
 
 
-class TblPatriarcaLightSerializer(serializers.ModelSerializer):
+class PatriarcaLightSerializer(serializers.ModelSerializer):
     """Serializer otimizado para listagens de Patriarca"""
 
     status_descricao = serializers.CharField(
@@ -138,7 +138,7 @@ class TblPatriarcaLightSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = TblPatriarca
+        model = Patriarca
         fields = [
             "id_patriarca",
             "str_sigla_patriarca",
@@ -147,7 +147,7 @@ class TblPatriarcaLightSerializer(serializers.ModelSerializer):
         ]
 
 
-class TblOrganogramaVersaoSerializer(serializers.ModelSerializer):
+class OrganogramaVersaoSerializer(serializers.ModelSerializer):
     """Serializer completo para Versão de Organograma"""
 
     patriarca_sigla = serializers.CharField(
@@ -166,7 +166,7 @@ class TblOrganogramaVersaoSerializer(serializers.ModelSerializer):
     total_lotacoes = serializers.SerializerMethodField()
 
     class Meta:
-        model = TblOrganogramaVersao
+        model = OrganogramaVersao
         fields = "__all__"
         read_only_fields = ("id_organograma_versao", "dat_processamento")
 
@@ -183,7 +183,7 @@ class TblOrganogramaVersaoSerializer(serializers.ModelSerializer):
             patriarca = attrs.get("id_patriarca")
             if (
                 patriarca
-                and TblOrganogramaVersao.objects.filter(
+                and OrganogramaVersao.objects.filter(
                     id_patriarca=patriarca, flg_ativo=True
                 ).exists()
             ):
@@ -195,7 +195,7 @@ class TblOrganogramaVersaoSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class TblOrganogramaVersaoLightSerializer(serializers.ModelSerializer):
+class OrganogramaVersaoLightSerializer(serializers.ModelSerializer):
     """Serializer otimizado para listagens de Organograma"""
 
     patriarca_sigla = serializers.CharField(
@@ -204,7 +204,7 @@ class TblOrganogramaVersaoLightSerializer(serializers.ModelSerializer):
     total_orgaos = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = TblOrganogramaVersao
+        model = OrganogramaVersao
         fields = [
             "id_organograma_versao",
             "patriarca_sigla",
@@ -216,7 +216,7 @@ class TblOrganogramaVersaoLightSerializer(serializers.ModelSerializer):
         ]
 
 
-class TblOrgaoUnidadeSerializer(serializers.ModelSerializer):
+class OrgaoUnidadeSerializer(serializers.ModelSerializer):
     """Serializer completo para Órgão/Unidade"""
 
     patriarca_sigla = serializers.CharField(
@@ -235,7 +235,7 @@ class TblOrgaoUnidadeSerializer(serializers.ModelSerializer):
     caminho_completo = serializers.CharField(read_only=True)
 
     class Meta:
-        model = TblOrgaoUnidade
+        model = OrgaoUnidade
         fields = "__all__"
         read_only_fields = ("id_orgao_unidade", "dat_criacao", "dat_alteracao")
 
@@ -272,7 +272,7 @@ class TblOrgaoUnidadeSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class TblOrgaoUnidadeLightSerializer(serializers.ModelSerializer):
+class OrgaoUnidadeLightSerializer(serializers.ModelSerializer):
     """Serializer otimizado para listagens de Órgão/Unidade"""
 
     patriarca_sigla = serializers.CharField(
@@ -283,7 +283,7 @@ class TblOrgaoUnidadeLightSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = TblOrgaoUnidade
+        model = OrgaoUnidade
         fields = [
             "id_orgao_unidade",
             "str_sigla",
@@ -295,13 +295,13 @@ class TblOrgaoUnidadeLightSerializer(serializers.ModelSerializer):
         ]
 
 
-class TblOrgaoUnidadeTreeSerializer(serializers.ModelSerializer):
+class OrgaoUnidadeTreeSerializer(serializers.ModelSerializer):
     """Serializer recursivo para árvore hierárquica de órgãos"""
 
     filhos = serializers.SerializerMethodField()
 
     class Meta:
-        model = TblOrgaoUnidade
+        model = OrgaoUnidade
         fields = [
             "id_orgao_unidade",
             "str_sigla",
@@ -316,10 +316,10 @@ class TblOrgaoUnidadeTreeSerializer(serializers.ModelSerializer):
         filhos = obj.unidades_filhas.filter(flg_ativo=True).order_by(
             "str_numero_hierarquia"
         )
-        return TblOrgaoUnidadeTreeSerializer(filhos, many=True).data
+        return OrgaoUnidadeTreeSerializer(filhos, many=True).data
 
 
-class TblOrganogramaJsonSerializer(serializers.ModelSerializer):
+class OrganogramaJsonSerializer(serializers.ModelSerializer):
     """Serializer para JSON Organograma"""
 
     organograma_versao_id = serializers.IntegerField(
@@ -331,12 +331,12 @@ class TblOrganogramaJsonSerializer(serializers.ModelSerializer):
     foi_enviado = serializers.BooleanField(read_only=True)
 
     class Meta:
-        model = TblOrganogramaJson
+        model = OrganogramaJson
         fields = "__all__"
         read_only_fields = ("id_organograma_json", "dat_criacao")
 
 
-class TblLotacaoVersaoSerializer(serializers.ModelSerializer):
+class LotacaoVersaoSerializer(serializers.ModelSerializer):
     """Serializer completo para Versão de Lotação"""
 
     patriarca_sigla = serializers.CharField(
@@ -355,7 +355,7 @@ class TblLotacaoVersaoSerializer(serializers.ModelSerializer):
     taxa_sucesso = serializers.SerializerMethodField()
 
     class Meta:
-        model = TblLotacaoVersao
+        model = LotacaoVersao
         fields = "__all__"
         read_only_fields = ("id_lotacao_versao", "dat_processamento")
 
@@ -367,7 +367,7 @@ class TblLotacaoVersaoSerializer(serializers.ModelSerializer):
         return round((obj.total_validas / total) * 100, 2)
 
 
-class TblLotacaoVersaoLightSerializer(serializers.ModelSerializer):
+class LotacaoVersaoLightSerializer(serializers.ModelSerializer):
     """Serializer otimizado para listagens de Lotação"""
 
     patriarca_sigla = serializers.CharField(
@@ -377,7 +377,7 @@ class TblLotacaoVersaoLightSerializer(serializers.ModelSerializer):
     total_validas = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = TblLotacaoVersao
+        model = LotacaoVersao
         fields = [
             "id_lotacao_versao",
             "patriarca_sigla",
@@ -390,7 +390,7 @@ class TblLotacaoVersaoLightSerializer(serializers.ModelSerializer):
         ]
 
 
-class TblLotacaoSerializer(serializers.ModelSerializer):
+class LotacaoSerializer(serializers.ModelSerializer):
     """Serializer completo para Lotação"""
 
     orgao_sigla = serializers.CharField(
@@ -410,7 +410,7 @@ class TblLotacaoSerializer(serializers.ModelSerializer):
     tem_inconsistencias = serializers.BooleanField(read_only=True)
 
     class Meta:
-        model = TblLotacao
+        model = Lotacao
         fields = "__all__"
         read_only_fields = ("id_lotacao", "dat_criacao", "dat_alteracao")
 
@@ -428,7 +428,7 @@ class TblLotacaoSerializer(serializers.ModelSerializer):
         return f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
 
 
-class TblLotacaoLightSerializer(serializers.ModelSerializer):
+class LotacaoLightSerializer(serializers.ModelSerializer):
     """Serializer otimizado para listagens de Lotação"""
 
     orgao_sigla = serializers.CharField(
@@ -436,7 +436,7 @@ class TblLotacaoLightSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = TblLotacao
+        model = Lotacao
         fields = [
             "id_lotacao",
             "str_cpf",
@@ -446,7 +446,7 @@ class TblLotacaoLightSerializer(serializers.ModelSerializer):
         ]
 
 
-class TblLotacaoJsonOrgaoSerializer(serializers.ModelSerializer):
+class LotacaoJsonOrgaoSerializer(serializers.ModelSerializer):
     """Serializer para JSON Lotação por Órgão"""
 
     lotacao_versao_id = serializers.IntegerField(
@@ -470,7 +470,7 @@ class TblLotacaoJsonOrgaoSerializer(serializers.ModelSerializer):
     foi_enviado = serializers.BooleanField(read_only=True)
 
     class Meta:
-        model = TblLotacaoJsonOrgao
+        model = LotacaoJsonOrgao
         fields = "__all__"
         read_only_fields = ("id_lotacao_json_orgao", "dat_criacao")
 
@@ -484,7 +484,7 @@ class TblLotacaoJsonOrgaoSerializer(serializers.ModelSerializer):
         return 0
 
 
-class TblLotacaoInconsistenciaSerializer(serializers.ModelSerializer):
+class LotacaoInconsistenciaSerializer(serializers.ModelSerializer):
     """Serializer para Inconsistências de Lotação"""
 
     lotacao_cpf = serializers.CharField(source="id_lotacao.str_cpf", read_only=True)
@@ -493,12 +493,12 @@ class TblLotacaoInconsistenciaSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = TblLotacaoInconsistencia
+        model = LotacaoInconsistencia
         fields = "__all__"
         read_only_fields = ("id_inconsistencia", "dat_registro")
 
 
-class TblTokenEnvioCargaSerializer(serializers.ModelSerializer):
+class TokenEnvioCargaSerializer(serializers.ModelSerializer):
     """Serializer para Token Envio Carga"""
 
     patriarca_sigla = serializers.CharField(
@@ -510,28 +510,28 @@ class TblTokenEnvioCargaSerializer(serializers.ModelSerializer):
     ativo = serializers.BooleanField(read_only=True)
 
     class Meta:
-        model = TblTokenEnvioCarga
+        model = TokenEnvioCarga
         fields = "__all__"
         read_only_fields = ("id_token_envio_carga", "dat_data_hora_inicio")
 
 
-class TblCargaPatriarcaSerializer(serializers.ModelSerializer):
+class CargaPatriarcaSerializer(serializers.ModelSerializer):
     """Serializer para Carga Patriarca"""
 
     patriarca_sigla = serializers.CharField(
         source="id_patriarca.str_sigla_patriarca", read_only=True
     )
-    status_carga = TblStatusCargaSerializer(source="id_status_carga", read_only=True)
-    tipo_carga = TblTipoCargaSerializer(source="id_tipo_carga", read_only=True)
+    status_carga = StatusCargaSerializer(source="id_status_carga", read_only=True)
+    tipo_carga = TipoCargaSerializer(source="id_tipo_carga", read_only=True)
     em_andamento = serializers.BooleanField(read_only=True)
 
     class Meta:
-        model = TblCargaPatriarca
+        model = CargaPatriarca
         fields = "__all__"
         read_only_fields = ("id_carga_patriarca", "dat_data_hora_inicio")
 
 
-class TblDetalheStatusCargaSerializer(serializers.ModelSerializer):
+class DetalheStatusCargaSerializer(serializers.ModelSerializer):
     """Serializer para Detalhe Status Carga (Timeline)"""
 
     status_descricao = serializers.CharField(
@@ -542,6 +542,6 @@ class TblDetalheStatusCargaSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = TblDetalheStatusCarga
+        model = DetalheStatusCarga
         fields = "__all__"
         read_only_fields = ("id_detalhe_status_carga", "dat_registro")

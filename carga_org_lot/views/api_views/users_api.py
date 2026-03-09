@@ -56,7 +56,7 @@ class UserManagementViewSet(viewsets.ViewSet):
                         "id": ur.user.id,
                         "email": ur.user.email,
                         "name": ur.user.name,
-                        "role": ur.role.nomeperfil,
+                        "role": ur.role.nome,
                         "role_code": ur.role.codigoperfil,
                         "is_active": ur.user.is_active,
                     }
@@ -86,7 +86,7 @@ class UserManagementViewSet(viewsets.ViewSet):
             try:
                 user_role = UserRole.objects.get(user=user, aplicacao=app)
                 role = user_role.role.codigoperfil
-                role_name = user_role.role.nomeperfil
+                role_name = user_role.role.codigoperfil
             except UserRole.DoesNotExist:
                 role = None
                 role_name = None

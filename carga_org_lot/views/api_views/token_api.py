@@ -13,18 +13,18 @@ from rest_framework.response import Response
 from accounts.services.authorization_service import HasModelPermission
 
 from ...models import (
-    TblStatusCarga,
-    TblStatusProgresso,
-    TblStatusTokenEnvioCarga,
-    TblTipoCarga,
-    TblTokenEnvioCarga,
+    StatusCarga,
+    StatusProgresso,
+    StatusTokenEnvioCarga,
+    TipoCarga,
+    TokenEnvioCarga,
 )
 from ...serializers import (
-    TblStatusCargaSerializer,
-    TblStatusProgressoSerializer,
-    TblStatusTokenEnvioCargaSerializer,
-    TblTipoCargaSerializer,
-    TblTokenEnvioCargaSerializer,
+    StatusCargaSerializer,
+    StatusProgressoSerializer,
+    StatusTokenEnvioCargaSerializer,
+    TipoCargaSerializer,
+    TokenEnvioCargaSerializer,
 )
 
 # ============================================
@@ -39,13 +39,13 @@ class StatusProgressoViewSet(viewsets.ReadOnlyModelViewSet):
     list:     GET /api/carga_org_lot/status-progresso/
     retrieve: GET /api/carga_org_lot/status-progresso/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tblstatusprogresso
+    ✅ PERMISSÃO: HasModelPermission com statusprogresso
     """
 
-    queryset = TblStatusProgresso.objects.all()
-    serializer_class = TblStatusProgressoSerializer
+    queryset = StatusProgresso.objects.all()
+    serializer_class = StatusProgressoSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tblstatusprogresso"
+    permission_model = "statusprogresso"
 
 
 class StatusCargaViewSet(viewsets.ReadOnlyModelViewSet):
@@ -55,13 +55,13 @@ class StatusCargaViewSet(viewsets.ReadOnlyModelViewSet):
     list:     GET /api/carga_org_lot/status-carga/
     retrieve: GET /api/carga_org_lot/status-carga/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tblstatuscarga
+    ✅ PERMISSÃO: HasModelPermission com statuscarga
     """
 
-    queryset = TblStatusCarga.objects.all()
-    serializer_class = TblStatusCargaSerializer
+    queryset = StatusCarga.objects.all()
+    serializer_class = StatusCargaSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tblstatuscarga"
+    permission_model = "statuscarga"
 
 
 class TipoCargaViewSet(viewsets.ReadOnlyModelViewSet):
@@ -71,13 +71,13 @@ class TipoCargaViewSet(viewsets.ReadOnlyModelViewSet):
     list:     GET /api/carga_org_lot/tipo-carga/
     retrieve: GET /api/carga_org_lot/tipo-carga/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tbltipocarga
+    ✅ PERMISSÃO: HasModelPermission com tipocarga
     """
 
-    queryset = TblTipoCarga.objects.all()
-    serializer_class = TblTipoCargaSerializer
+    queryset = TipoCarga.objects.all()
+    serializer_class = TipoCargaSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tbltipocarga"
+    permission_model = "tipocarga"
 
 
 class StatusTokenEnvioCargaViewSet(viewsets.ReadOnlyModelViewSet):
@@ -87,13 +87,13 @@ class StatusTokenEnvioCargaViewSet(viewsets.ReadOnlyModelViewSet):
     list:     GET /api/carga_org_lot/status-token/
     retrieve: GET /api/carga_org_lot/status-token/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tblstatustokenenviocarga
+    ✅ PERMISSÃO: HasModelPermission com statustokenenviocarga
     """
 
-    queryset = TblStatusTokenEnvioCarga.objects.all()
-    serializer_class = TblStatusTokenEnvioCargaSerializer
+    queryset = StatusTokenEnvioCarga.objects.all()
+    serializer_class = StatusTokenEnvioCargaSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tblstatustokenenviocarga"
+    permission_model = "statustokenenviocarga"
 
 
 # ============================================
@@ -114,15 +114,15 @@ class TokenEnvioCargaViewSet(viewsets.ModelViewSet):
     partial_update: PATCH /api/carga_org_lot/tokens/{id}/
     destroy:  DELETE /api/carga_org_lot/tokens/{id}/
 
-    ✅ PERMISSÃO: HasModelPermission com tbltokenenviocarga
+    ✅ PERMISSÃO: HasModelPermission com tokenenviocarga
     """
 
-    queryset = TblTokenEnvioCarga.objects.select_related(
+    queryset = TokenEnvioCarga.objects.select_related(
         "id_patriarca", "id_status_token_envio_carga"
     ).all()
-    serializer_class = TblTokenEnvioCargaSerializer
+    serializer_class = TokenEnvioCargaSerializer
     permission_classes = [HasModelPermission]
-    permission_model = "tbltokenenviocarga"
+    permission_model = "tokenenviocarga"
 
     def get_queryset(self):
         """Permite filtros via query params"""
@@ -154,16 +154,16 @@ class TokenEnvioCargaViewSet(viewsets.ModelViewSet):
         """
         token = self.get_object()
 
-        from ...models import TblCargaPatriarca
-        from ...serializers import TblCargaPatriarcaSerializer
+        from ...models import CargaPatriarca
+        from ...serializers import CargaPatriarcaSerializer
 
         cargas = (
-            TblCargaPatriarca.objects.filter(id_token_envio_carga=token)
+            CargaPatriarca.objects.filter(id_token_envio_carga=token)
             .select_related("id_patriarca", "id_status_carga", "id_tipo_carga")
             .order_by("-dat_data_hora_inicio")
         )
 
-        serializer = TblCargaPatriarcaSerializer(cargas, many=True)
+        serializer = CargaPatriarcaSerializer(cargas, many=True)
 
         return Response(
             {

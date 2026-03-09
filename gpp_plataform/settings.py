@@ -154,7 +154,12 @@ DATABASES = {
 
 DATABASE_ROUTERS = ["carga_org_lot.db_router.CargaOrgLotRouter"]
 
-AUTH_USER_MODEL = "accounts.User"
+# =====================
+# AUTH USER MODEL - USANDO auth.User PADRÃO
+# =====================
+# Removido AUTH_USER_MODEL customizado - agora usamos django.contrib.auth.models.User
+# A extensão é feita via UserProfile (OneToOne)
+# AUTH_USER_MODEL = 'accounts.User'  # REMOVIDO!
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
