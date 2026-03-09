@@ -10,212 +10,526 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('accounts', '0001_initial'),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
         migrations.RunSQL(
-            sql='CREATE SCHEMA IF NOT EXISTS acoes_pngi;',
-            reverse_sql='DROP SCHEMA IF EXISTS acoes_pngi CASCADE;'
-        ),        
+            sql="CREATE SCHEMA IF NOT EXISTS acoes_pngi;",
+            reverse_sql="DROP SCHEMA IF EXISTS acoes_pngi CASCADE;",
+        ),
         migrations.CreateModel(
-            name='Eixo',
+            name="Eixo",
             fields=[
-                ('ideixo', models.AutoField(db_column='ideixo', primary_key=True, serialize=False)),
-                ('strdescricaoeixo', models.CharField(db_column='strdescricaoeixo', max_length=100)),
-                ('stralias', models.CharField(db_column='stralias', max_length=5, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
+                (
+                    "ideixo",
+                    models.AutoField(
+                        db_column="ideixo", primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "strdescricaoeixo",
+                    models.CharField(db_column="strdescricaoeixo", max_length=100),
+                ),
+                (
+                    "stralias",
+                    models.CharField(db_column="stralias", max_length=5, unique=True),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
             ],
             options={
-                'verbose_name': 'Eixo',
-                'verbose_name_plural': 'Eixos',
-                'db_table': '"acoes_pngi"."tbleixos"',
-                'ordering': ['stralias'],
-                'managed': True,
+                "verbose_name": "Eixo",
+                "verbose_name_plural": "Eixos",
+                "db_table": '"acoes_pngi"."tbleixos"',
+                "ordering": ["stralias"],
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='SituacaoAcao',
+            name="SituacaoAcao",
             fields=[
-                ('idsituacaoacao', models.AutoField(db_column='idsituacaoacao', primary_key=True, serialize=False)),
-                ('strdescricaosituacao', models.CharField(db_column='strdescricaosituacao', max_length=15, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
+                (
+                    "idsituacaoacao",
+                    models.AutoField(
+                        db_column="idsituacaoacao", primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "strdescricaosituacao",
+                    models.CharField(
+                        db_column="strdescricaosituacao", max_length=15, unique=True
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
             ],
             options={
-                'verbose_name': 'Situação de Ação',
-                'verbose_name_plural': 'Situações de Ações',
-                'db_table': '"acoes_pngi"."tblsituacaoacao"',
-                'ordering': ['strdescricaosituacao'],
-                'managed': True,
+                "verbose_name": "Situação de Ação",
+                "verbose_name_plural": "Situações de Ações",
+                "db_table": '"acoes_pngi"."tblsituacaoacao"',
+                "ordering": ["strdescricaosituacao"],
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='TipoAnotacaoAlinhamento',
+            name="TipoAnotacaoAlinhamento",
             fields=[
-                ('idtipoanotacaoalinhamento', models.AutoField(db_column='idtipoanotacaoalinhamento', primary_key=True, serialize=False)),
-                ('strdescricaotipoanotacaoalinhamento', models.CharField(db_column='strdescricaotipoanotacaoalinhamento', max_length=50)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
+                (
+                    "idtipoanotacaoalinhamento",
+                    models.AutoField(
+                        db_column="idtipoanotacaoalinhamento",
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "strdescricaotipoanotacaoalinhamento",
+                    models.CharField(
+                        db_column="strdescricaotipoanotacaoalinhamento", max_length=50
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
             ],
             options={
-                'verbose_name': 'Tipo de Anotação de Alinhamento',
-                'verbose_name_plural': 'Tipos de Anotações de Alinhamento',
-                'db_table': '"acoes_pngi"."tbltipoanotacaoalinhamento"',
-                'ordering': ['strdescricaotipoanotacaoalinhamento'],
-                'managed': True,
+                "verbose_name": "Tipo de Anotação de Alinhamento",
+                "verbose_name_plural": "Tipos de Anotações de Alinhamento",
+                "db_table": '"acoes_pngi"."tbltipoanotacaoalinhamento"',
+                "ordering": ["strdescricaotipoanotacaoalinhamento"],
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='TipoEntraveAlerta',
+            name="TipoEntraveAlerta",
             fields=[
-                ('idtipoentravealerta', models.AutoField(db_column='idtipoentravealerta', primary_key=True, serialize=False)),
-                ('strdescricaotipoentravealerta', models.CharField(db_column='strdescricaotipoentravealerta', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
+                (
+                    "idtipoentravealerta",
+                    models.AutoField(
+                        db_column="idtipoentravealerta",
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "strdescricaotipoentravealerta",
+                    models.CharField(
+                        db_column="strdescricaotipoentravealerta", max_length=20
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
             ],
             options={
-                'verbose_name': 'Tipo de Entrave/Alerta',
-                'verbose_name_plural': 'Tipos de Entraves/Alertas',
-                'db_table': '"acoes_pngi"."tbltipoentravealerta"',
-                'ordering': ['strdescricaotipoentravealerta'],
-                'managed': True,
+                "verbose_name": "Tipo de Entrave/Alerta",
+                "verbose_name_plural": "Tipos de Entraves/Alertas",
+                "db_table": '"acoes_pngi"."tbltipoentravealerta"',
+                "ordering": ["strdescricaotipoentravealerta"],
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='UsuarioResponsavel',
+            name="UsuarioResponsavel",
             fields=[
-                ('idusuario', models.OneToOneField(db_column='idusuario', on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='responsavel_pngi', serialize=False, to=settings.AUTH_USER_MODEL)),
-                ('strtelefone', models.CharField(db_column='strtelefone', max_length=20)),
-                ('strorgao', models.CharField(db_column='strorgao', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
+                (
+                    "idusuario",
+                    models.OneToOneField(
+                        db_column="idusuario",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        related_name="responsavel_pngi",
+                        serialize=False,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "strtelefone",
+                    models.CharField(db_column="strtelefone", max_length=20),
+                ),
+                ("strorgao", models.CharField(db_column="strorgao", max_length=20)),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
             ],
             options={
-                'verbose_name': 'Usuário Responsável',
-                'verbose_name_plural': 'Usuários Responsáveis',
-                'db_table': '"acoes_pngi"."tblusuarioresponsavel"',
-                'managed': True,
+                "verbose_name": "Usuário Responsável",
+                "verbose_name_plural": "Usuários Responsáveis",
+                "db_table": '"acoes_pngi"."tblusuarioresponsavel"',
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='VigenciaPNGI',
+            name="VigenciaPNGI",
             fields=[
-                ('idvigenciapngi', models.AutoField(db_column='idvigenciapngi', primary_key=True, serialize=False)),
-                ('strdescricaovigenciapngi', models.CharField(db_column='strdescricaovigenciapngi', max_length=100)),
-                ('datiniciovigencia', models.DateField(db_column='datiniciovigencia')),
-                ('datfinalvigencia', models.DateField(db_column='datfinalvigencia')),
-                ('isvigenciaativa', models.BooleanField(db_column='isvigenciaativa', default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
+                (
+                    "idvigenciapngi",
+                    models.AutoField(
+                        db_column="idvigenciapngi", primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "strdescricaovigenciapngi",
+                    models.CharField(
+                        db_column="strdescricaovigenciapngi", max_length=100
+                    ),
+                ),
+                ("datiniciovigencia", models.DateField(db_column="datiniciovigencia")),
+                ("datfinalvigencia", models.DateField(db_column="datfinalvigencia")),
+                (
+                    "isvigenciaativa",
+                    models.BooleanField(db_column="isvigenciaativa", default=False),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
             ],
             options={
-                'verbose_name': 'Vigência PNGI',
-                'verbose_name_plural': 'Vigências PNGI',
-                'db_table': '"acoes_pngi"."tblvigenciapngi"',
-                'ordering': ['-datiniciovigencia'],
-                'managed': True,
+                "verbose_name": "Vigência PNGI",
+                "verbose_name_plural": "Vigências PNGI",
+                "db_table": '"acoes_pngi"."tblvigenciapngi"',
+                "ordering": ["-datiniciovigencia"],
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='Acoes',
+            name="Acoes",
             fields=[
-                ('idacao', models.AutoField(db_column='idacao', primary_key=True, serialize=False)),
-                ('strapelido', models.CharField(db_column='strapelido', max_length=50)),
-                ('strdescricaoacao', models.CharField(db_column='strdescricaoacao', max_length=350)),
-                ('strdescricaoentrega', models.CharField(db_column='strdescricaoentrega', max_length=20)),
-                ('datdataentrega', models.DateTimeField(blank=True, db_column='datdataentrega', null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
-                ('ideixo', models.ForeignKey(blank=True, db_column='ideixo', null=True, on_delete=django.db.models.deletion.PROTECT, related_name='acoes', to='acoes_pngi.eixo')),
-                ('idsituacaoacao', models.ForeignKey(blank=True, db_column='idsituacaoacao', null=True, on_delete=django.db.models.deletion.PROTECT, related_name='acoes', to='acoes_pngi.situacaoacao')),
-                ('idtipoentravealerta', models.ForeignKey(blank=True, db_column='idtipoentravealerta', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='acoes', to='acoes_pngi.tipoentravealerta')),
-                ('idvigenciapngi', models.ForeignKey(db_column='idvigenciapngi', on_delete=django.db.models.deletion.PROTECT, related_name='acoes', to='acoes_pngi.vigenciapngi')),
+                (
+                    "idacao",
+                    models.AutoField(
+                        db_column="idacao", primary_key=True, serialize=False
+                    ),
+                ),
+                ("strapelido", models.CharField(db_column="strapelido", max_length=50)),
+                (
+                    "strdescricaoacao",
+                    models.CharField(db_column="strdescricaoacao", max_length=350),
+                ),
+                (
+                    "strdescricaoentrega",
+                    models.CharField(db_column="strdescricaoentrega", max_length=20),
+                ),
+                (
+                    "datdataentrega",
+                    models.DateTimeField(
+                        blank=True, db_column="datdataentrega", null=True
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
+                (
+                    "ideixo",
+                    models.ForeignKey(
+                        blank=True,
+                        db_column="ideixo",
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="acoes",
+                        to="acoes_pngi.eixo",
+                    ),
+                ),
+                (
+                    "idsituacaoacao",
+                    models.ForeignKey(
+                        blank=True,
+                        db_column="idsituacaoacao",
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="acoes",
+                        to="acoes_pngi.situacaoacao",
+                    ),
+                ),
+                (
+                    "idtipoentravealerta",
+                    models.ForeignKey(
+                        blank=True,
+                        db_column="idtipoentravealerta",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="acoes",
+                        to="acoes_pngi.tipoentravealerta",
+                    ),
+                ),
+                (
+                    "idvigenciapngi",
+                    models.ForeignKey(
+                        db_column="idvigenciapngi",
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="acoes",
+                        to="acoes_pngi.vigenciapngi",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Ação',
-                'verbose_name_plural': 'Ações',
-                'db_table': '"acoes_pngi"."tblacoes"',
-                'ordering': ['strapelido'],
-                'managed': True,
+                "verbose_name": "Ação",
+                "verbose_name_plural": "Ações",
+                "db_table": '"acoes_pngi"."tblacoes"',
+                "ordering": ["strapelido"],
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='AcaoPrazo',
+            name="AcaoPrazo",
             fields=[
-                ('idacaoprazo', models.AutoField(db_column='idacaoprazo', primary_key=True, serialize=False)),
-                ('isacaoprazoativo', models.BooleanField(db_column='isacaoprazoativo', default=True)),
-                ('strprazo', models.CharField(db_column='strprazo', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
-                ('idacao', models.ForeignKey(db_column='idacao', on_delete=django.db.models.deletion.CASCADE, related_name='prazos', to='acoes_pngi.acoes')),
+                (
+                    "idacaoprazo",
+                    models.AutoField(
+                        db_column="idacaoprazo", primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "isacaoprazoativo",
+                    models.BooleanField(db_column="isacaoprazoativo", default=True),
+                ),
+                ("strprazo", models.CharField(db_column="strprazo", max_length=20)),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
+                (
+                    "idacao",
+                    models.ForeignKey(
+                        db_column="idacao",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="prazos",
+                        to="acoes_pngi.acoes",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Prazo de Ação',
-                'verbose_name_plural': 'Prazos de Ações',
-                'db_table': '"acoes_pngi"."tblacaoprazo"',
-                'ordering': ['-isacaoprazoativo', '-created_at'],
-                'managed': True,
-                'constraints': [models.UniqueConstraint(condition=models.Q(('isacaoprazoativo', True)), fields=('idacao', 'isacaoprazoativo'), name='idxacaoprazoativo')],
+                "verbose_name": "Prazo de Ação",
+                "verbose_name_plural": "Prazos de Ações",
+                "db_table": '"acoes_pngi"."tblacaoprazo"',
+                "ordering": ["-isacaoprazoativo", "-created_at"],
+                "managed": True,
+                "constraints": [
+                    models.UniqueConstraint(
+                        condition=models.Q(("isacaoprazoativo", True)),
+                        fields=("idacao", "isacaoprazoativo"),
+                        name="idxacaoprazoativo",
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='AcaoDestaque',
+            name="AcaoDestaque",
             fields=[
-                ('idacaodestaque', models.AutoField(db_column='idacaodestaque', primary_key=True, serialize=False)),
-                ('datdatadestaque', models.DateTimeField(db_column='datdatadestaque')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
-                ('idacao', models.ForeignKey(db_column='idacao', on_delete=django.db.models.deletion.CASCADE, related_name='destaques', to='acoes_pngi.acoes')),
+                (
+                    "idacaodestaque",
+                    models.AutoField(
+                        db_column="idacaodestaque", primary_key=True, serialize=False
+                    ),
+                ),
+                ("datdatadestaque", models.DateTimeField(db_column="datdatadestaque")),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
+                (
+                    "idacao",
+                    models.ForeignKey(
+                        db_column="idacao",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="destaques",
+                        to="acoes_pngi.acoes",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Destaque de Ação',
-                'verbose_name_plural': 'Destaques de Ações',
-                'db_table': '"acoes_pngi"."tblacaodestaque"',
-                'ordering': ['-datdatadestaque'],
-                'managed': True,
-                'constraints': [models.UniqueConstraint(fields=('idacao', 'datdatadestaque'), name='idxacaodestaque')],
+                "verbose_name": "Destaque de Ação",
+                "verbose_name_plural": "Destaques de Ações",
+                "db_table": '"acoes_pngi"."tblacaodestaque"',
+                "ordering": ["-datdatadestaque"],
+                "managed": True,
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("idacao", "datdatadestaque"), name="idxacaodestaque"
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='AcaoAnotacaoAlinhamento',
+            name="AcaoAnotacaoAlinhamento",
             fields=[
-                ('idacaoanotacaoalinhamento', models.AutoField(db_column='idacaoanotacaoalinhamento', primary_key=True, serialize=False)),
-                ('datdataanotacaoalinhamento', models.DateTimeField(db_column='datdataanotacaoalinhamento')),
-                ('strdescricaoanotacaoalinhamento', models.CharField(db_column='strdescricaoanotacaoalinhamento', max_length=500)),
-                ('strlinkanotacaoalinhamento', models.CharField(blank=True, db_column='strlinkanotacaoalinhamento', max_length=500, null=True)),
-                ('strnumeromonitoramento', models.CharField(blank=True, db_column='strnumeromonitoramento', max_length=10, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
-                ('idacao', models.ForeignKey(db_column='idacao', on_delete=django.db.models.deletion.CASCADE, related_name='anotacoes_alinhamento', to='acoes_pngi.acoes')),
-                ('idtipoanotacaoalinhamento', models.ForeignKey(db_column='idtipoanotacaoalinhamento', on_delete=django.db.models.deletion.PROTECT, related_name='anotacoes', to='acoes_pngi.tipoanotacaoalinhamento')),
+                (
+                    "idacaoanotacaoalinhamento",
+                    models.AutoField(
+                        db_column="idacaoanotacaoalinhamento",
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "datdataanotacaoalinhamento",
+                    models.DateTimeField(db_column="datdataanotacaoalinhamento"),
+                ),
+                (
+                    "strdescricaoanotacaoalinhamento",
+                    models.CharField(
+                        db_column="strdescricaoanotacaoalinhamento", max_length=500
+                    ),
+                ),
+                (
+                    "strlinkanotacaoalinhamento",
+                    models.CharField(
+                        blank=True,
+                        db_column="strlinkanotacaoalinhamento",
+                        max_length=500,
+                        null=True,
+                    ),
+                ),
+                (
+                    "strnumeromonitoramento",
+                    models.CharField(
+                        blank=True,
+                        db_column="strnumeromonitoramento",
+                        max_length=10,
+                        null=True,
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
+                (
+                    "idacao",
+                    models.ForeignKey(
+                        db_column="idacao",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="anotacoes_alinhamento",
+                        to="acoes_pngi.acoes",
+                    ),
+                ),
+                (
+                    "idtipoanotacaoalinhamento",
+                    models.ForeignKey(
+                        db_column="idtipoanotacaoalinhamento",
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="anotacoes",
+                        to="acoes_pngi.tipoanotacaoalinhamento",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Anotação de Alinhamento',
-                'verbose_name_plural': 'Anotações de Alinhamento',
-                'db_table': '"acoes_pngi"."tblacaoanotacaoalinhamento"',
-                'ordering': ['-datdataanotacaoalinhamento'],
-                'managed': True,
-                'constraints': [models.UniqueConstraint(fields=('idacao', 'idtipoanotacaoalinhamento', 'datdataanotacaoalinhamento'), name='idxacaoanotacaoalinhamento')],
+                "verbose_name": "Anotação de Alinhamento",
+                "verbose_name_plural": "Anotações de Alinhamento",
+                "db_table": '"acoes_pngi"."tblacaoanotacaoalinhamento"',
+                "ordering": ["-datdataanotacaoalinhamento"],
+                "managed": True,
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=(
+                            "idacao",
+                            "idtipoanotacaoalinhamento",
+                            "datdataanotacaoalinhamento",
+                        ),
+                        name="idxacaoanotacaoalinhamento",
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='RelacaoAcaoUsuarioResponsavel',
+            name="RelacaoAcaoUsuarioResponsavel",
             fields=[
-                ('idacaousuarioresponsavel', models.BigAutoField(db_column='idacaousuarioresponsavel', primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
-                ('updated_at', models.DateTimeField(auto_now=True, db_column='updated_at')),
-                ('idacao', models.ForeignKey(db_column='idacao', on_delete=django.db.models.deletion.CASCADE, related_name='responsaveis', to='acoes_pngi.acoes')),
-                ('idusuarioresponsavel', models.ForeignKey(db_column='idusuarioresponsavel', on_delete=django.db.models.deletion.CASCADE, related_name='acoes', to='acoes_pngi.usuarioresponsavel')),
+                (
+                    "idacaousuarioresponsavel",
+                    models.BigAutoField(
+                        db_column="idacaousuarioresponsavel",
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, db_column="created_at"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, db_column="updated_at"),
+                ),
+                (
+                    "idacao",
+                    models.ForeignKey(
+                        db_column="idacao",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="responsaveis",
+                        to="acoes_pngi.acoes",
+                    ),
+                ),
+                (
+                    "idusuarioresponsavel",
+                    models.ForeignKey(
+                        db_column="idusuarioresponsavel",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="acoes",
+                        to="acoes_pngi.usuarioresponsavel",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Relação Ação X Usuário Responsável',
-                'verbose_name_plural': 'Relações Ação X Usuários Responsáveis',
-                'db_table': '"acoes_pngi"."tblrelacaoacaousuarioresponsavel"',
-                'ordering': ['idacaousuarioresponsavel'],
-                'managed': True,
-                'constraints': [models.UniqueConstraint(fields=('idacao', 'idusuarioresponsavel'), name='idxrelacaoacaousuarioresponsavel')],
+                "verbose_name": "Relação Ação X Usuário Responsável",
+                "verbose_name_plural": "Relações Ação X Usuários Responsáveis",
+                "db_table": '"acoes_pngi"."tblrelacaoacaousuarioresponsavel"',
+                "ordering": ["idacaousuarioresponsavel"],
+                "managed": True,
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("idacao", "idusuarioresponsavel"),
+                        name="idxrelacaoacaousuarioresponsavel",
+                    )
+                ],
             },
         ),
     ]

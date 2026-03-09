@@ -3,6 +3,7 @@ Configuração pytest para testes Django do TokenService.
 """
 
 import os
+
 import django
 from pytest import fixture
 
@@ -21,4 +22,5 @@ def django_db_setup(django_db_setup, django_db_blocker):
 def clear_cache():
     """Limpa cache antes de cada teste."""
     from django.core.cache import cache
+
     cache.clear()

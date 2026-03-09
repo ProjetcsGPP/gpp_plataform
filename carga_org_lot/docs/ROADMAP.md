@@ -566,6 +566,6 @@ Para considerar a conversão **100% completa**:
 
 ---
 
-**Última Atualização:** 03/02/2026 - 15:15 BRT  
-**Responsável:** Equipe GPP  
+**Última Atualização:** 03/02/2026 - 15:15 BRT
+**Responsável:** Equipe GPP
 **Versão:** 1.0

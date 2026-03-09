@@ -1,6 +1,6 @@
 # Checklist de Limpeza - Branch refactor/iam-service-architecture
 
-> **Issue relacionada:** [#10](https://github.com/ProjetcsGPP/gpp_plataform/issues/10)  
+> **Issue relacionada:** [#10](https://github.com/ProjetcsGPP/gpp_plataform/issues/10)
 > **Data:** 25/02/2026
 
 ## 🚨 Passo 1: Executar Script de Limpeza
@@ -167,7 +167,7 @@ from .helpers import *
 1. **Integração com AuthorizationService**
    ```python
    from core.iam import AuthorizationService
-   
+
    # Exemplo de uso
    auth_service = AuthorizationService()
    if auth_service.has_permission(user, 'accounts.view_user'):
@@ -192,7 +192,7 @@ from .helpers import *
 1. **Uso do AuthorizationService**
    ```python
    from core.iam import require_permission
-   
+
    @require_permission('acoes_pngi.add_acao')
    def create_acao(request):
        # Lógica aqui
@@ -239,7 +239,7 @@ from .helpers import *
    ```bash
    # Criar superusuario
    python manage.py createsuperuser
-   
+
    # Carregar permissões padrão
    python manage.py loaddata permissions
    ```
@@ -355,5 +355,5 @@ git push origin refactor/iam-service-architecture
 
 ---
 
-**Última atualização:** 25/02/2026  
+**Última atualização:** 25/02/2026
 **Autor:** GPP Team

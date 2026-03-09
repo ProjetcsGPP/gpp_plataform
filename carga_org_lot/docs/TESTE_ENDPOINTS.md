@@ -696,9 +696,9 @@ test_endpoint() {
     local method=$1
     local endpoint=$2
     local data=$3
-    
+
     echo -n "Testando $method $endpoint... "
-    
+
     if [ -z "$data" ]; then
         response=$(curl -s -w "\n%{http_code}" -X $method "$BASE_URL$endpoint" \
             -H "Authorization: Token $TOKEN")
@@ -708,9 +708,9 @@ test_endpoint() {
             -H "Content-Type: application/json" \
             -d "$data")
     fi
-    
+
     http_code=$(echo "$response" | tail -n1)
-    
+
     if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
         echo -e "${GREEN}OK ($http_code)${NC}"
         return 0
@@ -744,5 +744,5 @@ chmod +x teste_endpoints.sh
 
 ---
 
-**Data:** 30/01/2026  
+**Data:** 30/01/2026
 **Versão:** 1.0

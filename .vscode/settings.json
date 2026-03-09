@@ -1,0 +1,21 @@
+{
+    "python.terminal.activateEnvironment": true,
+
+    // 🎯 Interpretador principal (ÚNICA configuração Python essencial)
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+
+    // ✨ Auto-complete e imports
+    "python.analysis.autoImportCompletions": true,
+
+    // 🧹 Exclusões de arquivos
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/.mypy_cache": true,
+        "**/.pytest_cache": true,
+        "**/.coverage": true
+    },
+
+    // 🪟 Terminal
+    "terminal.integrated.defaultProfile.windows": "PowerShell"
+}

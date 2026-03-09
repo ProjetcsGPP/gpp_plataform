@@ -116,10 +116,10 @@ def login_api(request):
     if user:
         # Gerar token para aplicação específica
         token = TokenService.generate_token(user, 'ACOES_PNGI')
-        
+
         # Ou para todas as aplicações
         token = TokenService.generate_token(user)
-        
+
         return Response({
             'token': token,
             'user': UserSerializer(user).data
@@ -270,7 +270,7 @@ python manage.py migrate accounts --fake-zero  # Marca como migrado
 class TokenObtainView(APIView):
     """Endpoint público para obter token"""
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
         user = authenticate(...)
         token = TokenService.generate_token(user)
@@ -392,13 +392,13 @@ class AuthorizationServiceTest(TestCase):
             aplicacao=self.app,
             role=self.role
         )
-    
+
     def test_user_has_role(self):
         has_role = AuthorizationService.user_has_role(
             self.user, 'ACOES_PNGI', 'GESTOR_PNGI'
         )
         self.assertTrue(has_role)
-    
+
     def test_user_does_not_have_role(self):
         has_role = AuthorizationService.user_has_role(
             self.user, 'ACOES_PNGI', 'COORDENADOR_PNGI'
@@ -418,12 +418,12 @@ class EixoPermissionTest(APITestCase):
         # Setup users with different roles
         self.gestor = self.create_user_with_role('GESTOR_PNGI')
         self.consultor = self.create_user_with_role('CONSULTOR_PNGI')
-    
+
     def test_gestor_can_create_eixo(self):
         self.client.force_authenticate(user=self.gestor)
         response = self.client.post('/api/eixos/', {...})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    
+
     def test_consultor_cannot_create_eixo(self):
         self.client.force_authenticate(user=self.consultor)
         response = self.client.post('/api/eixos/', {...})

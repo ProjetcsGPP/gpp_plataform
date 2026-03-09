@@ -14,7 +14,7 @@
                     ({{ stats.acoes_com_prazo_ativo }} com prazo ativo)
                 </small>
             </h1>
-            
+
             <!-- Cards de Estatísticas -->
             <div class="row mb-4">
                 <div class="col-md-3">
@@ -161,7 +161,7 @@
                                 {% if acao.ultimas_anotacoes %}
                                     {% for anotacao in acao.ultimas_anotacoes %}
                                         <small class="d-block">
-                                            {{ anotacao.idtipoanotacaoalinhamento }} - 
+                                            {{ anotacao.idtipoanotacaoalinhamento }} -
                                             {{ anotacao.datdataanotacaoalinhamento|date:"d/m/Y" }}
                                         </small>
                                     {% endfor %}
@@ -172,17 +172,17 @@
                             <td>
                                 {% if can_edit_acoes %}
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{% url 'acoes_pngi_web:acao_update' acao.pk %}" 
+                                    <a href="{% url 'acoes_pngi_web:acao_update' acao.pk %}"
                                        class="btn btn-outline-primary" title="Editar">
                                         ✏️
                                     </a>
                                     {% if acao.responsaveis_completos %}
-                                    <a href="{% url 'acoes_pngi_web:acao_prazos_list' acao.pk %}" 
+                                    <a href="{% url 'acoes_pngi_web:acao_prazos_list' acao.pk %}"
                                        class="btn btn-outline-info" title="Prazos">
                                         ⏰
                                     </a>
                                     {% endif %}
-                                    <a href="{% url 'acoes_pngi_web:responsaveis_list' %}" 
+                                    <a href="{% url 'acoes_pngi_web:responsaveis_list' %}"
                                        class="btn btn-outline-success" title="Responsáveis">
                                         👥
                                     </a>
@@ -200,7 +200,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Paginação -->
             {% if is_paginated %}
             <nav class="d-flex justify-content-center mt-4">

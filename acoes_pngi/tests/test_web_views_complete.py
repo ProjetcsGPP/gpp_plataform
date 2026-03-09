@@ -11,175 +11,180 @@ NOTA: Segue o padrão de test_views.py que funciona.
 Aceita múltiplos status codes porque templates podem não existir.
 """
 
-from django.test import TestCase
-from .base import BaseTestCase, BaseAPITestCase
-from django.test import Client
 from django.contrib.auth import get_user_model
-from django.contrib.messages import get_messages
-from datetime import date
-from django.utils import timezone
+from django.test import Client
 
 from accounts.models import Aplicacao, Role, UserRole
+
 from ..models import Eixo, SituacaoAcao, VigenciaPNGI
+from .base import BaseTestCase
 
 User = get_user_model()
 
 
 class EixoCRUDWebViewTests(BaseTestCase):
     """Testes completos de CRUD de Eixos"""
-    
-    databases = {'default', 'gpp_plataform_db'}
-    
+
+    databases = {"default", "gpp_plataform_db"}
+
     def setUp(self):
         """Setup com usuário autenticado"""
         self.client = Client()
-        
+
         # Criar aplicação e role
         self.app, _ = Aplicacao.objects.get_or_create(
-            codigointerno='ACOES_PNGI',
-            defaults={'nomeaplicacao': 'Ações PNGI'}
+            codigointerno="ACOES_PNGI", defaults={"nomeaplicacao": "Ações PNGI"}
         )
-        
+
         self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
-            codigoperfil='COORDENADOR_PNGI',
-            defaults={'nomeperfil': 'Coordenador'}
+            codigoperfil="COORDENADOR_PNGI",
+            defaults={"nomeperfil": "Coordenador"},
         )
-        
+
         # Criar usuário
-        self.user = User.objects.create_user(
-            email='coord@test.com',
-            password='test123'
-        )
+        self.user = User.objects.create_user(email="coord@test.com", password="test123")
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
-        
+
         # Login
-        self.client.login(email='coord@test.com', password='test123')
-        
-        # Criar eixo para testes    
+        self.client.login(email="coord@test.com", password="test123")
+
+        # Criar eixo para testes
+
     def test_eixo_list_requires_login(self):
         """Lista de eixos requer login"""
         self.client.logout()
         try:
-            response = self.client.get('/acoes-pngi/eixos/')
+            response = self.client.get("/acoes-pngi/eixos/")
             # 302=redirect to login, 401/403=unauthorized, 404=not found, 500=template error
             self.assertIn(response.status_code, [302, 401, 403, 404, 500])
         except Exception:
             # Template/namespace error is expected
             pass
-    
+
     def test_eixo_list_authenticated(self):
         """Lista de eixos para usuário autenticado"""
         try:
-            response = self.client.get('/acoes-pngi/eixos/')
+            response = self.client.get("/acoes-pngi/eixos/")
             # 200=success, 302=redirect, 404=not found, 500=template error
             self.assertIn(response.status_code, [200, 302, 404, 500])
-            if response.status_code == 200 and 'eixos' in response.context:
+            if response.status_code == 200 and "eixos" in response.context:
                 # Se template existir, verifica dados
-                self.assertIn(self.eixo_base, response.context['eixos'])
+                self.assertIn(self.eixo_base, response.context["eixos"])
         except Exception:
             pass
-    
+
     def test_eixo_list_with_search(self):
         """Lista de eixos com busca"""
-        Eixo.objects.create(strdescricaoeixo='Outro Eixo', stralias='OUTRO')
-        
+        Eixo.objects.create(strdescricaoeixo="Outro Eixo", stralias="OUTRO")
+
         try:
-            response = self.client.get('/acoes-pngi/eixos/', {'search': 'Teste'})
+            response = self.client.get("/acoes-pngi/eixos/", {"search": "Teste"})
             self.assertIn(response.status_code, [200, 302, 404, 500])
-            if response.status_code == 200 and 'eixos' in response.context:
-                eixos = list(response.context['eixos'])
+            if response.status_code == 200 and "eixos" in response.context:
+                eixos = list(response.context["eixos"])
                 self.assertEqual(len(eixos), 1)
-                self.assertEqual(eixos[0].strdescricaoeixo, 'Eixo Teste')
+                self.assertEqual(eixos[0].strdescricaoeixo, "Eixo Teste")
         except Exception:
             pass
-    
+
     def test_eixo_detail_authenticated(self):
         """Detalhes do eixo para usuário autenticado"""
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/')
+            response = self.client.get(f"/acoes-pngi/eixos/{self.eixo_base.ideixo}/")
             self.assertIn(response.status_code, [200, 302, 404, 500])
-            if response.status_code == 200 and 'eixo' in response.context:
-                self.assertEqual(response.context['eixo'], self.eixo_base)
+            if response.status_code == 200 and "eixo" in response.context:
+                self.assertEqual(response.context["eixo"], self.eixo_base)
         except Exception:
             pass
-    
+
     def test_eixo_create_get(self):
         """GET /eixos/novo/ renderiza formulário"""
         try:
-            response = self.client.get('/acoes-pngi/eixos/novo/')
+            response = self.client.get("/acoes-pngi/eixos/novo/")
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_eixo_create_post_success(self):
         """POST com dados válidos cria eixo"""
         try:
-            response = self.client.post('/acoes-pngi/eixos/novo/', {
-                'strdescricaoeixo': 'Novo Eixo',
-                'stralias': 'NOVO'
-            }, follow=True)
-            
+            response = self.client.post(
+                "/acoes-pngi/eixos/novo/",
+                {"strdescricaoeixo": "Novo Eixo", "stralias": "NOVO"},
+                follow=True,
+            )
+
             self.assertIn(response.status_code, [200, 302, 404, 500])
             # Verifica se criou (independente do template)
-            if Eixo.objects.filter(stralias='NOVO').exists():
+            if Eixo.objects.filter(stralias="NOVO").exists():
                 self.assertTrue(True)  # Criou com sucesso
         except Exception:
             pass
-    
+
     def test_eixo_create_post_duplicate_alias(self):
         """POST com alias duplicado falha"""
         try:
-            response = self.client.post('/acoes-pngi/eixos/novo/', {
-                'strdescricaoeixo': 'Eixo Duplicado',
-                'stralias': 'TESTE'  # Já existe
-            })
-            
+            response = self.client.post(
+                "/acoes-pngi/eixos/novo/",
+                {
+                    "strdescricaoeixo": "Eixo Duplicado",
+                    "stralias": "TESTE",  # Já existe
+                },
+            )
+
             self.assertIn(response.status_code, [200, 302, 400, 404, 500])
             # Verifica que NÃO criou duplicata
-            self.assertEqual(Eixo.objects.filter(stralias='TESTE').count(), 1)
+            self.assertEqual(Eixo.objects.filter(stralias="TESTE").count(), 1)
         except Exception:
             pass
-    
+
     def test_eixo_update_get(self):
         """GET /eixos/{id}/editar/ renderiza formulário de edição"""
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/editar/')
+            response = self.client.get(
+                f"/acoes-pngi/eixos/{self.eixo_base.ideixo}/editar/"
+            )
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_eixo_update_post_success(self):
         """POST update com dados válidos atualiza eixo"""
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/editar/', {
-                'strdescricaoeixo': 'Eixo Atualizado',
-                'stralias': 'ATUAL'
-            }, follow=True)
-            
+            response = self.client.post(
+                f"/acoes-pngi/eixos/{self.eixo_base.ideixo}/editar/",
+                {"strdescricaoeixo": "Eixo Atualizado", "stralias": "ATUAL"},
+                follow=True,
+            )
+
             self.assertIn(response.status_code, [200, 302, 404, 500])
             # Verifica se atualizou (independente do template)
             self.eixo_base.refresh_from_db()
-            if self.eixo_base.strdescricaoeixo == 'Eixo Atualizado':
+            if self.eixo_base.strdescricaoeixo == "Eixo Atualizado":
                 self.assertTrue(True)  # Atualizou com sucesso
         except Exception:
             pass
-    
+
     def test_eixo_delete_get(self):
         """GET /eixos/{id}/excluir/ renderiza confirmação"""
         try:
-            response = self.client.get(f'/acoes-pngi/eixos/{self.eixo_base.ideixo}/excluir/')
+            response = self.client.get(
+                f"/acoes-pngi/eixos/{self.eixo_base.ideixo}/excluir/"
+            )
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_eixo_delete_post_success(self):
         """POST delete remove eixo do banco"""
         eixo_id = self.eixo_base.ideixo
-        
+
         try:
-            response = self.client.post(f'/acoes-pngi/eixos/{eixo_id}/excluir/', follow=True)
-            
+            response = self.client.post(
+                f"/acoes-pngi/eixos/{eixo_id}/excluir/", follow=True
+            )
+
             self.assertIn(response.status_code, [200, 302, 404, 500])
             # Verifica se deletou (independente do template)
             if not Eixo.objects.filter(ideixo=eixo_id).exists():
@@ -190,123 +195,137 @@ class EixoCRUDWebViewTests(BaseTestCase):
 
 class VigenciaCRUDWebViewTests(BaseTestCase):
     """Testes completos de CRUD de Vigências"""
-    
-    databases = {'default', 'gpp_plataform_db'}
-    
+
+    databases = {"default", "gpp_plataform_db"}
+
     def setUp(self):
         """Setup com usuário autenticado"""
         self.client = Client()
-        
+
         self.app, _ = Aplicacao.objects.get_or_create(
-            codigointerno='ACOES_PNGI',
-            defaults={'nomeaplicacao': 'Ações PNGI'}
+            codigointerno="ACOES_PNGI", defaults={"nomeaplicacao": "Ações PNGI"}
         )
-        
+
         self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
-            codigoperfil='COORDENADOR_PNGI',
-            defaults={'nomeperfil': 'Coordenador'}
+            codigoperfil="COORDENADOR_PNGI",
+            defaults={"nomeperfil": "Coordenador"},
         )
-        
-        self.user = User.objects.create_user(
-            email='coord@test.com',
-            password='test123'
-        )
+
+        self.user = User.objects.create_user(email="coord@test.com", password="test123")
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
-        
-        self.client.login(email='coord@test.com', password='test123')
-    
+
+        self.client.login(email="coord@test.com", password="test123")
+
     def test_vigencia_list_requires_login(self):
         """Lista de vigências requer login"""
         self.client.logout()
         try:
-            response = self.client.get('/acoes-pngi/vigencias-pngi/')
+            response = self.client.get("/acoes-pngi/vigencias-pngi/")
             self.assertIn(response.status_code, [302, 401, 403, 404, 500])
         except Exception:
             pass
-    
+
     def test_vigencia_list_authenticated(self):
         """Lista de vigências para usuário autenticado"""
         try:
-            response = self.client.get('/acoes-pngi/vigencias-pngi/')
+            response = self.client.get("/acoes-pngi/vigencias-pngi/")
             self.assertIn(response.status_code, [200, 302, 404, 500])
-            if response.status_code == 200 and 'vigencias' in response.context:
-                self.assertIn(self.vigencia_base, response.context['vigencias'])
+            if response.status_code == 200 and "vigencias" in response.context:
+                self.assertIn(self.vigencia_base, response.context["vigencias"])
         except Exception:
             pass
-    
+
     def test_vigencia_detail_authenticated(self):
         """Detalhes da vigência para usuário autenticado"""
         try:
-            response = self.client.get(f'/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/')
+            response = self.client.get(
+                f"/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/"
+            )
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_vigencia_create_get(self):
         """GET /vigencias-pngi/novo/ renderiza formulário"""
         try:
-            response = self.client.get('/acoes-pngi/vigencias-pngi/novo/')
+            response = self.client.get("/acoes-pngi/vigencias-pngi/novo/")
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_vigencia_create_post_success(self):
         """POST com dados válidos cria vigência"""
         try:
-            response = self.client.post('/acoes-pngi/vigencias-pngi/novo/', {
-                'strdescricaovigenciapngi': 'PNGI 2027',
-                'datiniciovigencia': '2027-01-01',
-                'datfinalvigencia': '2027-12-31',
-                'isvigenciaativa': 'false'
-            }, follow=True)
-            
+            response = self.client.post(
+                "/acoes-pngi/vigencias-pngi/novo/",
+                {
+                    "strdescricaovigenciapngi": "PNGI 2027",
+                    "datiniciovigencia": "2027-01-01",
+                    "datfinalvigencia": "2027-12-31",
+                    "isvigenciaativa": "false",
+                },
+                follow=True,
+            )
+
             self.assertIn(response.status_code, [200, 302, 404, 500])
-            if VigenciaPNGI.objects.filter(strdescricaovigenciapngi='PNGI 2027').exists():
+            if VigenciaPNGI.objects.filter(
+                strdescricaovigenciapngi="PNGI 2027"
+            ).exists():
                 self.assertTrue(True)
         except Exception:
             pass
-    
+
     def test_vigencia_update_get(self):
         """GET /vigencias-pngi/{id}/editar/ renderiza formulário de edição"""
         try:
-            response = self.client.get(f'/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/editar/')
+            response = self.client.get(
+                f"/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/editar/"
+            )
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_vigencia_update_post_success(self):
         """POST update com dados válidos atualiza vigência"""
         try:
-            response = self.client.post(f'/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/editar/', {
-                'strdescricaovigenciapngi': 'PNGI 2026 Atualizado',
-                'datiniciovigencia': '2026-01-01',
-                'datfinalvigencia': '2026-12-31',
-                'isvigenciaativa': 'false'
-            }, follow=True)
-            
+            response = self.client.post(
+                f"/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/editar/",
+                {
+                    "strdescricaovigenciapngi": "PNGI 2026 Atualizado",
+                    "datiniciovigencia": "2026-01-01",
+                    "datfinalvigencia": "2026-12-31",
+                    "isvigenciaativa": "false",
+                },
+                follow=True,
+            )
+
             self.assertIn(response.status_code, [200, 302, 404, 500])
             self.vigencia_base.refresh_from_db()
-            if self.vigencia_base.strdescricaovigenciapngi == 'PNGI 2026 Atualizado':
+            if self.vigencia_base.strdescricaovigenciapngi == "PNGI 2026 Atualizado":
                 self.assertTrue(True)
         except Exception:
             pass
-    
+
     def test_vigencia_delete_get(self):
         """GET /vigencias-pngi/{id}/excluir/ renderiza confirmação"""
         try:
-            response = self.client.get(f'/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/excluir/')
+            response = self.client.get(
+                f"/acoes-pngi/vigencias-pngi/{self.vigencia_base.idvigenciapngi}/excluir/"
+            )
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_vigencia_delete_post_success(self):
         """POST delete remove vigência do banco"""
         vigencia_id = self.vigencia_base.idvigenciapngi
-        
+
         try:
-            response = self.client.post(f'/acoes-pngi/vigencias-pngi/{vigencia_id}/excluir/', follow=True)
-            
+            response = self.client.post(
+                f"/acoes-pngi/vigencias-pngi/{vigencia_id}/excluir/", follow=True
+            )
+
             self.assertIn(response.status_code, [200, 302, 404, 500])
             if not VigenciaPNGI.objects.filter(idvigenciapngi=vigencia_id).exists():
                 self.assertTrue(True)
@@ -316,116 +335,127 @@ class VigenciaCRUDWebViewTests(BaseTestCase):
 
 class SituacaoAcaoCRUDWebViewTests(BaseTestCase):
     """Testes completos de CRUD de Situações de Ação"""
-    
-    databases = {'default', 'gpp_plataform_db'}
-    
+
+    databases = {"default", "gpp_plataform_db"}
+
     def setUp(self):
         """Setup com usuário autenticado"""
         self.client = Client()
-        
+
         self.app, _ = Aplicacao.objects.get_or_create(
-            codigointerno='ACOES_PNGI',
-            defaults={'nomeaplicacao': 'Ações PNGI'}
+            codigointerno="ACOES_PNGI", defaults={"nomeaplicacao": "Ações PNGI"}
         )
-        
+
         self.role, _ = Role.objects.get_or_create(
             aplicacao=self.app,
-            codigoperfil='COORDENADOR_PNGI',
-            defaults={'nomeperfil': 'Coordenador'}
+            codigoperfil="COORDENADOR_PNGI",
+            defaults={"nomeperfil": "Coordenador"},
         )
-        
-        self.user = User.objects.create_user(
-            email='coord@test.com',
-            password='test123'
-        )
+
+        self.user = User.objects.create_user(email="coord@test.com", password="test123")
         UserRole.objects.create(user=self.user, aplicacao=self.app, role=self.role)
-        
-        self.client.login(email='coord@test.com', password='test123')    
+
+        self.client.login(email="coord@test.com", password="test123")
+
     def test_situacao_list_requires_login(self):
         """Lista de situações requer login"""
         self.client.logout()
         try:
-            response = self.client.get('/acoes-pngi/situacoes-acao/')
+            response = self.client.get("/acoes-pngi/situacoes-acao/")
             self.assertIn(response.status_code, [302, 401, 403, 404, 500])
         except Exception:
             pass
-    
+
     def test_situacao_list_authenticated(self):
         """Lista de situações para usuário autenticado"""
         try:
-            response = self.client.get('/acoes-pngi/situacoes-acao/')
+            response = self.client.get("/acoes-pngi/situacoes-acao/")
             self.assertIn(response.status_code, [200, 302, 404, 500])
-            if response.status_code == 200 and 'situacoes' in response.context:
-                self.assertIn(self.situacao_base, response.context['situacoes'])
+            if response.status_code == 200 and "situacoes" in response.context:
+                self.assertIn(self.situacao_base, response.context["situacoes"])
         except Exception:
             pass
-    
+
     def test_situacao_detail_authenticated(self):
         """Detalhes da situação para usuário autenticado"""
         try:
-            response = self.client.get(f'/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/')
+            response = self.client.get(
+                f"/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/"
+            )
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_situacao_create_get(self):
         """GET /situacoes-acao/novo/ renderiza formulário"""
         try:
-            response = self.client.get('/acoes-pngi/situacoes-acao/novo/')
+            response = self.client.get("/acoes-pngi/situacoes-acao/novo/")
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_situacao_create_post_success(self):
         """POST com dados válidos cria situação"""
         try:
-            response = self.client.post('/acoes-pngi/situacoes-acao/novo/', {
-                'strdescricaosituacao': 'Nova Situação'
-            }, follow=True)
-            
+            response = self.client.post(
+                "/acoes-pngi/situacoes-acao/novo/",
+                {"strdescricaosituacao": "Nova Situação"},
+                follow=True,
+            )
+
             self.assertIn(response.status_code, [200, 302, 404, 500])
-            if SituacaoAcao.objects.filter(strdescricaosituacao='Nova Situação').exists():
+            if SituacaoAcao.objects.filter(
+                strdescricaosituacao="Nova Situação"
+            ).exists():
                 self.assertTrue(True)
         except Exception:
             pass
-    
+
     def test_situacao_update_get(self):
         """GET /situacoes-acao/{id}/editar/ renderiza formulário de edição"""
         try:
-            response = self.client.get(f'/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/editar/')
+            response = self.client.get(
+                f"/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/editar/"
+            )
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_situacao_update_post_success(self):
         """POST update com dados válidos atualiza situação"""
         try:
-            response = self.client.post(f'/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/editar/', {
-                'strdescricaosituacao': 'Situação Atualizada'
-            }, follow=True)
-            
+            response = self.client.post(
+                f"/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/editar/",
+                {"strdescricaosituacao": "Situação Atualizada"},
+                follow=True,
+            )
+
             self.assertIn(response.status_code, [200, 302, 404, 500])
             self.situacao_base.refresh_from_db()
-            if self.situacao_base.strdescricaosituacao == 'Situação Atualizada':
+            if self.situacao_base.strdescricaosituacao == "Situação Atualizada":
                 self.assertTrue(True)
         except Exception:
             pass
-    
+
     def test_situacao_delete_get(self):
         """GET /situacoes-acao/{id}/excluir/ renderiza confirmação"""
         try:
-            response = self.client.get(f'/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/excluir/')
+            response = self.client.get(
+                f"/acoes-pngi/situacoes-acao/{self.situacao_base.idsituacaoacao}/excluir/"
+            )
             self.assertIn(response.status_code, [200, 302, 404, 500])
         except Exception:
             pass
-    
+
     def test_situacao_delete_post_success(self):
         """POST delete remove situação do banco"""
         situacao_id = self.situacao_base.idsituacaoacao
-        
+
         try:
-            response = self.client.post(f'/acoes-pngi/situacoes-acao/{situacao_id}/excluir/', follow=True)
-            
+            response = self.client.post(
+                f"/acoes-pngi/situacoes-acao/{situacao_id}/excluir/", follow=True
+            )
+
             self.assertIn(response.status_code, [200, 302, 404, 500])
             if not SituacaoAcao.objects.filter(idsituacaoacao=situacao_id).exists():
                 self.assertTrue(True)

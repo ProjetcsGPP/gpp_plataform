@@ -100,40 +100,40 @@ from rest_framework import permissions
 
 class IsCoordernadorOrGestorPNGI(permissions.BasePermission):
     """Permissão para COORDENADOR e GESTOR (configurações)"""
-    
+
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return request.user and request.user.is_authenticated
-        
+
         if not request.user or not request.user.is_authenticated:
             return False
-        
+
         # Verificar se o usuário tem role COORDENADOR ou GESTOR
         from accounts.models import UserRole
         roles = UserRole.objects.filter(
             user=request.user,
             aplicacao__codigointerno='ACOES_PNGI'
         ).values_list('role__codigoperfil', flat=True)
-        
+
         return 'COORDENADOR_PNGI' in roles or 'GESTOR_PNGI' in roles
 
 
 class IsCoordernadorGestorOrOperadorPNGI(permissions.BasePermission):
     """Permissão para COORDENADOR, GESTOR e OPERADOR (operações)"""
-    
+
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return request.user and request.user.is_authenticated
-        
+
         if not request.user or not request.user.is_authenticated:
             return False
-        
+
         from accounts.models import UserRole
         roles = UserRole.objects.filter(
             user=request.user,
             aplicacao__codigointerno='ACOES_PNGI'
         ).values_list('role__codigoperfil', flat=True)
-        
+
         return any(r in roles for r in [
             'COORDENADOR_PNGI',
             'GESTOR_PNGI',
@@ -143,11 +143,11 @@ class IsCoordernadorGestorOrOperadorPNGI(permissions.BasePermission):
 
 class IsAnyPNGIRole(permissions.BasePermission):
     """Qualquer role PNGI tem acesso"""
-    
+
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
             return False
-        
+
         from accounts.models import UserRole
         return UserRole.objects.filter(
             user=request.user,
@@ -349,6 +349,6 @@ Se encontrar erros não documentados aqui:
 
 ---
 
-**Última atualização:** 11/02/2026  
-**Total de testes:** ~500  
+**Última atualização:** 11/02/2026
+**Total de testes:** ~500
 **Status:** Pronto para execução e ajustes

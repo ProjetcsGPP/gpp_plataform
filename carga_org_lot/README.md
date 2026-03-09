@@ -218,7 +218,7 @@ from carga_org_lot.models import Lotacao, OrgaoUnidade
 
 def validar_lotacao(cpf, matricula, idorgaounidade):
     """Valida se lotação é válida"""
-    
+
     # Verifica se unidade existe
     try:
         unidade = OrgaoUnidade.objects.get(
@@ -227,16 +227,16 @@ def validar_lotacao(cpf, matricula, idorgaounidade):
         )
     except OrgaoUnidade.DoesNotExist:
         return False, "Unidade não encontrada"
-    
+
     # Verifica duplicidade
     existe = Lotacao.objects.filter(
         strcpf=cpf,
         flgativo=True
     ).exists()
-    
+
     if existe:
         return False, "Servidor já possui lotação ativa"
-    
+
     return True, "Válido"
 3. Enviar para API Externa
 python
@@ -245,37 +245,37 @@ from carga_org_lot.models import OrganogramaJSON, StatusTokenEnvioCarga
 
 def enviar_organograma(idorganogramajson):
     """Envia organograma para API externa"""
-    
+
     # Busca o organograma
     org_json = OrganogramaJSON.objects.get(
         idorganogramajson=idorganogramajson
     )
-    
+
     # Solicita token
     token_response = requests.post(
         'https://api.externa.gov.br/auth/token',
         json={'client_id': 'xxx', 'client_secret': 'yyy'}
     )
-    
+
     if token_response.status_code != 200:
         # Marca como erro
         org_json.strstatusenvio = 'Erro'
         org_json.strmensagemretorno = 'Falha ao obter token'
         org_json.save()
         return False
-    
+
     token = token_response.json()['access_token']
-    
+
     # Envia organograma
     response = requests.post(
         'https://api.externa.gov.br/organogramas',
         headers={'Authorization': f'Bearer {token}'},
         json=org_json.jsconteudo
     )
-    
+
     # Atualiza status
     org_json.datenvioapi = timezone.now()
-    
+
     if response.status_code == 201:
         org_json.strstatusenvio = 'Enviado com sucesso'
         org_json.save()

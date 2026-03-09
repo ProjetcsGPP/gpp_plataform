@@ -7,44 +7,38 @@ underlying IAM logic.
 Usage:
     # Web Views
     from core.iam.interfaces.decorators import require_permission
-    
+
     @require_permission('ACOES_PNGI', 'add_eixo')
     def create_eixo(request):
         ...
-    
+
     # API Views
     from core.iam.interfaces.permissions import HasAppPermission
-    
+
     class EixoViewSet(ModelViewSet):
         permission_classes = [HasAppPermission]
         app_code = 'ACOES_PNGI'
 """
 
 from .decorators import (
-    require_permission,
-    require_any_permission,
     require_all_permissions,
-    require_role,
+    require_any_permission,
     require_any_role,
+    require_permission,
+    require_role,
 )
-
-from .permissions import (
-    HasAppPermission,
-    RequireRole,
-    RequireAnyRole,
-    RequireAttribute,
-)
+from .permissions import HasAppPermission, RequireAnyRole, RequireAttribute, RequireRole
 
 __all__ = [
     # Decorators
-    'require_permission',
-    'require_any_permission',
-    'require_all_permissions',
-    'require_role',
-    'require_any_role',
+    "require_permission",
+    "require_any_permission",
+    "require_all_permissions",
+    "require_role",
+    "require_any_role",
     # DRF Permissions
-    'HasAppPermission',
-    'RequireRole',
-    'RequireAnyRole',
-    'RequireAttribute',
+    "HasAppPermission",
+    "RequireRole",
+    "RequireAnyRole",
+    "RequireAttribute",
 ]

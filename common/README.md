@@ -194,10 +194,10 @@ python
 @api_view(['POST'])
 def portal_auth(request):
     app_code = 'ACOES_PNGI'  # ❌ Hardcoded
-    
+
     portal_service = get_portal_auth_service(app_code)
     user = portal_service.authenticate_user(token)
-    
+
     serializer = UserSerializer(
         user,
         context={'app_code': app_code, 'request': request}  # ❌ Manual
@@ -209,10 +209,10 @@ python
 @api_view(['POST'])
 def portal_auth(request):
     app_code = request.app_context['code']  # ✅ Automático
-    
+
     portal_service = get_portal_auth_service(app_code)
     user = portal_service.authenticate_user(token)
-    
+
     serializer = UserSerializer(user, context={'request': request})  # ✅ Simples
     return Response(serializer.data)
 Uso nos Serializers
@@ -242,15 +242,15 @@ from accounts.models import UserRole
 def minha_view(request):
     # ✅ Usa app_context automaticamente
     app_code = request.app_context['code']
-    
+
     has_access = UserRole.objects.filter(
         user=request.user,
         aplicacao__codigointerno=app_code
     ).exists()
-    
+
     if not has_access:
         return Response({'detail': 'Acesso negado'}, status=403)
-    
+
     # ... lógica da view
 Decorator Auxiliar
 Use o decorator @require_app_access() para validação automática:
@@ -262,7 +262,7 @@ from common.decorators import require_app_access
 def dashboard_view(request):
     # ✅ Acesso já validado automaticamente
     # ✅ request.app_context já disponível
-    
+
     app = request.app_context['instance']
     return render(request, 'dashboard.html', {'app': app})
 Testes
@@ -358,17 +358,17 @@ from accounts.models import UserRole
 def require_app_access(redirect_to='portal:home', api_mode=False):
     """
     Decorator que verifica se usuário tem acesso à aplicação do contexto.
-    
+
     Args:
         redirect_to: Nome da URL para redirecionar se não tiver acesso (modo web)
         api_mode: Se True, retorna JSON 403 ao invés de redirect (modo API)
-    
+
     Uso (Web):
         @require_app_access()
         def dashboard(request):
             # Usuário autenticado e com acesso garantido
             ...
-    
+
     Uso (API):
         @require_app_access(api_mode=True)
         def api_view(request):
@@ -387,7 +387,7 @@ def require_app_access(redirect_to='portal:home', api_mode=False):
                     )
                 messages.error(request, 'Faça login para continuar')
                 return redirect('portal:login')
-            
+
             # Pega app do contexto (adicionado pelo middleware)
             if not hasattr(request, 'app_context'):
                 if api_mode:
@@ -397,10 +397,10 @@ def require_app_access(redirect_to='portal:home', api_mode=False):
                     )
                 messages.error(request, 'Erro de configuração do sistema')
                 return redirect(redirect_to)
-            
+
             app_code = request.app_context.get('code')
             app_name = request.app_context.get('name')
-            
+
             if not app_code:
                 if api_mode:
                     return JsonResponse(
@@ -409,13 +409,13 @@ def require_app_access(redirect_to='portal:home', api_mode=False):
                     )
                 messages.error(request, 'Aplicação não identificada')
                 return redirect(redirect_to)
-            
+
             # Verifica permissão
             has_access = UserRole.objects.filter(
                 user=request.user,
                 aplicacao__codigointerno=app_code
             ).exists()
-            
+
             if not has_access:
                 if api_mode:
                     return JsonResponse(
@@ -427,10 +427,10 @@ def require_app_access(redirect_to='portal:home', api_mode=False):
                     f'Você não tem permissão para acessar {app_name}'
                 )
                 return redirect(redirect_to)
-            
+
             # Tudo OK, executa a view
             return view_func(request, *args, **kwargs)
-        
+
         return wrapper
     return decorator
 
@@ -438,12 +438,12 @@ def require_app_access(redirect_to='portal:home', api_mode=False):
 def require_attribute(attribute_key, expected_value='true', api_mode=False):
     """
     Decorator que verifica se usuário tem atributo específico para a aplicação.
-    
+
     Args:
         attribute_key: Chave do atributo (ex: 'can_upload')
         expected_value: Valor esperado (default: 'true')
         api_mode: Se True, retorna JSON ao invés de redirect
-    
+
     Uso:
         @require_attribute('can_upload')
         def upload_view(request):
@@ -454,22 +454,22 @@ def require_attribute(attribute_key, expected_value='true', api_mode=False):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
             from accounts.models import Attribute
-            
+
             # Verifica autenticação
             if not request.user.is_authenticated:
                 if api_mode:
                     return JsonResponse({'detail': 'Autenticação necessária'}, status=401)
                 return redirect('portal:login')
-            
+
             # Pega app do contexto
             app_code = request.app_context.get('code')
-            
+
             if not app_code:
                 if api_mode:
                     return JsonResponse({'detail': 'Aplicação não identificada'}, status=500)
                 messages.error(request, 'Aplicação não identificada')
                 return redirect('portal:home')
-            
+
             # Verifica atributo
             has_attribute = Attribute.objects.filter(
                 user=request.user,
@@ -477,7 +477,7 @@ def require_attribute(attribute_key, expected_value='true', api_mode=False):
                 key=attribute_key,
                 value=expected_value
             ).exists()
-            
+
             if not has_attribute:
                 if api_mode:
                     return JsonResponse(
@@ -489,10 +489,10 @@ def require_attribute(attribute_key, expected_value='true', api_mode=False):
                     f'Você não tem permissão para realizar esta ação'
                 )
                 return redirect('portal:home')
-            
+
             # Tudo OK
             return view_func(request, *args, **kwargs)
-        
+
         return wrapper
     return decorator
 Exemplo de uso dos decorators:
@@ -505,7 +505,7 @@ from common.decorators import require_app_access, require_attribute
 def acoes_pngi_dashboard(request):
     """Dashboard - acesso já validado"""
     app = request.app_context['instance']
-    
+
     # ... lógica
     return render(request, 'acoes_pngi/dashboard.html', {'app': app})
 
@@ -514,7 +514,7 @@ def acoes_pngi_dashboard(request):
 @require_attribute('can_upload')
 def upload_view(request):
     """Upload - requer acesso E atributo can_upload"""
-    
+
     # Usuário garantido ter permissão
     # ... processar upload
     return render(request, 'upload.html')

@@ -11,25 +11,25 @@ function Test-CreateWithDebug {
         [string]$Url,
         [object]$Body
     )
-    
+
     $headers = @{
         "Authorization" = "Bearer $Token"
         "Content-Type" = "application/json"
     }
-    
+
     Write-Host "`nTestando: $Url" -ForegroundColor Cyan
     Write-Host "Body: $($Body | ConvertTo-Json)" -ForegroundColor Yellow
-    
+
     try {
         $response = Invoke-RestMethod -Uri $Url -Method Post `
             -Headers $headers -Body ($Body | ConvertTo-Json) -ErrorAction Stop
-        
+
         Write-Host "✓ Sucesso!" -ForegroundColor Green
         $response | ConvertTo-Json -Depth 5
     }
     catch {
         Write-Host "✗ Erro: $($_.Exception.Response.StatusCode.value__)" -ForegroundColor Red
-        
+
         # Tentar ler o erro detalhado
         try {
             $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())

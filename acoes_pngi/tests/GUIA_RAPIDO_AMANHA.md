@@ -216,9 +216,9 @@ Se tiver dúvidas:
 
 ---
 
-**Criado em:** 12/02/2026, 17:02  
-**Para usar em:** 13/02/2026 (amanhã)  
-**Tempo estimado:** 10-15 minutos  
+**Criado em:** 12/02/2026, 17:02
+**Para usar em:** 13/02/2026 (amanhã)
+**Tempo estimado:** 10-15 minutos
 **Branch:** fix/correcao-massiva-testes-pngi
 
 ✅ **Tudo pronto para amanhã!**

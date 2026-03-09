@@ -78,25 +78,25 @@ def portal_auth(request):
     # Valida input
     input_serializer = PortalAuthSerializer(data=request.data)
     input_serializer.is_valid(raise_exception=True)
-    
+
     token = input_serializer.validated_data['token']
-    
+
     # Autentica via portal
     portal_service = get_portal_auth_service('ACOES_PNGI')
     user = portal_service.authenticate_user(token)
-    
+
     if not user:
         return Response(
             {'detail': 'Token inválido'},
             status=401
         )
-    
+
     # Serializa usuário com contexto da aplicação
     user_serializer = UserSerializer(
         user,
         context={'app_code': 'ACOES_PNGI', 'request': request}
     )
-    
+
     return Response({
         'user': user_serializer.data,
         'app_code': 'ACOES_PNGI'
@@ -185,7 +185,7 @@ python
 
 class AuditableModelSerializer(TimestampedModelSerializer):
     """Serializer para modelos com auditoria"""
-    
+
     created_by = serializers.CharField(
         source='idusuariocriacao.strnome',
         read_only=True
@@ -194,7 +194,7 @@ class AuditableModelSerializer(TimestampedModelSerializer):
         source='idusuarioalteracao.strnome',
         read_only=True
     )
-    
+
     class Meta:
         abstract = True
         fields = TimestampedModelSerializer.Meta.fields + [
@@ -207,10 +207,10 @@ python
 
 class NovoServico:
     """Descrição do serviço"""
-    
+
     def __init__(self, app_code: str):
         self.app_code = app_code
-    
+
     def metodo_util(self):
         # Lógica reutilizável
         pass

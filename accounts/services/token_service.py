@@ -3,35 +3,38 @@ TokenService Centralizado para IAM
 Implementa JWT com HS256 para monolito Django com tokens contextuais por aplicação.
 """
 
-import uuid
 import logging
+import uuid
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from typing import Any
 
 import jwt
 from django.conf import settings
-from django.core.cache import cache
-from django.utils import timezone
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import check_password
+from django.core.cache import cache
+from django.utils import timezone
 
-from accounts.models import User, UserRole, Aplicacao
+from accounts.models import User, UserRole
 
 logger = logging.getLogger(__name__)
 
 
 class TokenServiceException(Exception):
     """Exceção base para erros do TokenService"""
+
     pass
 
 
 class InvalidTokenException(TokenServiceException):
     """Token inválido ou expirado"""
+
     pass
 
 
 class UserRoleNotFoundException(TokenServiceException):
     """UserRole não encontrado ou inativo"""
+
     pass
 
 
@@ -79,7 +82,7 @@ class TokenService:
         password: str,
         app_code: str,
         role_id: int,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Autentica usuário e retorna tokens + user.
 
@@ -123,7 +126,9 @@ class TokenService:
             logger.warning(f"Falha ao emitir tokens no login: {exc}")
             return None
 
-        logger.info(f"Login OK: {user.email} (ID: {user.id}) app={app_code} role_id={role_id}")
+        logger.info(
+            f"Login OK: {user.email} (ID: {user.id}) app={app_code} role_id={role_id}"
+        )
 
         return {
             "user": user,
@@ -178,7 +183,9 @@ class TokenService:
         key = self._get_blacklist_key(jti, is_refresh)
         return cache.get(key) is not None
 
-    def blacklist_token(self, jti: str, exp: datetime, is_refresh: bool = False) -> None:
+    def blacklist_token(
+        self, jti: str, exp: datetime, is_refresh: bool = False
+    ) -> None:
         """
         Adiciona um token à blacklist.
 
@@ -248,7 +255,7 @@ class TokenService:
         user: User,
         app_code: str,
         role_id: int,
-        extra_claims: Optional[Dict[str, Any]] = None,
+        extra_claims: dict[str, Any] | None = None,
     ) -> str:
         """
         Emite um access token JWT (10 minutos).
@@ -276,15 +283,15 @@ class TokenService:
         exp = now + self.ACCESS_TOKEN_LIFETIME
         jti = self._generate_jti()
 
-        payload: Dict[str, Any] = {
-            "sub": str(user.id),                 # Subject: user_id
-            "app_code": app_code,                # Código da aplicação
-            "active_role_id": role_id,           # ID da role ativa
+        payload: dict[str, Any] = {
+            "sub": str(user.id),  # Subject: user_id
+            "app_code": app_code,  # Código da aplicação
+            "active_role_id": role_id,  # ID da role ativa
             "role_code": user_role.role.codigoperfil,  # Código da role (GESTOR_PNGI, etc.)
-            "exp": int(exp.timestamp()),         # Expiração em timestamp
-            "iat": int(now.timestamp()),         # Emissão
-            "jti": jti,                          # JWT ID (único)
-            "token_type": "access",              # Tipo de token
+            "exp": int(exp.timestamp()),  # Expiração em timestamp
+            "iat": int(now.timestamp()),  # Emissão
+            "jti": jti,  # JWT ID (único)
+            "token_type": "access",  # Tipo de token
             # "token_version": user.token_version,  # TODO: quando existir no modelo User
         }
 
@@ -305,7 +312,7 @@ class TokenService:
         user: User,
         app_code: str,
         role_id: int,
-        extra_claims: Optional[Dict[str, Any]] = None,
+        extra_claims: dict[str, Any] | None = None,
     ) -> str:
         """
         Emite um refresh token JWT (30 minutos).
@@ -332,7 +339,7 @@ class TokenService:
         exp = now + self.REFRESH_TOKEN_LIFETIME
         jti = self._generate_jti()
 
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "sub": str(user.id),
             "app_code": app_code,
             "active_role_id": role_id,
@@ -359,7 +366,7 @@ class TokenService:
     # ---------------------------------------------------------------------
     # Validação e refresh
     # ---------------------------------------------------------------------
-    def validate_access_token(self, token: str) -> Dict[str, Any]:
+    def validate_access_token(self, token: str) -> dict[str, Any]:
         """
         Valida um access token JWT.
 
@@ -407,15 +414,15 @@ class TokenService:
         role_id = payload.get("active_role_id")
 
         try:
-            user_role = UserRole.objects.select_related("user", "aplicacao", "role").get(
+            user_role = UserRole.objects.select_related(
+                "user", "aplicacao", "role"
+            ).get(
                 user_id=user_id,
                 aplicacao__codigointerno=app_code,
                 role_id=role_id,
             )
         except UserRole.DoesNotExist:
-            raise InvalidTokenException(
-                "UserRole não existe mais ou foi desativado"
-            )
+            raise InvalidTokenException("UserRole não existe mais ou foi desativado")
 
         if not user_role.user.is_active:
             raise InvalidTokenException("Usuário inativo")
@@ -425,7 +432,7 @@ class TokenService:
         logger.debug(f"Access token válido: jti={jti}, user={user_id}")
         return payload
 
-    def refresh(self, refresh_token: str) -> Dict[str, str]:
+    def refresh(self, refresh_token: str) -> dict[str, str]:
         """
         Gera novos tokens a partir de um refresh token.
 
@@ -478,7 +485,9 @@ class TokenService:
         role_id = payload.get("active_role_id")
 
         try:
-            user_role = UserRole.objects.select_related("user", "aplicacao", "role").get(
+            user_role = UserRole.objects.select_related(
+                "user", "aplicacao", "role"
+            ).get(
                 user_id=user_id,
                 aplicacao__codigointerno=app_code,
                 role_id=role_id,
@@ -502,9 +511,7 @@ class TokenService:
         new_access_token = self.issue_access_token(user_role.user, app_code, role_id)
         new_refresh_token = self.issue_refresh_token(user_role.user, app_code, role_id)
 
-        logger.info(
-            f"Tokens renovados: user={user_id}, app={app_code}, old_jti={jti}"
-        )
+        logger.info(f"Tokens renovados: user={user_id}, app={app_code}, old_jti={jti}")
 
         return {
             "access_token": new_access_token,
@@ -548,7 +555,7 @@ class TokenService:
 
         logger.info(f"Token revogado manualmente: jti={jti}")
 
-    def revoke_all_user_tokens(self, user_id: int, app_code: Optional[str] = None) -> int:
+    def revoke_all_user_tokens(self, user_id: int, app_code: str | None = None) -> int:
         """
         Revoga todos os tokens de um usuário (estratégia futura via token_version).
 
@@ -575,7 +582,7 @@ class TokenService:
 
 
 # Instância singleton
-_token_service: Optional[TokenService] = None
+_token_service: TokenService | None = None
 
 
 def get_token_service() -> TokenService:

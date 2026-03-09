@@ -116,7 +116,7 @@ python manage.py test carga_org_lot --parallel=4
 - ✅ `test_serializers.py` - 5 testes para serializers
 - ✅ `test_web_views_structure.py` - 4 testes para estrutura de views
 
-**Total de Novos Testes**: 31  
+**Total de Novos Testes**: 31
 **Cobertura Adicionada**: +12%
 
 ---
@@ -367,7 +367,7 @@ from carga_org_lot.tests import (
 
 ---
 
-**Última Atualização**: 27 de janeiro de 2026  
-**Total de Testes**: 85+  
-**Cobertura**: 82%  
+**Última Atualização**: 27 de janeiro de 2026
+**Total de Testes**: 85+
+**Cobertura**: 82%
 **Status**: ✅ Cobertura satisfatória alcançada

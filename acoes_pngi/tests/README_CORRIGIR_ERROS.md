@@ -269,6 +269,6 @@ Se ainda houver falhas após executar este script:
 
 ---
 
-**Criado em:** 12/02/2026  
-**Última atualização:** 12/02/2026  
+**Criado em:** 12/02/2026
+**Última atualização:** 12/02/2026
 **Versão:** 1.0

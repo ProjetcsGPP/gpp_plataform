@@ -46,19 +46,19 @@ function Test-Endpoint {
         [string]$Method = "GET",
         [hashtable]$Body = $null
     )
-    
+
     Write-Host "`n  Testando: $Name" -ForegroundColor Yellow
     Write-Host "  URL: $Url" -ForegroundColor Gray
-    
+
     try {
         $headers = @{
             'Content-Type' = 'application/json'
         }
-        
+
         if ($Token) {
             $headers['Authorization'] = "Bearer $Token"
         }
-        
+
         $params = @{
             Uri = $Url
             Method = $Method
@@ -66,21 +66,21 @@ function Test-Endpoint {
             SkipHttpErrorCheck = $true
             TimeoutSec = 10
         }
-        
+
         if ($Body) {
             $params['Body'] = ($Body | ConvertTo-Json)
         }
-        
+
         $response = Invoke-WebRequest @params
-        
+
         $statusColor = switch ($response.StatusCode) {
             { $_ -in 200..299 } { 'Green' }
             { $_ -in 400..499 } { 'Yellow' }
             default { 'Red' }
         }
-        
+
         Write-Host "    ✓ Status: $($response.StatusCode)" -ForegroundColor $statusColor
-        
+
         if ($response.StatusCode -in 200..299) {
             try {
                 $content = $response.Content | ConvertFrom-Json
@@ -94,7 +94,7 @@ function Test-Endpoint {
                 # Ignora erro de parse
             }
         }
-        
+
         return @{ Success = $true; StatusCode = $response.StatusCode; Data = $content }
     }
     catch {

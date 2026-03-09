@@ -380,6 +380,6 @@ Antes de fazer deploy:
 
 ---
 
-**Última Atualização:** Fevereiro 2026  
-**Versão dos Testes:** 2.0  
+**Última Atualização:** Fevereiro 2026
+**Versão dos Testes:** 2.0
 **Mantenedor:** Equipe GPP - SEGER/ES

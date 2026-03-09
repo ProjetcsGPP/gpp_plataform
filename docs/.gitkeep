@@ -15,11 +15,11 @@ python manage.py generate_docs
 
 ## O que está documentado
 
-✅ Estrutura de pastas e arquivos  
-✅ Todos os models com seus fields  
-✅ Todas as views (web e API)  
-✅ Padrões de URLs e namespaces  
-✅ Models registrados no Django Admin  
+✅ Estrutura de pastas e arquivos
+✅ Todos os models com seus fields
+✅ Todas as views (web e API)
+✅ Padrões de URLs e namespaces
+✅ Models registrados no Django Admin
 
 ## Uso
 

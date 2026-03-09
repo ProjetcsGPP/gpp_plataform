@@ -8,7 +8,7 @@ Os seguintes diretórios vazios foram removidos para prevenir conflitos de impor
 - ✅ `auth_service/views/api_views/` (commit 62c91fb)
 - ✅ `auth_service/views/web_views/` (commit d67bfcd)
 
-### accounts  
+### accounts
 - ✅ `accounts/views/api_views/` (este commit)
 - ✅ `accounts/views/web_views/` (este commit)
 

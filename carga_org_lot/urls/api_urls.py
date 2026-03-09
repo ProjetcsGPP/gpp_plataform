@@ -11,35 +11,27 @@ Estrutura:
 - Funções (@api_view) -> path() manual
 """
 
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from ..views import (
-    # Funções de view
-    user_permissions,
+from ..views import (  # Funções de view; ViewSets Principais; ViewSets Novos; ViewSets Auxiliares (Read-Only)
+    CargaPatriarcaViewSet,
+    LotacaoJsonOrgaoViewSet,
+    LotacaoVersaoViewSet,
+    OrganogramaVersaoViewSet,
+    PatriarcaViewSet,
+    StatusCargaViewSet,
+    StatusProgressoViewSet,
+    StatusTokenEnvioCargaViewSet,
+    TipoCargaViewSet,
+    TokenEnvioCargaViewSet,
+    UserManagementViewSet,
     dashboard_stats,
     search_orgao,
-    
-    # ViewSets Principais
-    UserManagementViewSet,
-    PatriarcaViewSet,
-    OrganogramaVersaoViewSet,
-    LotacaoVersaoViewSet,
-    CargaPatriarcaViewSet,
-    
-    # ViewSets Novos
-    LotacaoJsonOrgaoViewSet,
-    TokenEnvioCargaViewSet,
-    
-    # ViewSets Auxiliares (Read-Only)
-    StatusProgressoViewSet,
-    StatusCargaViewSet,
-    TipoCargaViewSet,
-    StatusTokenEnvioCargaViewSet,
+    user_permissions,
 )
 
-
-app_name = 'carga_org_lot_api'
+app_name = "carga_org_lot_api"
 
 
 # =============================================================================
@@ -49,75 +41,33 @@ app_name = 'carga_org_lot_api'
 router = DefaultRouter()
 
 # Gerenciamento de usuários
-router.register(
-    r'users',
-    UserManagementViewSet,
-    basename='users'
-)
+router.register(r"users", UserManagementViewSet, basename="users")
 
 # Modelos principais
-router.register(
-    r'patriarcas',
-    PatriarcaViewSet,
-    basename='patriarcas'
-)
+router.register(r"patriarcas", PatriarcaViewSet, basename="patriarcas")
 
-router.register(
-    r'organogramas',
-    OrganogramaVersaoViewSet,
-    basename='organogramas'
-)
+router.register(r"organogramas", OrganogramaVersaoViewSet, basename="organogramas")
 
-router.register(
-    r'lotacoes',
-    LotacaoVersaoViewSet,
-    basename='lotacoes'
-)
+router.register(r"lotacoes", LotacaoVersaoViewSet, basename="lotacoes")
 
-router.register(
-    r'cargas',
-    CargaPatriarcaViewSet,
-    basename='cargas'
-)
+router.register(r"cargas", CargaPatriarcaViewSet, basename="cargas")
 
 # JSON de Lotação por Órgão (NOVO)
-router.register(
-    r'lotacao-json',
-    LotacaoJsonOrgaoViewSet,
-    basename='lotacao-json'
-)
+router.register(r"lotacao-json", LotacaoJsonOrgaoViewSet, basename="lotacao-json")
 
 # Tokens de Envio
-router.register(
-    r'tokens',
-    TokenEnvioCargaViewSet,
-    basename='tokens'
-)
+router.register(r"tokens", TokenEnvioCargaViewSet, basename="tokens")
 
 # Tabelas auxiliares (read-only)
 router.register(
-    r'status-progresso',
-    StatusProgressoViewSet,
-    basename='status-progresso'
+    r"status-progresso", StatusProgressoViewSet, basename="status-progresso"
 )
 
-router.register(
-    r'status-carga',
-    StatusCargaViewSet,
-    basename='status-carga'
-)
+router.register(r"status-carga", StatusCargaViewSet, basename="status-carga")
 
-router.register(
-    r'tipos-carga',
-    TipoCargaViewSet,
-    basename='tipos-carga'
-)
+router.register(r"tipos-carga", TipoCargaViewSet, basename="tipos-carga")
 
-router.register(
-    r'status-token',
-    StatusTokenEnvioCargaViewSet,
-    basename='status-token'
-)
+router.register(r"status-token", StatusTokenEnvioCargaViewSet, basename="status-token")
 
 
 # =============================================================================
@@ -128,28 +78,12 @@ urlpatterns = [
     # =========================================================================
     # ENDPOINTS DE FUNÇÃO (@api_view)
     # =========================================================================
-    
     # Permissões do usuário (para Next.js)
-    path(
-        'permissions/',
-        user_permissions,
-        name='user-permissions'
-    ),
-    
+    path("permissions/", user_permissions, name="user-permissions"),
     # Dashboard e estatísticas
-    path(
-        'dashboard/',
-        dashboard_stats,
-        name='dashboard-stats'
-    ),
-    
+    path("dashboard/", dashboard_stats, name="dashboard-stats"),
     # Busca rápida (autocomplete)
-    path(
-        'search/orgao/',
-        search_orgao,
-        name='search-orgao'
-    ),
-    
+    path("search/orgao/", search_orgao, name="search-orgao"),
     # =========================================================================
     # VIEWSETS (DRF Router)
     # =========================================================================
@@ -162,7 +96,7 @@ urlpatterns = [
     # - DELETE /patriarcas/{id}/      -> destroy
     # - GET    /patriarcas/list_light/ -> custom action
     # - etc...
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]
 
 

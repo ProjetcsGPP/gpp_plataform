@@ -155,8 +155,8 @@
       background-size: 16px 12px !important;
       border: 1px solid #ced4da !important;
       border-radius: .25rem !important;
-     transition: border-color .15s 
-  ease-in-out, box-shadow .15s 
+     transition: border-color .15s
+  ease-in-out, box-shadow .15s
   ease-in-out;
       -webkit-appearance: none;
       -moz-appearance: none;
@@ -238,7 +238,7 @@
             <label class="form-label fw-bold text-dark" for="selectEixo">Eixo</label>
             <select class="form-select" id="selectEixo"></select>
           </div>
-          
+
           <div class="col-md-3">
             <label class="form-label fw-bold text-dark" for="multiSelectDropdown">Situação</label>
             <div class="dropdown">
@@ -252,10 +252,10 @@
           <div class="col-md-3">
               <!-- Linha do Cabeçalho: Label à esquerda, Checkboxes à direita -->
               <div class="d-flex justify-content-between align-items-center mb-1">
-                  
+
                   <!-- Label que muda de texto dinamicamente -->
                   <label id="labelFiltroDynamic" class="form-label fw-bold text-dark mb-0">Vencimentos</label>
-                  
+
                   <!-- Container Fixo para os Checkboxes -->
                   <div class="d-flex align-items-center">
                       <!-- Wrapper do checkbox "Prazos Fixos" -->
@@ -263,7 +263,7 @@
                           <input class="form-check-input" type="checkbox" id="checkboxPrazos">
                           <label class="form-check-label" for="checkboxPrazos" style="font-size: 0.8rem;">Prazos Fixos</label>
                       </div>
-                      
+
                       <!-- Wrapper do checkbox "Incluir Vencidas", que será mostrado/ocultado -->
                       <div id="checkboxVencimentosWrapper" class="form-check form-switch ms-2">
                           <input class="form-check-input" type="checkbox" id="checkboxVencimentos">
@@ -274,7 +274,7 @@
 
               <!-- Container dos FILTROS (um por vez será visível) -->
               <div class="mt-2">
-                
+
                 <!-- Container do Filtro de VENCIMENTOS (Multiselect) -->
                 <div id="vencimentosContainer">
                     <div class="dropdown" id="vencimentosDropdownContainer">
@@ -366,7 +366,7 @@
         </div>
         <div class="container mt-3">
           <div id="editMessageContainer"></div>
-        </div>        
+        </div>
         <div class="modal-footer">
           <!-- <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button> -->
           <button class="btn btn-secondary" id="btnCancelarEditModal">Cancelar</button>
@@ -468,9 +468,9 @@
             if (dropdownButton) {
                 event.preventDefault();
                 event.stopPropagation();
-                
+
                 const dropdownMenu = dropdownButton.nextElementSibling;
-                
+
                 if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
                     const isCurrentlyShown = dropdownMenu.classList.contains('show');
                     // Fecha todos os outros menus abertos antes de abrir um novo
@@ -501,12 +501,12 @@
         // ================================================================
         // 2. CONFIGURAÇÃO INICIAL DOS FILTROS E OUTRAS AÇÕES
         // ================================================================
-        
+
         // Configuração dos filtros de prazo
         const checkboxPrazos = document.getElementById('checkboxPrazos');
         const checkboxVencimentos = document.getElementById('checkboxVencimentos');
         const selectPrazos = document.getElementById('idSelectPrazos');
-        
+
         if (checkboxPrazos && checkboxVencimentos && selectPrazos) {
             checkboxPrazos.addEventListener('change', handleCheckboxPrazosChange);
             //selectPrazos.addEventListener('change', () => filtrosProjeto(window.lastUserEmail, false));
@@ -515,7 +515,7 @@
             checkboxPrazos.checked = true; // Inicia com "Prazos Fixos" ativo
             checkboxVencimentos.checked = true;
             isCheckedVencidas = true;
-            
+
             handleCheckboxPrazosChange(); // Configura o layout inicial
         }
 
@@ -605,7 +605,7 @@
           document.getElementById('projectsContainerCards').style.display = 'block';
           document.getElementById('projectsContainerTable').style.display = 'none';
         });
-        
+
         document.getElementById('btnList').addEventListener('click', function () {
           this.classList.add('btn-primary');
           this.classList.remove('btn-outline-secondary');
@@ -613,7 +613,7 @@
           document.getElementById('btnCard').classList.add('btn-outline-primary');
           document.getElementById('projectsContainerCards').style.display = 'none';
           document.getElementById('projectsContainerTable').style.display = 'block';
-          
+
           const email = (window.lastUserEmail || "");
           renderTableView(email);
         });
@@ -659,7 +659,7 @@
           .validateTimeOutUserSession();
       }
 
-          
+
       function popularDropdownSituacaoComCheckbox() {
         const container = document.getElementById('situacaoCheckboxContainer');
         const dropdownButton = document.getElementById('multiSelectDropdown');
@@ -730,7 +730,7 @@
                             // Se o usuário desmarcou o último item, marca "Todos" como fallback
                             todosCheckbox.checked = true;
                         }
-                        
+
                         updateButtonText();
                     });
 
@@ -757,7 +757,7 @@
           // Elementos de layout
           const labelFiltro = document.getElementById('labelFiltroDynamic');
           const checkboxVencimentosWrapper = document.getElementById('checkboxVencimentosWrapper');
-                
+
                 // Containers de Filtro
       const vencimentosContainer = document.getElementById('vencimentosContainer');
       const prazosFixosContainer = document.getElementById('prazosFixosContainer');
@@ -766,12 +766,12 @@
       if (labelFiltro) {
           labelFiltro.textContent = isChecked ? 'Prazo' : 'Vencimentos';
       }
-      
+
       // 2. Controla a visibilidade do checkbox "Incluir Vencidas"
       if (checkboxVencimentosWrapper) {
           checkboxVencimentosWrapper.style.visibility = isChecked ? 'hidden' : 'visible';
       }
-      
+
       // 3. Alterna qual container de filtro está visível
       if (vencimentosContainer && prazosFixosContainer) {
           vencimentosContainer.classList.toggle('d-none', isChecked);
@@ -856,7 +856,7 @@
 
       const container = document.getElementById('idOpcoesVencimentosContainer');
       const dropdownButton = document.getElementById('vencimentosMultiSelectDropdown');
-      
+
       // CORREÇÃO: Usa o ID correto 'checkboxVencimentos' e adiciona uma verificação de segurança.
       const chkboxVencimentos = document.getElementById('checkboxVencimentos');
       const isCheckedVencidas = chkboxVencimentos ? chkboxVencimentos.checked : true; // Assume 'true' como padrão se o checkbox não for encontrado.
@@ -924,7 +924,7 @@
                       if (!anyChecked) {
                           todosCheckbox.checked = true;
                       }
-                      
+
                       updateButtonText();
                   });
 
@@ -939,7 +939,7 @@
               newContainer.innerHTML = '<li><span class="dropdown-item-text">Erro</span></li>';
           })
           .getOptionsForDropdownForDates(false, true, isCheckedVencidas);
-    }    
+    }
 
     function loadProjects(isAlertIsBeingDisplayed = false, isEdit = false) {
       // Verifica sessão antes de carregar
@@ -954,7 +954,7 @@
           }
           else {
             filtrosProjeto(result.email, isAlertIsBeingDisplayed)
-          }          
+          }
         })
         .withFailureHandler(function(error) {
           showMessage('Erro ao validar sessão: ' + error.message, 'danger');
@@ -962,7 +962,7 @@
         })
         .getUserProperties();
     }
-      
+
     function carregarProjetos(userEmail, isAlertIsBeingDisplayed) {
       console.log("carregarProjetos");
       validaTempoDaSessao();
@@ -1067,13 +1067,13 @@
 
                   sortProjects();
                   window.lastUserEmail = userEmail;
-                  
+
                   google.script.run.withSuccessHandler(function(version) {
                       window.globalAcoesVersion = version;
                       iniciarCicloVerificacaoAtualizacao();
                       displayProjects(currentProjects, userEmail, situacaoColorMap);
                   }).getGlobalAcoesVersion();
-                  
+
                   document.getElementById('projectsCount').textContent = currentProjects.length === 1 ? '1 ação encontrada' : `${currentProjects.length} ações encontradas`;
 
               } else if (result.loginRedirect) {
@@ -1101,7 +1101,7 @@
 //        <input class="form-check-input" type="checkbox" id="checkboxPrazos">
 //        <label class="form-check-label" for="checkboxPrazos" style="font-size: 0.8rem;">Prazos Fixos</label>
 //    </div>
-//    
+//
 //    <!-- Wrapper do checkbox "Incluir Vencidas", que será mostrado/ocultado -->
 //    <div id="checkboxVencimentosWrapper" class="form-check form-switch ms-2">
 //        <input class="form-check-input" type="checkbox" id="checkboxVencimentos">
@@ -1111,7 +1111,7 @@
 
 //<!-- Container dos FILTROS (um por vez será visível) -->
 //<div class="mt-2">
-//  
+//
 //  <!-- Container do Filtro de VENCIMENTOS (Multiselect) -->
 //  <div id="vencimentosContainer">
 //      <div class="dropdown" id="vencimentosDropdownContainer">
@@ -1142,7 +1142,7 @@
       const situacaoContainer = document.getElementById('situacaoCheckboxContainer');
       const opcoesVencimentosContainer = document.getElementById('idOpcoesVencimentosContainer'); // <<-- VARIÁVEL MOVIDA PARA CIMA
       const isPrazosFixos = document.getElementById('checkboxPrazos')?.checked || false;
-   
+
 
       const arraySituacoes = [];
       if (situacaoContainer) {
@@ -1167,7 +1167,7 @@
               }
           });
       }
-      
+
       console.log('arrayVencimentos: ' + JSON.stringify(arrayVencimentos));
 
       // --- FIM DA CORREÇÃO ---
@@ -1181,7 +1181,7 @@
       if (arraySituacoes.length > 0) {
           filteredProjects = filteredProjects.filter(p => p.SITUAÇÃO && arraySituacoes.map(s => s.trim().toLowerCase()).includes(p.SITUAÇÃO.trim().toLowerCase()));
       }
-      
+
       if (filtroPessoas && filtroPessoas !== 'Todos') {
           filteredProjects = filteredProjects.filter(p => Array.isArray(p.participantes) && p.participantes.map(e => e.toLowerCase().trim()).includes(filtroPessoas.toLowerCase().trim()));
       }
@@ -1190,13 +1190,13 @@
           // Modo Prazos Fixos: Filtra por VENCIMENTO usando o select
           const filtroPrazoFixo = document.getElementById('idSelectPrazos').value;
           const filterDate = getDateForFilter(filtroPrazoFixo);
-          
+
           if (filterDate) {
               filterDate.setHours(23, 59, 59, 999);
               filteredProjects = filteredProjects.filter(p => {
                   // CORREÇÃO: Chamamos a parseBRDate mais segura
                   const projectDate = parseBRDate(p.PRAZOS);
-                  
+
                   return projectDate && projectDate <= filterDate;
               });
           }
@@ -1221,7 +1221,7 @@
       sortProjects();
       displayProjects(currentProjects, userEmail, situacaoColorMap);
       document.getElementById('projectsCount').textContent = currentProjects.length === 1 ? '1 ação encontrada' : `${currentProjects.length} ações encontradas`;
-      
+
       const btnList = document.getElementById('btnList');
       if (btnList && btnList.classList.contains('btn-primary')) {
         // Se o botão de lista estiver ativo, chama a função para renderizar a tabela
@@ -1251,12 +1251,12 @@
         console.log("Ação: " + p["nº"]);
         console.log("Prazo: " +  p["PRAZOS"]);
         var canEdit = false;
-        
+
         // se isAcaoNaoConcluida = true, verifica se o usuário é participante ou gestor.
         if (isAcaoNaoConcluida){
           canEdit = !!(isParticipante || isGestor);
         }
-        
+
         //console.log("canEdit: " + canEdit);
 
         return `
@@ -1267,7 +1267,7 @@
                 <p class="card-text" style="font-size: 0.85rem;">${p["Entregas/Produtos"] || 'Sem descrição'}</p>
                 <div class="mt-auto">
                   <small class="text-muted" style="font-size: 0.8rem;font-weight: 700;">Situação atual: </small>
-                  <span class="badge mb-2" style="font-size: 0.75rem; background-color: ${cor.background}; color: ${cor.font};">${status}</span>                  
+                  <span class="badge mb-2" style="font-size: 0.75rem; background-color: ${cor.background}; color: ${cor.font};">${status}</span>
                   <div class="mb-2">
                     <small class="text-muted" style="font-size: 0.8rem;font-weight: 700;">Prazo: </small>
                     <small class="text-muted" style="font-size: 0.8rem;">${p["PRAZOS"] || 'Não definida'}</small>
@@ -1374,7 +1374,7 @@
             chkboxVencimentos.checked = true; // Define o estado padrão desejado
             popularDropdownPrazosComCheckbox(); // Recarrega o dropdown de prazos para refletir a mudança
         }
-        
+
         // 4. Garante que o filtro de Prazos Fixos esteja desativado e o de Vencimentos ativado
         const checkboxPrazos = document.getElementById('checkboxPrazos');
         if(checkboxPrazos){
@@ -1565,7 +1565,7 @@
           }
         };
       }
-      
+
       if(monitoramentos.length > 0){
         for (let i = -1; i < 1; i++) {
           if(i == -1){
@@ -1588,7 +1588,7 @@
           <span class="edit-label">Situação:</span>
           <select class="form-select edit-value" id="editSituacao">
             ${selectOptions}
-          </select> 
+          </select>
         </div>
         <div class="edit-item"><span class="edit-label">Prazo:</span><span class="edit-value"> ${dataFormatada}</span></div>
         <div class="edit-item"><span class="edit-label">Participantes:</span><div class="edit-value"> ${participantesHtml}</div></div>
@@ -1601,35 +1601,35 @@
             <span class="edit-label">Monitoramento Atual: </span>
             <select class="form-select edit-value" id="editMonitoramento">
               ${selectOptionsMonitoramentos}
-            </select> 
+            </select>
           </col-md-6>
           <col-md-6 style="width: 46%;">
             <label for="editProxDataMonitoramento" class="edit-label">Próxima Data de Monitoramento: </label>
-            <input 
+            <input
               type="text"
               class="form-control edit-value"
               id="editProxDataMonitoramento"
               placeholder="Selecionar data futura"
               onfocus="this.type='date'"
               onblur="if(this.value===''){ this.type='text'; }"
-            ></input>          
+            ></input>
           </col-md-6>
         </div>
         <div class="edit-item inline">
           <label for="editProxAcoes" class="edit-label">Próximas Ações: </label>
-          <textarea 
-            class="form-control edit-value" 
-            id="editProxAcoes" 
-            maxlength="300" 
+          <textarea
+            class="form-control edit-value"
+            id="editProxAcoes"
+            maxlength="300"
             rows="3"
             placeholder="Descreva as próximas ações (até 300 caracteres)"
           ></textarea>
           <small id="charCountProxAcoes" class="text-muted">0 / 300</small>
         </div>
       `;
-      
+
       modalBody.innerHTML = innerHTML;
-      
+
       //const dropdown = document.getElementById('editSituacao');
       //editSituacao.value = situacaoAcao;
 
@@ -1704,7 +1704,7 @@
             //console.log("dB: " + dB.toLocaleDateString());
             const dFinal = dB - dA;
             //console.log("dB - dA: " + dFinal.toString());
-            return dA - dB; 
+            return dA - dB;
           });
           break;
         case "monitoramento":
@@ -1727,7 +1727,7 @@
     // Atualiza cards/tabela após ordenar
     function updateProjectViews(userEmail) {
       const email = userEmail || (window.lastUserEmail || "");
-      
+
       if (document.getElementById('projectsContainerTable').style.display === 'block') {
         renderTableView(email);
       } else {
@@ -1800,18 +1800,18 @@
           labels: eixoLabels,
           datasets: [{ data: eixoLabels.map(e => contagemEixo[e]), backgroundColor: eixoColors }]
         },
-        options: { 
-          responsive: true, 
-          plugins: { 
-            legend: { 
-              display: false 
-            }, 
-            title: { 
-              display: true, 
-              text: 'Distribuição por Eixo', 
-              font: { size: 16 }, 
-              padding: { top: 10, bottom: 10 } 
-            } 
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            },
+            title: {
+              display: true,
+              text: 'Distribuição por Eixo',
+              font: { size: 16 },
+              padding: { top: 10, bottom: 10 }
+            }
           }
         },
         plugins: [{
@@ -1829,18 +1829,18 @@
                 }).join('');
           }
         }]
-      });      
-      
+      });
+
       const totalAcoes = projects.length;
-      
+
       window.myChartSituacao = new Chart(document.getElementById('projectStatusChartSituacao').getContext('2d'), {
         type: 'bar',
         data: {
           labels: situacaoLabels,
           datasets: [{ data: situacaoLabels.map(s => contagemSituacao[s]), backgroundColor: situacaoColors }]
         },
-        options: { 
-          responsive: true, 
+        options: {
+          responsive: true,
           maintainAspectRatio: false,
           indexAxis: 'y',
           scales: {
@@ -1849,7 +1849,7 @@
               max: totalAcoes,
               title: {
                 display: true,
-                text: 'Total de Ações', 
+                text: 'Total de Ações',
                 font: { size: 16 },
                 position: 'top'
               },
@@ -1868,16 +1868,16 @@
               }
             }
           },
-          plugins: { 
-            legend: { 
-              display: false 
-            }, 
-            title: { 
-              display: true, 
-              text: 'Situação por Ação', 
-              font: { size: 16 }, 
-              padding: { top: 10, bottom: 10 } 
-            } 
+          plugins: {
+            legend: {
+              display: false
+            },
+            title: {
+              display: true,
+              text: 'Situação por Ação',
+              font: { size: 16 },
+              padding: { top: 10, bottom: 10 }
+            }
           }
         }
       });
@@ -1956,8 +1956,8 @@
               title: {
                 display: true,
                 text: 'Situação das Ações por Eixo',
-                font: { size: 16 }, 
-                padding: { top: 10, bottom: 10 } 
+                font: { size: 16 },
+                padding: { top: 10, bottom: 10 }
               },
               legend: {
                 labels: {
@@ -1970,7 +1970,7 @@
             responsive: true,
             scales: {
               x: {},
-              y: { 
+              y: {
                 beginAtZero: true,
                 ticks: {
                   precision: 0, // força inteiros
@@ -1979,7 +1979,7 @@
               }
             }
           }
-        });      
+        });
     }
 
     function showEditMessage(message, type = 'info') {
@@ -2006,7 +2006,7 @@
 
 
     function saveProject() {
-      
+
       //console.log("Entrei em  saveProject");
 
       validaTempoDaSessao();
@@ -2096,7 +2096,7 @@
       //console.log("Objetos updateSituacao e updateData criados");
 
       //console.log("Antes de chamar saveAcao");
-      
+
       //console.log("numAcao: " + numAcao);
       //console.log("updateSituacao: " + JSON.stringify(updateSituacao));
       //console.log("updateData: " + JSON.stringify(updateData));
@@ -2104,9 +2104,9 @@
 
       google.script.run
         .withSuccessHandler(function(resultUser) {
-          
+
       //console.log("resultUser: " + JSON.stringify(resultUser));
-      
+
           if (resultUser && resultUser.sessionId) {
             showEditMessage('Aguarde a resposta para atualizar a Ação! ', 'info');
             google.script.run
@@ -2163,7 +2163,7 @@
             editModal.hide();
             editModal = null;
             iniciarCicloVerificacaoAtualizacao();
-          }              
+          }
           showMessage('Erro selecionar informações do usuário para gravação: ' + erroruser.message, 'danger');
         })
         .getUserProperties();
@@ -2203,7 +2203,7 @@
           </div>
         </div>
       `;
-      
+
       if (!detailsModal) {
         detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'), { backdrop: 'static', keyboard: false });
       }
@@ -2251,7 +2251,7 @@
       const modalTitle = document.getElementById('detailsModalTitle');
       const modalBody = document.getElementById('detailsModalBody');
       modalTitle.textContent = `Detalhes: ${projeto["ÁLIAS"]}`;
-      let dataFormatada = 'Não definida';     
+      let dataFormatada = 'Não definida';
 
       //console.log("Prazos: " + projeto["PRAZOS"]);
       if (projeto["PRAZOS"]) {
@@ -2278,7 +2278,7 @@
       // ordenar do último para o primeiro
       //console.log('ultimoMonitoramentoComConteudo: ' + ultimoMonitoramentoComConteudo.toString());
       for (let i = ultimoMonitoramentoComConteudo; i >= 1; i--) {
-        
+
       //console.log('i: ' + i.toString());
         const key = i + "º Monitoramento";
         if (projeto.hasOwnProperty(key) && projeto[key] && projeto[key].toString().trim() !== "") {
@@ -2311,9 +2311,9 @@
     }
 
   </script>
-  
+
   <script>
-    
+
     var verificacaoAtualizacaoTimer = null;
 
     function iniciarCicloVerificacaoAtualizacao(intervaloMs = 10000) {

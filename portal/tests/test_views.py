@@ -1,81 +1,78 @@
-# portal/tests/test_views.py
+"""
+Testes Web Views - FINAL (SEM username)
+"""
+
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from accounts.models import Aplicacao, Role, UserRole
 
-User = get_user_model()
-
 
 class PortalViewsTest(TestCase):
-    """Testes para views do Portal"""
-    
-    databases = {'default'}
-    
-    def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_user(
-            email='portal@example.com',
-            password='testpass123',
-            name='Portal User'
+    databases = {"default"}
+
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        
+        cls.user = User.objects.create_user(
+            username="portal",  # prefixo
+            email="portal@example.com",
+            name="Portal User",
+            password="testpass123",
         )
         
-        # Usar get_or_create para evitar conflito
-        self.app, _ = Aplicacao.objects.get_or_create(
-            codigointerno='PORTAL',
-            defaults={
-                'nomeaplicacao': 'Portal GPP',
-                'isshowinportal': True
-            }
+        cls.app, _ = Aplicacao.objects.get_or_create(
+            codigointerno="PORTAL",
+            defaults={"nomeaplicacao": "Portal GPP", "isshowinportal": True}
         )
-        self.role, _ = Role.objects.get_or_create(
-            aplicacao=self.app,
-            codigoperfil='USER_PORTAL',
-            defaults={'nomeperfil': 'Usuário Portal'}
+        
+        cls.role, _ = Role.objects.get_or_create(
+            codigoperfil="USER_PORTAL",
+            defaults={"nome": "Usuário Portal"}
         )
-        UserRole.objects.create(
-            user=self.user,
-            aplicacao=self.app,
-            role=self.role
+        
+        UserRole.objects.get_or_create(
+            user=cls.user, aplicacao=cls.app, role=cls.role
         )
-    
-    def test_index_accessible(self):
-        """Testa que página inicial é acessível"""
-        response = self.client.get('/')
-        # Pode retornar 200 (página) ou 302 (redirect para login)
-        self.assertIn(response.status_code, [200, 302])
-    
-    def test_portal_requires_authentication(self):
-        """Testa que áreas protegidas requerem autenticação"""
-        # Tenta acessar sem login - deve redirecionar
-        response = self.client.get('/portal/dashboard/')
-        if response.status_code == 302:
-            self.assertTrue(
-                'login' in response.url or response.url == '/'
-            )
-    
-    def test_authenticated_user_access(self):
-        """Testa que usuário autenticado tem acesso"""
+
+    def setUp(self):
+        self.client = Client()
+
+    # Testes específicos (ajuste reverse names)
+    def test_login_get(self):
+        response = self.client.get(reverse('portal:login'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_login_post_success(self):
+        response = self.client.post(reverse('portal:login'), {
+            'email': 'portal@example.com',
+            'password': 'testpass123'
+        })
+        self.assertEqual(response.status_code, 302)
+
+    def test_dashboard_unauth(self):
+        response = self.client.get(reverse('portal:dashboard'))
+        self.assertRedirects(response, reverse('portal:login'))
+
+    def test_dashboard_auth(self):
         self.client.login(email='portal@example.com', password='testpass123')
-        response = self.client.get('/')
-        # Aceita 200 (acesso direto) ou 302 (redirect pós-login)
-        self.assertIn(response.status_code, [200, 302])
+        response = self.client.get(reverse('portal:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_logout(self):
+        self.client.login(email='portal@example.com', password='testpass123')
+        response = self.client.get(reverse('portal:logout'))
+        self.assertRedirects(response, reverse('portal:login'))
 
 
 class PortalNavigationTest(TestCase):
-    """Testes para navegação do Portal"""
-    
-    databases = {'default'}
-    
     def setUp(self):
         self.client = Client()
-    
-    def test_static_pages_load(self):
-        """Testa que páginas estáticas carregam"""
-        urls_to_test = [
-            '/',
-        ]
-        for url in urls_to_test:
-            response = self.client.get(url)
-            self.assertIn(response.status_code, [200, 302, 404])
+
+    def test_public_pages(self):
+        for url in ['/', reverse('portal:login')]:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertLess(response.status_code, 400)

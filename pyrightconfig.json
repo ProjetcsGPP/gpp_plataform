@@ -1,0 +1,49 @@
+    {
+        "executionEnvironments": [
+            {
+                "root": ".",
+                "venvPath": ".",
+                "venv": ".venv"
+            }
+        ],
+        "extraPaths": [
+            "./",
+            "./.venv/Lib/site-packages",
+            "./acoes_pngi",
+            "./carga_org_lot",
+            "./accounts",
+            "./portal"  // Adicione Portal Explicitamente (Opcional)
+        ],
+        "include": [
+            "**/*.py",
+            "manage.py"
+        ],
+        "exclude": [
+            "**/.git",
+            "**/node_modules",
+            "**/.venv",
+            "**/venv",
+            "**/env",
+            "**/.mypy_cache",
+            "**/.pytest_cache",
+            "**/.coverage",
+            "**/.tox",
+            "**/__pycache__",
+            "**/*.pyc",
+            "**/*.pyo",
+            "**/*.pyd",
+            "**/migrations",
+            "**/static",
+            "**/media",
+            "**/templates",
+            "**/db.sqlite3",
+            "**/*.log",
+            "**/.*",
+            "**/site-packages"
+        ],
+        "reportMissingImports": "warning",
+        "reportMissingTypeStubs": "warning",
+        "reportUndefinedVariable": "warning",
+        "reportUnusedExpression": "warning",
+        "typeCheckingMode": "basic"
+    }

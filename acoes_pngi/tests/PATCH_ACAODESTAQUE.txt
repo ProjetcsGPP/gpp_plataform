@@ -121,7 +121,7 @@ from django.utils import timezone
             strdescricaodestaque='Destaque 3',
             ordenacao=3
         )
-        
+
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/destaques/?ordering=ordenacao')
 
@@ -135,7 +135,7 @@ from django.utils import timezone
             idacao=self.acao,
             datdatadestaque=timezone.now() + timedelta(days=2)
         )
-        
+
         self.authenticate_as('consultor')
         response = self.client.get('/api/v1/acoes_pngi/destaques/?ordering=-datdatadestaque')
 

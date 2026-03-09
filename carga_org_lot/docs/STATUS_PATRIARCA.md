@@ -295,7 +295,7 @@ if patriarca.tem_organograma_ativo:
     # Existe versão ativa em tblorganogramaversao
     status = 2
 
-# Status 3: Lotação em Progresso  
+# Status 3: Lotação em Progresso
 if patriarca.tem_lotacao_ativa:
     # Existe versão ativa em tbllotacaoversao
     # para o organograma versionado

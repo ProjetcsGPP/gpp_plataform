@@ -14,7 +14,7 @@
         border: 2px solid #dee2e6;
         border-radius: 8px;
     }
-    
+
     .controls-panel {
         background: white;
         padding: 15px;
@@ -22,7 +22,7 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         margin-bottom: 20px;
     }
-    
+
     .node-info-panel {
         position: absolute;
         top: 20px;
@@ -35,7 +35,7 @@
         z-index: 10;
         display: none;
     }
-    
+
     .node-info-panel.active {
         display: block;
     }
@@ -90,7 +90,7 @@
     <div class="col-12">
         <div class="position-relative">
             <div id="reactflow-container"></div>
-            
+
             <!-- Painel de Informações do Nó -->
             <div class="node-info-panel" id="nodeInfoPanel">
                 <h5 class="text-carga-primary mb-3">
@@ -139,7 +139,7 @@ const organogramaData = {{ organograma_json|safe }};
 // Inicialização do ReactFlow (implementar posteriormente)
 document.addEventListener('DOMContentLoaded', function() {
     console.log('ReactFlow: Carregando organograma...', organogramaData);
-    
+
     // TODO: Implementar integração completa com ReactFlow
     // Por enquanto, exibe mensagem temporária
     const container = document.getElementById('reactflow-container');
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     `;
-    
+
     // Event listeners dos botões
     document.getElementById('btnSalvar')?.addEventListener('click', salvarAlteracoes);
     document.getElementById('btnCancelar')?.addEventListener('click', () => {
@@ -171,14 +171,14 @@ function mostrarInfoNo(nodeData) {
     const panel = document.getElementById('nodeInfoPanel');
     const content = document.getElementById('nodeInfoContent');
     const btnDelete = document.getElementById('btnDeleteNode');
-    
+
     content.innerHTML = `
         <p><strong>Nome:</strong> ${nodeData.nome}</p>
         <p><strong>Sigla:</strong> ${nodeData.sigla}</p>
         <p><strong>Nível:</strong> ${nodeData.nivel}</p>
         <p><strong>Número Hierárquico:</strong> ${nodeData.numero}</p>
     `;
-    
+
     panel.classList.add('active');
     btnDelete.style.display = 'block';
 }

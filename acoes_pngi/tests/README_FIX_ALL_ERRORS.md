@@ -25,7 +25,7 @@ FAILED (failures=25, errors=51)
 
 **Erro:**
 ```python
-django.core.exceptions.ValidationError: 
+django.core.exceptions.ValidationError:
 {'datfinalvigencia': ['This field cannot be null.']}
 ```
 
@@ -79,11 +79,11 @@ def setup_test_data(self):
         stralias='E1',
         strdescricaoeixo='Eixo 1 - Gestão'
     )
-    
+
     self.situacao = SituacaoAcao.objects.create(
         strdescricaosituacao='Em Andamento'
     )
-    
+
     # ✅ Criar Acoes COM todos relacionamentos
     self.acao = Acoes.objects.create(
         strapelido='ACAO-001',
@@ -136,7 +136,7 @@ AttributeError: 'EixoAPITests' object has no attribute 'eixo'
 ```python
 def setup_test_data(self):
     eixo = Eixo.objects.create(...)  # ❌ Variável local
-    
+
     # Depois, outros métodos tentam acessar:
     self.acao.ideixo = self.eixo  # ❌ AttributeError!
 ```
@@ -182,22 +182,22 @@ python manage.py shell
 ## 📊 O Que o Script Faz
 
 ### Etapa 1: Adicionar datfinalvigencia
-✅ Procura todos `VigenciaPNGI.objects.create(...)`  
-✅ Adiciona `datfinalvigencia=date(YYYY, 12, 31)` automaticamente  
-✅ Usa ano de `datiniciovigencia` como referência  
+✅ Procura todos `VigenciaPNGI.objects.create(...)`
+✅ Adiciona `datfinalvigencia=date(YYYY, 12, 31)` automaticamente
+✅ Usa ano de `datiniciovigencia` como referência
 ✅ Arquivos: TODOS os `test_*.py`
 
 ### Etapa 2: Corrigir AttributeErrors
-✅ Encontra classes com `setup_test_data()`  
-✅ Transforma `eixo = Eixo.objects.create()` em `self.eixo = ...`  
-✅ Transforma `vigencia = VigenciaPNGI.objects.create()` em `self.vigencia = ...`  
-✅ Transforma `situacao = SituacaoAcao.objects.create()` em `self.situacao = ...`  
+✅ Encontra classes com `setup_test_data()`
+✅ Transforma `eixo = Eixo.objects.create()` em `self.eixo = ...`
+✅ Transforma `vigencia = VigenciaPNGI.objects.create()` em `self.vigencia = ...`
+✅ Transforma `situacao = SituacaoAcao.objects.create()` em `self.situacao = ...`
 ✅ Arquivo: `test_api_views.py`
 
 ### Etapa 3: Garantir Fixtures Completas
-✅ Procura `Acoes.objects.create()` sem `ideixo` ou `idsituacaoacao`  
-✅ Adiciona FKs faltando usando `self.eixo` e `self.situacao`  
-✅ Garante que `setup_test_data()` cria `Eixo` e `SituacaoAcao` **antes** de usar  
+✅ Procura `Acoes.objects.create()` sem `ideixo` ou `idsituacaoacao`
+✅ Adiciona FKs faltando usando `self.eixo` e `self.situacao`
+✅ Garante que `setup_test_data()` cria `Eixo` e `SituacaoAcao` **antes** de usar
 ✅ Arquivos: `test_api_views.py`, `test_api_acoes_views.py`, `test_api_alinhamento_views.py`, `test_api_responsavel_views.py`
 
 ---
@@ -263,11 +263,11 @@ git commit -m "backup antes de fix_all_test_errors"
 ```
 
 ### Idempotência
-✅ O script é **idempotente** - pode ser executado múltiplas vezes sem problemas.  
+✅ O script é **idempotente** - pode ser executado múltiplas vezes sem problemas.
 ✅ Não duplica correções já aplicadas.
 
 ### Expressões Regulares
-⚠️ Usa regex avançadas - pode haver casos edge não cobertos.  
+⚠️ Usa regex avançadas - pode haver casos edge não cobertos.
 👁️ Sempre revisar diff antes de commitar.
 
 ---
@@ -290,6 +290,6 @@ Se encontrar bugs ou casos não cobertos:
 
 ---
 
-**Branch:** `fix/correcao-massiva-testes-pngi`  
-**Última atualização:** 12/02/2026  
+**Branch:** `fix/correcao-massiva-testes-pngi`
+**Última atualização:** 12/02/2026
 **Status:** ✅ Pronto para uso

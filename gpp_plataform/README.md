@@ -196,14 +196,14 @@ with transaction.atomic():
         name='Maria Gestora',
         password='senha123'
     )
-    
+
     # Buscar aplicação e role
     app = Aplicacao.objects.get(codigointerno='ACOES_PNGI')
     role = Role.objects.get(
         codigoperfil='GESTOR_PNGI',
         aplicacao=app
     )
-    
+
     # Atribuir role
     UserRole.objects.create(
         user=user,
@@ -222,11 +222,11 @@ def minha_view(request):
         user=request.user,
         aplicacao__codigointerno='ACOES_PNGI'
     ).exists()
-    
+
     if not has_access:
         messages.error(request, 'Acesso negado')
         return redirect('portal:home')
-    
+
     # Continua com a lógica...
 3. Buscar Atributos do Usuário
 python
@@ -238,7 +238,7 @@ def get_user_permissions(user, app_code):
         user=user,
         aplicacao__codigointerno=app_code
     ).values_list('key', 'value')
-    
+
     return dict(attrs)
 
 # Uso
