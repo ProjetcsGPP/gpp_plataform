@@ -1,26 +1,39 @@
 # accounts/models.pyi
 """
-Type stubs completos para models do accounts - Resolve todos os Pylance warnings
+Type stubs para models do accounts.
+Reflexo fiel do accounts/models.py - atualizado para refatoração UserProfile v2.
+
+Regras:
+- User é o padrão do Django (auth.User) - NÃO é customizado.
+- Campos extras (cpf, name) vivem em UserProfile.
+- Todos os modelos declarados aqui devem existir no models.py real.
 """
 
 from typing import Optional
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
 from django.db import models
 
 
-class User(AbstractUser):
-    """Modelo customizado de usuário."""
-    id: int
-    email: str
-    name: str  # Campo customizado
-    cpf: str   # Campo customizado
-    is_active: bool
-    is_staff: bool
-    is_superuser: bool
+# =====================
+# TABELAS AUXILIARES
+# =====================
+
+class StatusUsuario(models.Model):
+    idstatususuario: int
+    strdescricao: str
+
+
+class TipoUsuario(models.Model):
+    idtipousuario: int
+    strdescricao: str
+
+
+class ClassificacaoUsuario(models.Model):
+    idclassificacaousuario: int
+    strdescricao: str
 
 
 class Aplicacao(models.Model):
-    """Modelo de aplicações da plataforma."""
     idaplicacao: int
     codigointerno: str
     nomeaplicacao: str
@@ -28,19 +41,49 @@ class Aplicacao(models.Model):
     isshowinportal: bool
 
 
+# =====================
+# USER PROFILE (EXTENSÃO DO auth.User)
+# =====================
+
+class UserProfile(models.Model):
+    """
+    Extensão do User padrão do Django.
+    Relacionamento OneToOne com auth.User via user_id (PK).
+    Campos extras de negócio e auditoria ficam aqui.
+    """
+    user: User                              # OneToOneField -> auth.User (PK)
+    name: str                               # strnome
+    cpf: str                                # campo de CPF (se existir)
+    status_usuario: StatusUsuario
+    tipo_usuario: TipoUsuario
+    classificacao_usuario: ClassificacaoUsuario
+    idusuariocriacao: Optional[User]
+    idusuarioalteracao: Optional[User]
+    datacriacao: str                        # DateTimeField
+    data_alteracao: Optional[str]           # DateTimeField nullable
+
+
+# =====================
+# RBAC - ROLES E PERMISSÕES
+# =====================
+
 class Role(models.Model):
-    """Modelo de roles/perfis."""
     id: int
+    aplicacao: Optional[Aplicacao]
+    nomeperfil: str
     codigoperfil: str
-    nome: str
 
 
 class UserRole(models.Model):
-    """Relacionamento usuário-aplicação-role."""
     id: int
-    user_id: int
-    role_id: int
-    aplicacao_id: int
     user: User
-    aplicacao: Optional[Aplicacao]  # ✅ Pode ser None
+    aplicacao: Optional[Aplicacao]
     role: Role
+
+
+class Attribute(models.Model):
+    id: int
+    user: User
+    aplicacao: Optional[Aplicacao]
+    key: str
+    value: str

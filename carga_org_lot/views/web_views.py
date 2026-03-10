@@ -1,4 +1,3 @@
-# carga_org_lot/views/web_views.py
 """
 Web Views para Carga Org/Lot.
 Views tradicionais Django para renderizar páginas HTML.
@@ -17,7 +16,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
-from accounts.models import Aplicacao, User, UserRole, UserProfile
+from accounts.models import Aplicacao, User, UserRole
 from accounts.services.authorization_service import require_app_permission
 
 from ..models import (
@@ -94,7 +93,6 @@ def carga_login(request):
             # Verifica se usuário tem acesso à aplicação CARGA_ORG_LOT
             try:
                 app_carga = Aplicacao.objects.get(codigointerno="CARGA_ORG_LOT")
-                userProfile = UserProfile
                 user_role = (
                     UserRole.objects.filter(user=user, aplicacao=app_carga)
                     .select_related("role")
@@ -161,6 +159,13 @@ def carga_dashboard(request):
         .select_related("role")
         .first()
     )
+
+    # Guard: @require_app_permission garante acesso, mas .first() pode retornar
+    # None em edge cases (ex: role removida entre o decorator e aqui).
+    # O guard protege o acesso a user_role.role logo abaixo.
+    if user_role is None:
+        messages.error(request, "Role não encontrada para este usuário. Contate o administrador.")
+        return redirect("carga_org_lot_web:login")
 
     # Estatísticas gerais
     stats = {
