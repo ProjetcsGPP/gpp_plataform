@@ -13,7 +13,8 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from accounts.models import User, UserRole
+from django.contrib.auth.models import User
+from accounts.models import Aplicacao, UserRole
 from common.serializers import UserCreateSerializer, UserListSerializer, UserSerializer
 
 from ..models import (

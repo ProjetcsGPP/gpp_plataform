@@ -16,7 +16,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
-from accounts.models import Aplicacao, User, UserRole
+from django.contrib.auth.models import User
+from accounts.models import Aplicacao, UserRole
+
 from accounts.services.authorization_service import require_app_permission
 
 from ..models import (
