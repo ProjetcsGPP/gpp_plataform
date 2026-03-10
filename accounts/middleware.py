@@ -5,11 +5,11 @@ Middleware JWT Universal - Único método para Web + API
 
 import logging
 
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.shortcuts import redirect
 from django.utils.functional import SimpleLazyObject
 
-from .models import User, UserRole
+from .models import UserRole
 from .services.token_service import InvalidTokenException, get_token_service
 
 logger = logging.getLogger(__name__)

@@ -10,12 +10,14 @@ from typing import Any
 
 import jwt
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from accounts.models import UserRole
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
 from django.utils import timezone
 
-from accounts.models import User, UserRole
+
 
 logger = logging.getLogger(__name__)
 

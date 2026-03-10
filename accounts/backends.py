@@ -1,7 +1,7 @@
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth.hashers import check_password
 
-from accounts.models import User
+from django.contrib.auth.models import User
 
 
 class EmailBackend(BaseBackend):
